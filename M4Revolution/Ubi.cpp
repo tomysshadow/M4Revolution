@@ -105,18 +105,16 @@ const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTEN
 	{"bin", {TYPE::TEXTURE, "bin"}}
 };
 
-Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::VECTOR_ITERATOR_SET_MAP &fileVectorIteratorSetMap, File::SIZE &filesPosition)
+Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::POINTER_SET_MAP &filePointerSetMap, File::SIZE &filesPosition)
 	: nameOptional(String::readOptional(inputFileStream)) {
 	DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
 	for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
 		directoryVector.emplace_back(
-			Directory(
-				inputFileStream,
-				fileVectorIteratorSetMap,
-				filesPosition
-			)
+			inputFileStream,
+			filePointerSetMap,
+			filesPosition
 		);
 	}
 
@@ -126,30 +124,30 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::VECTOR_
 	// the NAME_TEXTURE comparison is so we only convert textures in the texture folder specifically, even if the extension matches
 	for (FILE_VECTOR_SIZE i = 0; i < fileVectorSize; i++) {
 		fileVector.emplace_back(
-			File(
-				inputFileStream,
-				filesPosition,
+			inputFileStream,
+			filesPosition,
 
-				nameOptional.has_value()
-				? nameOptional.value() == NAME_TEXTURE
-				: false
-			)
+			nameOptional.has_value()
+			? nameOptional.value() == NAME_TEXTURE
+			: false
 		);
 	}
 
-	File::VECTOR_ITERATOR_SET_MAP::iterator fileVectorIteratorSetMapIterator = {};
+	// MUST BE DONE SEPERATELY AFTERWARDS!
+	// (otherwise iterator invalidation)
+	File::POINTER_SET_MAP::iterator filePointerSetMapIterator = {};
 
 	for (File::VECTOR::iterator fileVectorIterator = fileVector.begin(); fileVectorIterator != fileVector.end(); fileVectorIterator++) {
 		// are there any other files at this position?
-		fileVectorIteratorSetMapIterator = fileVectorIteratorSetMap.find(fileVectorIterator->position);
+		filePointerSetMapIterator = filePointerSetMap.find(fileVectorIterator->position);
 
 		// if not, then create a new set
-		if (fileVectorIteratorSetMapIterator == fileVectorIteratorSetMap.end()) {
-			fileVectorIteratorSetMapIterator = fileVectorIteratorSetMap.insert({fileVectorIterator->position, {}}).first;
+		if (filePointerSetMapIterator == filePointerSetMap.end()) {
+			filePointerSetMapIterator = filePointerSetMap.insert({fileVectorIterator->position, {}}).first;
 		}
 
 		// add this file to the set
-		fileVectorIteratorSetMapIterator->second.insert(fileVectorIterator);
+		filePointerSetMapIterator->second.insert(&*fileVectorIterator);
 	}
 
 	filesPosition += String::SIZE_SIZE
@@ -208,12 +206,10 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &p
 	} else {
 		for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
 			directoryVector.emplace_back(
-				Directory(
-					inputFileStream,
-					path,
-					directoryNameVectorIterator,
-					fileOptional
-				)
+				inputFileStream,
+				path,
+				directoryNameVectorIterator,
+				fileOptional
 			);
 
 			// if this is true we found the matching file, so exit early
@@ -234,9 +230,7 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &p
 	if (match) {
 		for (FILE_VECTOR_SIZE i = 0; i < fileVectorSize; i++) {
 			File &file = fileVector.emplace_back(
-				File(
-					inputFileStream
-				)
+				inputFileStream
 			);
 
 			// is this the file we are looking for?
@@ -320,9 +314,9 @@ void Ubi::BigFile::Header::read(std::ifstream &inputFileStream) {
 
 const std::string Ubi::BigFile::Header::SIGNATURE = "UBI_BF_SIG";
 
-Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::VECTOR_ITERATOR_SET_MAP &fileVectorIteratorSetMap, File::SIZE &filesPosition)
+Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::POINTER_SET_MAP &filePointerSetMap, File::SIZE &filesPosition)
 	: header(inputFileStream, filesPosition),
-	directory(inputFileStream, fileVectorIteratorSetMap, filesPosition) {
+	directory(inputFileStream, filePointerSetMap, filesPosition) {
 }
 
 Ubi::BigFile::BigFile(std::ifstream &inputFileStream, const Path &path, std::optional<File> &fileOptional)

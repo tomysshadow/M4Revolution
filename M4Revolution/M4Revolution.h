@@ -8,6 +8,11 @@ class M4Revolution {
 
 	std::ifstream inputFileStream;
 
+	int files = 0;
+
+	void convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size);
+	void fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size);
+
 	public:
 	M4Revolution(const std::string &inputFileName);
 	M4Revolution(const M4Revolution &m4Revolution) = delete;

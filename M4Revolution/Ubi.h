@@ -1,7 +1,7 @@
 #pragma once
 #include "shared.h"
 #include <vector>
-#include <set>
+#include <unordered_set>
 #include <map>
 #include <optional>
 
@@ -28,8 +28,8 @@ namespace Ubi {
 		struct File {
 			typedef std::vector<File> VECTOR;
 			typedef uint32_t SIZE;
-			typedef std::set<VECTOR::iterator> VECTOR_ITERATOR_SET;
-			typedef std::map<SIZE, VECTOR_ITERATOR_SET> VECTOR_ITERATOR_SET_MAP;
+			typedef std::unordered_set<File*> POINTER_SET;
+			typedef std::map<SIZE, POINTER_SET> POINTER_SET_MAP;
 
 			enum struct TYPE {
 				NONE = 0,
@@ -84,7 +84,7 @@ namespace Ubi {
 			static const size_t FILE_VECTOR_SIZE_SIZE = sizeof(FILE_VECTOR_SIZE);
 			File::VECTOR fileVector = {};
 
-			Directory(std::ifstream &inputFileStream, File::VECTOR_ITERATOR_SET_MAP &fileVectorIteratorSetMap, File::SIZE &filesPosition);
+			Directory(std::ifstream &inputFileStream, File::POINTER_SET_MAP &fileVectorIteratorSetMap, File::SIZE &filesPosition);
 			Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, std::optional<File> &fileOptional);
 			void write(std::ofstream &outputFileStream);
 
@@ -118,7 +118,7 @@ namespace Ubi {
 		Header header;
 		Directory directory;
 
-		BigFile(std::ifstream &inputFileStream, File::VECTOR_ITERATOR_SET_MAP &fileVectorIteratorSetMap, File::SIZE &filesPosition);
+		BigFile(std::ifstream &inputFileStream, File::POINTER_SET_MAP &fileVectorIteratorSetMap, File::SIZE &filesPosition);
 		BigFile(std::ifstream &inputFileStream, const Path &path, std::optional<File> &fileOptional);
 		void write(std::ofstream &outputFileStream);
 	};

@@ -7,6 +7,7 @@
 #include <fstream>
 #include <stdint.h>
 #include <string.h>
+#include <libzap.h>
 
 inline bool stringNullOrEmpty(const char* str) {
 	return !str || !*str;
@@ -292,6 +293,17 @@ inline long stringToLongUnsignedOrDefaultValue(const char* str, unsigned long de
 inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned long defaultValue = 0, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT) {
 	unsigned long result = 0;
 	return stringToLongUnsignedWide(str, result, base, locale) ? result : defaultValue;
+}
+
+inline bool freeZAP(zap_byte_t* &out) {
+	if (out) {
+		if (zap_free(out) != ZAP_ERROR_NONE) {
+			return false;
+		}
+	}
+
+	out = 0;
+	return true;
 }
 
 void consoleLog(const char* str = 0, short newline = true, short tab = false, bool err = false, const char* file = 0, unsigned int line = 0);
