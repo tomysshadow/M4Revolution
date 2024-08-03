@@ -128,3 +128,20 @@ void copyFileStream(std::ifstream &inputFileStream, std::ofstream &outputFileStr
 		}
 	}
 }
+
+void padFileStream(std::ofstream &outputFileStream, std::streamsize count) {
+	if (!count) {
+		return;
+	}
+
+	const size_t BUFFER_SIZE = 0x10000;
+	char buffer[BUFFER_SIZE] = {};
+
+	std::streamsize countWrite = min(count, BUFFER_SIZE);
+
+	do {
+		writeFileStreamSafe(outputFileStream, buffer, countWrite);
+		count -= countWrite;
+		countWrite = min(count, countWrite);
+	} while (countWrite);
+}

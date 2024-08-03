@@ -52,7 +52,7 @@ namespace Ubi {
 
 			TYPE type = TYPE::NONE;
 
-			File(std::ifstream &inputFileStream, File::SIZE &filesPosition, bool texture = false);
+			File(std::ifstream &inputFileStream, File::SIZE &outputFilePosition, bool texture);
 			File(std::ifstream &inputFileStream);
 			void write(std::ofstream &outputFileStream);
 
@@ -84,7 +84,7 @@ namespace Ubi {
 			static const size_t FILE_VECTOR_SIZE_SIZE = sizeof(FILE_VECTOR_SIZE);
 			File::VECTOR fileVector = {};
 
-			Directory(std::ifstream &inputFileStream, File::POINTER_SET_MAP &fileVectorIteratorSetMap, File::SIZE &filesPosition);
+			Directory(std::ifstream &inputFileStream, File::SIZE &outputFilePosition, File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 			Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, std::optional<File> &fileOptional);
 			void write(std::ofstream &outputFileStream);
 
@@ -104,7 +104,7 @@ namespace Ubi {
 				}
 			};
 
-			Header(std::ifstream &inputFileStream, File::SIZE &filesPosition);
+			Header(std::ifstream &inputFileStream, File::SIZE &outputFilePosition);
 			Header(std::ifstream &inputFileStream, std::optional<File> &fileOptional);
 			void write(std::ofstream &outputFileStream);
 
@@ -118,7 +118,7 @@ namespace Ubi {
 		Header header;
 		Directory directory;
 
-		BigFile(std::ifstream &inputFileStream, File::POINTER_SET_MAP &fileVectorIteratorSetMap, File::SIZE &filesPosition);
+		BigFile(std::ifstream &inputFileStream, File::SIZE &outputFilePosition, File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 		BigFile(std::ifstream &inputFileStream, const Path &path, std::optional<File> &fileOptional);
 		void write(std::ofstream &outputFileStream);
 	};

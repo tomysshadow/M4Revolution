@@ -30,6 +30,9 @@
     <ClInclude Include="M4Revolution.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="nvconfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Locale.cpp">

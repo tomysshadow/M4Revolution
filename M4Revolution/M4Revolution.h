@@ -2,19 +2,57 @@
 #include "shared.h"
 #include "Ubi.h"
 
+#include <nvtt/nvtt.h>
+#include <nvmath/Color.h>
+
 class M4Revolution {
 	private:
+	class Log {
+		private:
+		std::ifstream &inputFileStream;
+		Ubi::BigFile::File::SIZE inputFileSize = 0;
+		bool fileNames = false;
+
+		int progress = 0;
+		int files = 0;
+		int copiedFiles = 0;
+
+		public:
+		Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames = false);
+		void step();
+		void copied();
+		void converted(const Ubi::BigFile::File &file);
+	};
+
+	struct OutputHandler : public nvtt::OutputHandler {
+		OutputHandler(std::ofstream &outputFileStream);
+		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel);
+		virtual void endImage();
+		virtual bool writeData(const void* data, int size);
+
+		std::ofstream &outputFileStream;
+		int size = 0;
+	};
+
+	struct ErrorHandler : public nvtt::ErrorHandler {
+		virtual void error(nvtt::Error e);
+
+		bool result = true;
+	};
+
 	static const Ubi::BigFile::Path::VECTOR AI_TRANSITION_FADE_PATH_VECTOR;
 
 	std::ifstream inputFileStream;
-
-	int files = 0;
+	bool disableHardwareAcceleration = false;
+	bool logFileNames = false;
 
 	void convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size);
-	void fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size);
+	void fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size, Log &log);
+
+	static void color32X(nv::Color32* color32Pointer, size_t stride, size_t size);
 
 	public:
-	M4Revolution(const std::string &inputFileName);
+	M4Revolution(const std::string &inputFileName, bool disableHardwareAcceleration = false, bool logFileNames = false);
 	M4Revolution(const M4Revolution &m4Revolution) = delete;
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
 	void editTransitionSpeed(const std::string &outputFileName);

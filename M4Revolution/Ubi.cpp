@@ -24,7 +24,7 @@ void Ubi::String::writeOptional(std::ofstream &outputFileStream, const std::opti
 	writeFileStreamSafe(outputFileStream, strOptional.value().c_str(), size);
 }
 
-Ubi::BigFile::File::File(std::ifstream &inputFileStream, File::SIZE &filesPosition, bool texture) {
+Ubi::BigFile::File::File(std::ifstream &inputFileStream, File::SIZE &outputFilePosition, bool texture) {
 	read(inputFileStream);
 
 	#ifdef CONVERSION_ENABLED
@@ -55,14 +55,14 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream, File::SIZE &filesPositi
 	}
 	#endif
 
-	filesPosition += String::SIZE_SIZE
-	
+	outputFilePosition += String::SIZE_SIZE
+
 	+ (
 		nameOptional.has_value()
 		? (SIZE)nameOptional.value().size() + 1
 		: 0
 	)
-	
+
 	+ (SIZE)SIZE_SIZE
 	+ (SIZE)POSITION_SIZE;
 }
@@ -100,12 +100,12 @@ std::string Ubi::BigFile::File::getNameExtension() {
 
 const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTENSION_MAP = {
 	{"m4b", {TYPE::RECURSIVE, "m4b"}},
-	{"jpg", {TYPE::JPEG, "dds"}},
+	//{"jpg", {TYPE::JPEG, "dds"}}, // not yet implemented
 	{"zap", {TYPE::ZAP, "dds"}},
 	{"bin", {TYPE::TEXTURE, "bin"}}
 };
 
-Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::POINTER_SET_MAP &filePointerSetMap, File::SIZE &filesPosition)
+Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &outputFilePosition, File::POINTER_SET_MAP &filePointerSetMap)
 	: nameOptional(String::readOptional(inputFileStream)) {
 	DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
@@ -113,8 +113,8 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::POINTER
 	for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
 		directoryVector.emplace_back(
 			inputFileStream,
-			filePointerSetMap,
-			filesPosition
+			outputFilePosition,
+			filePointerSetMap
 		);
 	}
 
@@ -125,7 +125,7 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::POINTER
 	for (FILE_VECTOR_SIZE i = 0; i < fileVectorSize; i++) {
 		fileVector.emplace_back(
 			inputFileStream,
-			filesPosition,
+			outputFilePosition,
 
 			nameOptional.has_value()
 			? nameOptional.value() == NAME_TEXTURE
@@ -150,7 +150,7 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::POINTER
 		filePointerSetMapIterator->second.insert(&*fileVectorIterator);
 	}
 
-	filesPosition += String::SIZE_SIZE
+	outputFilePosition += String::SIZE_SIZE
 
 	+ (
 		nameOptional.has_value()
@@ -274,13 +274,13 @@ void Ubi::BigFile::Directory::write(std::ofstream &outputFileStream) {
 
 const std::string Ubi::BigFile::Directory::NAME_TEXTURE = "texture";
 
-Ubi::BigFile::Header::Header(std::ifstream &inputFileStream, File::SIZE &filesPosition) {
+Ubi::BigFile::Header::Header(std::ifstream &inputFileStream, File::SIZE &outputFilePosition) {
 	read(inputFileStream);
 
-	filesPosition += String::SIZE_SIZE
+	outputFilePosition += String::SIZE_SIZE
 
-		+ (File::SIZE)SIGNATURE.size() + 1
-		+ VERSION_SIZE;
+	+ (File::SIZE)SIGNATURE.size() + 1
+	+ VERSION_SIZE;
 }
 
 Ubi::BigFile::Header::Header(std::ifstream &inputFileStream, std::optional<File> &fileOptional) {
@@ -314,9 +314,9 @@ void Ubi::BigFile::Header::read(std::ifstream &inputFileStream) {
 
 const std::string Ubi::BigFile::Header::SIGNATURE = "UBI_BF_SIG";
 
-Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::POINTER_SET_MAP &filePointerSetMap, File::SIZE &filesPosition)
-	: header(inputFileStream, filesPosition),
-	directory(inputFileStream, filePointerSetMap, filesPosition) {
+Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &outputFilePosition, File::POINTER_SET_MAP &filePointerSetMap)
+	: header(inputFileStream, outputFilePosition),
+	directory(inputFileStream, outputFilePosition, filePointerSetMap) {
 }
 
 Ubi::BigFile::BigFile(std::ifstream &inputFileStream, const Path &path, std::optional<File> &fileOptional)
