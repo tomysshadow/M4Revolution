@@ -198,7 +198,6 @@ void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 					inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
 					copyFileStream(inputFileStream, outputFileStream, countCopy);
 
-					// log that we copied the files
 					log.copied();
 				}
 
@@ -206,15 +205,17 @@ void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 				convert = true;
 			}
 
+			// add the position of this file minus the last (includes any potential padding)
+			// we can't just add the file size in case there is dead, padding space between files
+			outputFilePosition += filePointerSetMapIterator->first - inputFilePosition;
+
 			// if we are converting this or any previous file in the set
 			if (convert) {
 				// handle this file specifically
 				inputFileStream.seekg((std::streampos)file.position + inputPosition);
-
-				// no need to set inputFilePosition here (it's fixed on next outer loop)
-				outputFilePosition += filePointerSetMapIterator->first - inputFilePosition;
 				file.position = outputFilePosition;
 
+				// these conversion functions update the file sizes passed in
 				switch (file.type) {
 					case Ubi::BigFile::File::TYPE::RECURSIVE:
 					fixLoading(outputFileStream, file.size, log);
@@ -230,23 +231,18 @@ void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 				// here this is safe because this is the exact amount written to the stream, so there is guaranteed to be no padding between
 				outputFilePosition += file.size;
 
-				// log that we converted the file
 				log.converted(file);
 			} else {
-				log.step();
-
-				// add the position of this file minus the last (includes any potential padding)
-				// we can't just add the size in case there is dead, padding space between files
-				outputFilePosition += filePointerSetMapIterator->first - inputFilePosition;
-				file.position = outputFilePosition;
-
 				// other identical, copied files at the same position in the input should likewise be at the same position in the output
 				inputFilePosition = filePointerSetMapIterator->first;
+				file.position = outputFilePosition;
+
+				log.step();
 			}
 		}
 	}
 
-	// if we just converted a set of files then there are no remaining files to copy
+	// if we just converted a set of files then there are no remaining files to copy, but otherwise...
 	if (!convert) {
 		countCopy = size - inputCopyPosition;
 
@@ -255,7 +251,6 @@ void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 			inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
 			copyFileStream(inputFileStream, outputFileStream, countCopy);
 
-			// log that we copied the files
 			log.copied();
 		}
 
@@ -263,7 +258,7 @@ void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 		outputFilePosition += size - inputFilePosition;
 	}
 
-	// go back and write the header now that all the positions and sizes are correct
+	// go back and write the filesystem now that all the positions and sizes are correct
 	outputFileStream.seekp(outputPosition);
 	bigFile.write(outputFileStream);
 
