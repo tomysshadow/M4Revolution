@@ -42,9 +42,16 @@ class M4Revolution {
 
 	static const Ubi::BigFile::Path::VECTOR AI_TRANSITION_FADE_PATH_VECTOR;
 
-	std::ifstream inputFileStream;
-	bool disableHardwareAcceleration = false;
+	std::ifstream inputFileStream = {};
 	bool logFileNames = false;
+
+	nvtt::Context context = {};
+	nvtt::InputOptions inputOptions = {};
+	nvtt::CompressionOptions compressionOptions = {};
+	nvtt::OutputOptions outputOptions = {};
+
+	Ubi::BigFile::File::SIZE zapDataSize = 0;
+	std::unique_ptr<unsigned char> zapData = 0;
 
 	void convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size);
 	void fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size, Log &log);
@@ -52,7 +59,7 @@ class M4Revolution {
 	static void color32X(nv::Color32* color32Pointer, size_t stride, size_t size);
 
 	public:
-	M4Revolution(const std::string &inputFileName, bool disableHardwareAcceleration = false, bool logFileNames = false);
+	M4Revolution(const std::string &inputFileName, bool logFileNames = false, bool disableHardwareAcceleration = false);
 	M4Revolution(const M4Revolution &m4Revolution) = delete;
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
 	void editTransitionSpeed(const std::string &outputFileName);

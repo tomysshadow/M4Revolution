@@ -85,31 +85,29 @@ void M4Revolution::ErrorHandler::error(nvtt::Error e) {
 }
 
 void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size) {
-	nvtt::Context context;
-	context.enableCudaAcceleration(!disableHardwareAcceleration);
+	if (size > zapDataSize || !zapData) {
+		zapDataSize = size;
+		zapData = std::unique_ptr<unsigned char>(new unsigned char[zapDataSize]);
+	}
 
-	nvtt::InputOptions inputOptions;
-	inputOptions.setMipmapGeneration(false); // not needed by game, waste of file size
-	inputOptions.setAlphaMode(nvtt::AlphaMode_Transparency); // game requires 32-bit depth for all images
+	// note: not zapDataSize here, that would be bad
+	readFileStreamSafe(inputFileStream, zapData.get(), size);
 
 	{
-		std::unique_ptr<unsigned char> data = std::unique_ptr<unsigned char>(new unsigned char[size]);
-		readFileStreamSafe(inputFileStream, data.get(), size);
-
 		zap_byte_t* out = 0;
 		zap_size_t outSize = 0;
 		zap_int_t outWidth = 0;
 		zap_int_t outHeight = 0;
+
+		if (zap_load_memory(zapData.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
+			throw std::runtime_error("Failed to Load ZAP From Memory");
+		}
 
 		SCOPE_EXIT {
 			if (!freeZAP(out)) {
 				throw std::runtime_error("Failed to Free ZAP");
 			}
 		};
-
-		if (zap_load_memory(data.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
-			throw std::runtime_error("Failed to Load ZAP From Memory");
-		}
 
 		const size_t COLOR32_SIZE = sizeof(nv::Color32);
 
@@ -121,13 +119,6 @@ void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 		inputOptions.setTextureLayout(nvtt::TextureType_2D, outWidth, outHeight);
 		inputOptions.setMipmapData(color32Pointer, outWidth, outHeight);
 	}
-
-	nvtt::CompressionOptions compressionOptions;
-	compressionOptions.setFormat(nvtt::Format_BC3); // a.k.a. DXT5
-	compressionOptions.setQuality(nvtt::Quality_Highest);
-
-	nvtt::OutputOptions outputOptions;
-	outputOptions.setContainer(nvtt::Container_DDS);
 
 	OutputHandler outputHandler(outputFileStream);
 	outputOptions.setOutputHandler(&outputHandler);
@@ -289,10 +280,18 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = 
 		{{"ai", "aitransitionfade"}, "ai_transition_fade.ai"}
 };
 
-M4Revolution::M4Revolution(const std::string &inputFileName, bool disableHardwareAcceleration, bool logFileNames)
+M4Revolution::M4Revolution(const std::string &inputFileName, bool logFileNames, bool disableHardwareAcceleration)
 : inputFileStream(inputFileName, std::ios::binary),
-disableHardwareAcceleration(disableHardwareAcceleration),
 logFileNames(logFileNames) {
+	context.enableCudaAcceleration(!disableHardwareAcceleration);
+
+	inputOptions.setMipmapGeneration(false); // not needed by game, waste of file size
+	inputOptions.setAlphaMode(nvtt::AlphaMode_Transparency); // game requires 32-bit depth for all images
+
+	compressionOptions.setFormat(nvtt::Format_BC3); // a.k.a. DXT5
+	compressionOptions.setQuality(nvtt::Quality_Highest);
+
+	outputOptions.setContainer(nvtt::Container_DDS);
 }
 
 void M4Revolution::fixLoading(const std::string &outputFileName) {
