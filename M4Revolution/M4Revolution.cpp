@@ -1,7 +1,6 @@
 #include "M4Revolution.h"
 #include <iostream>
 
-#include <nvimage/Image.h>
 #include <nvcore/Utils.h>
 
 #define M4REVOLUTION_OUT true, 1

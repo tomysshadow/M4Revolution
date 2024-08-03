@@ -19,6 +19,8 @@ class M4Revolution {
 
 		public:
 		Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames = false);
+		Log(const Log &log) = delete;
+		Log &operator=(const Log &log) = delete;
 		void step();
 		void copied();
 		void converted(const Ubi::BigFile::File &file);
@@ -50,6 +52,7 @@ class M4Revolution {
 	nvtt::CompressionOptions compressionOptions = {};
 	nvtt::OutputOptions outputOptions = {};
 
+	// unique_ptr is fine here since the M4Revolution class can't be copied anyway
 	Ubi::BigFile::File::SIZE zapDataSize = 0;
 	std::unique_ptr<unsigned char> zapData = 0;
 
