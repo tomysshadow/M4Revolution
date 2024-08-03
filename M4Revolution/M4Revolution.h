@@ -64,10 +64,10 @@ class M4Revolution {
 	static void color32X(nv::Color32* color32Pointer, size_t stride, size_t size);
 
 	public:
-	M4Revolution(const std::string &inputFileName, bool logFileNames = false, bool disableHardwareAcceleration = false);
+	M4Revolution(const char* inputFileName, bool logFileNames = false, bool disableHardwareAcceleration = false);
 	M4Revolution(const M4Revolution &m4Revolution) = delete;
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
-	void editTransitionSpeed(const std::string &outputFileName);
-	void editInertia(const std::string &outputFileName);
-	void fixLoading(const std::string &outputFileName);
+	void editTransitionSpeed(const char* outputFileName);
+	void editInertia(const char* outputFileName);
+	void fixLoading(const char* outputFileName);
 };

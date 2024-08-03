@@ -279,7 +279,7 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = 
 		{{"ai", "aitransitionfade"}, "ai_transition_fade.ai"}
 };
 
-M4Revolution::M4Revolution(const std::string &inputFileName, bool logFileNames, bool disableHardwareAcceleration)
+M4Revolution::M4Revolution(const char* inputFileName, bool logFileNames, bool disableHardwareAcceleration)
 : inputFileStream(inputFileName, std::ios::binary),
 logFileNames(logFileNames) {
 	context.enableCudaAcceleration(!disableHardwareAcceleration);
@@ -293,7 +293,7 @@ logFileNames(logFileNames) {
 	outputOptions.setContainer(nvtt::Container_DDS);
 }
 
-void M4Revolution::fixLoading(const std::string &outputFileName) {
+void M4Revolution::fixLoading(const char* outputFileName) {
 	inputFileStream.seekg(0, std::ios::end);
 	Ubi::BigFile::File::SIZE inputFileSize = (Ubi::BigFile::File::SIZE)inputFileStream.tellg();
 
