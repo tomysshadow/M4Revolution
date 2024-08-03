@@ -139,7 +139,7 @@ void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 		throw std::runtime_error("Failed to Process Context");
 	}
 
-	size = (Ubi::BigFile::File::SIZE)outputHandler.size;
+	size = outputHandler.size;
 }
 
 void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size, Log &log) {

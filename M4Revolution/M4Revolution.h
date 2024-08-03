@@ -31,7 +31,7 @@ class M4Revolution {
 		virtual bool writeData(const void* data, int size);
 
 		std::ofstream &outputFileStream;
-		int size = 0;
+		unsigned int size = 0;
 	};
 
 	struct ErrorHandler : public nvtt::ErrorHandler {
