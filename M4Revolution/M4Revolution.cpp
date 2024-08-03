@@ -115,10 +115,6 @@ void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 
 		nv::Color32* color32Pointer = (nv::Color32*)out;
 
-		if (!color32Pointer) {
-			throw std::runtime_error("color32Pointer must not be zero");
-		}
-
 		// need to flip the endianness, NVTT expects BGR instead of RGB
 		color32X(color32Pointer, outWidth * COLOR32_SIZE, outSize);
 
@@ -277,40 +273,19 @@ void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 }
 
 void M4Revolution::color32X(nv::Color32* color32Pointer, size_t stride, size_t size) {
-	if (!color32Pointer) {
-		throw std::invalid_argument("color32Pointer must not be zero");
-	}
-
 	nv::Color32* endPointer = (nv::Color32*)((uint8*)color32Pointer + size) - 1;
-
-	if (!endPointer) {
-		throw std::runtime_error("endPointer must not be zero");
-	}
-
 	nv::Color32* rowPointer = 0;
 
 	while (color32Pointer <= endPointer) {
 		rowPointer = (nv::Color32*)((uint8*)color32Pointer + stride) - 1;
 
-		if (!rowPointer) {
-			throw std::runtime_error("rowPointer must not be zero");
-		}
-
 		while (color32Pointer <= rowPointer) {
 			nv::swap(color32Pointer->r, color32Pointer->b);
 
 			color32Pointer = color32Pointer + 1;
-
-			if (!color32Pointer) {
-				throw std::runtime_error("color32Pointer must not be zero");
-			}
 		}
 
 		color32Pointer = rowPointer + 1;
-
-		if (!color32Pointer) {
-			throw std::runtime_error("color32Pointer must not be zero");
-		}
 	}
 }
 

@@ -52,40 +52,24 @@ void consoleLog(const char* str, short newline, short tab, bool err, const char*
 }
 
 void readFileStreamSafe(std::ifstream &inputFileStream, void* buffer, std::streamsize count) {
-	if (!buffer) {
-		throw std::invalid_argument("buffer must not be zero");
-	}
-
 	if (!inputFileStream.read((char*)buffer, count) || count != inputFileStream.gcount()) {
 		throw std::runtime_error("Failed to Read File Stream");
 	}
 }
 
 void writeFileStreamSafe(std::ofstream &outputFileStream, const void* buffer, std::streamsize count) {
-	if (!buffer) {
-		throw std::invalid_argument("buffer must not be zero");
-	}
-
 	if (!outputFileStream.write((const char*)buffer, count)) {
 		throw std::runtime_error("Failed to Write File Stream");
 	}
 }
 
 void readFileStreamPartial(std::ifstream &inputFileStream, void* buffer, std::streamsize count, std::streamsize &gcount) {
-	if (!buffer) {
-		throw std::invalid_argument("buffer must not be zero");
-	}
-
 	gcount = 0;
 	inputFileStream.read((char*)buffer, count);
 	gcount = inputFileStream.gcount();
 }
 
 void writeFileStreamPartial(std::ofstream &outputFileStream, const void* buffer, std::streamsize count) {
-	if (!buffer) {
-		throw std::invalid_argument("buffer must not be zero");
-	}
-
 	outputFileStream.write((const char*)buffer, count);
 }
 
