@@ -28,6 +28,8 @@ class M4Revolution {
 
 	struct OutputHandler : public nvtt::OutputHandler {
 		OutputHandler(std::ofstream &outputFileStream);
+		OutputHandler(const OutputHandler &outputHandler) = delete;
+		OutputHandler &operator=(const OutputHandler &outputHandler) = delete;
 		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel);
 		virtual void endImage();
 		virtual bool writeData(const void* data, int size);
