@@ -19,16 +19,7 @@ void M4Revolution::Log::step() {
 }
 
 void M4Revolution::Log::copied() {
-	if (fileNames) {
-		// log the number of files copied without any conversion performed
-		copiedFiles = files - copiedFiles;
-
-		if (copiedFiles) {
-			std::cout << "Copied " << copiedFiles << " file(s)" << std::endl;
-		}
-
-		copiedFiles = files;
-	} else {
+	if (!fileNames) {
 		// use the position to log the current progress
 		// this works because we read the input file stream from beginning to end in order
 		int currentProgress = (int)(((double)inputFileStream.tellg() / inputFileSize) * 100.0);
@@ -36,7 +27,17 @@ void M4Revolution::Log::copied() {
 		while (progress < currentProgress) {
 			std::cout << ++progress << "% complete" << std::endl;
 		}
+		return;
 	}
+
+	// log the number of files copied without any conversion performed
+	copiedFiles = files - copiedFiles;
+
+	if (copiedFiles) {
+		std::cout << "Copied " << copiedFiles << " file(s)" << std::endl;
+	}
+
+	copiedFiles = files;
 }
 
 void M4Revolution::Log::converted(const Ubi::BigFile::File &file) {

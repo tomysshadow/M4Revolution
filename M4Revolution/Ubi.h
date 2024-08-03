@@ -52,7 +52,7 @@ namespace Ubi {
 
 			TYPE type = TYPE::NONE;
 
-			File(std::ifstream &inputFileStream, File::SIZE &outputFilePosition, bool texture);
+			File(std::ifstream &inputFileStream, SIZE &outputFilePosition, bool texture);
 			File(std::ifstream &inputFileStream);
 			void write(std::ofstream &outputFileStream);
 
