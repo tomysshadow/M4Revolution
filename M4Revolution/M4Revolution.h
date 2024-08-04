@@ -1,9 +1,9 @@
 #pragma once
 #include "shared.h"
 #include "Ubi.h"
+#include "Work.h"
 
 #include <nvtt/nvtt.h>
-#include <nvmath/Color.h>
 
 class M4Revolution {
 	private:
@@ -50,18 +50,15 @@ class M4Revolution {
 	bool logFileNames = false;
 
 	nvtt::Context context = {};
-	nvtt::InputOptions inputOptions = {};
+	nvtt::Surface image = {};
 	nvtt::CompressionOptions compressionOptions = {};
 	nvtt::OutputOptions outputOptions = {};
 
 	// unique_ptr is fine here since the M4Revolution class can't be copied anyway
-	Ubi::BigFile::File::SIZE zapDataSize = 0;
-	std::unique_ptr<unsigned char> zapData = 0;
+	Work::Media media = {};
 
 	void convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size);
 	void fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size, Log &log);
-
-	static void color32X(nv::Color32* color32Pointer, size_t stride, size_t size);
 
 	public:
 	M4Revolution(const char* inputFileName, bool logFileNames = false, bool disableHardwareAcceleration = false);

@@ -1,8 +1,6 @@
 #include "M4Revolution.h"
 #include <iostream>
 
-#include <nvcore/Utils.h>
-
 #define M4REVOLUTION_OUT true, 1
 #define M4REVOLUTION_ERR true, 1, true, __FILE__, __LINE__
 
@@ -78,19 +76,24 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 	return true;
 }
 
-void M4Revolution::ErrorHandler::error(nvtt::Error e) {
-	consoleLog(nvtt::errorString(e), M4REVOLUTION_ERR);
+void M4Revolution::ErrorHandler::error(nvtt::Error error) {
+	consoleLog(nvtt::errorString(error), M4REVOLUTION_ERR);
 	result = false;
 }
 
+const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = {
+		{{"common"}, "common.m4b"},
+		{{"ai", "aitransitionfade"}, "ai_transition_fade.ai"}
+};
+
 void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size) {
-	if (size > zapDataSize || !zapData) {
-		zapDataSize = size;
-		zapData = std::unique_ptr<unsigned char>(new unsigned char[zapDataSize]);
+	if (size > media.size || !media.dataPointer) {
+		media.size = size;
+		media.dataPointer = Work::Media::DATA_POINTER(new unsigned char[media.size]);
 	}
 
 	// note: not zapDataSize here, that would be bad
-	readFileStreamSafe(inputFileStream, zapData.get(), size);
+	readFileStreamSafe(inputFileStream, media.dataPointer.get(), size);
 
 	{
 		zap_byte_t* out = 0;
@@ -98,7 +101,7 @@ void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 		zap_int_t outWidth = 0;
 		zap_int_t outHeight = 0;
 
-		if (zap_load_memory(zapData.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
+		if (zap_load_memory(media.dataPointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
 			throw std::runtime_error("Failed to Load ZAP From Memory");
 		}
 
@@ -108,15 +111,9 @@ void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 			}
 		};
 
-		const size_t COLOR32_SIZE = sizeof(nv::Color32);
-
-		nv::Color32* color32Pointer = (nv::Color32*)out;
-
-		// need to flip the endianness, NVTT expects BGR instead of RGB
-		color32X(color32Pointer, outWidth * COLOR32_SIZE, outSize);
-
-		inputOptions.setTextureLayout(nvtt::TextureType_2D, outWidth, outHeight);
-		inputOptions.setMipmapData(color32Pointer, outWidth, outHeight);
+		if (!image.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, outWidth, outHeight, 1, out)) {
+			throw std::runtime_error("Failed to Set Image 2D");
+		}
 	}
 
 	OutputHandler outputHandler(outputFileStream);
@@ -125,7 +122,11 @@ void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 	ErrorHandler errorHandler;
 	outputOptions.setErrorHandler(&errorHandler);
 
-	if (!context.process(inputOptions, compressionOptions, outputOptions) || !errorHandler.result) {
+	if (!context.outputHeader(image, 1, compressionOptions, outputOptions)) {
+		throw std::runtime_error("Failed to Process Context");
+	}
+
+	if (!context.compress(image, 0, 0, compressionOptions, outputOptions) || !errorHandler.result) {
 		throw std::runtime_error("Failed to Process Context");
 	}
 
@@ -257,37 +258,12 @@ void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 	size = outputFilePosition;
 }
 
-void M4Revolution::color32X(nv::Color32* color32Pointer, size_t stride, size_t size) {
-	nv::Color32* endPointer = (nv::Color32*)((uint8*)color32Pointer + size) - 1;
-	nv::Color32* rowPointer = 0;
-
-	while (color32Pointer <= endPointer) {
-		rowPointer = (nv::Color32*)((uint8*)color32Pointer + stride) - 1;
-
-		while (color32Pointer <= rowPointer) {
-			nv::swap(color32Pointer->r, color32Pointer->b);
-
-			color32Pointer = color32Pointer + 1;
-		}
-
-		color32Pointer = rowPointer + 1;
-	}
-}
-
-const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = {
-		{{"common"}, "common.m4b"},
-		{{"ai", "aitransitionfade"}, "ai_transition_fade.ai"}
-};
-
 M4Revolution::M4Revolution(const char* inputFileName, bool logFileNames, bool disableHardwareAcceleration)
 : inputFileStream(inputFileName, std::ios::binary),
 logFileNames(logFileNames) {
 	context.enableCudaAcceleration(!disableHardwareAcceleration);
 
-	inputOptions.setMipmapGeneration(false); // not needed by game, waste of file size
-	inputOptions.setAlphaMode(nvtt::AlphaMode_Transparency); // game requires 32-bit depth for all images
-
-	compressionOptions.setFormat(nvtt::Format_BC3); // a.k.a. DXT5
+	compressionOptions.setFormat(nvtt::Format_DXT5);
 	compressionOptions.setQuality(nvtt::Quality_Highest);
 
 	outputOptions.setContainer(nvtt::Container_DDS);
