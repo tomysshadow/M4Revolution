@@ -300,6 +300,6 @@ void M4Revolution::fixLoading(const char* outputFileName) {
 	inputFileStream.seekg(0, std::ios::beg);
 	std::ofstream outputFileStream(outputFileName, std::ios::binary);
 
-	Log log("Fixing Loading", inputFileStream, inputFileSize, logFileNames);
+	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFileSize, logFileNames);
 	fixLoading(outputFileStream, inputFileSize, log);
 }
