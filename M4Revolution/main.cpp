@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
 	M4Revolution m4Revolution(argv[1]);
-	m4Revolution.fixLoading("data_out.m4b");
+	m4Revolution.fixLoading("data.m4b.tmp");
 
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 

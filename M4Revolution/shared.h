@@ -1,4 +1,5 @@
 #pragma once
+#define _WIN32_WINNT 0x0600
 #include "scope_guard.hpp"
 #include "Locale.h"
 #include <memory>
@@ -312,4 +313,3 @@ void writeFileStreamSafe(std::ofstream &outputFileStream, const void* buffer, st
 void readFileStreamPartial(std::ifstream &inputFileStream, void* buffer, std::streamsize count, std::streamsize &gcount);
 void writeFileStreamPartial(std::ofstream &outputFileStream, const void* buffer, std::streamsize count);
 void copyFileStream(std::ifstream &inputFileStream, std::ofstream &outputFileStream, std::streamsize count = -1);
-void padFileStream(std::ofstream &outputFileStream, std::streamsize count);

@@ -144,7 +144,7 @@ void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 	Ubi::BigFile bigFile(inputFileStream, outputFilePosition, filePointerSetMap);
 
 	// insert padding for the filesystem for now, we'll go back and write it later
-	padFileStream(outputFileStream, outputFilePosition);
+	outputFileStream.seekp(outputFilePosition, std::ios::cur);
 
 	// inputCopyPosition is the position of the files to copy
 	// inputFilePosition is the position of a specific input file (for file.size calculation)

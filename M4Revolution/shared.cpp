@@ -85,9 +85,7 @@ void copyFileStream(std::ifstream &inputFileStream, std::ofstream &outputFileStr
 	std::streamsize gcountRead = 0;
 
 	do {
-		if (count != -1) {
-			countRead = min(count, countRead);
-		}
+		countRead = (std::streamsize)min((size_t)count, (size_t)countRead);
 
 		readFileStreamPartial(inputFileStream, buffer, countRead, gcountRead);
 
@@ -111,21 +109,4 @@ void copyFileStream(std::ifstream &inputFileStream, std::ofstream &outputFileStr
 			throw std::runtime_error("count must not be greater than file size");
 		}
 	}
-}
-
-void padFileStream(std::ofstream &outputFileStream, std::streamsize count) {
-	if (!count) {
-		return;
-	}
-
-	const size_t BUFFER_SIZE = 0x10000;
-	char buffer[BUFFER_SIZE] = {};
-
-	std::streamsize countWrite = min(count, BUFFER_SIZE);
-
-	do {
-		writeFileStreamSafe(outputFileStream, buffer, countWrite);
-		count -= countWrite;
-		countWrite = min(count, countWrite);
-	} while (countWrite);
 }

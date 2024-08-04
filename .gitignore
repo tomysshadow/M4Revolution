@@ -33,8 +33,8 @@ bld/
 [Ll]ogs/
 Debug.zip
 Release.zip
-data_in.m4b
-data_out.m4b
+data.m4b
+data.m4b.tmp
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
