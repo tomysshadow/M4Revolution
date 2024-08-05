@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <libzap.h>
+#include <windows.h>
 
 inline bool stringNullOrEmpty(const char* str) {
 	return !str || !*str;
