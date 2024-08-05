@@ -66,12 +66,10 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 		return false;
 	}
 
-	{
-		try {
-			writeFileStreamSafe(outputFileStream, data, size);
-		} catch (...) {
-			return false;
-		}
+	try {
+		writeFileStreamSafe(outputFileStream, data, size);
+	} catch (...) {
+		return false;
 	}
 
 	this->size += size;
@@ -276,7 +274,7 @@ void M4Revolution::fixLoading(const char* outputFileName) {
 	Ubi::BigFile::File::SIZE inputFileSize = (Ubi::BigFile::File::SIZE)inputFileStream.tellg();
 
 	inputFileStream.seekg(0, std::ios::beg);
-	std::ofstream outputFileStream(outputFileName);
+	std::ofstream outputFileStream(outputFileName, std::ios::binary);
 
 	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFileSize, logFileNames);
 	fixLoading(outputFileStream, inputFileSize, log);
