@@ -173,7 +173,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="shared.cpp" />
     <ClCompile Include="Ubi.cpp" />
-    <ClCompile Include="Work.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

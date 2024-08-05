@@ -27,15 +27,14 @@ class M4Revolution {
 	};
 
 	struct OutputHandler : public nvtt::OutputHandler {
-		OutputHandler(Work::OutputFile &outputFile, std::streampos outputPosition);
+		OutputHandler(std::ofstream &outputFileStream);
 		OutputHandler(const OutputHandler &outputHandler) = delete;
 		OutputHandler &operator=(const OutputHandler &outputHandler) = delete;
 		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel);
 		virtual void endImage();
 		virtual bool writeData(const void* data, int size);
 
-		Work::OutputFile &outputFile;
-		std::streampos outputPosition = 0;
+		std::ofstream &outputFileStream;
 
 		unsigned int size = 0;
 	};
@@ -56,19 +55,10 @@ class M4Revolution {
 	nvtt::CompressionOptions compressionOptions = {};
 	nvtt::OutputOptions outputOptions = {};
 
-	#ifdef MULTITHREADED
-	PTP_POOL pool = NULL;
-	#endif
-
-	// unique_ptr is fine here since the M4Revolution class can't be copied anyway
 	Work::Media media = {};
 
-	void convertZAP(Work::OutputFile &outputFile, Ubi::BigFile::File::SIZE &size, std::streampos outputPosition);
-	void fixLoading(Work::OutputFile &outputFile, Ubi::BigFile::File::SIZE &size, std::streampos outputPosition, Log &log);
-	
-	#ifdef MULTITHREADED
-	static VOID CALLBACK workCallback(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
-	#endif
+	void convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size);
+	void fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size, Log &log);
 
 	public:
 	M4Revolution(const char* inputFileName, bool logFileNames = false, bool disableHardwareAcceleration = false);

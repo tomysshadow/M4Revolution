@@ -53,8 +53,5 @@
     <ClCompile Include="M4Revolution.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Work.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
