@@ -47,7 +47,7 @@ namespace Work {
 			event.set();
 		}
 
-		T &get() {
+		T &get() const {
 			return value;
 		}
 	};
@@ -89,7 +89,7 @@ namespace Work {
 
 		public:
 		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
-		Ubi::BigFile::File::SIZE getFileSystemSize();
+		Ubi::BigFile::File::SIZE getFileSystemSize() const;
 	};
 
 	// FileTask (must be written in order)
@@ -120,7 +120,7 @@ namespace Work {
 		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count);
 		Lock<Data::QUEUE> lock();
 		void complete();
-		bool getCompleted();
+		bool getCompleted() const;
 	};
 
 	// Tasks (to be performed by the writer thread)

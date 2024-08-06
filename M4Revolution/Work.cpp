@@ -46,7 +46,7 @@ Work::BigFileTask::BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::Fil
 	bigFile(Ubi::BigFile(inputFileStream, fileSystemSize, fileVectorIteratorSetMap)) {
 }
 
-Ubi::BigFile::File::SIZE Work::BigFileTask::getFileSystemSize() {
+Ubi::BigFile::File::SIZE Work::BigFileTask::getFileSystemSize() const {
 	return fileSystemSize;
 }
 
@@ -109,7 +109,7 @@ void Work::FileTask::complete() {
 	event.set();
 }
 
-bool Work::FileTask::getCompleted() {
+bool Work::FileTask::getCompleted() const {
 	return completed;
 }
 

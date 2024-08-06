@@ -54,7 +54,7 @@ namespace Ubi {
 
 			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, bool texture);
 			File(std::ifstream &inputFileStream);
-			void write(std::ofstream &outputFileStream);
+			void write(std::ofstream &outputFileStream) const;
 
 			private:
 			void read(std::ifstream &inputFileStream);
@@ -86,7 +86,7 @@ namespace Ubi {
 
 			Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 			Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, std::optional<File> &fileOptional);
-			void write(std::ofstream &outputFileStream);
+			void write(std::ofstream &outputFileStream) const;
 
 			private:
 			static const std::string NAME_TEXTURE;
@@ -105,7 +105,7 @@ namespace Ubi {
 
 			Header(std::ifstream &inputFileStream, File::SIZE &fileSystemSize);
 			Header(std::ifstream &inputFileStream, std::optional<File> &fileOptional);
-			void write(std::ofstream &outputFileStream);
+			void write(std::ofstream &outputFileStream) const;
 
 			private:
 			void read(std::ifstream &inputFileStream);
@@ -119,6 +119,6 @@ namespace Ubi {
 
 		BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 		BigFile(std::ifstream &inputFileStream, const Path &path, std::optional<File> &fileOptional);
-		void write(std::ofstream &outputFileStream);
+		void write(std::ofstream &outputFileStream) const;
 	};
 };

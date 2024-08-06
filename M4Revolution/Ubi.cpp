@@ -73,7 +73,7 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream) {
 	read(inputFileStream);
 }
 
-void Ubi::BigFile::File::write(std::ofstream &outputFileStream) {
+void Ubi::BigFile::File::write(std::ofstream &outputFileStream) const {
 	String::writeOptional(outputFileStream, nameOptional);
 	writeFileStreamSafe(outputFileStream, &size, SIZE_SIZE);
 	writeFileStreamSafe(outputFileStream, &position, POSITION_SIZE);
@@ -258,20 +258,20 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &p
 	}
 }
 
-void Ubi::BigFile::Directory::write(std::ofstream &outputFileStream) {
+void Ubi::BigFile::Directory::write(std::ofstream &outputFileStream) const {
 	String::writeOptional(outputFileStream, nameOptional);
 
 	DIRECTORY_VECTOR_SIZE directoryVectorSize = (DIRECTORY_VECTOR_SIZE)directoryVector.size();
 	writeFileStreamSafe(outputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
-	for (Directory::VECTOR::iterator directoryVectorIterator = directoryVector.begin(); directoryVectorIterator != directoryVector.end(); directoryVectorIterator++) {
+	for (Directory::VECTOR::const_iterator directoryVectorIterator = directoryVector.begin(); directoryVectorIterator != directoryVector.end(); directoryVectorIterator++) {
 		directoryVectorIterator->write(outputFileStream);
 	}
 
 	FILE_VECTOR_SIZE fileVectorSize = (FILE_VECTOR_SIZE)fileVector.size();
 	writeFileStreamSafe(outputFileStream, &fileVectorSize, FILE_VECTOR_SIZE_SIZE);
 
-	for (File::VECTOR::iterator fileVectorIterator = fileVector.begin(); fileVectorIterator != fileVector.end(); fileVectorIterator++) {
+	for (File::VECTOR::const_iterator fileVectorIterator = fileVector.begin(); fileVectorIterator != fileVector.end(); fileVectorIterator++) {
 		fileVectorIterator->write(outputFileStream);
 	}
 }
@@ -298,7 +298,7 @@ Ubi::BigFile::Header::Header(std::ifstream &inputFileStream, std::optional<File>
 	read(inputFileStream);
 }
 
-void Ubi::BigFile::Header::write(std::ofstream &outputFileStream) {
+void Ubi::BigFile::Header::write(std::ofstream &outputFileStream) const {
 	String::writeOptional(outputFileStream, SIGNATURE);
 	writeFileStreamSafe(outputFileStream, &CURRENT_VERSION, VERSION_SIZE);
 }
@@ -331,7 +331,7 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, const Path &path, std::opt
 	directory(inputFileStream, path, path.directoryNameVector.begin(), fileOptional) {
 }
 
-void Ubi::BigFile::write(std::ofstream &outputFileStream) {
+void Ubi::BigFile::write(std::ofstream &outputFileStream) const {
 	header.write(outputFileStream);
 	directory.write(outputFileStream);
 }
