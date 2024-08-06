@@ -19,15 +19,16 @@ namespace Work {
 		private:
 		std::mutex mutex = {};
 		std::condition_variable conditionVariable = {};
-		bool done = false;
+		bool predicate = false;
 
-		void setDone();
+		void setPredicate(bool value);
 
 		public:
-		Event();
+		Event(bool set = false);
 		~Event();
-		void wait();
+		void wait(bool reset = false);
 		void set();
+		void reset();
 	};
 
 	// generic "lock a thing for the duration of this scope, and only then allow me to get the thing" class (like a GlobalLock type deal)
@@ -40,7 +41,7 @@ namespace Work {
 		Lock(Event &event, T &value)
 			: event(event),
 			value(value) {
-			event.wait();
+			event.wait(true);
 		}
 
 		~Lock() {
@@ -97,6 +98,10 @@ namespace Work {
 		public:
 		typedef std::queue<FileTask> QUEUE;
 
+		// the writer thread will check if the next file in the queue has a lesser value for this
+		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
+		const std::streampos BIG_FILE_INPUT_POSITION;
+
 		private:
 		// this needs its own queue, because
 		// different files will be converted at the same time, each with their own FileTask
@@ -117,10 +122,6 @@ namespace Work {
 		Lock<Data::QUEUE> lock();
 		void complete();
 		bool getCompleted();
-
-		// the writer thread will check if the next file in the queue has a lesser value for this
-		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
-		const std::streampos BIG_FILE_INPUT_POSITION;
 	};
 
 	// Tasks (to be performed by the writer thread)
@@ -139,6 +140,7 @@ namespace Work {
 		FileTask::QUEUE fileTaskQueue = {};
 
 		public:
+		Tasks();
 		Lock<BigFileTask::VECTOR> bigFileLock();
 		Lock<FileTask::QUEUE> fileLock();
 	};

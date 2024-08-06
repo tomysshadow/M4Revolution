@@ -1,31 +1,28 @@
 #include "Work.h"
 
-// acquire lock to prevent data race on completed
-void Work::Event::setDone() {
+// acquire lock to prevent data race on predicate
+void Work::Event::setPredicate(bool value) {
 	std::lock_guard<std::mutex> lock(mutex);
-	done = true;
+	predicate = value;
 }
 
-// allow one thread to wake up first
-Work::Event::Event() {
-	setDone();
-	conditionVariable.notify_one();
+Work::Event::Event(bool set) : predicate(set) {
 }
 
 // notify any remaining threads
 Work::Event::~Event() {
-	setDone();
+	setPredicate(true);
 	conditionVariable.notify_all();
 }
 
 // prevent spurious wakeup
-void Work::Event::wait() {
+void Work::Event::wait(bool reset) {
 	std::unique_lock<std::mutex> lock(mutex);
 
 	conditionVariable.wait(lock, [&] {
-		if (done) {
-			// reset the event (this is run while the lock is held, so is safe)
-			done = false;
+		if (predicate) {
+			// reset the event if desired (this is run while the lock is held, so is safe)
+			predicate = !reset;
 			return true;
 		}
 		return false;
@@ -34,8 +31,12 @@ void Work::Event::wait() {
 
 // wake up the next thread
 void Work::Event::set() {
-	setDone();
+	setPredicate(true);
 	conditionVariable.notify_one();
+}
+
+void Work::Event::reset() {
+	setPredicate(false);
 }
 
 Work::Data::Data() {
@@ -56,7 +57,8 @@ Ubi::BigFile::File::SIZE Work::BigFileTask::getFileSystemSize() {
 }
 
 Work::FileTask::FileTask(std::streampos bigFileInputPosition)
-	: BIG_FILE_INPUT_POSITION(bigFileInputPosition) {
+	: BIG_FILE_INPUT_POSITION(bigFileInputPosition),
+	event(true) {
 }
 
 // TODO: this feels sketch, make sure it works
@@ -115,6 +117,11 @@ void Work::FileTask::complete() {
 
 bool Work::FileTask::getCompleted() {
 	return completed;
+}
+
+Work::Tasks::Tasks()
+	: bigFileEvent(true),
+	fileEvent(true) {
 }
 
 Work::Lock<Work::BigFileTask::VECTOR> Work::Tasks::bigFileLock() {
