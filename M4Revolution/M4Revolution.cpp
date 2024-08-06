@@ -5,9 +5,9 @@
 #define M4REVOLUTION_ERR true, 1, true, __FILE__, __LINE__
 
 M4Revolution::Log::Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames)
-: inputFileStream(inputFileStream),
-inputFileSize(inputFileSize),
-fileNames(fileNames) {
+	: inputFileStream(inputFileStream),
+	inputFileSize(inputFileSize),
+	fileNames(fileNames) {
 	std::cout << title << "..." << std::endl;
 }
 
@@ -50,7 +50,7 @@ void M4Revolution::Log::converted(const Ubi::BigFile::File &file) {
 	}
 }
 
-M4Revolution::OutputHandler::OutputHandler(std::ofstream &outputFileStream) : outputFileStream(outputFileStream) {
+M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask) : fileTask(fileTask) {
 }
 
 void M4Revolution::OutputHandler::beginImage(int size, int width, int height, int depth, int face, int miplevel) {
@@ -67,7 +67,16 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 	}
 
 	try {
-		writeFileStreamSafe(outputFileStream, data, size);
+		Work::Data::POINTER pointer = Work::Data::POINTER(new unsigned char[size]);
+
+		if (memcpy_s(pointer.get(), size, data, size)) {
+			return false;
+		}
+
+		// this locks the FileTask for a single line
+		// when it unlocks, the writer thread will wake up to write the data
+		// then it will wait on more data again
+		fileTask.lock().get().emplace(size, pointer);
 	} catch (...) {
 		return false;
 	}
@@ -86,14 +95,22 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = 
 		{{"ai", "aitransitionfade"}, "ai_transition_fade.ai"}
 };
 
-void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size) {
-	if (size > media.size || !media.dataPointer) {
-		media.size = size;
-		media.dataPointer = Work::Media::DATA_POINTER(new unsigned char[media.size]);
+void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size, std::streampos inputPosition) {
+	#ifdef MULTITHREADED
+	while (dataVectorIndex >= dataVector.size()) {
+		dataVector.emplace_back();
 	}
 
-	// note: not zapDataSize here, that would be bad
-	readFileStreamSafe(inputFileStream, media.dataPointer.get(), size);
+	Work::Data &data = dataVector[dataVectorIndex];
+	#endif
+
+	if (size > data.size || !data.pointer) {
+		data.size = size;
+		data.pointer = Work::Data::POINTER(new unsigned char[data.size]);
+	}
+
+	// note: not data.size here, that would be bad
+	readFileStreamSafe(inputFileStream, data.pointer.get(), size);
 
 	{
 		zap_byte_t* out = 0;
@@ -101,7 +118,7 @@ void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 		zap_int_t outWidth = 0;
 		zap_int_t outHeight = 0;
 
-		if (zap_load_memory(media.dataPointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
+		if (zap_load_memory(data.pointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
 			throw std::runtime_error("Failed to Load ZAP From Memory");
 		}
 
@@ -116,7 +133,14 @@ void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 		}
 	}
 
-	OutputHandler outputHandler(outputFileStream);
+	#ifdef MULTITHREADED
+	dataVectorIndex--;
+	#endif
+
+	// when this unlocks one line later, the writer thread will begin waiting on data
+	Work::FileTask &fileTask = tasks.fileLock().get().emplace(inputPosition);
+
+	OutputHandler outputHandler(fileTask);
 	outputOptions.setOutputHandler(&outputHandler);
 
 	ErrorHandler errorHandler;
@@ -131,21 +155,15 @@ void M4Revolution::convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 	}
 
 	size = outputHandler.size;
+
+	// this will wake up the writer thread to tell it we have no more data to add, and to move on to the next FileTask
+	fileTask.complete();
 }
 
-void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size, Log &log) {
-	// positions into the streams for later reference
-	std::streampos inputPosition = inputFileStream.tellg();
-	std::streampos outputPosition = outputFileStream.tellp();
-
-	// outputFilePosition is the position of a specific output file (for file.position assignment)
+void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size, Log &log) {
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
-	Ubi::BigFile::File::SIZE outputFilePosition = 0;
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
-	Ubi::BigFile bigFile(inputFileStream, outputFilePosition, filePointerSetMap);
-
-	// insert padding for the filesystem for now, we'll go back and write it later
-	outputFileStream.seekp(outputFilePosition, std::ios::cur);
+	std::streampos inputPosition = tasks.bigFileLock().get().emplace_back(inputFileStream, filePointerSetMap).INPUT_POSITION;
 
 	// inputCopyPosition is the position of the files to copy
 	// inputFilePosition is the position of a specific input file (for file.size calculation)
@@ -187,7 +205,7 @@ void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 				if (countCopy) {
 					// copy the files before this one, if any
 					inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
-					copyFileStream(inputFileStream, outputFileStream, countCopy);
+					tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy).complete();
 
 					log.copied();
 				}
@@ -196,37 +214,34 @@ void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 				convert = true;
 			}
 
-			// add the position of this file minus the last (includes any potential padding)
-			// we can't just add the file size in case there is dead, padding space between files
-			outputFilePosition += filePointerSetMapIterator->first - inputFilePosition;
-
 			// if we are converting this or any previous file in the set
 			if (convert) {
 				// handle this file specifically
 				inputFileStream.seekg((std::streampos)file.position + inputPosition);
-				file.position = outputFilePosition;
+
+				// TODO: this will need to happen elsewhere
+				//file.position = outputFilePosition;
 
 				// these conversion functions update the file sizes passed in
 				switch (file.type) {
 					case Ubi::BigFile::File::TYPE::RECURSIVE:
-					fixLoading(outputFileStream, file.size, log);
+					fixLoading(tasks, file.size, log);
 					break;
 					case Ubi::BigFile::File::TYPE::ZAP:
-					convertZAP(outputFileStream, file.size);
+					convertZAP(tasks, file.size, inputPosition);
 					break;
 					default:
 					// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
-					copyFileStream(inputFileStream, outputFileStream, file.size);
+					tasks.fileLock().get().emplace(inputPosition, inputFileStream, file.size).complete();
 				}
-				
-				// here this is safe because this is the exact amount written to the stream, so there is guaranteed to be no padding between
-				outputFilePosition += file.size;
 
 				log.converted(file);
 			} else {
 				// other identical, copied files at the same position in the input should likewise be at the same position in the output
 				inputFilePosition = filePointerSetMapIterator->first;
-				file.position = outputFilePosition;
+
+				// TODO: this will need to happen elsewhere
+				//file.position = outputFilePosition;
 
 				log.step();
 			}
@@ -240,27 +255,20 @@ void M4Revolution::fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::Fil
 		// copy any remaining files
 		if (countCopy) {
 			inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
-			copyFileStream(inputFileStream, outputFileStream, countCopy);
+			tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy).complete();
 
 			log.copied();
 		}
-
-		// account for this in outputFilePosition so that the file size will be correct
-		outputFilePosition += size - inputFilePosition;
 	}
 
-	// seek to the end again and give the caller the new file size
-	outputFileStream.seekp(outputPosition);
-	bigFile.write(outputFileStream);
-
+	// TODO: this will need to happen elsewhere
 	// give the caller the new file size
-	outputFileStream.seekp((std::streampos)outputFilePosition + outputPosition);
-	size = outputFilePosition;
+	//size = outputFilePosition;
 }
 
 M4Revolution::M4Revolution(const char* inputFileName, bool logFileNames, bool disableHardwareAcceleration)
-: inputFileStream(inputFileName, std::ios::binary),
-logFileNames(logFileNames) {
+	: inputFileStream(inputFileName, std::ios::binary),
+	logFileNames(logFileNames) {
 	context.enableCudaAcceleration(!disableHardwareAcceleration);
 
 	compressionOptions.setFormat(nvtt::Format_DXT5);
@@ -270,12 +278,15 @@ logFileNames(logFileNames) {
 }
 
 void M4Revolution::fixLoading(const char* outputFileName) {
+	Work::Tasks tasks = {};
+
 	inputFileStream.seekg(0, std::ios::end);
 	Ubi::BigFile::File::SIZE inputFileSize = (Ubi::BigFile::File::SIZE)inputFileStream.tellg();
 
+	// TODO: outputFileStream will need to be created on the writer thread
 	inputFileStream.seekg(0, std::ios::beg);
-	std::ofstream outputFileStream(outputFileName, std::ios::binary);
+	//std::ofstream outputFileStream(outputFileName, std::ios::binary);
 
 	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFileSize, logFileNames);
-	fixLoading(outputFileStream, inputFileSize, log);
+	fixLoading(tasks, inputFileSize, log);
 }

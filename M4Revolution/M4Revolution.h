@@ -2,6 +2,7 @@
 #include "shared.h"
 #include "Ubi.h"
 #include "Work.h"
+#include <atomic>
 
 #include <nvtt/nvtt.h>
 
@@ -27,14 +28,14 @@ class M4Revolution {
 	};
 
 	struct OutputHandler : public nvtt::OutputHandler {
-		OutputHandler(std::ofstream &outputFileStream);
+		OutputHandler(Work::FileTask &fileTask);
 		OutputHandler(const OutputHandler &outputHandler) = delete;
 		OutputHandler &operator=(const OutputHandler &outputHandler) = delete;
 		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel);
 		virtual void endImage();
 		virtual bool writeData(const void* data, int size);
 
-		std::ofstream &outputFileStream;
+		Work::FileTask &fileTask;
 
 		unsigned int size = 0;
 	};
@@ -55,10 +56,16 @@ class M4Revolution {
 	nvtt::CompressionOptions compressionOptions = {};
 	nvtt::OutputOptions outputOptions = {};
 
-	Work::Media media = {};
+	#ifdef MULTITHREADED
+	std::atomic<Work::Data::VECTOR::size_type> dataVectorIndex = 0;
+	Work::Data::VECTOR dataVector = {};
+	#endif
+	#ifdef SINGLETHREADED
+	Work::Data data = {};
+	#endif
 
-	void convertZAP(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size);
-	void fixLoading(std::ofstream &outputFileStream, Ubi::BigFile::File::SIZE &size, Log &log);
+	void convertZAP(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size, std::streampos inputPosition);
+	void fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size, Log &log);
 
 	public:
 	M4Revolution(const char* inputFileName, bool logFileNames = false, bool disableHardwareAcceleration = false);
