@@ -22,12 +22,14 @@ Work::Event::~Event() {
 void Work::Event::wait() {
 	std::unique_lock<std::mutex> lock(mutex);
 
-	while (!done) {
-		conditionVariable.wait(lock);
-	}
-
-	// TODO: reset the event
-	//done = false;
+	conditionVariable.wait(lock, [&] {
+		if (done) {
+			// reset the event (this is run while the lock is held, so is safe)
+			done = false;
+			return true;
+		}
+		return false;
+	});
 }
 
 // wake up the next thread
