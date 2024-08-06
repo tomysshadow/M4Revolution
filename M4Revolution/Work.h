@@ -25,7 +25,6 @@ namespace Work {
 
 		public:
 		Event(bool set = false);
-		~Event();
 		void wait(bool reset = false);
 		void set();
 		void reset();

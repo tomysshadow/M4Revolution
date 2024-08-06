@@ -9,12 +9,6 @@ void Work::Event::setPredicate(bool value) {
 Work::Event::Event(bool set) : predicate(set) {
 }
 
-// notify any remaining threads
-Work::Event::~Event() {
-	setPredicate(true);
-	conditionVariable.notify_all();
-}
-
 // prevent spurious wakeup
 void Work::Event::wait(bool reset) {
 	std::unique_lock<std::mutex> lock(mutex);
