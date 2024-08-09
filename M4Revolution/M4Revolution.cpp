@@ -160,7 +160,7 @@ void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size
 	fileTask.complete();
 }
 
-void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size, Log &log) {
+void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE size, Log &log) {
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
 	std::streampos inputPosition = tasks.bigFileLock().get().emplace_back(inputFileStream, filePointerSetMap).INPUT_POSITION;
@@ -175,6 +175,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size
 	// countCopy is the count of the bytes to copy when copying files
 	bool convert = false;
 	std::streampos countCopy = 0;
+	Ubi::BigFile::File::POINTER_VECTOR filePointerVector = {};
 
 	for (
 		Ubi::BigFile::File::POINTER_SET_MAP::iterator filePointerSetMapIterator = filePointerSetMap.begin();
@@ -204,8 +205,10 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size
 				// only do this if there are files to copy and we have not yet converted any files in the set
 				if (countCopy) {
 					// copy the files before this one, if any
+					// filePointerVector is moved, clear returns it to a valid state
 					inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
-					tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy).complete();
+					tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy, filePointerVector).complete();
+					filePointerVector.clear();
 
 					log.copied();
 				}
@@ -218,9 +221,6 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size
 			if (convert) {
 				// handle this file specifically
 				inputFileStream.seekg((std::streampos)file.position + inputPosition);
-
-				// TODO: this will need to happen elsewhere
-				//file.position = outputFilePosition;
 
 				// these conversion functions update the file sizes passed in
 				switch (file.type) {
@@ -238,10 +238,9 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size
 				log.converted(file);
 			} else {
 				// other identical, copied files at the same position in the input should likewise be at the same position in the output
+				file.padding = filePointerSetMapIterator->first - inputFilePosition;
 				inputFilePosition = filePointerSetMapIterator->first;
-
-				// TODO: this will need to happen elsewhere
-				//file.position = outputFilePosition;
+				filePointerVector.push_back(&file);
 
 				log.step();
 			}
@@ -255,7 +254,8 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size
 		// copy any remaining files
 		if (countCopy) {
 			inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
-			tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy).complete();
+			tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy, filePointerVector).complete();
+			filePointerVector.clear();
 
 			log.copied();
 		}

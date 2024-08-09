@@ -100,8 +100,11 @@ namespace Work {
 		// the writer thread will check if the next file in the queue has a lesser value for this
 		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
 		const std::streampos BIG_FILE_INPUT_POSITION;
+		const std::optional<Ubi::BigFile::File::POINTER_VECTOR> FILE_POINTER_VECTOR_OPTIONAL;
 
 		private:
+		void create(std::ifstream &inputFileStream, std::streamsize count);
+
 		// this needs its own queue, because
 		// different files will be converted at the same time, each with their own FileTask
 		// (in the FileTask queue)
@@ -117,6 +120,7 @@ namespace Work {
 
 		public:
 		FileTask(std::streampos bigFileInputPosition);
+		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR &filePointerVector);
 		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count);
 		Lock<Data::QUEUE> lock();
 		void complete();

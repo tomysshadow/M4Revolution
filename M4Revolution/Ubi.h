@@ -30,6 +30,7 @@ namespace Ubi {
 			typedef uint32_t SIZE;
 			typedef std::unordered_set<File*> POINTER_SET;
 			typedef std::map<SIZE, POINTER_SET> POINTER_SET_MAP;
+			typedef std::vector<File*> POINTER_VECTOR;
 
 			enum struct TYPE {
 				NONE = 0,
@@ -49,6 +50,9 @@ namespace Ubi {
 			// initially the position in the input file, to be overwritten later (with the stream position)
 			SIZE position = 0;
 			static const size_t POSITION_SIZE = sizeof(position);
+
+			// the effective size of the file's padding (not stored, used temporarily by the writer thread)
+			SIZE padding = 0;
 
 			TYPE type = TYPE::NONE;
 

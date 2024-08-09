@@ -50,14 +50,8 @@ Ubi::BigFile::File::SIZE Work::BigFileTask::getFileSystemSize() const {
 	return fileSystemSize;
 }
 
-Work::FileTask::FileTask(std::streampos bigFileInputPosition)
-	: BIG_FILE_INPUT_POSITION(bigFileInputPosition),
-	event(true) {
-}
-
 // TODO: this feels sketch, make sure it works
-Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count)
-	: BIG_FILE_INPUT_POSITION(bigFileInputPosition) {
+void Work::FileTask::create(std::ifstream &inputFileStream, std::streamsize count) {
 	if (!count) {
 		return;
 	}
@@ -94,6 +88,26 @@ Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inp
 			throw std::runtime_error("count must not be greater than file size");
 		}
 	}
+}
+
+Work::FileTask::FileTask(std::streampos bigFileInputPosition)
+	: BIG_FILE_INPUT_POSITION(bigFileInputPosition),
+	FILE_POINTER_VECTOR_OPTIONAL(std::nullopt),
+	event(true) {
+}
+
+Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR &filePointerVector)
+	: BIG_FILE_INPUT_POSITION(bigFileInputPosition),
+	FILE_POINTER_VECTOR_OPTIONAL(std::move(filePointerVector)),
+	event(true) {
+	create(inputFileStream, count);
+}
+
+Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count)
+	: BIG_FILE_INPUT_POSITION(bigFileInputPosition),
+	FILE_POINTER_VECTOR_OPTIONAL(std::nullopt),
+	event(true) {
+	create(inputFileStream, count);
 }
 
 // called in order to lock the data queue so we can add new data
