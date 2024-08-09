@@ -19,7 +19,7 @@ namespace Work {
 		private:
 		std::mutex mutex = {};
 		std::condition_variable conditionVariable = {};
-		bool predicate = false;
+		std::optional<std::thread::id> threadIDOptional = std::nullopt;
 
 		void setPredicate(bool value);
 
@@ -35,16 +35,20 @@ namespace Work {
 		private:
 		Event &event;
 		T &value;
+		bool sync = false;
 
 		public:
-		Lock(Event &event, T &value)
+		Lock(Event &event, T &value, bool sync = false)
 			: event(event),
-			value(value) {
+			value(value),
+			sync(sync) {
 			event.wait(true);
 		}
 
 		~Lock() {
-			event.set();
+			if (sync) {
+				event.set();
+			}
 		}
 
 		T &get() const {
@@ -86,10 +90,11 @@ namespace Work {
 		// so it has a getter instead
 		// file is the associated file (so the size can be set on it later)
 		Ubi::BigFile::File::SIZE fileSystemSize = 0;
-		Ubi::BigFile bigFile;
 		Ubi::BigFile::File &file;
 
 		public:
+		const Ubi::BigFile BIG_FILE;
+
 		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
 		Ubi::BigFile::File &getFile() const;
@@ -125,7 +130,7 @@ namespace Work {
 		FileTask(std::streampos bigFileInputPosition);
 		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR &filePointerVector);
 		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count);
-		Lock<Data::QUEUE> lock();
+		Lock<Data::QUEUE> lock(bool sync = false);
 		void complete();
 		bool getCompleted() const;
 	};
@@ -147,7 +152,7 @@ namespace Work {
 
 		public:
 		Tasks();
-		Lock<BigFileTask::VECTOR> bigFileLock();
-		Lock<FileTask::QUEUE> fileLock();
+		Lock<BigFileTask::VECTOR> bigFileLock(bool sync = false);
+		Lock<FileTask::QUEUE> fileLock(bool sync = false);
 	};
 };

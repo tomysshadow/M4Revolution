@@ -3,6 +3,7 @@
 #include "scope_guard.hpp"
 #include "Locale.h"
 #include <memory>
+#include <functional>
 #include <stdexcept>
 #include <string>
 #include <fstream>

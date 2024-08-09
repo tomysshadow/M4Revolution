@@ -266,6 +266,63 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 	//size = outputFilePosition;
 }
 
+void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) {
+	std::ofstream outputFileStream(outputFileName, std::ios::binary);
+
+	std::streampos bigFileInputPosition = 0;
+	std::streampos outputPosition = 0;
+
+	for (;;) {
+		std::optional<Work::Lock<Work::FileTask::QUEUE>> fileLockOptional = tasks.fileLock(true);
+		Work::FileTask::QUEUE &fileTaskQueue = fileLockOptional.value().get();
+
+		if (fileTaskQueue.empty()) {
+			fileLockOptional = std::nullopt;
+			continue;
+		}
+
+		// NOTHING PAST THIS POINT IS TESTED
+		Work::FileTask &fileTask = fileTaskQueue.front();
+		fileLockOptional = std::nullopt;
+
+		if (fileTask.BIG_FILE_INPUT_POSITION < bigFileInputPosition) {
+			bigFileInputPosition = fileTask.BIG_FILE_INPUT_POSITION;
+
+			Work::Lock<Work::BigFileTask::VECTOR> bigFileLock = tasks.bigFileLock(true);
+			Work::BigFileTask::VECTOR &bigFileTaskVector = bigFileLock.get();
+			
+			if (bigFileTaskVector.empty()) {
+				return;
+			}
+
+			outputPosition = outputFileStream.tellp();
+
+			Work::BigFileTask &bigFileTask = bigFileTaskVector.front();
+			outputFileStream.seekp(bigFileTask.outputPosition);
+			bigFileTask.BIG_FILE.write(outputFileStream);
+
+			outputFileStream.seekp(outputPosition);
+
+			bigFileTaskVector.pop_back();
+		}
+
+		{
+			Work::Lock<Work::Data::QUEUE> lock = fileTask.lock();
+			Work::Data::QUEUE &dataQueue = lock.get();
+
+			while (!dataQueue.empty()) {
+				Work::Data &data = dataQueue.front();
+				writeFileStreamSafe(outputFileStream, data.pointer.get(), data.size);
+				dataQueue.pop();
+			}
+		}
+
+		if (fileTask.getCompleted()) {
+			tasks.fileLock(true).get().pop();
+		}
+	}
+}
+
 M4Revolution::M4Revolution(const char* inputFileName, bool logFileNames, bool disableHardwareAcceleration)
 	: inputFileStream(inputFileName, std::ios::binary),
 	logFileNames(logFileNames) {
@@ -280,12 +337,14 @@ M4Revolution::M4Revolution(const char* inputFileName, bool logFileNames, bool di
 void M4Revolution::fixLoading(const char* outputFileName) {
 	Work::Tasks tasks = {};
 
-	// TODO: outputFileStream will need to be created on the writer thread
 	inputFileStream.seekg(0, std::ios::end);
-	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputFileStream.tellg()); //std::ofstream outputFileStream(outputFileName, std::ios::binary);
+	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputFileStream.tellg());
 	inputFileStream.seekg(0, std::ios::beg);
 
-	// TODO: will need to wait on writer thread to finish, here
+	std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks));
+
 	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames);
-	fixLoading(tasks, inputFile, log);
+	//fixLoading(tasks, inputFile, log);
+
+	outputThread.join();
 }

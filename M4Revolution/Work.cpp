@@ -3,10 +3,22 @@
 // acquire lock to prevent data race on predicate
 void Work::Event::setPredicate(bool value) {
 	std::lock_guard<std::mutex> lock(mutex);
-	predicate = value;
+
+	if (value) {
+		// if the event is set
+		// then the wait should immediately go through
+		// (as long as the thread ID does not match this)
+		threadIDOptional = std::this_thread::get_id();
+	} else {
+		// if the event is not set
+		// then the event should wait no matter what
+		// (should return false)
+		threadIDOptional = std::nullopt;
+	}
 }
 
-Work::Event::Event(bool set) : predicate(set) {
+Work::Event::Event(bool set) {
+	setPredicate(set);
 }
 
 // prevent spurious wakeup
@@ -14,9 +26,13 @@ void Work::Event::wait(bool reset) {
 	std::unique_lock<std::mutex> lock(mutex);
 
 	conditionVariable.wait(lock, [&] {
-		if (predicate) {
+		if (threadIDOptional != std::this_thread::get_id()) {
 			// reset the event if desired (this is run while the lock is held, so is safe)
-			predicate = !reset;
+			if (reset) {
+				// if the event is reset
+				// then that should cause this to wait (return false)
+				threadIDOptional = std::nullopt;
+			}
 			return true;
 		}
 		return false;
@@ -44,7 +60,7 @@ Work::Data::Data(size_t size, POINTER pointer)
 Work::BigFileTask::BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap)
 	: INPUT_POSITION(inputFileStream.tellg()),
 	file(file),
-	bigFile(Ubi::BigFile(inputFileStream, fileSystemSize, fileVectorIteratorSetMap)) {
+	BIG_FILE(Ubi::BigFile(inputFileStream, fileSystemSize, fileVectorIteratorSetMap)) {
 }
 
 Ubi::BigFile::File::SIZE Work::BigFileTask::getFileSystemSize() const {
@@ -117,8 +133,8 @@ Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inp
 
 // called in order to lock the data queue so we can add new data
 // the Lock class ensures the writer thread will automatically wake up to write it after we add the new data
-Work::Lock<Work::Data::QUEUE> Work::FileTask::lock() {
-	return Lock<Data::QUEUE>(event, queue);
+Work::Lock<Work::Data::QUEUE> Work::FileTask::lock(bool sync) {
+	return Lock<Data::QUEUE>(event, queue, sync);
 }
 
 // called to signal to the writer thread that we are done adding new data
@@ -137,10 +153,10 @@ Work::Tasks::Tasks()
 	fileEvent(true) {
 }
 
-Work::Lock<Work::BigFileTask::VECTOR> Work::Tasks::bigFileLock() {
-	return Lock<BigFileTask::VECTOR>(bigFileEvent, bigFileTaskVector);
+Work::Lock<Work::BigFileTask::VECTOR> Work::Tasks::bigFileLock(bool sync) {
+	return Lock<BigFileTask::VECTOR>(bigFileEvent, bigFileTaskVector, sync);
 }
 
-Work::Lock<Work::FileTask::QUEUE> Work::Tasks::fileLock() {
-	return Lock<FileTask::QUEUE>(fileEvent, fileTaskQueue);
+Work::Lock<Work::FileTask::QUEUE> Work::Tasks::fileLock(bool sync) {
+	return Lock<FileTask::QUEUE>(fileEvent, fileTaskQueue, sync);
 }

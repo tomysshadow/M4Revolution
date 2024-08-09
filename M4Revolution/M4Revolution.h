@@ -66,6 +66,7 @@ class M4Revolution {
 
 	void convertZAP(Work::Tasks &tasks, Ubi::BigFile::File &file, std::streampos inputPosition);
 	void fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log &log);
+	static void outputThread(const char* outputFileName, Work::Tasks &tasks);
 
 	public:
 	M4Revolution(const char* inputFileName, bool logFileNames = false, bool disableHardwareAcceleration = false);
