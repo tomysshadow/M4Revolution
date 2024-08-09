@@ -84,15 +84,15 @@ namespace Work {
 		// (otherwise the constructor will be all messed up)
 		// it can't be const because it's passed to BigFile's constructor by reference
 		// so it has a getter instead
-		// filePointer is a pointed to the associated file (so the size can be set on it later)
+		// file is the associated file (so the size can be set on it later)
 		Ubi::BigFile::File::SIZE fileSystemSize = 0;
 		Ubi::BigFile bigFile;
-		Ubi::BigFile::File* filePointer = 0;
+		Ubi::BigFile::File &file;
 
 		public:
-		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File* filePointer, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
+		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
-		Ubi::BigFile::File* getFilePointer() const;
+		Ubi::BigFile::File &getFile() const;
 	};
 
 	// FileTask (must be written in order)

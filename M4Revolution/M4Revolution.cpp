@@ -95,7 +95,7 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = 
 		{{"ai", "aitransitionfade"}, "ai_transition_fade.ai"}
 };
 
-void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size, std::streampos inputPosition) {
+void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File &file, std::streampos inputPosition) {
 	#ifdef MULTITHREADED
 	while (dataVectorIndex >= dataVector.size()) {
 		dataVector.emplace_back();
@@ -104,13 +104,13 @@ void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size
 	Work::Data &data = dataVector[dataVectorIndex];
 	#endif
 
-	if (size > data.size || !data.pointer) {
-		data.size = size;
+	if (file.size > data.size || !data.pointer) {
+		data.size = file.size;
 		data.pointer = Work::Data::POINTER(new unsigned char[data.size]);
 	}
 
 	// note: not data.size here, that would be bad
-	readFileStreamSafe(inputFileStream, data.pointer.get(), size);
+	readFileStreamSafe(inputFileStream, data.pointer.get(), file.size);
 
 	{
 		zap_byte_t* out = 0;
@@ -154,16 +154,16 @@ void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size
 		throw std::runtime_error("Failed to Process Context");
 	}
 
-	size = outputHandler.size;
+	file.size = outputHandler.size;
 
 	// this will wake up the writer thread to tell it we have no more data to add, and to move on to the next FileTask
 	fileTask.complete();
 }
 
-void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File* filePointer, Log &log) {
+void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log &log) {
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
-	std::streampos inputPosition = tasks.bigFileLock().get().emplace_back(inputFileStream, filePointer, filePointerSetMap).INPUT_POSITION;
+	std::streampos inputPosition = tasks.bigFileLock().get().emplace_back(inputFileStream, file, filePointerSetMap).INPUT_POSITION;
 
 	// inputCopyPosition is the position of the files to copy
 	// inputFilePosition is the position of a specific input file (for file.size calculation)
@@ -225,10 +225,10 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File* filePointe
 				// these conversion functions update the file sizes passed in
 				switch (file.type) {
 					case Ubi::BigFile::File::TYPE::RECURSIVE:
-					fixLoading(tasks, &file, log);
+					fixLoading(tasks, file, log);
 					break;
 					case Ubi::BigFile::File::TYPE::ZAP:
-					convertZAP(tasks, file.size, inputPosition);
+					convertZAP(tasks, file, inputPosition);
 					break;
 					default:
 					// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
@@ -249,7 +249,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File* filePointe
 
 	// if we just converted a set of files then there are no remaining files to copy, but otherwise...
 	if (!convert) {
-		countCopy = filePointer->size - inputCopyPosition;
+		countCopy = file.size - inputCopyPosition;
 
 		// copy any remaining files
 		if (countCopy) {
@@ -287,5 +287,5 @@ void M4Revolution::fixLoading(const char* outputFileName) {
 
 	// TODO: will need to wait on writer thread to finish, here
 	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames);
-	fixLoading(tasks, &inputFile, log);
+	fixLoading(tasks, inputFile, log);
 }
