@@ -73,6 +73,9 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream) {
 	read(inputFileStream);
 }
 
+Ubi::BigFile::File::File(SIZE inputFileSize) : size(inputFileSize) {
+}
+
 void Ubi::BigFile::File::write(std::ofstream &outputFileStream) const {
 	String::writeOptional(outputFileStream, nameOptional);
 	writeFileStreamSafe(outputFileStream, &size, SIZE_SIZE);

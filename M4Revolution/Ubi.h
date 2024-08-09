@@ -58,6 +58,7 @@ namespace Ubi {
 
 			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, bool texture);
 			File(std::ifstream &inputFileStream);
+			File(SIZE inputFileSize);
 			void write(std::ofstream &outputFileStream) const;
 
 			private:

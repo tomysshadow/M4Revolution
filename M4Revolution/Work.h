@@ -74,7 +74,7 @@ namespace Work {
 		// since FileTasks in the task queue will have a smaller BIG_FILE_INPUT_POSITION
 		// otherwise, the sizes and positions would be wrong
 		// essentially, this fills a similar role to the completed variable in FileTask
-		const std::streampos INPUT_POSITION = 0;
+		const std::streampos INPUT_POSITION;
 
 		// outputPosition is set by the writer thread, and later used by it so it knows where to jump back
 		std::streampos outputPosition = 0;
@@ -84,12 +84,15 @@ namespace Work {
 		// (otherwise the constructor will be all messed up)
 		// it can't be const because it's passed to BigFile's constructor by reference
 		// so it has a getter instead
+		// filePointer is a pointed to the associated file (so the size can be set on it later)
 		Ubi::BigFile::File::SIZE fileSystemSize = 0;
 		Ubi::BigFile bigFile;
+		Ubi::BigFile::File* filePointer = 0;
 
 		public:
-		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
+		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File* filePointer, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
+		Ubi::BigFile::File* getFilePointer() const;
 	};
 
 	// FileTask (must be written in order)

@@ -160,10 +160,10 @@ void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File::SIZE &size
 	fileTask.complete();
 }
 
-void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE size, Log &log) {
+void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File* filePointer, Log &log) {
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
-	std::streampos inputPosition = tasks.bigFileLock().get().emplace_back(inputFileStream, filePointerSetMap).INPUT_POSITION;
+	std::streampos inputPosition = tasks.bigFileLock().get().emplace_back(inputFileStream, filePointer, filePointerSetMap).INPUT_POSITION;
 
 	// inputCopyPosition is the position of the files to copy
 	// inputFilePosition is the position of a specific input file (for file.size calculation)
@@ -225,7 +225,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE size,
 				// these conversion functions update the file sizes passed in
 				switch (file.type) {
 					case Ubi::BigFile::File::TYPE::RECURSIVE:
-					fixLoading(tasks, file.size, log);
+					fixLoading(tasks, &file, log);
 					break;
 					case Ubi::BigFile::File::TYPE::ZAP:
 					convertZAP(tasks, file.size, inputPosition);
@@ -249,7 +249,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File::SIZE size,
 
 	// if we just converted a set of files then there are no remaining files to copy, but otherwise...
 	if (!convert) {
-		countCopy = size - inputCopyPosition;
+		countCopy = filePointer->size - inputCopyPosition;
 
 		// copy any remaining files
 		if (countCopy) {
@@ -280,13 +280,12 @@ M4Revolution::M4Revolution(const char* inputFileName, bool logFileNames, bool di
 void M4Revolution::fixLoading(const char* outputFileName) {
 	Work::Tasks tasks = {};
 
-	inputFileStream.seekg(0, std::ios::end);
-	Ubi::BigFile::File::SIZE inputFileSize = (Ubi::BigFile::File::SIZE)inputFileStream.tellg();
-
 	// TODO: outputFileStream will need to be created on the writer thread
+	inputFileStream.seekg(0, std::ios::end);
+	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputFileStream.tellg()); //std::ofstream outputFileStream(outputFileName, std::ios::binary);
 	inputFileStream.seekg(0, std::ios::beg);
-	//std::ofstream outputFileStream(outputFileName, std::ios::binary);
 
-	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFileSize, logFileNames);
-	fixLoading(tasks, inputFileSize, log);
+	// TODO: will need to wait on writer thread to finish, here
+	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames);
+	fixLoading(tasks, &inputFile, log);
 }
