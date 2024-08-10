@@ -94,14 +94,14 @@ namespace Work {
 		// so it has a getter instead
 		// file is the associated file (so the size can be set on it later)
 		Ubi::BigFile::File::SIZE fileSystemSize = 0;
-		Ubi::BigFile::File* filePointer = 0;
+		Ubi::BigFile::File &file;
 
 		public:
 		const Ubi::BigFile BIG_FILE;
 
-		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File* filePointer, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
+		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
-		Ubi::BigFile::File* getFilePointer() const;
+		Ubi::BigFile::File &getFile() const;
 	};
 
 	// FileTask (must be written in order)
