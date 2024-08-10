@@ -60,13 +60,8 @@ Work::Data::Data(size_t size, POINTER pointer)
 }
 
 Work::BigFileTask::BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap)
-	: inputPosition(inputFileStream.tellg()),
-	file(file),
+	: file(file),
 	bigFilePointer(std::make_unique<Ubi::BigFile>(inputFileStream, fileSystemSize, fileVectorIteratorSetMap)) {
-}
-
-std::streampos Work::BigFileTask::getInputPosition() const {
-	return inputPosition;
 }
 
 Ubi::BigFile::File::SIZE Work::BigFileTask::getFileSystemSize() const {
@@ -173,12 +168,12 @@ Work::Tasks::Tasks()
 	fileEvent(true) {
 }
 
-Work::BigFileTask::VECTOR_LOCK Work::Tasks::bigFileLock(bool yield) {
-	return BigFileTask::VECTOR_LOCK(bigFileEvent, bigFileTaskVector, yield);
+Work::BigFileTask::MAP_LOCK Work::Tasks::bigFileLock(bool yield) {
+	return BigFileTask::MAP_LOCK(bigFileEvent, bigFileTaskMap, yield);
 }
 
-Work::BigFileTask::VECTOR_LOCK_POINTER Work::Tasks::bigFileLockPointer(bool yield) {
-	return std::make_unique<BigFileTask::VECTOR_LOCK>(bigFileEvent, bigFileTaskVector, yield);
+Work::BigFileTask::MAP_LOCK_POINTER Work::Tasks::bigFileLockPointer(bool yield) {
+	return std::make_unique<BigFileTask::MAP_LOCK>(bigFileEvent, bigFileTaskMap, yield);
 }
 
 Work::FileTask::QUEUE_LOCK Work::Tasks::fileLock(bool yield) {

@@ -77,12 +77,6 @@ namespace Work {
 	// BigFileTask (must seek over them, then come back later)
 	class BigFileTask {
 		private:
-		// inputPosition is so the writer thread knows when we've passed this BigFile (and can safely write it)
-		// since FileTasks in the task queue will have a smaller BIG_FILE_INPUT_POSITION
-		// otherwise, the sizes and positions would be wrong
-		// essentially, this fills a similar role to the completed variable in FileTask
-		std::streampos inputPosition = 0;
-
 		// fileSystemSize MUST be defined before bigFile
 		// (otherwise the constructor will be all messed up)
 		// it can't be const because it's passed to BigFile's constructor by reference
@@ -93,15 +87,14 @@ namespace Work {
 		Ubi::BigFile::File &file;
 
 		public:
-		typedef std::vector<BigFileTask> VECTOR;
-		typedef Lock<VECTOR> VECTOR_LOCK;
-		typedef std::shared_ptr<VECTOR_LOCK> VECTOR_LOCK_POINTER;
+		typedef std::map<std::streampos, BigFileTask> MAP;
+		typedef Lock<MAP> MAP_LOCK;
+		typedef std::shared_ptr<MAP_LOCK> MAP_LOCK_POINTER;
 
 		// outputPosition is set by the writer thread, and later used by it so it knows where to jump back
 		std::streampos outputPosition = 0;
 
 		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
-		std::streampos getInputPosition() const;
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
 		Ubi::BigFile::POINTER getBigFilePointer() const;
 		Ubi::BigFile::File &getFile() const;
@@ -153,7 +146,7 @@ namespace Work {
 		// they can't be handled in FIFO order
 		// (otherwise, the first BigFile would block for the entire duration)
 		Event bigFileEvent;
-		BigFileTask::VECTOR bigFileTaskVector = {};
+		BigFileTask::MAP bigFileTaskMap = {};
 
 		// the list of FileTasks must be a queue, because
 		// they must be written in order, start to finish
@@ -163,8 +156,8 @@ namespace Work {
 
 		public:
 		Tasks();
-		BigFileTask::VECTOR_LOCK bigFileLock(bool yield = false);
-		BigFileTask::VECTOR_LOCK_POINTER bigFileLockPointer(bool yield = false);
+		BigFileTask::MAP_LOCK bigFileLock(bool yield = false);
+		BigFileTask::MAP_LOCK_POINTER bigFileLockPointer(bool yield = false);
 		FileTask::QUEUE_LOCK fileLock(bool yield = false);
 		FileTask::QUEUE_LOCK_POINTER fileLockPointer(bool yield = false);
 	};
