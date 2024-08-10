@@ -22,7 +22,7 @@ Work::Event::Event(bool set) {
 }
 
 // prevent spurious wakeup
-void Work::Event::wait(bool reset, bool yield) {
+void Work::Event::wait(bool &yield, bool reset) {
 	std::unique_lock<std::mutex> lock(mutex);
 
 	conditionVariable.wait(lock, [&] {
@@ -39,6 +39,11 @@ void Work::Event::wait(bool reset, bool yield) {
 		}
 		return false;
 	});
+}
+
+void Work::Event::wait(bool reset) {
+	bool yield = false;
+	wait(yield, reset);
 }
 
 // wake up the next thread
@@ -138,12 +143,13 @@ Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inp
 
 // called in order to lock the data queue so we can add new data
 // the Lock class ensures the writer thread will automatically wake up to write it after we add the new data
-Work::Data::QUEUE_LOCK Work::FileTask::lock(bool yield) {
+Work::Data::QUEUE_LOCK Work::FileTask::lock(bool &yield) {
 	return Data::QUEUE_LOCK(event, queue, yield);
 }
 
-Work::Data::QUEUE_LOCK_POINTER Work::FileTask::lockPointer(bool yield) {
-	return std::make_unique<Data::QUEUE_LOCK>(event, queue, yield);
+Work::Data::QUEUE_LOCK Work::FileTask::lock() {
+	bool yield = false;
+	return lock(yield);
 }
 
 // called to signal to the writer thread that we are done adding new data
@@ -170,18 +176,20 @@ Work::Tasks::Tasks()
 	fileEvent(true) {
 }
 
-Work::BigFileTask::MAP_LOCK Work::Tasks::bigFileLock(bool yield) {
+Work::BigFileTask::MAP_LOCK Work::Tasks::bigFileLock(bool &yield) {
 	return BigFileTask::MAP_LOCK(bigFileEvent, bigFileTaskMap, yield);
 }
 
-Work::BigFileTask::MAP_LOCK_POINTER Work::Tasks::bigFileLockPointer(bool yield) {
-	return std::make_unique<BigFileTask::MAP_LOCK>(bigFileEvent, bigFileTaskMap, yield);
+Work::BigFileTask::MAP_LOCK Work::Tasks::bigFileLock() {
+	bool yield = false;
+	return bigFileLock(yield);
 }
 
-Work::FileTask::QUEUE_LOCK Work::Tasks::fileLock(bool yield) {
+Work::FileTask::QUEUE_LOCK Work::Tasks::fileLock(bool &yield) {
 	return FileTask::QUEUE_LOCK(fileEvent, fileTaskQueue, yield);
 }
 
-Work::FileTask::QUEUE_LOCK_POINTER Work::Tasks::fileLockPointer(bool yield) {
-	return std::make_unique<FileTask::QUEUE_LOCK>(fileEvent, fileTaskQueue, yield);
+Work::FileTask::QUEUE_LOCK Work::Tasks::fileLock() {
+	bool yield = false;
+	return fileLock(yield);
 }

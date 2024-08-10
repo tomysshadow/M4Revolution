@@ -28,7 +28,8 @@ namespace Work {
 
 		public:
 		Event(bool set = false);
-		void wait(bool reset = false, bool yield = false);
+		void wait(bool &yield, bool reset);
+		void wait(bool reset = false);
 		void set();
 		void reset();
 	};
@@ -38,14 +39,12 @@ namespace Work {
 		private:
 		Event &event;
 		T &value;
-		bool yield = false;
 
 		public:
-		Lock(Event &event, T &value, bool yield = false)
+		Lock(Event &event, T &value, bool &yield)
 			: event(event),
-			value(value),
-			yield(yield) {
-			event.wait(true, yield);
+			value(value) {
+			event.wait(yield, true);
 		}
 
 		~Lock() {
@@ -132,8 +131,8 @@ namespace Work {
 		FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File* filePointer);
 		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer);
 		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, Ubi::BigFile::File* filePointer);
-		Data::QUEUE_LOCK lock(bool yield = false);
-		Data::QUEUE_LOCK_POINTER lockPointer(bool yield = false);
+		Data::QUEUE_LOCK lock(bool &yield);
+		Data::QUEUE_LOCK lock();
 		void complete();
 		std::streampos getBigFileInputPosition();
 		FILE_VARIANT getFileVariant();
@@ -157,9 +156,9 @@ namespace Work {
 
 		public:
 		Tasks();
-		BigFileTask::MAP_LOCK bigFileLock(bool yield = false);
-		BigFileTask::MAP_LOCK_POINTER bigFileLockPointer(bool yield = false);
-		FileTask::QUEUE_LOCK fileLock(bool yield = false);
-		FileTask::QUEUE_LOCK_POINTER fileLockPointer(bool yield = false);
+		BigFileTask::MAP_LOCK bigFileLock(bool &yield);
+		BigFileTask::MAP_LOCK bigFileLock();
+		FileTask::QUEUE_LOCK fileLock(bool &yield);
+		FileTask::QUEUE_LOCK fileLock();
 	};
 };

@@ -138,7 +138,7 @@ void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File &file, std:
 	#endif
 
 	// when this unlocks one line later, the writer thread will begin waiting on data
-	Work::FileTask &fileTask = tasks.fileLock(false).get().emplace(inputPosition, &file);
+	Work::FileTask &fileTask = tasks.fileLock().get().emplace(inputPosition, &file);
 
 	OutputHandler outputHandler(fileTask);
 	outputOptions.setOutputHandler(&outputHandler);
@@ -269,7 +269,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 	//size = outputFilePosition;
 }
 
-void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) {
+void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield) {
 	std::ofstream outputFileStream(outputFileName, std::ios::binary);
 
 	std::streampos bigFileInputPosition = 0;
@@ -278,25 +278,22 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) 
 	std::streampos outputPosition = 0;
 	Work::FileTask::FILE_VARIANT fileVariant = {};
 	Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = 0;
-	Work::FileTask::QUEUE_LOCK_POINTER queueLockPointer = 0;
 
 	for (;;) {
-		queueLockPointer = tasks.fileLockPointer(true);
+		Work::FileTask::QUEUE_LOCK queueLock = tasks.fileLock(yield);
 
-		Work::FileTask::QUEUE &fileTaskQueue = queueLockPointer->get();
+		Work::FileTask::QUEUE &fileTaskQueue = queueLock.get();
 
 		if (fileTaskQueue.empty()) {
-			queueLockPointer = 0;
 			continue;
 		}
 
 		Work::FileTask &fileTask = fileTaskQueue.front();
-		queueLockPointer = 0;
 
 		bigFileInputPosition = fileTask.getBigFileInputPosition();
 
 		if (bigFileInputPosition != fileInputPositionOptional) {
-			Work::BigFileTask::MAP_LOCK bigFileLock = tasks.bigFileLock(true);
+			Work::BigFileTask::MAP_LOCK bigFileLock = tasks.bigFileLock();
 
 			Work::BigFileTask::MAP &bigFileTaskMap = bigFileLock.get();
 
@@ -362,7 +359,7 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) 
 				outputFilePosition += file.size;
 			}
 
-			tasks.fileLock(true).get().pop();
+			fileTaskQueue.pop();
 		}
 	}
 }
@@ -385,10 +382,13 @@ void M4Revolution::fixLoading(const char* outputFileName) {
 	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputFileStream.tellg());
 	inputFileStream.seekg(0, std::ios::beg);
 
-	std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks));
+	bool yield = true;
+	std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks), std::ref(yield));
 
 	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames);
 	fixLoading(tasks, inputFile, log);
 
+	yield = false;
+	tasks.fileLock();
 	outputThread.join();
 }
