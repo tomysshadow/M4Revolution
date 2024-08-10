@@ -273,7 +273,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File* filePointe
 void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log &log) {
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
-	std::streampos inputPosition = tasks.bigFileLock().get().emplace_back(inputFileStream, file, filePointerSetMap).INPUT_POSITION;
+	std::streampos inputPosition = tasks.bigFileLock().get().emplace_back(inputFileStream, file, filePointerSetMap).getInputPosition();
 
 	// inputCopyPosition is the position of the files to copy
 	// inputFilePosition is the position of a specific input file (for file.size calculation)
@@ -285,7 +285,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 	// countCopy is the count of the bytes to copy when copying files
 	bool convert = false;
 	std::streampos countCopy = 0;
-	Ubi::BigFile::File::POINTER_VECTOR filePointerVector = {};
+	Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
 
 	for (
 		Ubi::BigFile::File::POINTER_SET_MAP::iterator filePointerSetMapIterator = filePointerSetMap.begin();
@@ -317,8 +317,8 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 					// copy the files before this one, if any
 					// filePointerVector is moved, clear returns it to a valid state
 					inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
-					tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy, filePointerVector).complete();
-					filePointerVector.clear();
+					tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy, filePointerVectorPointer).complete();
+					filePointerVectorPointer->clear();
 
 					log.copied();
 				}
@@ -350,7 +350,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 				// other identical, copied files at the same position in the input should likewise be at the same position in the output
 				file.padding = filePointerSetMapIterator->first - inputFilePosition;
 				inputFilePosition = filePointerSetMapIterator->first;
-				filePointerVector.push_back(&file);
+				filePointerVectorPointer->push_back(&file);
 
 				log.step();
 			}
@@ -364,8 +364,8 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 		// copy any remaining files
 		if (countCopy) {
 			inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
-			tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy, filePointerVector).complete();
-			filePointerVector.clear();
+			tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy, filePointerVectorPointer).complete();
+			filePointerVectorPointer->clear();
 
 			log.copied();
 		}
@@ -379,12 +379,13 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) {
 	std::ofstream outputFileStream(outputFileName, std::ios::binary);
 
+	std::streampos fileInputPosition = 0;
 	std::streampos bigFileInputPosition = 0;
 	std::streampos outputPosition = 0;
 	Work::FileTask::QUEUE_LOCK_POINTER queueLockPointer = 0;
 
 	for (;;) {
-		tasks.fileLock(queueLockPointer, true);
+		queueLockPointer = tasks.fileLockPointer(true);
 
 		Work::FileTask::QUEUE &fileTaskQueue = queueLockPointer->get();
 
@@ -397,11 +398,12 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) 
 		Work::FileTask &fileTask = fileTaskQueue.front();
 		queueLockPointer = 0;
 
-		if (fileTask.BIG_FILE_INPUT_POSITION < bigFileInputPosition) {
-			bigFileInputPosition = fileTask.BIG_FILE_INPUT_POSITION;
+		fileInputPosition = fileTask.getBigFileInputPosition();
 
-			Work::BigFileTask::VECTOR_LOCK_POINTER bigFileLockPointer = 0;
-			tasks.bigFileLock(bigFileLockPointer, true);
+		if (fileInputPosition < bigFileInputPosition) {
+			bigFileInputPosition = fileInputPosition;
+
+			Work::BigFileTask::VECTOR_LOCK_POINTER bigFileLockPointer = tasks.bigFileLockPointer(true);
 
 			Work::BigFileTask::VECTOR &bigFileTaskVector = bigFileLockPointer->get();
 			
@@ -413,7 +415,7 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) 
 
 			Work::BigFileTask &bigFileTask = bigFileTaskVector.front();
 			outputFileStream.seekp(bigFileTask.outputPosition);
-			bigFileTask.BIG_FILE.write(outputFileStream);
+			bigFileTask.getBigFilePointer()->write(outputFileStream);
 
 			outputFileStream.seekp(outputPosition);
 
@@ -455,10 +457,10 @@ void M4Revolution::fixLoading(const char* outputFileName) {
 	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputFileStream.tellg());
 	inputFileStream.seekg(0, std::ios::beg);
 
-	//std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks));
+	std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks));
 
 	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames);
 	fixLoading(tasks, inputFile, log);
 
-	//outputThread.join();
+	outputThread.join();
 }

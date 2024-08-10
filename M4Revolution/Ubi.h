@@ -17,6 +17,8 @@ namespace Ubi {
 	};
 
 	struct BigFile {
+		typedef std::shared_ptr<BigFile> POINTER;
+
 		struct Path {
 			typedef std::vector<Path> VECTOR;
 			typedef std::vector<std::string> NAME_VECTOR;
@@ -31,6 +33,7 @@ namespace Ubi {
 			typedef std::unordered_set<File*> POINTER_SET;
 			typedef std::map<SIZE, POINTER_SET> POINTER_SET_MAP;
 			typedef std::vector<File*> POINTER_VECTOR;
+			typedef std::shared_ptr<POINTER_VECTOR> POINTER_VECTOR_POINTER;
 
 			enum struct TYPE {
 				NONE = 0,

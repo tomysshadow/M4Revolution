@@ -17,6 +17,9 @@ namespace Work {
 	// a "signal the other thread to wake up and do stuff" class (similar to SetEvent)
 	class Event {
 		private:
+		// threadIDOptional has a thread ID if the event is set (notified, time to wake up, lock is unlocked...)
+		// and is std::nullopt if the event is not set (locked, currently in use, etc.)
+		// the thread ID is used to yield to other threads instead of busy looping
 		std::mutex mutex = {};
 		std::condition_variable conditionVariable = {};
 		std::optional<std::thread::id> threadIDOptional = std::nullopt;
@@ -25,7 +28,7 @@ namespace Work {
 
 		public:
 		Event(bool set = false);
-		void wait(bool reset = false);
+		void wait(bool reset = false, bool yield = false);
 		void set();
 		void reset();
 	};
@@ -35,20 +38,20 @@ namespace Work {
 		private:
 		Event &event;
 		T &value;
-		bool sync = false;
+		bool yield = false;
 
 		public:
-		Lock(Event &event, T &value, bool sync = false)
+		Lock(Event &event, T &value, bool yield = false)
 			: event(event),
 			value(value),
-			sync(sync) {
-			event.wait(true);
+			yield(yield) {
+			event.wait(true, yield);
 		}
 
 		~Lock() {
-			if (sync) {
-				event.set();
-			}
+			// always notify that we are done with this lock
+			// (SOMETHING should always happen when it is released, of course)
+			event.set();
 		}
 
 		T &get() const {
@@ -62,7 +65,7 @@ namespace Work {
 		typedef std::vector<Data> VECTOR;
 		typedef std::queue<Data> QUEUE;
 		typedef Lock<QUEUE> QUEUE_LOCK;
-		typedef std::unique_ptr<QUEUE_LOCK> QUEUE_LOCK_POINTER;
+		typedef std::shared_ptr<QUEUE_LOCK> QUEUE_LOCK_POINTER;
 
 		size_t size = 0;
 		POINTER pointer = 0;
@@ -73,34 +76,34 @@ namespace Work {
 
 	// BigFileTask (must seek over them, then come back later)
 	class BigFileTask {
-		public:
-		typedef std::vector<BigFileTask> VECTOR;
-		typedef Lock<VECTOR> VECTOR_LOCK;
-		typedef std::unique_ptr<VECTOR_LOCK> VECTOR_LOCK_POINTER;
-
-		// INPUT_POSITION is so the writer thread knows when we've passed this BigFile (and can safely write it)
+		private:
+		// inputPosition is so the writer thread knows when we've passed this BigFile (and can safely write it)
 		// since FileTasks in the task queue will have a smaller BIG_FILE_INPUT_POSITION
 		// otherwise, the sizes and positions would be wrong
 		// essentially, this fills a similar role to the completed variable in FileTask
-		const std::streampos INPUT_POSITION;
+		std::streampos inputPosition = 0;
 
-		// outputPosition is set by the writer thread, and later used by it so it knows where to jump back
-		std::streampos outputPosition = 0;
-
-		private:
 		// fileSystemSize MUST be defined before bigFile
 		// (otherwise the constructor will be all messed up)
 		// it can't be const because it's passed to BigFile's constructor by reference
 		// so it has a getter instead
 		// file is the associated file (so the size can be set on it later)
 		Ubi::BigFile::File::SIZE fileSystemSize = 0;
+		Ubi::BigFile::POINTER bigFilePointer = 0;
 		Ubi::BigFile::File &file;
 
 		public:
-		const Ubi::BigFile BIG_FILE;
+		typedef std::vector<BigFileTask> VECTOR;
+		typedef Lock<VECTOR> VECTOR_LOCK;
+		typedef std::shared_ptr<VECTOR_LOCK> VECTOR_LOCK_POINTER;
+
+		// outputPosition is set by the writer thread, and later used by it so it knows where to jump back
+		std::streampos outputPosition = 0;
 
 		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
+		std::streampos getInputPosition() const;
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
+		Ubi::BigFile::POINTER getBigFilePointer() const;
 		Ubi::BigFile::File &getFile() const;
 	};
 
@@ -109,12 +112,7 @@ namespace Work {
 		public:
 		typedef std::queue<FileTask> QUEUE;
 		typedef Lock<FileTask::QUEUE> QUEUE_LOCK;
-		typedef std::unique_ptr<QUEUE_LOCK> QUEUE_LOCK_POINTER;
-
-		// the writer thread will check if the next file in the queue has a lesser value for this
-		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
-		const std::streampos BIG_FILE_INPUT_POSITION;
-		const std::optional<Ubi::BigFile::File::POINTER_VECTOR> FILE_POINTER_VECTOR_OPTIONAL;
+		typedef std::shared_ptr<QUEUE_LOCK> QUEUE_LOCK_POINTER;
 
 		private:
 		void create(std::ifstream &inputFileStream, std::streamsize count);
@@ -128,17 +126,23 @@ namespace Work {
 		// (because it can't know what its final size will be, and therefore the next position to go to)
 		// once at the end of the data queue, the writer thread will check if completed is true
 		// if it's false, it'll wait on more data again, otherwise it'll move to the next FileTask
+		// the writer thread will check if the next file in the queue has a lesser value for bigFileInputPosition
+		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
+		std::streampos bigFileInputPosition = 0;
+		Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = 0;
 		Event event;
 		Data::QUEUE queue = {};
 		bool completed = false;
 
 		public:
 		FileTask(std::streampos bigFileInputPosition);
-		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR &filePointerVector);
+		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer);
 		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count);
-		Data::QUEUE_LOCK lock(bool sync = false);
-		void lock(Data::QUEUE_LOCK_POINTER &queueLockPointer, bool sync = false);
+		Data::QUEUE_LOCK lock(bool yield = false);
+		Data::QUEUE_LOCK_POINTER lockPointer(bool yield = false);
 		void complete();
+		std::streampos getBigFileInputPosition();
+		Ubi::BigFile::File::POINTER_VECTOR_POINTER getFilePointerVectorPointer();
 		bool getCompleted() const;
 	};
 
@@ -159,9 +163,9 @@ namespace Work {
 
 		public:
 		Tasks();
-		BigFileTask::VECTOR_LOCK bigFileLock(bool sync = false);
-		void bigFileLock(BigFileTask::VECTOR_LOCK_POINTER &vectorLockPointer, bool sync = false);
-		FileTask::QUEUE_LOCK fileLock(bool sync = false);
-		void fileLock(FileTask::QUEUE_LOCK_POINTER &queueLockPointer, bool sync = false);
+		BigFileTask::VECTOR_LOCK bigFileLock(bool yield = false);
+		BigFileTask::VECTOR_LOCK_POINTER bigFileLockPointer(bool yield = false);
+		FileTask::QUEUE_LOCK fileLock(bool yield = false);
+		FileTask::QUEUE_LOCK_POINTER fileLockPointer(bool yield = false);
 	};
 };
