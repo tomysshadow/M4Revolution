@@ -61,6 +61,8 @@ namespace Work {
 		typedef std::shared_ptr<unsigned char> POINTER;
 		typedef std::vector<Data> VECTOR;
 		typedef std::queue<Data> QUEUE;
+		typedef Lock<QUEUE> QUEUE_LOCK;
+		typedef std::unique_ptr<QUEUE_LOCK> QUEUE_LOCK_POINTER;
 
 		size_t size = 0;
 		POINTER pointer = 0;
@@ -73,6 +75,8 @@ namespace Work {
 	class BigFileTask {
 		public:
 		typedef std::vector<BigFileTask> VECTOR;
+		typedef Lock<VECTOR> VECTOR_LOCK;
+		typedef std::unique_ptr<VECTOR_LOCK> VECTOR_LOCK_POINTER;
 
 		// INPUT_POSITION is so the writer thread knows when we've passed this BigFile (and can safely write it)
 		// since FileTasks in the task queue will have a smaller BIG_FILE_INPUT_POSITION
@@ -90,20 +94,22 @@ namespace Work {
 		// so it has a getter instead
 		// file is the associated file (so the size can be set on it later)
 		Ubi::BigFile::File::SIZE fileSystemSize = 0;
-		Ubi::BigFile::File &file;
+		Ubi::BigFile::File* filePointer = 0;
 
 		public:
 		const Ubi::BigFile BIG_FILE;
 
-		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
+		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File* filePointer, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
-		Ubi::BigFile::File &getFile() const;
+		Ubi::BigFile::File* getFilePointer() const;
 	};
 
 	// FileTask (must be written in order)
 	class FileTask {
 		public:
 		typedef std::queue<FileTask> QUEUE;
+		typedef Lock<FileTask::QUEUE> QUEUE_LOCK;
+		typedef std::unique_ptr<QUEUE_LOCK> QUEUE_LOCK_POINTER;
 
 		// the writer thread will check if the next file in the queue has a lesser value for this
 		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
@@ -130,7 +136,8 @@ namespace Work {
 		FileTask(std::streampos bigFileInputPosition);
 		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR &filePointerVector);
 		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count);
-		Lock<Data::QUEUE> lock(bool sync = false);
+		Data::QUEUE_LOCK lock(bool sync = false);
+		void lock(Data::QUEUE_LOCK_POINTER &queueLockPointer, bool sync = false);
 		void complete();
 		bool getCompleted() const;
 	};
@@ -152,7 +159,9 @@ namespace Work {
 
 		public:
 		Tasks();
-		Lock<BigFileTask::VECTOR> bigFileLock(bool sync = false);
-		Lock<FileTask::QUEUE> fileLock(bool sync = false);
+		BigFileTask::VECTOR_LOCK bigFileLock(bool sync = false);
+		void bigFileLock(BigFileTask::VECTOR_LOCK_POINTER &vectorLockPointer, bool sync = false);
+		FileTask::QUEUE_LOCK fileLock(bool sync = false);
+		void fileLock(FileTask::QUEUE_LOCK_POINTER &queueLockPointer, bool sync = false);
 	};
 };

@@ -57,9 +57,9 @@ Work::Data::Data(size_t size, POINTER pointer)
 	pointer(pointer) {
 }
 
-Work::BigFileTask::BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap)
+Work::BigFileTask::BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File* filePointer, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap)
 	: INPUT_POSITION(inputFileStream.tellg()),
-	file(file),
+	filePointer(filePointer),
 	BIG_FILE(Ubi::BigFile(inputFileStream, fileSystemSize, fileVectorIteratorSetMap)) {
 }
 
@@ -67,8 +67,8 @@ Ubi::BigFile::File::SIZE Work::BigFileTask::getFileSystemSize() const {
 	return fileSystemSize;
 }
 
-Ubi::BigFile::File &Work::BigFileTask::getFile() const {
-	return file;
+Ubi::BigFile::File* Work::BigFileTask::getFilePointer() const {
+	return filePointer;
 }
 
 // TODO: this feels sketch, make sure it works
@@ -114,27 +114,31 @@ void Work::FileTask::create(std::ifstream &inputFileStream, std::streamsize coun
 Work::FileTask::FileTask(std::streampos bigFileInputPosition)
 	: BIG_FILE_INPUT_POSITION(bigFileInputPosition),
 	FILE_POINTER_VECTOR_OPTIONAL(std::nullopt),
-	event(true) {
+	event(false) {
 }
 
 Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR &filePointerVector)
 	: BIG_FILE_INPUT_POSITION(bigFileInputPosition),
 	FILE_POINTER_VECTOR_OPTIONAL(std::move(filePointerVector)),
-	event(true) {
+	event(false) {
 	create(inputFileStream, count);
 }
 
 Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count)
 	: BIG_FILE_INPUT_POSITION(bigFileInputPosition),
 	FILE_POINTER_VECTOR_OPTIONAL(std::nullopt),
-	event(true) {
+	event(false) {
 	create(inputFileStream, count);
 }
 
 // called in order to lock the data queue so we can add new data
 // the Lock class ensures the writer thread will automatically wake up to write it after we add the new data
-Work::Lock<Work::Data::QUEUE> Work::FileTask::lock(bool sync) {
-	return Lock<Data::QUEUE>(event, queue, sync);
+Work::Data::QUEUE_LOCK Work::FileTask::lock(bool sync) {
+	return Data::QUEUE_LOCK(event, queue, sync);
+}
+
+void Work::FileTask::lock(Data::QUEUE_LOCK_POINTER &queueLockPointer, bool sync) {
+	queueLockPointer = std::make_unique<Data::QUEUE_LOCK>(event, queue, sync);
 }
 
 // called to signal to the writer thread that we are done adding new data
@@ -149,14 +153,22 @@ bool Work::FileTask::getCompleted() const {
 }
 
 Work::Tasks::Tasks()
-	: bigFileEvent(true),
-	fileEvent(true) {
+	: bigFileEvent(false),
+	fileEvent(false) {
 }
 
-Work::Lock<Work::BigFileTask::VECTOR> Work::Tasks::bigFileLock(bool sync) {
-	return Lock<BigFileTask::VECTOR>(bigFileEvent, bigFileTaskVector, sync);
+Work::BigFileTask::VECTOR_LOCK Work::Tasks::bigFileLock(bool sync) {
+	return BigFileTask::VECTOR_LOCK(bigFileEvent, bigFileTaskVector, sync);
 }
 
-Work::Lock<Work::FileTask::QUEUE> Work::Tasks::fileLock(bool sync) {
-	return Lock<FileTask::QUEUE>(fileEvent, fileTaskQueue, sync);
+void Work::Tasks::bigFileLock(BigFileTask::VECTOR_LOCK_POINTER &vectorLockPointer, bool sync) {
+	vectorLockPointer = std::make_unique<BigFileTask::VECTOR_LOCK>(bigFileEvent, bigFileTaskVector, sync);
+}
+
+Work::FileTask::QUEUE_LOCK Work::Tasks::fileLock(bool sync) {
+	return FileTask::QUEUE_LOCK(fileEvent, fileTaskQueue, sync);
+}
+
+void Work::Tasks::fileLock(FileTask::QUEUE_LOCK_POINTER &queueLockPointer, bool sync) {
+	queueLockPointer = std::make_unique<FileTask::QUEUE_LOCK>(fileEvent, fileTaskQueue, sync);
 }

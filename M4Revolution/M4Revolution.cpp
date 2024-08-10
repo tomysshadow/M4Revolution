@@ -95,7 +95,7 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = 
 		{{"ai", "aitransitionfade"}, "ai_transition_fade.ai"}
 };
 
-void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File &file, std::streampos inputPosition) {
+void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File* filePointer, std::streampos inputPosition) {
 	#ifdef MULTITHREADED
 	while (dataVectorIndex >= dataVector.size()) {
 		dataVector.emplace_back();
@@ -104,13 +104,13 @@ void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File &file, std:
 	Work::Data &data = dataVector[dataVectorIndex];
 	#endif
 
-	if (file.size > data.size || !data.pointer) {
-		data.size = file.size;
+	if (filePointer->size > data.size || !data.pointer) {
+		data.size = filePointer->size;
 		data.pointer = Work::Data::POINTER(new unsigned char[data.size]);
 	}
 
 	// note: not data.size here, that would be bad
-	readFileStreamSafe(inputFileStream, data.pointer.get(), file.size);
+	readFileStreamSafe(inputFileStream, data.pointer.get(), filePointer->size);
 
 	{
 		zap_byte_t* out = 0;
@@ -138,7 +138,7 @@ void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File &file, std:
 	#endif
 
 	// when this unlocks one line later, the writer thread will begin waiting on data
-	Work::FileTask &fileTask = tasks.fileLock().get().emplace(inputPosition);
+	Work::FileTask &fileTask = tasks.fileLock(false).get().emplace(inputPosition);
 
 	OutputHandler outputHandler(fileTask);
 	outputOptions.setOutputHandler(&outputHandler);
@@ -154,16 +154,18 @@ void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File &file, std:
 		throw std::runtime_error("Failed to Process Context");
 	}
 
-	file.size = outputHandler.size;
+	filePointer->size = outputHandler.size;
 
 	// this will wake up the writer thread to tell it we have no more data to add, and to move on to the next FileTask
 	fileTask.complete();
 }
 
-void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log &log) {
+void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File* filePointer, Log &log) {
+	Ubi::BigFile::File::SIZE fileSize = filePointer->size;
+
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
-	std::streampos inputPosition = tasks.bigFileLock().get().emplace_back(inputFileStream, file, filePointerSetMap).INPUT_POSITION;
+	std::streampos inputPosition = tasks.bigFileLock(false).get().emplace_back(inputFileStream, filePointer, filePointerSetMap).INPUT_POSITION;
 
 	// inputCopyPosition is the position of the files to copy
 	// inputFilePosition is the position of a specific input file (for file.size calculation)
@@ -207,7 +209,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 					// copy the files before this one, if any
 					// filePointerVector is moved, clear returns it to a valid state
 					inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
-					tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy, filePointerVector).complete();
+					tasks.fileLock(false).get().emplace(inputPosition, inputFileStream, countCopy, filePointerVector).complete();
 					filePointerVector.clear();
 
 					log.copied();
@@ -225,14 +227,14 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 				// these conversion functions update the file sizes passed in
 				switch (file.type) {
 					case Ubi::BigFile::File::TYPE::RECURSIVE:
-					fixLoading(tasks, file, log);
+					fixLoading(tasks, *filePointerSetIterator, log);
 					break;
 					case Ubi::BigFile::File::TYPE::ZAP:
-					convertZAP(tasks, file, inputPosition);
+					convertZAP(tasks, *filePointerSetIterator, inputPosition);
 					break;
 					default:
 					// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
-					tasks.fileLock().get().emplace(inputPosition, inputFileStream, file.size).complete();
+					tasks.fileLock(false).get().emplace(inputPosition, inputFileStream, file.size).complete();
 				}
 
 				log.converted(file);
@@ -240,7 +242,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 				// other identical, copied files at the same position in the input should likewise be at the same position in the output
 				file.padding = filePointerSetMapIterator->first - inputFilePosition;
 				inputFilePosition = filePointerSetMapIterator->first;
-				filePointerVector.push_back(&file);
+				filePointerVector.push_back(*filePointerSetIterator);
 
 				log.step();
 			}
@@ -249,12 +251,12 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 
 	// if we just converted a set of files then there are no remaining files to copy, but otherwise...
 	if (!convert) {
-		countCopy = file.size - inputCopyPosition;
+		countCopy = fileSize - inputCopyPosition;
 
 		// copy any remaining files
 		if (countCopy) {
 			inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
-			tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy, filePointerVector).complete();
+			tasks.fileLock(false).get().emplace(inputPosition, inputFileStream, countCopy, filePointerVector).complete();
 			filePointerVector.clear();
 
 			log.copied();
@@ -271,25 +273,29 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) 
 
 	std::streampos bigFileInputPosition = 0;
 	std::streampos outputPosition = 0;
+	Work::FileTask::QUEUE_LOCK_POINTER queueLockPointer = 0;
 
 	for (;;) {
-		std::optional<Work::Lock<Work::FileTask::QUEUE>> fileLockOptional = tasks.fileLock(true);
-		Work::FileTask::QUEUE &fileTaskQueue = fileLockOptional.value().get();
+		tasks.fileLock(queueLockPointer, true);
+
+		Work::FileTask::QUEUE &fileTaskQueue = queueLockPointer->get();
 
 		if (fileTaskQueue.empty()) {
-			fileLockOptional = std::nullopt;
+			queueLockPointer = 0;
 			continue;
 		}
 
 		// NOTHING PAST THIS POINT IS TESTED
 		Work::FileTask &fileTask = fileTaskQueue.front();
-		fileLockOptional = std::nullopt;
+		queueLockPointer = 0;
 
 		if (fileTask.BIG_FILE_INPUT_POSITION < bigFileInputPosition) {
 			bigFileInputPosition = fileTask.BIG_FILE_INPUT_POSITION;
 
-			Work::Lock<Work::BigFileTask::VECTOR> bigFileLock = tasks.bigFileLock(true);
-			Work::BigFileTask::VECTOR &bigFileTaskVector = bigFileLock.get();
+			Work::BigFileTask::VECTOR_LOCK_POINTER bigFileLockPointer = 0;
+			tasks.bigFileLock(bigFileLockPointer, true);
+
+			Work::BigFileTask::VECTOR &bigFileTaskVector = bigFileLockPointer->get();
 			
 			if (bigFileTaskVector.empty()) {
 				return;
@@ -341,10 +347,10 @@ void M4Revolution::fixLoading(const char* outputFileName) {
 	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputFileStream.tellg());
 	inputFileStream.seekg(0, std::ios::beg);
 
-	std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks));
+	//std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks));
 
 	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames);
-	//fixLoading(tasks, inputFile, log);
+	fixLoading(tasks, &inputFile, log);
 
-	outputThread.join();
+	//outputThread.join();
 }
