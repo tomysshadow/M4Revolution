@@ -116,22 +116,24 @@ void Work::FileTask::create(std::ifstream &inputFileStream, std::streamsize coun
 	}
 }
 
-Work::FileTask::FileTask(std::streampos bigFileInputPosition)
+Work::FileTask::FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File* filePointer)
 	: bigFileInputPosition(bigFileInputPosition),
+	fileVariant(filePointer),
 	event(true) {
 }
 
 Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer)
 	: bigFileInputPosition(bigFileInputPosition),
-	filePointerVectorPointer(filePointerVectorPointer),
+	fileVariant(filePointerVectorPointer),
 	event(true) {
 	create(inputFileStream, count);
 }
 
-Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count)
+Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, Ubi::BigFile::File* filePointer)
 	: bigFileInputPosition(bigFileInputPosition),
+	fileVariant(filePointer),
 	event(true) {
-	create(inputFileStream, count);
+	create(inputFileStream, filePointer->size);
 }
 
 // called in order to lock the data queue so we can add new data
@@ -155,8 +157,8 @@ std::streampos Work::FileTask::getBigFileInputPosition() {
 	return bigFileInputPosition;
 }
 
-Ubi::BigFile::File::POINTER_VECTOR_POINTER Work::FileTask::getFilePointerVectorPointer() {
-	return filePointerVectorPointer;
+Work::FileTask::FILE_VARIANT Work::FileTask::getFileVariant() {
+	return fileVariant;
 }
 
 bool Work::FileTask::getCompleted() const {

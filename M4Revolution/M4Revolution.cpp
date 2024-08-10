@@ -138,7 +138,7 @@ void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File &file, std:
 	#endif
 
 	// when this unlocks one line later, the writer thread will begin waiting on data
-	Work::FileTask &fileTask = tasks.fileLock(false).get().emplace(inputPosition);
+	Work::FileTask &fileTask = tasks.fileLock(false).get().emplace(inputPosition, &file);
 
 	OutputHandler outputHandler(fileTask);
 	outputOptions.setOutputHandler(&outputHandler);
@@ -211,7 +211,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 					// filePointerVector is moved, clear returns it to a valid state
 					inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
 					tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy, filePointerVectorPointer).complete();
-					filePointerVectorPointer->clear();
+					filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
 
 					log.copied();
 				}
@@ -235,7 +235,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 					break;
 					default:
 					// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
-					tasks.fileLock().get().emplace(inputPosition, inputFileStream, file.size).complete();
+					tasks.fileLock().get().emplace(inputPosition, inputFileStream, &file).complete();
 				}
 
 				log.converted(file);
@@ -258,7 +258,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, Log 
 		if (countCopy) {
 			inputFileStream.seekg((std::streampos)inputCopyPosition + inputPosition);
 			tasks.fileLock().get().emplace(inputPosition, inputFileStream, countCopy, filePointerVectorPointer).complete();
-			filePointerVectorPointer->clear();
+			filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
 
 			log.copied();
 		}
@@ -274,7 +274,10 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) 
 
 	std::streampos bigFileInputPosition = 0;
 	std::optional<std::streampos> fileInputPositionOptional = std::nullopt;
+	Ubi::BigFile::File::SIZE outputFilePosition = 0;
 	std::streampos outputPosition = 0;
+	Work::FileTask::FILE_VARIANT fileVariant = {};
+	Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = 0;
 	Work::FileTask::QUEUE_LOCK_POINTER queueLockPointer = 0;
 
 	for (;;) {
@@ -293,9 +296,9 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) 
 		bigFileInputPosition = fileTask.getBigFileInputPosition();
 
 		if (bigFileInputPosition != fileInputPositionOptional) {
-			Work::BigFileTask::MAP_LOCK_POINTER bigFileLockPointer = tasks.bigFileLockPointer(true);
+			Work::BigFileTask::MAP_LOCK bigFileLock = tasks.bigFileLock(true);
 
-			Work::BigFileTask::MAP &bigFileTaskMap = bigFileLockPointer->get();
+			Work::BigFileTask::MAP &bigFileTaskMap = bigFileLock.get();
 
 			if (bigFileTaskMap.empty()) {
 				return;
@@ -303,7 +306,9 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) 
 
 			Work::BigFileTask &bigFileTask = bigFileTaskMap.at(bigFileInputPosition);
 			bigFileTask.outputPosition = outputFileStream.tellp();
-			outputFileStream.seekp(bigFileTask.getFileSystemSize(), std::ios::cur);
+
+			outputFilePosition = bigFileTask.getFileSystemSize();
+			outputFileStream.seekp(outputFilePosition, std::ios::cur);
 
 			if (fileInputPositionOptional.has_value()) {
 				std::streampos &fileInputPosition = fileInputPositionOptional.value();
@@ -337,6 +342,26 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks) 
 		}
 
 		if (fileTask.getCompleted()) {
+			fileVariant = fileTask.getFileVariant();
+
+			if (std::holds_alternative<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant)) {
+				filePointerVectorPointer = std::get<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant);
+
+				for (
+					Ubi::BigFile::File::POINTER_VECTOR::iterator filePointerVectorIterator = filePointerVectorPointer->begin();
+					filePointerVectorIterator != filePointerVectorPointer->end();
+					filePointerVectorIterator++
+				) {
+					Ubi::BigFile::File &file = **filePointerVectorIterator;
+					outputFilePosition += file.padding;
+					file.position = outputFilePosition;
+				}
+			} else {
+				Ubi::BigFile::File &file = *std::get<Ubi::BigFile::File*>(fileVariant);
+				file.position = outputFilePosition;
+				outputFilePosition += file.size;
+			}
+
 			tasks.fileLock(true).get().pop();
 		}
 	}

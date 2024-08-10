@@ -106,6 +106,7 @@ namespace Work {
 		typedef std::queue<FileTask> QUEUE;
 		typedef Lock<FileTask::QUEUE> QUEUE_LOCK;
 		typedef std::shared_ptr<QUEUE_LOCK> QUEUE_LOCK_POINTER;
+		typedef std::variant<Ubi::BigFile::File::POINTER_VECTOR_POINTER, Ubi::BigFile::File*> FILE_VARIANT;
 
 		private:
 		void create(std::ifstream &inputFileStream, std::streamsize count);
@@ -122,20 +123,20 @@ namespace Work {
 		// the writer thread will check if the next file in the queue has a lesser value for bigFileInputPosition
 		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
 		std::streampos bigFileInputPosition = 0;
-		Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = 0;
+		FILE_VARIANT fileVariant = {};
 		Event event;
 		Data::QUEUE queue = {};
 		bool completed = false;
 
 		public:
-		FileTask(std::streampos bigFileInputPosition);
+		FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File* filePointer);
 		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer);
-		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count);
+		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, Ubi::BigFile::File* filePointer);
 		Data::QUEUE_LOCK lock(bool yield = false);
 		Data::QUEUE_LOCK_POINTER lockPointer(bool yield = false);
 		void complete();
 		std::streampos getBigFileInputPosition();
-		Ubi::BigFile::File::POINTER_VECTOR_POINTER getFilePointerVectorPointer();
+		FILE_VARIANT getFileVariant();
 		bool getCompleted() const;
 	};
 
