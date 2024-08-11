@@ -81,22 +81,27 @@ namespace Work {
 		// it can't be const because it's passed to BigFile's constructor by reference
 		// so it has a getter instead
 		// file is the associated file (so the size can be set on it later)
+		std::streampos ownerBigFileInputPosition = 0;
+		Ubi::BigFile::File &file;
 		Ubi::BigFile::File::SIZE fileSystemSize = 0;
 		Ubi::BigFile::POINTER bigFilePointer = 0;
-		Ubi::BigFile::File &file;
+		Ubi::BigFile::File::POINTER_SET_MAP::size_type files = 0;
 
 		public:
 		typedef std::map<std::streampos, BigFileTask> MAP;
 		typedef Lock<MAP> MAP_LOCK;
 		typedef std::shared_ptr<MAP_LOCK> MAP_LOCK_POINTER;
 
-		// outputPosition is set by the writer thread, and later used by it so it knows where to jump back
+		// outputPosition is set by the output thread, and later used by it so it knows where to jump back
 		std::streampos outputPosition = 0;
+		Ubi::BigFile::File::POINTER_SET_MAP::size_type filesWritten = 0;
 
-		BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
+		BigFileTask(std::ifstream &inputFileStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
+		std::streampos getOwnerBigFileInputPosition() const;
+		Ubi::BigFile::File &getFile() const;
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
 		Ubi::BigFile::POINTER getBigFilePointer() const;
-		Ubi::BigFile::File &getFile() const;
+		Ubi::BigFile::File::POINTER_SET_MAP::size_type getFiles() const;
 	};
 
 	// FileTask (must be written in order)
@@ -115,11 +120,11 @@ namespace Work {
 		// (in the FileTask queue)
 		// but they need to be written in order
 		// so other FileTasks will be having their queues populated
-		// but the writer thread must not progress until the first FileTask in queue is completed
+		// but the output thread must not progress until the first FileTask in queue is completed
 		// (because it can't know what its final size will be, and therefore the next position to go to)
-		// once at the end of the data queue, the writer thread will check if completed is true
+		// once at the end of the data queue, the output thread will check if completed is true
 		// if it's false, it'll wait on more data again, otherwise it'll move to the next FileTask
-		// the writer thread will check if the next file in the queue has a lesser value for bigFileInputPosition
+		// the output thread will check if the next file in the queue has a lesser value for bigFileInputPosition
 		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
 		std::streampos bigFileInputPosition = 0;
 		FILE_VARIANT fileVariant = {};
@@ -134,12 +139,12 @@ namespace Work {
 		Data::QUEUE_LOCK lock(bool &yield);
 		Data::QUEUE_LOCK lock();
 		void complete();
-		std::streampos getBigFileInputPosition();
+		std::streampos getOwnerBigFileInputPosition();
 		FILE_VARIANT getFileVariant();
 		bool getCompleted() const;
 	};
 
-	// Tasks (to be performed by the writer thread)
+	// Tasks (to be performed by the output thread)
 	class Tasks {
 		private:
 		// the list of BigFileTasks must be a vector, because

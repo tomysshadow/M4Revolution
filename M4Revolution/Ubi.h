@@ -54,7 +54,7 @@ namespace Ubi {
 			SIZE position = 0;
 			static const size_t POSITION_SIZE = sizeof(position);
 
-			// the effective size of the file's padding (not stored, used temporarily by the writer thread)
+			// the effective size of the file's padding (not stored to the file, used temporarily by the output thread)
 			SIZE padding = 0;
 
 			TYPE type = TYPE::NONE;

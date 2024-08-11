@@ -64,9 +64,19 @@ Work::Data::Data(size_t size, POINTER pointer)
 	pointer(pointer) {
 }
 
-Work::BigFileTask::BigFileTask(std::ifstream &inputFileStream, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap)
-	: file(file),
-	bigFilePointer(std::make_unique<Ubi::BigFile>(inputFileStream, fileSystemSize, fileVectorIteratorSetMap)) {
+Work::BigFileTask::BigFileTask(std::ifstream &inputFileStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap)
+	: ownerBigFileInputPosition(ownerBigFileInputPosition),
+	file(file),
+	bigFilePointer(std::make_unique<Ubi::BigFile>(inputFileStream, fileSystemSize, fileVectorIteratorSetMap)),
+	files(fileVectorIteratorSetMap.size()) {
+}
+
+std::streampos Work::BigFileTask::getOwnerBigFileInputPosition() const {
+	return ownerBigFileInputPosition;
+}
+
+Ubi::BigFile::File &Work::BigFileTask::getFile() const {
+	return file;
 }
 
 Ubi::BigFile::File::SIZE Work::BigFileTask::getFileSystemSize() const {
@@ -77,8 +87,8 @@ Ubi::BigFile::POINTER Work::BigFileTask::getBigFilePointer() const {
 	return bigFilePointer;
 }
 
-Ubi::BigFile::File &Work::BigFileTask::getFile() const {
-	return file;
+Ubi::BigFile::File::POINTER_SET_MAP::size_type Work::BigFileTask::getFiles() const {
+	return files;
 }
 
 // TODO: this feels sketch, make sure it works
@@ -142,7 +152,7 @@ Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inp
 }
 
 // called in order to lock the data queue so we can add new data
-// the Lock class ensures the writer thread will automatically wake up to write it after we add the new data
+// the Lock class ensures the output thread will automatically wake up to write it after we add the new data
 Work::Data::QUEUE_LOCK Work::FileTask::lock(bool &yield) {
 	return Data::QUEUE_LOCK(event, queue, yield);
 }
@@ -152,14 +162,14 @@ Work::Data::QUEUE_LOCK Work::FileTask::lock() {
 	return lock(yield);
 }
 
-// called to signal to the writer thread that we are done adding new data
+// called to signal to the output thread that we are done adding new data
 // the event is set in order to make sure it gets this message
 void Work::FileTask::complete() {
 	completed = true;
 	event.set();
 }
 
-std::streampos Work::FileTask::getBigFileInputPosition() {
+std::streampos Work::FileTask::getOwnerBigFileInputPosition() {
 	return bigFileInputPosition;
 }
 
