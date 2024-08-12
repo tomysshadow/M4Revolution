@@ -328,7 +328,8 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 
 							outputFileStream.seekp(outputPosition);
 
-							ownerBigFileTaskMapFileIterator = bigFileTaskMap.find(bigFileTask.getOwnerBigFileInputPosition());
+							ownerBigFileInputPositionOptional = bigFileTask.getOwnerBigFileInputPosition();
+							ownerBigFileTaskMapFileIterator = bigFileTaskMap.find(ownerBigFileInputPositionOptional.value());
 
 							if (ownerBigFileTaskMapFileIterator == bigFileTaskMap.end() || ownerBigFileTaskMapFileIterator == bigFileTaskMapFileIterator) {
 								return;
@@ -344,7 +345,7 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 
 							bigFileTaskMapFileIterator = bigFileTaskMap.erase(bigFileTaskMapFileIterator);
 
-							if ((--bigFileTaskMapFileIterator)->first == bigFileInputPosition) {
+							if ((--bigFileTaskMapFileIterator)->first == ownerBigFileInputPositionOptional) {
 								break;
 							}
 						}
