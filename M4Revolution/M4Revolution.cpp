@@ -330,7 +330,7 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 
 							ownerBigFileTaskMapFileIterator = bigFileTaskMap.find(bigFileTask.getOwnerBigFileInputPosition());
 
-							if (ownerBigFileTaskMapFileIterator == bigFileTaskMap.end()) {
+							if (ownerBigFileTaskMapFileIterator == bigFileTaskMap.end() || ownerBigFileTaskMapFileIterator == bigFileTaskMapFileIterator) {
 								return;
 							}
 

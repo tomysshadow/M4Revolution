@@ -67,8 +67,7 @@ Work::Data::Data(size_t size, POINTER pointer)
 Work::BigFileTask::BigFileTask(std::ifstream &inputFileStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap)
 	: ownerBigFileInputPosition(ownerBigFileInputPosition),
 	file(file),
-	bigFilePointer(std::make_unique<Ubi::BigFile>(inputFileStream, fileSystemSize, fileVectorIteratorSetMap)),
-	files(fileVectorIteratorSetMap.size()) {
+	bigFilePointer(std::make_unique<Ubi::BigFile>(inputFileStream, fileSystemSize, files, fileVectorIteratorSetMap)) {
 }
 
 std::streampos Work::BigFileTask::getOwnerBigFileInputPosition() const {
@@ -83,12 +82,12 @@ Ubi::BigFile::File::SIZE Work::BigFileTask::getFileSystemSize() const {
 	return fileSystemSize;
 }
 
-Ubi::BigFile::POINTER Work::BigFileTask::getBigFilePointer() const {
-	return bigFilePointer;
+Ubi::BigFile::Directory::FILE_VECTOR_SIZE Work::BigFileTask::getFiles() const {
+	return files;
 }
 
-Ubi::BigFile::File::POINTER_SET_MAP::size_type Work::BigFileTask::getFiles() const {
-	return files;
+Ubi::BigFile::POINTER Work::BigFileTask::getBigFilePointer() const {
+	return bigFilePointer;
 }
 
 // TODO: this feels sketch, make sure it works

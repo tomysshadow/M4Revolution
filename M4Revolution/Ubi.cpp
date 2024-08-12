@@ -110,7 +110,7 @@ const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTEN
 	{"bin", {TYPE::TEXTURE, "bin"}}
 };
 
-Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_SET_MAP &filePointerSetMap)
+Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, FILE_VECTOR_SIZE &files, File::POINTER_SET_MAP &filePointerSetMap)
 	: nameOptional(String::readOptional(inputFileStream)) {
 	DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
@@ -119,6 +119,7 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &f
 		directoryVector.emplace_back(
 			inputFileStream,
 			fileSystemSize,
+			files,
 			filePointerSetMap
 		);
 	}
@@ -137,6 +138,8 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &f
 			: false
 		);
 	}
+
+	files += fileVectorSize;
 
 	// MUST BE DONE SEPERATELY AFTERWARDS!
 	// (otherwise iterator invalidation)
@@ -324,9 +327,9 @@ void Ubi::BigFile::Header::read(std::ifstream &inputFileStream) {
 
 const std::string Ubi::BigFile::Header::SIGNATURE = "UBI_BF_SIG";
 
-Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_SET_MAP &filePointerSetMap)
+Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, Directory::FILE_VECTOR_SIZE &files, File::POINTER_SET_MAP &filePointerSetMap)
 	: header(inputFileStream, fileSystemSize),
-	directory(inputFileStream, fileSystemSize, filePointerSetMap) {
+	directory(inputFileStream, fileSystemSize, files, filePointerSetMap) {
 }
 
 Ubi::BigFile::BigFile(std::ifstream &inputFileStream, const Path &path, std::optional<File> &fileOptional)

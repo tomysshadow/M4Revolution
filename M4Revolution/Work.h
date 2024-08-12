@@ -84,8 +84,8 @@ namespace Work {
 		std::streampos ownerBigFileInputPosition = 0;
 		Ubi::BigFile::File &file;
 		Ubi::BigFile::File::SIZE fileSystemSize = 0;
+		Ubi::BigFile::Directory::FILE_VECTOR_SIZE files = 0;
 		Ubi::BigFile::POINTER bigFilePointer = 0;
-		Ubi::BigFile::File::POINTER_SET_MAP::size_type files = 0;
 
 		public:
 		typedef std::map<std::streampos, BigFileTask> MAP;
@@ -100,8 +100,8 @@ namespace Work {
 		std::streampos getOwnerBigFileInputPosition() const;
 		Ubi::BigFile::File &getFile() const;
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
+		Ubi::BigFile::Directory::FILE_VECTOR_SIZE getFiles() const;
 		Ubi::BigFile::POINTER getBigFilePointer() const;
-		Ubi::BigFile::File::POINTER_SET_MAP::size_type getFiles() const;
 	};
 
 	// FileTask (must be written in order)

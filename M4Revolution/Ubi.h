@@ -92,7 +92,7 @@ namespace Ubi {
 			static const size_t FILE_VECTOR_SIZE_SIZE = sizeof(FILE_VECTOR_SIZE);
 			File::VECTOR fileVector = {};
 
-			Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_SET_MAP &fileVectorIteratorSetMap);
+			Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, FILE_VECTOR_SIZE &files, File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 			Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, std::optional<File> &fileOptional);
 			void write(std::ofstream &outputFileStream) const;
 
@@ -125,7 +125,7 @@ namespace Ubi {
 		Header header;
 		Directory directory;
 
-		BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_SET_MAP &fileVectorIteratorSetMap);
+		BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, Directory::FILE_VECTOR_SIZE &files, File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 		BigFile(std::ifstream &inputFileStream, const Path &path, std::optional<File> &fileOptional);
 		void write(std::ofstream &outputFileStream) const;
 	};
