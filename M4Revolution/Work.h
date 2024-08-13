@@ -124,8 +124,6 @@ namespace Work {
 		typedef std::variant<Ubi::BigFile::File::POINTER_VECTOR_POINTER, Ubi::BigFile::File*> FILE_VARIANT;
 
 		private:
-		void create(std::ifstream &inputFileStream, std::streamsize count);
-
 		// this needs its own queue, because
 		// different files will be converted at the same time, each with their own FileTask
 		// (in the FileTask queue)
@@ -145,17 +143,10 @@ namespace Work {
 
 		public:
 		FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File* filePointer);
-
-		FileTask(
-			std::streampos bigFileInputPosition,
-			std::ifstream &inputFileStream,
-			std::streamsize count,
-			Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer
-		);
-		
-		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, Ubi::BigFile::File* filePointer);
+		FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
 		Data::QUEUE_LOCK lock(bool &yield);
 		Data::QUEUE_LOCK lock();
+		void copy(std::ifstream &inputFileStream, std::streamsize count);
 		void complete();
 		std::streampos getOwnerBigFileInputPosition();
 		FILE_VARIANT getFileVariant();

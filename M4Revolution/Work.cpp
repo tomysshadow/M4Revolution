@@ -95,8 +95,30 @@ Ubi::BigFile::POINTER Work::BigFileTask::getBigFilePointer() const {
 	return bigFilePointer;
 }
 
-// TODO: this feels sketch, make sure it works
-void Work::FileTask::create(std::ifstream &inputFileStream, std::streamsize count) {
+Work::FileTask::FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File* filePointer)
+	: bigFileInputPosition(bigFileInputPosition),
+	fileVariant(filePointer),
+	event(true) {
+}
+
+Work::FileTask::FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer)
+	: bigFileInputPosition(bigFileInputPosition),
+	fileVariant(filePointerVectorPointer),
+	event(true) {
+}
+
+// called in order to lock the data queue so we can add new data
+// the Lock class ensures the output thread will automatically wake up to write it after we add the new data
+Work::Data::QUEUE_LOCK Work::FileTask::lock(bool &yield) {
+	return Data::QUEUE_LOCK(event, queue, yield);
+}
+
+Work::Data::QUEUE_LOCK Work::FileTask::lock() {
+	bool yield = false;
+	return lock(yield);
+}
+
+void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count) {
 	if (!count) {
 		return;
 	}
@@ -133,42 +155,6 @@ void Work::FileTask::create(std::ifstream &inputFileStream, std::streamsize coun
 			throw std::runtime_error("count must not be greater than file size");
 		}
 	}
-}
-
-Work::FileTask::FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File* filePointer)
-	: bigFileInputPosition(bigFileInputPosition),
-	fileVariant(filePointer),
-	event(true) {
-}
-
-Work::FileTask::FileTask(
-	std::streampos bigFileInputPosition,
-	std::ifstream &inputFileStream,
-	std::streamsize count,
-	Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer
-)
-	: bigFileInputPosition(bigFileInputPosition),
-	fileVariant(filePointerVectorPointer),
-	event(true) {
-	create(inputFileStream, count);
-}
-
-Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, Ubi::BigFile::File* filePointer)
-	: bigFileInputPosition(bigFileInputPosition),
-	fileVariant(filePointer),
-	event(true) {
-	create(inputFileStream, filePointer->size);
-}
-
-// called in order to lock the data queue so we can add new data
-// the Lock class ensures the output thread will automatically wake up to write it after we add the new data
-Work::Data::QUEUE_LOCK Work::FileTask::lock(bool &yield) {
-	return Data::QUEUE_LOCK(event, queue, yield);
-}
-
-Work::Data::QUEUE_LOCK Work::FileTask::lock() {
-	bool yield = false;
-	return lock(yield);
 }
 
 // called to signal to the output thread that we are done adding new data

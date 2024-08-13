@@ -185,7 +185,11 @@ void M4Revolution::copyFiles(
 	}
 
 	inputFileStream.seekg((std::streampos)inputCopyPosition + bigFileInputPosition);
-	tasks.fileLock().get().emplace(bigFileInputPosition, inputFileStream, count, filePointerVectorPointer).complete();
+
+	Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, filePointerVectorPointer);
+	fileTask.copy(inputFileStream, count);
+	fileTask.complete();
+
 	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
 
 	log.copying();
@@ -204,7 +208,9 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
-		tasks.fileLock().get().emplace(bigFileInputPosition, inputFileStream, &file).complete();
+		Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, &file);
+		fileTask.copy(inputFileStream, file.size);
+		fileTask.complete();
 	}
 
 	log.converting(file);
