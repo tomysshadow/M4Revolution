@@ -28,6 +28,8 @@ namespace Work {
 
 		public:
 		Event(bool set = false);
+		Event(const Event &event) = delete;
+		Event &operator=(const Event &event) = delete;
 		void wait(bool &yield, bool reset);
 		void wait(bool reset = false);
 		void set();
@@ -52,6 +54,9 @@ namespace Work {
 			// (SOMETHING should always happen when it is released, of course)
 			event.set();
 		}
+
+		Lock(const Lock &lock) = delete;
+		Lock &operator=(const Lock &lock) = delete;
 
 		T &get() const {
 			return value;

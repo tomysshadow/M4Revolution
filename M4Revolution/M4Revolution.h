@@ -8,6 +8,8 @@
 
 class M4Revolution {
 	private:
+	typedef uint32_t COLOR32;
+
 	class Log {
 		private:
 		std::ifstream &inputFileStream;
@@ -23,8 +25,9 @@ class M4Revolution {
 		Log(const Log &log) = delete;
 		Log &operator=(const Log &log) = delete;
 		void step();
-		void copied();
-		void converted(const Ubi::BigFile::File &file);
+		void copying();
+		void converting(const Ubi::BigFile::File &file);
+		void finishing();
 	};
 
 	struct OutputHandler : public nvtt::OutputHandler {
@@ -66,6 +69,8 @@ class M4Revolution {
 
 	void convertZAP(Work::Tasks &tasks, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
 	void fixLoading(Work::Tasks &tasks, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
+
+	static void color32X(COLOR32* color32Pointer, size_t stride, size_t size);
 	static void outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield);
 
 	public:
