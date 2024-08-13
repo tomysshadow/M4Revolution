@@ -105,7 +105,7 @@ void M4Revolution::convertZAP(Work::Tasks &tasks, std::streampos ownerBigFileInp
 		dataVector.emplace_back();
 	}
 
-	Work::Data &data = dataVector[dataVectorIndex++];
+	Work::Data &data = dataVector.at(dataVectorIndex++);
 	#endif
 
 	if (file.size > data.size || !data.pointer) {
@@ -175,7 +175,7 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, std::streampos ownerBigFileInp
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
 	std::streampos bigFileInputPosition = inputFileStream.tellg();
-	tasks.bigFileLock().get().insert({bigFileInputPosition, Work::BigFileTask(inputFileStream, ownerBigFileInputPosition, file, filePointerSetMap)});
+	tasks.bigFileLock().get().try_emplace(bigFileInputPosition, inputFileStream, ownerBigFileInputPosition, file, filePointerSetMap);
 
 	// inputCopyPosition is the position of the files to copy
 	// inputFilePosition is the position of a specific input file (for file.size calculation)

@@ -49,14 +49,14 @@ namespace Work {
 			event.wait(yield, true);
 		}
 
+		Lock(const Lock &lock) = delete;
+		Lock &operator=(const Lock &lock) = delete;
+
 		~Lock() {
 			// always notify that we are done with this lock
 			// (SOMETHING should always happen when it is released, of course)
 			event.set();
 		}
-
-		Lock(const Lock &lock) = delete;
-		Lock &operator=(const Lock &lock) = delete;
 
 		T &get() const {
 			return value;
