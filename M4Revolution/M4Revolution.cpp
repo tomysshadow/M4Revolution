@@ -95,7 +95,7 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = 
 		{{"ai", "aitransitionfade"}, "ai_transition_fade.ai"}
 };
 
-void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File &file, std::streampos ownerBigFileInputPosition) {
+void M4Revolution::convertZAP(Work::Tasks &tasks, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file) {
 	#ifdef MULTITHREADED
 	while (dataVectorIndex >= dataVector.size()) {
 		dataVector.emplace_back();
@@ -160,7 +160,7 @@ void M4Revolution::convertZAP(Work::Tasks &tasks, Ubi::BigFile::File &file, std:
 	fileTask.complete();
 }
 
-void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, std::streampos ownerBigFileInputPosition, Log &log) {
+void M4Revolution::fixLoading(Work::Tasks &tasks, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
 	Ubi::BigFile::File::SIZE fileSize = file.size;
 
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
@@ -228,10 +228,10 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, Ubi::BigFile::File &file, std:
 				// these conversion functions update the file sizes passed in
 				switch (file.type) {
 					case Ubi::BigFile::File::TYPE::RECURSIVE:
-					fixLoading(tasks, file, bigFileInputPosition, log);
+					fixLoading(tasks, bigFileInputPosition, file, log);
 					break;
 					case Ubi::BigFile::File::TYPE::ZAP:
-					convertZAP(tasks, file, bigFileInputPosition);
+					convertZAP(tasks, bigFileInputPosition, file);
 					break;
 					default:
 					// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
@@ -270,8 +270,8 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 	std::ofstream outputFileStream(outputFileName, std::ios::binary);
 
 	std::streampos bigFileInputPosition = 0;
-	std::streampos ownerBigFileInputPosition = 0;
 	std::streampos currentBigFileInputPosition = 0;
+	std::streampos eraseBigFileInputPosition = 0;
 
 	Work::BigFileTask* bigFileTaskPointer = 0;
 	std::streampos outputPosition = 0;
@@ -295,64 +295,60 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 
 		if (bigFileInputPosition != currentBigFileInputPosition) {
 			// if we passed this BigFile and have moved onto another one (might be owned, might be immediately after...)
-			if (bigFileInputPosition > currentBigFileInputPosition) {
-				Work::BigFileTask::MAP_LOCK bigFileLock = tasks.bigFileLock();
-				Work::BigFileTask::MAP &bigFileTaskMap = bigFileLock.get();
+			Work::BigFileTask::MAP_LOCK bigFileLock = tasks.bigFileLock();
+			Work::BigFileTask::MAP &bigFileTaskMap = bigFileLock.get();
 
-				if (bigFileTaskPointer) {
-					Work::BigFileTask &bigFileTask = *bigFileTaskPointer;
-
-					if (filesWritten < bigFileTask.getFiles()) {
-						bigFileTask.filesWritten = filesWritten;
-					} else {
-						do {
-							Work::BigFileTask &bigFileTask = *bigFileTaskPointer;
-
-							outputPosition = outputFileStream.tellp();
-
-							outputFileStream.seekp(bigFileTask.outputPosition);
-							bigFileTask.getBigFilePointer()->write(outputFileStream);
-
-							outputFileStream.seekp(outputPosition);
-
-							outputPosition = bigFileTask.outputPosition;
-							currentBigFileInputPosition = ownerBigFileInputPosition;
-							ownerBigFileInputPosition = bigFileTask.getOwnerBigFileInputPosition();
-							Ubi::BigFile::File &file = bigFileTask.getFile();
-
-							bigFileTaskMap.erase(currentBigFileInputPosition);
-
-							bigFileTaskPointer = &bigFileTaskMap.at(ownerBigFileInputPosition);
-							Work::BigFileTask &ownerBigFileTask = *bigFileTaskPointer;
-
-							file.size = outputFilePosition;
-							file.position = (Ubi::BigFile::File::SIZE)(outputPosition - ownerBigFileTask.outputPosition);
-							outputFilePosition = file.position + file.size;
-							ownerBigFileTask.filesWritten++;
-
-							// we now need to check the owner in case we are the last file in the owner and now all its files are written
-							if (ownerBigFileTask.filesWritten < ownerBigFileTask.getFiles()) {
-								break;
-							}
-						} while(ownerBigFileInputPosition != bigFileTaskPointer->getOwnerBigFileInputPosition());
-					}
-				}
-
-				bigFileTaskPointer = &bigFileTaskMap.at(bigFileInputPosition);
+			if (bigFileTaskPointer) {
 				Work::BigFileTask &bigFileTask = *bigFileTaskPointer;
-				filesWritten = bigFileTask.filesWritten;
 
-				if (!filesWritten) {
-					bigFileTask.outputPosition = outputFileStream.tellp();
+				if (filesWritten < bigFileTask.getFiles()) {
+					bigFileTask.filesWritten = filesWritten;
+				} else {
+					do {
+						Work::BigFileTask &eraseBigFileTask = *bigFileTaskPointer;
 
-					outputFilePosition = bigFileTask.getFileSystemSize();
-					outputFileStream.seekp(outputFilePosition, std::ios::cur);
+						outputPosition = outputFileStream.tellp();
+
+						outputFileStream.seekp(eraseBigFileTask.outputPosition);
+						eraseBigFileTask.getBigFilePointer()->write(outputFileStream);
+
+						outputFileStream.seekp(outputPosition);
+
+						outputPosition = eraseBigFileTask.outputPosition;
+						Ubi::BigFile::File &file = eraseBigFileTask.getFile();
+						eraseBigFileInputPosition = currentBigFileInputPosition;
+						currentBigFileInputPosition = eraseBigFileTask.getOwnerBigFileInputPosition();
+
+						bigFileTaskMap.erase(eraseBigFileInputPosition);
+
+						Work::BigFileTask &ownerBigFileTask = bigFileTaskMap.at(currentBigFileInputPosition);
+						bigFileTaskPointer = &ownerBigFileTask;
+
+						file.size = outputFilePosition;
+						file.position = (Ubi::BigFile::File::SIZE)(outputPosition - ownerBigFileTask.outputPosition);
+						outputFilePosition = file.position + file.size;
+						ownerBigFileTask.filesWritten++;
+
+						// we now need to check the owner in case we are the last file in the owner and now all its files are written
+						if (ownerBigFileTask.filesWritten < ownerBigFileTask.getFiles()) {
+							break;
+						}
+					} while (currentBigFileInputPosition != bigFileTaskPointer->getOwnerBigFileInputPosition());
 				}
-
-				ownerBigFileInputPosition = bigFileInputPosition;
 			}
 
 			currentBigFileInputPosition = bigFileInputPosition;
+			Work::BigFileTask &currentBigFileTask = bigFileTaskMap.at(currentBigFileInputPosition);
+			bigFileTaskPointer = &currentBigFileTask;
+
+			filesWritten = currentBigFileTask.filesWritten;
+
+			if (!filesWritten) {
+				currentBigFileTask.outputPosition = outputFileStream.tellp();
+
+				outputFilePosition = currentBigFileTask.getFileSystemSize();
+				outputFileStream.seekp(outputFilePosition, std::ios::cur);
+			}
 		}
 
 		{
@@ -417,7 +413,7 @@ void M4Revolution::fixLoading(const char* outputFileName) {
 	std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks), std::ref(yield));
 
 	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames);
-	fixLoading(tasks, inputFile, 0, log);
+	fixLoading(tasks, 0, inputFile, log);
 
 	yield = false;
 	tasks.fileLock();
