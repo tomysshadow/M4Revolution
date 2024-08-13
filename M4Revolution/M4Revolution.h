@@ -51,6 +51,7 @@ class M4Revolution {
 
 	static const Ubi::BigFile::Path::VECTOR AI_TRANSITION_FADE_PATH_VECTOR;
 
+	Work::Tasks tasks = {};
 	std::ifstream inputFileStream = {};
 	bool logFileNames = false;
 
@@ -67,10 +68,33 @@ class M4Revolution {
 	Work::Data data = {};
 	#endif
 
-	void convertZAP(Work::Tasks &tasks, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
-	void fixLoading(Work::Tasks &tasks, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
+	void convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
+
+	void copyFiles(
+		Ubi::BigFile::File::SIZE inputPosition,
+		Ubi::BigFile::File::SIZE inputCopyPosition,
+		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
+		std::streampos bigFileInputPosition,
+		Log &log
+	);
+
+	void convertFile(std::streampos bigFileInputPosition, Ubi::BigFile::File &file, Log &log);
+
+	void stepFile(
+		Ubi::BigFile::File::SIZE inputPosition,
+		Ubi::BigFile::File::SIZE &inputFilePosition,
+		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
+		Ubi::BigFile::File &file,
+		Log &log
+	);
+
+	void fixLoading(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
 	static void color32X(COLOR32* color32Pointer, size_t stride, size_t size);
+
+	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
+	static void outputData(Work::Output &output, Work::Lock<Work::Data::QUEUE> &lock);
+	static void outputFiles(Work::Output &output, Work::FileTask::QUEUE &fileTaskQueue);
 	static void outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield);
 
 	public:

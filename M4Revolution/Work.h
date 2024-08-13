@@ -101,7 +101,13 @@ namespace Work {
 		std::streampos outputPosition = -1;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
-		BigFileTask(std::ifstream &inputFileStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
+		BigFileTask(
+			std::ifstream &inputFileStream,
+			std::streampos ownerBigFileInputPosition,
+			Ubi::BigFile::File &file,
+			Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap
+		);
+
 		std::streampos getOwnerBigFileInputPosition() const;
 		Ubi::BigFile::File &getFile() const;
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
@@ -139,7 +145,14 @@ namespace Work {
 
 		public:
 		FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File* filePointer);
-		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer);
+
+		FileTask(
+			std::streampos bigFileInputPosition,
+			std::ifstream &inputFileStream,
+			std::streamsize count,
+			Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer
+		);
+		
 		FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, Ubi::BigFile::File* filePointer);
 		Data::QUEUE_LOCK lock(bool &yield);
 		Data::QUEUE_LOCK lock();
@@ -170,5 +183,17 @@ namespace Work {
 		BigFileTask::MAP_LOCK bigFileLock();
 		FileTask::QUEUE_LOCK fileLock(bool &yield);
 		FileTask::QUEUE_LOCK fileLock();
+	};
+
+	struct Output {
+		std::ofstream fileStream = {};
+
+		std::streampos currentBigFileInputPosition = -1;
+		BigFileTask* bigFileTaskPointer = 0;
+
+		Ubi::BigFile::File::SIZE filePosition = 0;
+		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
+
+		Output(const char* fileName);
 	};
 };

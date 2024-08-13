@@ -64,7 +64,12 @@ Work::Data::Data(size_t size, POINTER pointer)
 	pointer(pointer) {
 }
 
-Work::BigFileTask::BigFileTask(std::ifstream &inputFileStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap)
+Work::BigFileTask::BigFileTask(
+	std::ifstream &inputFileStream,
+	std::streampos ownerBigFileInputPosition,
+	Ubi::BigFile::File &file,
+	Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap
+)
 	: ownerBigFileInputPosition(ownerBigFileInputPosition),
 	file(file),
 	bigFilePointer(std::make_unique<Ubi::BigFile>(inputFileStream, fileSystemSize, files, fileVectorIteratorSetMap)) {
@@ -136,7 +141,12 @@ Work::FileTask::FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File
 	event(true) {
 }
 
-Work::FileTask::FileTask(std::streampos bigFileInputPosition, std::ifstream &inputFileStream, std::streamsize count, Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer)
+Work::FileTask::FileTask(
+	std::streampos bigFileInputPosition,
+	std::ifstream &inputFileStream,
+	std::streamsize count,
+	Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer
+)
 	: bigFileInputPosition(bigFileInputPosition),
 	fileVariant(filePointerVectorPointer),
 	event(true) {
@@ -201,4 +211,8 @@ Work::FileTask::QUEUE_LOCK Work::Tasks::fileLock(bool &yield) {
 Work::FileTask::QUEUE_LOCK Work::Tasks::fileLock() {
 	bool yield = false;
 	return fileLock(yield);
+}
+
+Work::Output::Output(const char* fileName)
+	: fileStream(fileName, std::ios::binary) {
 }
