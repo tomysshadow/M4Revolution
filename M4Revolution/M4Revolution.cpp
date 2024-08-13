@@ -269,15 +269,15 @@ void M4Revolution::fixLoading(Work::Tasks &tasks, std::streampos ownerBigFileInp
 void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield) {
 	std::ofstream outputFileStream(outputFileName, std::ios::binary);
 
-	std::streampos bigFileInputPosition = 0;
-	std::streampos currentBigFileInputPosition = 0;
-	std::streampos eraseBigFileInputPosition = 0;
+	std::streampos bigFileInputPosition = -1;
+	std::streampos currentBigFileInputPosition = -1;
+	std::streampos eraseBigFileInputPosition = -1;
 
 	Work::BigFileTask* bigFileTaskPointer = 0;
-	std::streampos outputPosition = 0;
+	std::streampos outputPosition = -1;
 
 	Ubi::BigFile::File::SIZE outputFilePosition = 0;
-	Ubi::BigFile::File::POINTER_SET_MAP::size_type filesWritten = 0;
+	Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
 	Work::FileTask::FILE_VARIANT fileVariant = {};
 	Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = 0;
@@ -321,19 +321,19 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 
 						bigFileTaskMap.erase(eraseBigFileInputPosition);
 
+						if (eraseBigFileInputPosition == currentBigFileInputPosition) {
+							return;
+						}
+
 						Work::BigFileTask &ownerBigFileTask = bigFileTaskMap.at(currentBigFileInputPosition);
 						bigFileTaskPointer = &ownerBigFileTask;
 
 						file.size = outputFilePosition;
 						file.position = (Ubi::BigFile::File::SIZE)(outputPosition - ownerBigFileTask.outputPosition);
-						outputFilePosition = file.position + file.size;
+						outputFilePosition = file.size + file.position;
 						ownerBigFileTask.filesWritten++;
-
 						// we now need to check the owner in case we are the last file in the owner and now all its files are written
-						if (ownerBigFileTask.filesWritten < ownerBigFileTask.getFiles()) {
-							break;
-						}
-					} while (currentBigFileInputPosition != bigFileTaskPointer->getOwnerBigFileInputPosition());
+					} while (bigFileTaskPointer->filesWritten >= bigFileTaskPointer->getFiles());
 				}
 			}
 
@@ -416,6 +416,6 @@ void M4Revolution::fixLoading(const char* outputFileName) {
 	fixLoading(tasks, 0, inputFile, log);
 
 	yield = false;
-	tasks.fileLock();
+	tasks.fileLock().get().emplace(-1, &inputFile).complete();
 	outputThread.join();
 }

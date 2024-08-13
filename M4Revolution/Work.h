@@ -81,10 +81,10 @@ namespace Work {
 		// it can't be const because it's passed to BigFile's constructor by reference
 		// so it has a getter instead
 		// file is the associated file (so the size can be set on it later)
-		std::streampos ownerBigFileInputPosition = 0;
+		std::streampos ownerBigFileInputPosition = -1;
 		Ubi::BigFile::File &file;
 		Ubi::BigFile::File::SIZE fileSystemSize = 0;
-		Ubi::BigFile::Directory::FILE_VECTOR_SIZE files = 0;
+		Ubi::BigFile::File::POINTER_VECTOR::size_type files = 0;
 		Ubi::BigFile::POINTER bigFilePointer = 0;
 
 		public:
@@ -93,14 +93,14 @@ namespace Work {
 		typedef std::shared_ptr<MAP_LOCK> MAP_LOCK_POINTER;
 
 		// outputPosition is set by the output thread, and later used by it so it knows where to jump back
-		std::streampos outputPosition = 0;
-		Ubi::BigFile::File::POINTER_SET_MAP::size_type filesWritten = 0;
+		std::streampos outputPosition = -1;
+		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
 		BigFileTask(std::ifstream &inputFileStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 		std::streampos getOwnerBigFileInputPosition() const;
 		Ubi::BigFile::File &getFile() const;
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
-		Ubi::BigFile::Directory::FILE_VECTOR_SIZE getFiles() const;
+		Ubi::BigFile::File::POINTER_VECTOR::size_type getFiles() const;
 		Ubi::BigFile::POINTER getBigFilePointer() const;
 	};
 
@@ -126,7 +126,7 @@ namespace Work {
 		// if it's false, it'll wait on more data again, otherwise it'll move to the next FileTask
 		// the output thread will check if the next file in the queue has a lesser value for bigFileInputPosition
 		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
-		std::streampos bigFileInputPosition = 0;
+		std::streampos bigFileInputPosition = -1;
 		FILE_VARIANT fileVariant = {};
 		Event event;
 		Data::QUEUE queue = {};

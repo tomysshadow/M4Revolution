@@ -82,7 +82,7 @@ Ubi::BigFile::File::SIZE Work::BigFileTask::getFileSystemSize() const {
 	return fileSystemSize;
 }
 
-Ubi::BigFile::Directory::FILE_VECTOR_SIZE Work::BigFileTask::getFiles() const {
+Ubi::BigFile::File::POINTER_VECTOR::size_type Work::BigFileTask::getFiles() const {
 	return files;
 }
 
