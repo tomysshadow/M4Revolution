@@ -287,6 +287,9 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 		Work::FileTask::QUEUE &fileTaskQueue = queueLock.get();
 
 		if (fileTaskQueue.empty()) {
+			if (!yield) {
+				throw std::logic_error("fileTaskQueue must not be empty if yield is false");
+			}
 			continue;
 		}
 
