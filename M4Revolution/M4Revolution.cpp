@@ -440,7 +440,7 @@ void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::QUEUE &file
 			Ubi::BigFile::File::POINTER_VECTOR::iterator filePointerVectorIterator = filePointerVectorPointer->begin();
 			filePointerVectorIterator != filePointerVectorPointer->end();
 			filePointerVectorIterator++
-			) {
+		) {
 			// in this case, we intentionally disregard the file's size
 			// the padding is all that matters
 			Ubi::BigFile::File &file = **filePointerVectorIterator;
