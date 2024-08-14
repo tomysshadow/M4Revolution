@@ -110,7 +110,12 @@ Work::Memory::Memory() {
 }
 
 Work::Memory::Allocation Work::Memory::allocate(size_t size) {
+	#ifdef MULTITHREADED
 	return Allocation(dataVectorIndex, dataVector, size);
+	#endif
+	#ifdef SINGLETHREADED
+	return Allocation(data, size);
+	#endif
 }
 
 Work::BigFileTask::BigFileTask(
