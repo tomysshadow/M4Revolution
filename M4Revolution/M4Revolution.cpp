@@ -323,6 +323,8 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 	Ubi::BigFile::File::SIZE &filePosition = output.filePosition;
 	Ubi::BigFile::File::POINTER_VECTOR::size_type &filesWritten = output.filesWritten;
 
+	Ubi::BigFile::File::POINTER_VECTOR::size_type files = 0;
+
 	std::streampos eraseBigFileInputPosition = -1;
 
 	std::streampos currentOutputPosition = -1;
@@ -334,8 +336,10 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 	// may be zero if this is the first BigFile so this hasn't been set before
 	if (bigFileTaskPointer) {
 		Work::BigFileTask &bigFileTask = *bigFileTaskPointer;
+		files = bigFileTask.getFiles();
 
-		if (filesWritten < bigFileTask.getFiles()) {
+		// checks if divisible, in case same BigFile referenced from multiple locations
+		if (files && filesWritten % files) {
 			// we might be coming back to this BigFile later
 			// so set the number of files we've written
 			bigFileTask.filesWritten = filesWritten;
@@ -378,7 +382,9 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 				file.position = (Ubi::BigFile::File::SIZE)(eraseOutputPosition - ownerBigFileTask.outputPosition);
 				filePosition = file.size + file.position;
 				ownerBigFileTask.filesWritten++;
-			} while (bigFileTaskPointer->filesWritten >= bigFileTaskPointer->getFiles());
+
+				files = bigFileTaskPointer->getFiles();
+			} while (!files || !(bigFileTaskPointer->filesWritten % files));
 		}
 	}
 
