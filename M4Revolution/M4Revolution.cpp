@@ -167,6 +167,8 @@ void M4Revolution::copyFiles(
 ) {
 	inputFileStream.seekg((std::streampos)inputCopyPosition + bigFileInputPosition);
 
+	// note: this must get created even if filePointerVectorPointer is empty or the count to copy would be zero
+	// so that the bigFileInputPosition is reliably seen by the output thread
 	Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, filePointerVectorPointer);
 	fileTask.copy(inputFileStream, inputPosition - inputCopyPosition, copyMemory);
 	fileTask.complete();
