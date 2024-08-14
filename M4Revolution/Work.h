@@ -7,7 +7,7 @@
 
 #include <nvtt/nvtt.h>
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #define MULTITHREADED
 #else
 #define SINGLETHREADED

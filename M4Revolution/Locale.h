@@ -9,10 +9,13 @@
 #include <stdexcept>
 #include <locale.h>
 #include <wchar.h>
+
+#ifdef _WIN32
 #include <windows.h>
 #include <cguid.h>
 #include <atlbase.h>
 #include <atlconv.h>
+#endif
 
 class Locale {
 	public:
@@ -23,6 +26,7 @@ class Locale {
 	typedef int LC;
 
 	private:
+	#ifdef _WIN32
 	typedef std::shared_ptr<std::remove_reference<decltype(*_locale_t())>::type> C_LOCALE;
 
 	struct CLocaleDeleter {
@@ -32,6 +36,7 @@ class Locale {
 			}
 		}
 	};
+	#endif
 
 	typedef std::map<CATEGORY, LC> CATEGORY_LC_MAP;
 	typedef std::map<LC, CATEGORY> LC_CATEGORY_MAP;
@@ -76,11 +81,15 @@ class Locale {
 	operator std::string() const;
 	operator std::wstring() const;
 	operator std::locale() const;
+	#ifdef _WIN32
 	operator _locale_t() const;
+	#endif
 	std::string getName() const;
 	std::wstring getNameWide() const;
 	std::locale getStandardLocale() const;
 	CATEGORY getCategory() const;
+	#ifdef _WIN32
 	_locale_t getCLocale() const;
+	#endif
 	LC getLC() const;
 };

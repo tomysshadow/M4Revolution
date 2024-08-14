@@ -19,6 +19,7 @@ Locale& Locale::create(bool tryGlobal) {
 		return createGlobal(tryGlobal);
 	}
 
+	#ifdef _WIN32
 	cLocale = C_LOCALE(
 		std::holds_alternative<std::wstring>(name)
 		? _wcreate_locale(lc, std::get<std::wstring>(name).c_str())
@@ -26,6 +27,7 @@ Locale& Locale::create(bool tryGlobal) {
 	
 		CLocaleDeleter()
 	);
+	#endif
 
 	if (!cLocale) {
 		return createGlobal(tryGlobal);
@@ -83,8 +85,10 @@ std::string Locale::getGlobalName() {
 }
 
 std::wstring Locale::getGlobalNameWide() {
+	#ifdef _WIN32
 	wchar_t* globalName = _wsetlocale(LC_ALL, 0);
 	return globalName ? globalName : L"C";
+	#endif
 }
 
 Locale::LC Locale::categoryToLC(CATEGORY category) {
@@ -159,21 +163,27 @@ Locale::operator std::locale() const {
 	return standardLocale;
 }
 
+#ifdef _WIN32
 Locale::operator _locale_t() const {
 	return cLocale.get();
 }
+#endif
 
 std::string Locale::getName() const {
 	// convert Wide to ANSI as necessary, assuming current codepage like _wcreate_locale does
 	if (std::holds_alternative<std::wstring>(name)) {
+		#ifdef _WIN32
 		return std::string(CW2A(std::get<std::wstring>(name).c_str()));
+		#endif
 	}
 	return std::get<std::string>(name);
 }
 
 std::wstring Locale::getNameWide() const {
 	if (std::holds_alternative<std::string>(name)) {
+		#ifdef _WIN32
 		return std::wstring(CA2W(std::get<std::string>(name).c_str()));
+		#endif
 	}
 	return std::get<std::wstring>(name).c_str();
 }
@@ -186,9 +196,11 @@ Locale::CATEGORY Locale::getCategory() const {
 	return lcToCategory(lc);
 }
 
+#ifdef _WIN32
 _locale_t Locale::getCLocale() const {
 	return cLocale.get();
 }
+#endif
 
 Locale::LC Locale::getLC() const {
 	return lc;

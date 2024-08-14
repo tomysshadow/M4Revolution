@@ -10,7 +10,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <libzap.h>
+
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 inline bool stringNullOrEmpty(const char* str) {
 	return !str || !*str;
