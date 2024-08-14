@@ -64,6 +64,55 @@ Work::Data::Data(size_t size, POINTER pointer)
 	pointer(pointer) {
 }
 
+void Work::Memory::Allocation::create(size_t size) {
+	data.size = size;
+
+	if (size <= data.allocationSize && data.pointer) {
+		return;
+	}
+
+	data.allocationSize = size;
+	data.pointer = Data::POINTER(new unsigned char[size]);
+}
+
+#ifdef MULTITHREADED
+Work::Data &Work::Memory::Allocation::from(Work::Data::VECTOR &dataVector) {
+	while (dataVectorIndex >= dataVector.size()) {
+		dataVector.emplace_back();
+	}
+	return dataVector.at(dataVectorIndex++);
+}
+
+Work::Memory::Allocation::Allocation(std::atomic<Work::Data::VECTOR::size_type> &dataVectorIndex, Work::Data::VECTOR &dataVector, size_t size)
+	: dataVectorIndex(dataVectorIndex),
+	data(from(dataVector)) {
+	create(size);
+}
+#endif
+#ifdef SINGLETHREADED
+Work::Memory::Allocation::Allocation(Data &data, size_t size)
+	: data(data) {
+	create(size);
+}
+#endif
+
+#ifdef MULTITHREADED
+Work::Memory::Allocation::~Allocation() {
+	dataVectorIndex--;
+}
+#endif
+
+Work::Data &Work::Memory::Allocation::get() {
+	return data;
+}
+
+Work::Memory::Memory() {
+}
+
+Work::Memory::Allocation Work::Memory::allocate(size_t size) {
+	return Allocation(dataVectorIndex, dataVector, size);
+}
+
 Work::BigFileTask::BigFileTask(
 	std::ifstream &inputFileStream,
 	std::streampos ownerBigFileInputPosition,
@@ -118,28 +167,32 @@ Work::Data::QUEUE_LOCK Work::FileTask::lock() {
 	return lock(yield);
 }
 
-void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count) {
+void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count, Memory &memory) {
 	if (!count) {
 		return;
 	}
 
 	const size_t BUFFER_SIZE = 0x10000;
 
-	Work::Data::POINTER pointer = 0;
 	std::streamsize countRead = BUFFER_SIZE;
 	std::streamsize gcountRead = 0;
 
 	do {
 		countRead = (std::streamsize)min((size_t)count, (size_t)countRead);
-		pointer = Work::Data::POINTER(new unsigned char[countRead]);
 
-		readFileStreamPartial(inputFileStream, pointer.get(), countRead, gcountRead);
+		{
+			Memory::Allocation allocation = memory.allocate(countRead);
+			Work::Data &data = allocation.get();
 
-		if (!gcountRead) {
-			break;
+			readFileStreamPartial(inputFileStream, data.pointer.get(), countRead, gcountRead);
+
+			if (!gcountRead) {
+				break;
+			}
+
+			// this must copy the data object, which may get reused by another thread
+			lock().get().push(data);
 		}
-
-		lock().get().emplace(gcountRead, pointer);
 
 		if (count != -1) {
 			count -= gcountRead;

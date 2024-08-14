@@ -37,7 +37,7 @@ namespace Ubi {
 
 			enum struct TYPE {
 				NONE = 0,
-				RECURSIVE,
+				BIG_FILE,
 				JPEG,
 				ZAP,
 				TEXTURE

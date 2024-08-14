@@ -100,53 +100,40 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = 
 };
 
 void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file) {
-	#ifdef MULTITHREADED
-	while (dataVectorIndex >= dataVector.size()) {
-		dataVector.emplace_back();
-	}
-
-	Work::Data &data = dataVector.at(dataVectorIndex++);
-	#endif
-
-	if (file.size > data.size || !data.pointer) {
-		data.size = file.size;
-		data.pointer = Work::Data::POINTER(new unsigned char[data.size]);
-	}
-
-	// note: not data.size here, that would be bad
-	readFileStreamSafe(inputFileStream, data.pointer.get(), file.size);
-
 	{
-		zap_byte_t* out = 0;
-		zap_size_t outSize = 0;
-		zap_int_t outWidth = 0;
-		zap_int_t outHeight = 0;
+		Work::Memory::Allocation allocation = convertMemory.allocate(file.size);
+		Work::Data &data = allocation.get();
 
-		if (zap_load_memory(data.pointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
-			throw std::runtime_error("Failed to Load ZAP From Memory");
-		}
+		readFileStreamSafe(inputFileStream, data.pointer.get(), file.size);
 
-		SCOPE_EXIT {
-			if (!freeZAP(out)) {
-				throw std::runtime_error("Failed to Free ZAP");
+		{
+			zap_byte_t* out = 0;
+			zap_size_t outSize = 0;
+			zap_int_t outWidth = 0;
+			zap_int_t outHeight = 0;
+
+			if (zap_load_memory(data.pointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
+				throw std::runtime_error("Failed to Load ZAP From Memory");
 			}
-		};
+
+			SCOPE_EXIT {
+				if (!freeZAP(out)) {
+					throw std::runtime_error("Failed to Free ZAP");
+				}
+			};
 		
-		const size_t COLOR32_SIZE = sizeof(COLOR32);
+			const size_t COLOR32_SIZE = sizeof(COLOR32);
 
-		COLOR32* color32Pointer = (COLOR32*)out;
+			COLOR32* color32Pointer = (COLOR32*)out;
 
-		// need to flip the endianness, NVTT expects BGR instead of RGB
-		color32X(color32Pointer, outWidth * COLOR32_SIZE, outSize);
+			// need to flip the endianness, NVTT expects BGR instead of RGB
+			color32X(color32Pointer, outWidth * COLOR32_SIZE, outSize);
 
-		if (!surface.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, outWidth, outHeight, 1, out)) {
-			throw std::runtime_error("Failed to Set Image");
+			if (!surface.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, outWidth, outHeight, 1, out)) {
+				throw std::runtime_error("Failed to Set Image");
+			}
 		}
 	}
-
-	#ifdef MULTITHREADED
-	dataVectorIndex--;
-	#endif
 
 	// when this unlocks one line later, the output thread will begin waiting on data
 	Work::FileTask &fileTask = tasks.fileLock().get().emplace(ownerBigFileInputPosition, &file);
@@ -187,7 +174,7 @@ void M4Revolution::copyFiles(
 	inputFileStream.seekg((std::streampos)inputCopyPosition + bigFileInputPosition);
 
 	Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, filePointerVectorPointer);
-	fileTask.copy(inputFileStream, count);
+	fileTask.copy(inputFileStream, count, copyMemory);
 	fileTask.complete();
 
 	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
@@ -200,7 +187,7 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 
 	// these conversion functions update the file sizes passed in
 	switch (file.type) {
-		case Ubi::BigFile::File::TYPE::RECURSIVE:
+		case Ubi::BigFile::File::TYPE::BIG_FILE:
 		fixLoading(bigFileInputPosition, file, log);
 		break;
 		case Ubi::BigFile::File::TYPE::ZAP:
@@ -209,7 +196,7 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
 		Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, &file);
-		fileTask.copy(inputFileStream, file.size);
+		fileTask.copy(inputFileStream, file.size, copyMemory);
 		fileTask.complete();
 	}
 

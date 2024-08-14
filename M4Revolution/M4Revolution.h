@@ -60,13 +60,8 @@ class M4Revolution {
 	nvtt::CompressionOptions compressionOptions = {};
 	nvtt::OutputOptions outputOptions = {};
 
-	#ifdef MULTITHREADED
-	std::atomic<Work::Data::VECTOR::size_type> dataVectorIndex = 0;
-	Work::Data::VECTOR dataVector = {};
-	#endif
-	#ifdef SINGLETHREADED
-	Work::Data data = {};
-	#endif
+	Work::Memory convertMemory;
+	Work::Memory copyMemory;
 
 	void convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
 

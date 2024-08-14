@@ -71,11 +71,59 @@ namespace Work {
 		typedef Lock<QUEUE> QUEUE_LOCK;
 		typedef std::shared_ptr<QUEUE_LOCK> QUEUE_LOCK_POINTER;
 
+		size_t allocationSize = 0;
 		size_t size = 0;
+
 		POINTER pointer = 0;
 
 		Data();
 		Data(size_t size, POINTER pointer);
+	};
+
+	class Memory {
+		private:
+		#ifdef MULTITHREADED
+		std::atomic<Data::VECTOR::size_type> dataVectorIndex = 0;
+		Data::VECTOR dataVector = {};
+		#endif
+		#ifdef SINGLETHREADED
+		Data data = {};
+		#endif
+
+		public:
+		class Allocation {
+			private:
+			#ifdef MULTITHREADED
+			std::atomic<Work::Data::VECTOR::size_type> &dataVectorIndex;
+			#endif
+
+			Data &data;
+
+			void create(size_t size);
+
+			#ifdef MULTITHREADED
+			Data &from(Work::Data::VECTOR &dataVector);
+			#endif
+
+			public:
+			#ifdef MULTITHREADED
+			Allocation(std::atomic<Work::Data::VECTOR::size_type> &dataVectorIndex, Work::Data::VECTOR &dataVector, size_t size);
+			#endif
+			#ifdef SINGLETHREADED
+			Allocation(Data &data, size_t size);
+			#endif
+			Allocation(const Allocation &allocation) = delete;
+			Allocation &operator=(const Allocation &allocation) = delete;
+			#ifdef MULTITHREADED
+			~Allocation();
+			#endif
+			Data &get();
+		};
+
+		Memory();
+		Memory(const Memory &memory) = delete;
+		Memory &operator=(const Memory &memory) = delete;
+		Allocation allocate(size_t size);
 	};
 
 	// BigFileTask (must seek over them, then come back later)
@@ -145,7 +193,7 @@ namespace Work {
 		FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
 		Data::QUEUE_LOCK lock(bool &yield);
 		Data::QUEUE_LOCK lock();
-		void copy(std::ifstream &inputFileStream, std::streamsize count);
+		void copy(std::ifstream &inputFileStream, std::streamsize count, Memory &memory);
 		void complete();
 		std::streampos getOwnerBigFileInputPosition();
 		FILE_VARIANT getFileVariant();
