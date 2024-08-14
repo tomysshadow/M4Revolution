@@ -150,13 +150,13 @@ Ubi::BigFile::POINTER Work::BigFileTask::getBigFilePointer() const {
 }
 
 Work::FileTask::FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File* filePointer)
-	: bigFileInputPosition(bigFileInputPosition),
+	: ownerBigFileInputPosition(ownerBigFileInputPosition),
 	fileVariant(filePointer),
 	event(true) {
 }
 
 Work::FileTask::FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer)
-	: bigFileInputPosition(bigFileInputPosition),
+	: ownerBigFileInputPosition(ownerBigFileInputPosition),
 	fileVariant(filePointerVectorPointer),
 	event(true) {
 }
@@ -187,7 +187,7 @@ void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count,
 
 		{
 			Memory::Allocation allocation = memory.allocate(countRead);
-			Work::Data &data = allocation.get();
+			Data &data = allocation.get();
 
 			readFileStreamPartial(inputFileStream, data.pointer.get(), countRead, gcountRead);
 
@@ -221,7 +221,7 @@ void Work::FileTask::complete() {
 }
 
 std::streampos Work::FileTask::getOwnerBigFileInputPosition() {
-	return bigFileInputPosition;
+	return ownerBigFileInputPosition;
 }
 
 Work::FileTask::FILE_VARIANT Work::FileTask::getFileVariant() {

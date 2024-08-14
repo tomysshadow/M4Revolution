@@ -93,7 +93,7 @@ namespace Work {
 		class Allocation {
 			private:
 			#ifdef MULTITHREADED
-			std::atomic<Work::Data::VECTOR::size_type> &dataVectorIndex;
+			std::atomic<Data::VECTOR::size_type> &dataVectorIndex;
 			#endif
 
 			Data &data;
@@ -101,12 +101,12 @@ namespace Work {
 			void create(size_t size);
 
 			#ifdef MULTITHREADED
-			Data &from(Work::Data::VECTOR &dataVector);
+			Data &from(Data::VECTOR &dataVector);
 			#endif
 
 			public:
 			#ifdef MULTITHREADED
-			Allocation(std::atomic<Work::Data::VECTOR::size_type> &dataVectorIndex, Work::Data::VECTOR &dataVector, size_t size);
+			Allocation(std::atomic<Data::VECTOR::size_type> &dataVectorIndex, Data::VECTOR &dataVector, size_t size);
 			#endif
 			#ifdef SINGLETHREADED
 			Allocation(Data &data, size_t size);
@@ -182,14 +182,14 @@ namespace Work {
 		// if it's false, it'll wait on more data again, otherwise it'll move to the next FileTask
 		// the output thread will check if the next file in the queue has a lesser value for bigFileInputPosition
 		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
-		std::streampos bigFileInputPosition = -1;
+		std::streampos ownerBigFileInputPosition = -1;
 		FILE_VARIANT fileVariant = {};
 		Event event;
 		Data::QUEUE queue = {};
 
 		public:
-		FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File* filePointer);
-		FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
+		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer);
+		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
 		Data::QUEUE_LOCK lock(bool &yield);
 		Data::QUEUE_LOCK lock();
 		void copy(std::ifstream &inputFileStream, std::streamsize count, Memory &memory);

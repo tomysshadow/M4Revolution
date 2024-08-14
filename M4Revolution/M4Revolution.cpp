@@ -407,10 +407,10 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 void M4Revolution::outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield) {
 	for (;;) {
 		Work::Data::QUEUE_LOCK lock = fileTask.lock(yield);
-		Work::Data::QUEUE &dataQueue = lock.get();
+		Work::Data::QUEUE &queue = lock.get();
 
-		while (!dataQueue.empty()) {
-			Work::Data &data = dataQueue.front();
+		while (!queue.empty()) {
+			Work::Data &data = queue.front();
 
 			// a NULL pointer signifies the file is completed
 			if (!data.pointer) {
@@ -418,7 +418,7 @@ void M4Revolution::outputData(Work::Output &output, Work::FileTask &fileTask, bo
 			}
 
 			writeFileStreamSafe(output.fileStream, data.pointer.get(), data.size);
-			dataQueue.pop();
+			queue.pop();
 		}
 	}
 }
