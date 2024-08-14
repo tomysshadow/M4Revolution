@@ -4,8 +4,7 @@
 #include <condition_variable>
 #include <vector>
 #include <queue>
-
-#include <nvtt/nvtt.h>
+#include <atomic>
 
 #if defined(_WIN32)
 #define MULTITHREADED
