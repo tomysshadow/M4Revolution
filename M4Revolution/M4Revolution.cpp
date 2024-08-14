@@ -415,13 +415,22 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 	return true;
 }
 
-void M4Revolution::outputData(Work::Output &output, Work::Lock<Work::Data::QUEUE> &lock) {
-	Work::Data::QUEUE &dataQueue = lock.get();
+void M4Revolution::outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield) {
+	for (;;) {
+		Work::Data::QUEUE_LOCK lock = fileTask.lock(yield);
+		Work::Data::QUEUE &dataQueue = lock.get();
 
-	while (!dataQueue.empty()) {
-		Work::Data &data = dataQueue.front();
-		writeFileStreamSafe(output.fileStream, data.pointer.get(), data.size);
-		dataQueue.pop();
+		while (!dataQueue.empty()) {
+			Work::Data &data = dataQueue.front();
+
+			// a NULL pointer signifies the file is completed
+			if (!data.pointer) {
+				return;
+			}
+
+			writeFileStreamSafe(output.fileStream, data.pointer.get(), data.size);
+			dataQueue.pop();
+		}
 	}
 }
 
@@ -482,12 +491,7 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 				return;
 			}
 
-			outputData(output, fileTask.lock());
-
-			if (!fileTask.getCompleted()) {
-				break;
-			}
-
+			outputData(output, fileTask, yield);
 			outputFiles(output, fileTaskQueue);
 		}
 	}

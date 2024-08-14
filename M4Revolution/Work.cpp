@@ -139,7 +139,7 @@ void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count)
 			break;
 		}
 
-		queue.emplace(gcountRead, pointer);
+		lock().get().emplace(gcountRead, pointer);
 
 		if (count != -1) {
 			count -= gcountRead;
@@ -158,10 +158,8 @@ void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count)
 }
 
 // called to signal to the output thread that we are done adding new data
-// the event is set in order to make sure it gets this message
 void Work::FileTask::complete() {
-	completed = true;
-	event.set();
+	lock().get().emplace();
 }
 
 std::streampos Work::FileTask::getOwnerBigFileInputPosition() {
@@ -170,10 +168,6 @@ std::streampos Work::FileTask::getOwnerBigFileInputPosition() {
 
 Work::FileTask::FILE_VARIANT Work::FileTask::getFileVariant() {
 	return fileVariant;
-}
-
-bool Work::FileTask::getCompleted() const {
-	return completed;
 }
 
 Work::Tasks::Tasks()

@@ -93,7 +93,7 @@ class M4Revolution {
 	static void color32X(COLOR32* color32Pointer, size_t stride, size_t size);
 
 	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
-	static void outputData(Work::Output &output, Work::Lock<Work::Data::QUEUE> &lock);
+	static void outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield);
 	static void outputFiles(Work::Output &output, Work::FileTask::QUEUE &fileTaskQueue);
 	static void outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield);
 

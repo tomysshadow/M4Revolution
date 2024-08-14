@@ -139,7 +139,6 @@ namespace Work {
 		FILE_VARIANT fileVariant = {};
 		Event event;
 		Data::QUEUE queue = {};
-		bool completed = false;
 
 		public:
 		FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File* filePointer);
@@ -150,7 +149,6 @@ namespace Work {
 		void complete();
 		std::streampos getOwnerBigFileInputPosition();
 		FILE_VARIANT getFileVariant();
-		bool getCompleted() const;
 	};
 
 	// Tasks (to be performed by the output thread)
