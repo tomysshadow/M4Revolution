@@ -165,16 +165,10 @@ void M4Revolution::copyFiles(
 	std::streampos bigFileInputPosition,
 	Log &log
 ) {
-	std::streamsize count = inputPosition - inputCopyPosition;
-
-	if (!count) {
-		return;
-	}
-
 	inputFileStream.seekg((std::streampos)inputCopyPosition + bigFileInputPosition);
 
 	Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, filePointerVectorPointer);
-	fileTask.copy(inputFileStream, count, copyMemory);
+	fileTask.copy(inputFileStream, inputPosition - inputCopyPosition, copyMemory);
 	fileTask.complete();
 
 	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
