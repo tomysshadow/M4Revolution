@@ -55,13 +55,13 @@ class M4Revolution {
 	std::ifstream inputFileStream = {};
 	bool logFileNames = false;
 
+	Work::Memory convertMemory;
+	Work::Memory copyMemory;
+
 	nvtt::Context context = {};
 	nvtt::Surface surface = {};
 	nvtt::CompressionOptions compressionOptions = {};
 	nvtt::OutputOptions outputOptions = {};
-
-	Work::Memory convertMemory;
-	Work::Memory copyMemory;
 
 	void convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
 
