@@ -255,7 +255,7 @@ void M4Revolution::fixLoading(std::streampos ownerBigFileInputPosition, Ubi::Big
 			if (!convert && file.type != Ubi::BigFile::File::TYPE::NONE) {
 				file.padding = filePointerSetMapIterator->first - inputFilePosition;
 
-				// prevent copying if there are no files
+				// prevent copying if there are no files (this is safe in this scenario only)
 				if (!filePointerVectorPointer->empty()) {
 					copyFiles(filePointerSetMapIterator->first, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
 				}
