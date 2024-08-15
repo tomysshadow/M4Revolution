@@ -48,14 +48,14 @@ namespace Work {
 			event.wait(yield, true);
 		}
 
-		Lock(const Lock &lock) = delete;
-		Lock &operator=(const Lock &lock) = delete;
-
 		~Lock() {
 			// always notify that we are done with this lock
 			// (SOMETHING should always happen when it is released, of course)
 			event.set();
 		}
+
+		Lock(const Lock &lock) = delete;
+		Lock &operator=(const Lock &lock) = delete;
 
 		T &get() const {
 			return value;
@@ -63,7 +63,12 @@ namespace Work {
 	};
 
 	// a "packet" type structure representing some data (not necessarily an entire file)
-	struct Data {
+	class Data {
+		private:
+		void destroy();
+		void duplicate(const Data &data);
+
+		public:
 		typedef std::shared_ptr<unsigned char> POINTER;
 		typedef std::vector<Data> VECTOR;
 		typedef std::queue<Data> QUEUE;
@@ -76,7 +81,11 @@ namespace Work {
 		POINTER pointer = 0;
 
 		Data();
+		Data(size_t allocationSize, size_t size, POINTER pointer);
 		Data(size_t size, POINTER pointer);
+		~Data();
+		Data(const Data &data);
+		Data &operator=(const Data &data);
 	};
 
 	class Memory {
@@ -107,15 +116,13 @@ namespace Work {
 			public:
 			#ifdef MULTITHREADED
 			Allocation(std::atomic<Data::VECTOR::size_type> &dataVectorIndex, Data::VECTOR &dataVector, size_t size);
+			~Allocation();
 			#endif
 			#ifdef SINGLETHREADED
 			Allocation(Data &data, size_t size);
 			#endif
 			Allocation(const Allocation &allocation) = delete;
 			Allocation &operator=(const Allocation &allocation) = delete;
-			#ifdef MULTITHREADED
-			~Allocation();
-			#endif
 			Data &get();
 		};
 
@@ -192,7 +199,7 @@ namespace Work {
 		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
 		Data::QUEUE_LOCK lock(bool &yield);
 		Data::QUEUE_LOCK lock();
-		void copy(std::ifstream &inputFileStream, std::streamsize count, Memory &memory);
+		void copy(std::ifstream &inputFileStream, std::streamsize count);
 		void complete();
 		std::streampos getOwnerBigFileInputPosition();
 		FILE_VARIANT getFileVariant();

@@ -54,9 +54,8 @@ void M4Revolution::Log::finishing() {
 	std::cout << "Finishing, please wait..." << std::endl;
 }
 
-M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask, Work::Memory &memory)
-	: fileTask(fileTask),
-	memory(memory) {
+M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask)
+	: fileTask(fileTask) {
 }
 
 void M4Revolution::OutputHandler::beginImage(int size, int width, int height, int depth, int face, int miplevel) {
@@ -73,23 +72,23 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 	}
 
 	try {
-		Work::Memory::Allocation allocation = memory.allocate(size);
-		Work::Data &_data = allocation.get();
+		// here, the memory object would provide no speedup (would need to copy memory twice)
+		// so just allocate it with new
+		Work::Data::POINTER pointer = Work::Data::POINTER(new unsigned char[size]);
 
-		if (memcpy_s(_data.pointer.get(), _data.size, data, size)) {
+		if (memcpy_s(pointer.get(), size, data, size)) {
 			return false;
 		}
 
 		// this locks the FileTask for a single line
 		// when it unlocks, the output thread will wake up to write the data
 		// then it will wait on more data again
-		// this must copy the data object, which may get reused by another thread
-		fileTask.lock().get().push(_data);
+		fileTask.lock().get().emplace(size, pointer);
+
+		this->size += size;
 	} catch (...) {
 		return false;
 	}
-
-	this->size += size;
 	return true;
 }
 
@@ -105,7 +104,7 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = 
 
 void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file) {
 	{
-		Work::Memory::Allocation allocation = convertMemory.allocate(file.size);
+		Work::Memory::Allocation allocation = memory.allocate(file.size);
 		Work::Data &data = allocation.get();
 
 		readFileStreamSafe(inputFileStream, data.pointer.get(), file.size);
@@ -142,7 +141,7 @@ void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::Big
 	// when this unlocks one line later, the output thread will begin waiting on data
 	Work::FileTask &fileTask = tasks.fileLock().get().emplace(ownerBigFileInputPosition, &file);
 
-	OutputHandler outputHandler(fileTask, convertMemory);
+	OutputHandler outputHandler(fileTask);
 	outputOptions.setOutputHandler(&outputHandler);
 
 	ErrorHandler errorHandler;
@@ -174,7 +173,7 @@ void M4Revolution::copyFiles(
 	// note: this must get created even if filePointerVectorPointer is empty or the count to copy would be zero
 	// so that the bigFileInputPosition is reliably seen by the output thread
 	Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, filePointerVectorPointer);
-	fileTask.copy(inputFileStream, inputPosition - inputCopyPosition, copyMemory);
+	fileTask.copy(inputFileStream, inputPosition - inputCopyPosition);
 	fileTask.complete();
 
 	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
@@ -196,7 +195,7 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
 		Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, &file);
-		fileTask.copy(inputFileStream, file.size, copyMemory);
+		fileTask.copy(inputFileStream, file.size);
 		fileTask.complete();
 	}
 
