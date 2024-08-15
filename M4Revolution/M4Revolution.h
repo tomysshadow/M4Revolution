@@ -17,7 +17,7 @@ class M4Revolution {
 
 		int progress = 0;
 		int files = 0;
-		int copiedFiles = 0;
+		int filesCopying = 0;
 
 		public:
 		Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames = false);

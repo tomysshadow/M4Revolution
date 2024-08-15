@@ -28,13 +28,13 @@ void M4Revolution::Log::copying() {
 	}
 
 	// log the number of files copied without any conversion performed
-	copiedFiles = files - copiedFiles;
+	filesCopying = files - filesCopying;
 
-	if (copiedFiles) {
-		std::cout << "Copying " << copiedFiles << " file(s)" << std::endl;
+	if (filesCopying) {
+		std::cout << "Copying " << filesCopying << " file(s)" << std::endl;
 	}
 
-	copiedFiles = files;
+	filesCopying = files;
 }
 
 void M4Revolution::Log::converting(const Ubi::BigFile::File &file) {
@@ -254,7 +254,11 @@ void M4Revolution::fixLoading(std::streampos ownerBigFileInputPosition, Ubi::Big
 			// if we encounter a file we need to convert for the first time, then first copy the files before it
 			if (!convert && file.type != Ubi::BigFile::File::TYPE::NONE) {
 				file.padding = filePointerSetMapIterator->first - inputFilePosition;
-				copyFiles(filePointerSetMapIterator->first, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
+
+				// prevent copying if there are no files
+				if (!filePointerVectorPointer->empty()) {
+					copyFiles(filePointerSetMapIterator->first, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
+				}
 
 				// we'll need to convert this file type
 				convert = true;
@@ -273,6 +277,8 @@ void M4Revolution::fixLoading(std::streampos ownerBigFileInputPosition, Ubi::Big
 
 	// if we just converted a set of files then there are no remaining files to copy, but otherwise...
 	if (!convert) {
+		// always copy here even if filePointerVectorPointer is empty
+		// (ensure every BigFile has at least one FileTask)
 		copyFiles(file.size, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
 	}
 }

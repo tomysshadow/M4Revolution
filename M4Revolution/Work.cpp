@@ -149,13 +149,13 @@ Ubi::BigFile::POINTER Work::BigFileTask::getBigFilePointer() const {
 	return bigFilePointer;
 }
 
-Work::FileTask::FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File* filePointer)
+Work::FileTask::FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer)
 	: ownerBigFileInputPosition(ownerBigFileInputPosition),
 	fileVariant(filePointer),
 	event(true) {
 }
 
-Work::FileTask::FileTask(std::streampos bigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer)
+Work::FileTask::FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer)
 	: ownerBigFileInputPosition(ownerBigFileInputPosition),
 	fileVariant(filePointerVectorPointer),
 	event(true) {
