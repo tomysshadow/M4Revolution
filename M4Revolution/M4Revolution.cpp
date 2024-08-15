@@ -54,7 +54,9 @@ void M4Revolution::Log::finishing() {
 	std::cout << "Finishing, please wait..." << std::endl;
 }
 
-M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask) : fileTask(fileTask) {
+M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask, Work::Memory &memory)
+	: fileTask(fileTask),
+	memory(memory) {
 }
 
 void M4Revolution::OutputHandler::beginImage(int size, int width, int height, int depth, int face, int miplevel) {
@@ -71,16 +73,18 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 	}
 
 	try {
-		Work::Data::POINTER pointer = Work::Data::POINTER(new unsigned char[size]);
+		Work::Memory::Allocation allocation = memory.allocate(size);
+		Work::Data &_data = allocation.get();
 
-		if (memcpy_s(pointer.get(), size, data, size)) {
+		if (memcpy_s(_data.pointer.get(), _data.size, data, size)) {
 			return false;
 		}
 
 		// this locks the FileTask for a single line
 		// when it unlocks, the output thread will wake up to write the data
 		// then it will wait on more data again
-		fileTask.lock().get().emplace(size, pointer);
+		// this must copy the data object, which may get reused by another thread
+		fileTask.lock().get().push(_data);
 	} catch (...) {
 		return false;
 	}
@@ -138,7 +142,7 @@ void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::Big
 	// when this unlocks one line later, the output thread will begin waiting on data
 	Work::FileTask &fileTask = tasks.fileLock().get().emplace(ownerBigFileInputPosition, &file);
 
-	OutputHandler outputHandler(fileTask);
+	OutputHandler outputHandler(fileTask, convertMemory);
 	outputOptions.setOutputHandler(&outputHandler);
 
 	ErrorHandler errorHandler;
