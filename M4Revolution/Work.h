@@ -63,17 +63,9 @@ namespace Work {
 	};
 
 	// a "packet" type structure representing some data (not necessarily an entire file)
-	class Data {
-		private:
-		void destroy();
-		void duplicate(const Data &data);
-
-		public:
+	struct Data {
 		typedef std::shared_ptr<unsigned char> POINTER;
 		typedef std::vector<Data> VECTOR;
-		typedef std::queue<Data> QUEUE;
-		typedef Lock<QUEUE> QUEUE_LOCK;
-		typedef std::shared_ptr<QUEUE_LOCK> QUEUE_LOCK_POINTER;
 
 		size_t allocationSize = 0;
 		size_t size = 0;
@@ -83,9 +75,6 @@ namespace Work {
 		Data();
 		Data(size_t allocationSize, size_t size, POINTER pointer);
 		Data(size_t size, POINTER pointer);
-		~Data();
-		Data(const Data &data);
-		Data &operator=(const Data &data);
 	};
 
 	class Memory {
@@ -101,19 +90,26 @@ namespace Work {
 		public:
 		class Allocation {
 			private:
-			#ifdef MULTITHREADED
-			std::atomic<Data::VECTOR::size_type> &dataVectorIndex;
-			#endif
-
-			Data &data;
-
 			void create(size_t size);
 
 			#ifdef MULTITHREADED
-			Data &from(Data::VECTOR &dataVector);
+			Data::VECTOR::size_type getIndex();
+
+			// must store the index instead of a direct reference so iterator invalidation won't kick in
+			std::atomic<Data::VECTOR::size_type> &dataVectorIndex;
+			Data::VECTOR &dataVector;
+			Data::VECTOR::size_type index = 0;
+			#endif
+			#ifdef SINGLETHREADED
+			Data &data;
 			#endif
 
 			public:
+			typedef std::shared_ptr<Allocation> POINTER;
+			typedef std::queue<POINTER> POINTER_QUEUE;
+			typedef Lock<POINTER_QUEUE> POINTER_QUEUE_LOCK;
+			typedef std::shared_ptr<POINTER_QUEUE_LOCK> POINTER_QUEUE_LOCK_POINTER;
+
 			#ifdef MULTITHREADED
 			Allocation(std::atomic<Data::VECTOR::size_type> &dataVectorIndex, Data::VECTOR &dataVector, size_t size);
 			~Allocation();
@@ -130,6 +126,7 @@ namespace Work {
 		Memory(const Memory &memory) = delete;
 		Memory &operator=(const Memory &memory) = delete;
 		Allocation allocate(size_t size);
+		Allocation::POINTER allocatePointer(size_t size);
 	};
 
 	// BigFileTask (must seek over them, then come back later)
@@ -192,14 +189,14 @@ namespace Work {
 		std::streampos ownerBigFileInputPosition = -1;
 		FILE_VARIANT fileVariant = {};
 		Event event;
-		Data::QUEUE queue = {};
+		Memory::Allocation::POINTER_QUEUE pointerQueue = {};
 
 		public:
 		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer);
 		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
-		Data::QUEUE_LOCK lock(bool &yield);
-		Data::QUEUE_LOCK lock();
-		void copy(std::ifstream &inputFileStream, std::streamsize count);
+		Memory::Allocation::POINTER_QUEUE_LOCK lock(bool &yield);
+		Memory::Allocation::POINTER_QUEUE_LOCK lock();
+		void copy(std::ifstream &inputFileStream, std::streamsize count, Work::Memory &memory);
 		void complete();
 		std::streampos getOwnerBigFileInputPosition();
 		FILE_VARIANT getFileVariant();

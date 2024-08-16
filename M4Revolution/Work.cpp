@@ -56,23 +56,6 @@ void Work::Event::reset() {
 	setPredicate(false);
 }
 
-void Work::Data::destroy() {
-	pointer = 0;
-}
-
-void Work::Data::duplicate(const Data &data) {
-	allocationSize = data.allocationSize;
-	size = data.size;
-
-	pointer = POINTER(new unsigned char[allocationSize]);
-
-	errno_t err = memcpy_s(pointer.get(), size, data.pointer.get(), data.size);
-
-	if (err) {
-		throw std::system_error(err, std::generic_category());
-	}
-}
-
 Work::Data::Data() {
 }
 
@@ -88,20 +71,11 @@ Work::Data::Data(size_t size, POINTER pointer)
 	pointer(pointer) {
 }
 
-Work::Data::~Data() {
-	destroy();
-}
-
-Work::Data::Data(const Data &data) {
-	duplicate(data);
-}
-
-Work::Data &Work::Data::operator=(const Data &data) {
-	duplicate(data);
-	return *this;
-}
-
 void Work::Memory::Allocation::create(size_t size) {
+	#ifdef MULTITHREADED
+	Data &data = dataVector.at(index);
+	#endif
+
 	data.size = size;
 
 	if (size <= data.allocationSize && data.pointer) {
@@ -113,16 +87,17 @@ void Work::Memory::Allocation::create(size_t size) {
 }
 
 #ifdef MULTITHREADED
-Work::Data &Work::Memory::Allocation::from(Work::Data::VECTOR &dataVector) {
+Work::Data::VECTOR::size_type Work::Memory::Allocation::getIndex() {
 	while (dataVectorIndex >= dataVector.size()) {
 		dataVector.emplace_back();
 	}
-	return dataVector.at(dataVectorIndex++);
+	return dataVectorIndex++;
 }
 
 Work::Memory::Allocation::Allocation(std::atomic<Work::Data::VECTOR::size_type> &dataVectorIndex, Work::Data::VECTOR &dataVector, size_t size)
 	: dataVectorIndex(dataVectorIndex),
-	data(from(dataVector)) {
+	dataVector(dataVector),
+	index(getIndex()) {
 	create(size);
 }
 
@@ -138,7 +113,12 @@ Work::Memory::Allocation::Allocation(Data &data, size_t size)
 #endif
 
 Work::Data &Work::Memory::Allocation::get() {
+	#ifdef MULTITHREADED
+	return dataVector.at(index);
+	#endif
+	#ifdef SINGLETHREADED
 	return data;
+	#endif
 }
 
 Work::Memory::Memory() {
@@ -150,6 +130,15 @@ Work::Memory::Allocation Work::Memory::allocate(size_t size) {
 	#endif
 	#ifdef SINGLETHREADED
 	return Allocation(data, size);
+	#endif
+}
+
+Work::Memory::Allocation::POINTER Work::Memory::allocatePointer(size_t size) {
+	#ifdef MULTITHREADED
+	return std::make_shared<Allocation>(dataVectorIndex, dataVector, size);
+	#endif
+	#ifdef SINGLETHREADED
+	return std::make_shared<Allocation>(data, size);
 	#endif
 }
 
@@ -198,16 +187,16 @@ Work::FileTask::FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile:
 
 // called in order to lock the data queue so we can add new data
 // the Lock class ensures the output thread will automatically wake up to write it after we add the new data
-Work::Data::QUEUE_LOCK Work::FileTask::lock(bool &yield) {
-	return Data::QUEUE_LOCK(event, queue, yield);
+Work::Memory::Allocation::POINTER_QUEUE_LOCK Work::FileTask::lock(bool &yield) {
+	return Memory::Allocation::POINTER_QUEUE_LOCK(event, pointerQueue, yield);
 }
 
-Work::Data::QUEUE_LOCK Work::FileTask::lock() {
+Work::Memory::Allocation::POINTER_QUEUE_LOCK Work::FileTask::lock() {
 	bool yield = false;
 	return lock(yield);
 }
 
-void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count) {
+void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count, Work::Memory &memory) {
 	if (!count) {
 		return;
 	}
@@ -221,17 +210,18 @@ void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count)
 		countRead = (std::streamsize)min((size_t)count, (size_t)countRead);
 
 		{
-			// here, the memory object would provide no speedup (would need to copy memory twice)
-			// so just allocate it with new
-			Work::Data::POINTER pointer = Work::Data::POINTER(new unsigned char[countRead]);
+			Memory::Allocation::POINTER pointer = memory.allocatePointer(countRead);
+			Data &data = pointer->get();
 
-			readFileStreamPartial(inputFileStream, pointer.get(), countRead, gcountRead);
+			readFileStreamPartial(inputFileStream, data.pointer.get(), countRead, gcountRead);
 
 			if (!gcountRead) {
 				break;
 			}
 
-			lock().get().emplace(countRead, gcountRead, pointer);
+			data.size = gcountRead;
+
+			lock().get().push(pointer);
 		}
 
 		if (count != -1) {
