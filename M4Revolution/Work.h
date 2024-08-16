@@ -66,6 +66,7 @@ namespace Work {
 	struct Data {
 		typedef std::shared_ptr<unsigned char> POINTER;
 		typedef std::vector<Data> VECTOR;
+		typedef Lock<VECTOR> VECTOR_LOCK;
 
 		size_t allocationSize = 0;
 		size_t size = 0;
@@ -78,15 +79,6 @@ namespace Work {
 	};
 
 	class Memory {
-		private:
-		#ifdef MULTITHREADED
-		std::atomic<Data::VECTOR::size_type> dataVectorIndex = 0;
-		Data::VECTOR dataVector = {};
-		#endif
-		#ifdef SINGLETHREADED
-		Data data = {};
-		#endif
-
 		public:
 		class Allocation {
 			private:
@@ -96,8 +88,8 @@ namespace Work {
 			Data::VECTOR::size_type getIndex();
 
 			// must store the index instead of a direct reference so iterator invalidation won't kick in
+			Memory &memory;
 			std::atomic<Data::VECTOR::size_type> &dataVectorIndex;
-			Data::VECTOR &dataVector;
 			Data::VECTOR::size_type index = 0;
 			#endif
 			#ifdef SINGLETHREADED
@@ -111,7 +103,7 @@ namespace Work {
 			typedef std::shared_ptr<POINTER_QUEUE_LOCK> POINTER_QUEUE_LOCK_POINTER;
 
 			#ifdef MULTITHREADED
-			Allocation(std::atomic<Data::VECTOR::size_type> &dataVectorIndex, Data::VECTOR &dataVector, size_t size);
+			Allocation(Memory &memory, std::atomic<Data::VECTOR::size_type> &dataVectorIndex, size_t size);
 			~Allocation();
 			#endif
 			#ifdef SINGLETHREADED
@@ -119,14 +111,29 @@ namespace Work {
 			#endif
 			Allocation(const Allocation &allocation) = delete;
 			Allocation &operator=(const Allocation &allocation) = delete;
-			Data &get();
+			Data get();
 		};
 
+		private:
+		#ifdef MULTITHREADED
+		std::atomic<Data::VECTOR::size_type> dataVectorIndex = 0;
+		Event dataVectorEvent;
+		Data::VECTOR dataVector = {};
+		#endif
+		#ifdef SINGLETHREADED
+		Data data = {};
+		#endif
+
+		public:
 		Memory();
 		Memory(const Memory &memory) = delete;
 		Memory &operator=(const Memory &memory) = delete;
 		Allocation allocate(size_t size);
 		Allocation::POINTER allocatePointer(size_t size);
+		#ifdef MULTITHREADED
+		Data::VECTOR_LOCK lock(bool &yield);
+		Data::VECTOR_LOCK lock();
+		#endif
 	};
 
 	// BigFileTask (must seek over them, then come back later)

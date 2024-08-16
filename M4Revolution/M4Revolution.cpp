@@ -426,7 +426,7 @@ void M4Revolution::outputData(Work::Output &output, Work::FileTask &fileTask, bo
 				return;
 			}
 
-			Work::Data &data = pointer->get();
+			Work::Data data = pointer->get();
 			writeFileStreamSafe(output.fileStream, data.pointer.get(), data.size);
 			pointerQueue.pop();
 		}
