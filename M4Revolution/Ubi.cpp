@@ -106,7 +106,7 @@ std::string Ubi::BigFile::File::getNameExtension() {
 const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTENSION_MAP = {
 	{"m4b", {TYPE::BIG_FILE, "m4b"}},
 	//{"jpg", {TYPE::JPEG, "dds"}}, // not yet implemented
-	//{"zap", {TYPE::ZAP, "dds"}},
+	{"zap", {TYPE::ZAP, "dds"}},
 	{"bin", {TYPE::TEXTURE, "bin"}}
 };
 

@@ -54,9 +54,8 @@ void M4Revolution::Log::finishing() {
 	std::cout << "Finishing, please wait..." << std::endl;
 }
 
-M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask, Work::Memory &memory)
-	: fileTask(fileTask),
-	memory(memory) {
+M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask)
+	: fileTask(fileTask) {
 }
 
 void M4Revolution::OutputHandler::beginImage(int size, int width, int height, int depth, int face, int miplevel) {
@@ -73,17 +72,16 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 	}
 
 	try {
-		Work::Memory::Allocation::POINTER pointer = memory.allocatePointer(size);
-		Work::Data &_data = pointer->get();
+		Work::Data::POINTER pointer = Work::Data::POINTER(new unsigned char[size]);
 
-		if (memcpy_s(_data.pointer.get(), _data.size, data, size)) {
+		if (memcpy_s(pointer.get(), size, data, size)) {
 			return false;
 		}
 
-		// this locks the FileTask to push to the queue
+		// this locks the FileTask for a single line
 		// when it unlocks, the output thread will wake up to write the data
 		// then it will wait on more data again
-		fileTask.lock().get().push(pointer);
+		fileTask.lock().get().emplace(size, pointer);
 
 		this->size += size;
 	} catch (...) {
@@ -104,10 +102,8 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = 
 
 void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file) {
 	{
-		Work::Memory::Allocation allocation = convertMemory.allocate(file.size);
-		Work::Data &data = allocation.get();
-
-		readFileStreamSafe(inputFileStream, data.pointer.get(), file.size);
+		Work::Data::POINTER pointer = Work::Data::POINTER(new unsigned char[file.size]);
+		readFileStreamSafe(inputFileStream, pointer.get(), file.size);
 
 		{
 			zap_byte_t* out = 0;
@@ -115,7 +111,7 @@ void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::Big
 			zap_int_t outWidth = 0;
 			zap_int_t outHeight = 0;
 
-			if (zap_load_memory(data.pointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
+			if (zap_load_memory(pointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
 				throw std::runtime_error("Failed to Load ZAP From Memory");
 			}
 
@@ -141,7 +137,7 @@ void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::Big
 	// when this unlocks one line later, the output thread will begin waiting on data
 	Work::FileTask &fileTask = tasks.fileLock().get().emplace(ownerBigFileInputPosition, &file);
 
-	OutputHandler outputHandler(fileTask, convertMemory);
+	OutputHandler outputHandler(fileTask);
 	outputOptions.setOutputHandler(&outputHandler);
 
 	ErrorHandler errorHandler;
@@ -173,7 +169,7 @@ void M4Revolution::copyFiles(
 	// note: this must get created even if filePointerVectorPointer is empty or the count to copy would be zero
 	// so that the bigFileInputPosition is reliably seen by the output thread
 	Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, filePointerVectorPointer);
-	fileTask.copy(inputFileStream, inputPosition - inputCopyPosition, copyMemory);
+	fileTask.copy(inputFileStream, inputPosition - inputCopyPosition);
 	fileTask.complete();
 
 	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
@@ -195,7 +191,7 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
 		Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, &file);
-		fileTask.copy(inputFileStream, file.size, copyMemory);
+		fileTask.copy(inputFileStream, file.size);
 		fileTask.complete();
 	}
 
@@ -415,20 +411,19 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 
 void M4Revolution::outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield) {
 	for (;;) {
-		Work::Memory::Allocation::POINTER_QUEUE_LOCK pointerQueueLock = fileTask.lock(yield);
-		Work::Memory::Allocation::POINTER_QUEUE &pointerQueue = pointerQueueLock.get();
+		Work::Data::QUEUE_LOCK lock = fileTask.lock(yield);
+		Work::Data::QUEUE &queue = lock.get();
 
-		while (!pointerQueue.empty()) {
-			Work::Memory::Allocation::POINTER &pointer = pointerQueue.front();
+		while (!queue.empty()) {
+			Work::Data &data = queue.front();
 
 			// a NULL pointer signifies the file is completed
-			if (!pointer) {
+			if (!data.pointer) {
 				return;
 			}
 
-			Work::Data data = pointer->get();
 			writeFileStreamSafe(output.fileStream, data.pointer.get(), data.size);
-			pointerQueue.pop();
+			queue.pop();
 		}
 	}
 }

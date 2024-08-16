@@ -30,7 +30,7 @@ class M4Revolution {
 	};
 
 	struct OutputHandler : public nvtt::OutputHandler {
-		OutputHandler(Work::FileTask &fileTask, Work::Memory &memory);
+		OutputHandler(Work::FileTask &fileTask);
 		OutputHandler(const OutputHandler &outputHandler) = delete;
 		OutputHandler &operator=(const OutputHandler &outputHandler) = delete;
 		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel);
@@ -38,7 +38,6 @@ class M4Revolution {
 		virtual bool writeData(const void* data, int size);
 
 		Work::FileTask &fileTask;
-		Work::Memory &memory;
 
 		unsigned int size = 0;
 	};
@@ -54,9 +53,6 @@ class M4Revolution {
 	Work::Tasks tasks = {};
 	std::ifstream inputFileStream = {};
 	bool logFileNames = false;
-
-	Work::Memory convertMemory;
-	Work::Memory copyMemory;
 
 	nvtt::Context context = {};
 	nvtt::Surface surface = {};
