@@ -106,7 +106,7 @@ void copyFileStream(std::ifstream &inputFileStream, std::ofstream &outputFileStr
 
 	if (count != -1) {
 		if (count) {
-			throw std::runtime_error("count must not be greater than file size");
+			throw std::logic_error("count must not be greater than file size");
 		}
 	}
 }

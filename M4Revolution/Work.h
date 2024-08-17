@@ -67,7 +67,6 @@ namespace Work {
 	// a "packet" type structure representing some data (not necessarily an entire file)
 	struct Data {
 		typedef std::shared_ptr<unsigned char> POINTER;
-		typedef std::vector<Data> VECTOR;
 		typedef std::queue<Data> QUEUE;
 		typedef Lock<QUEUE> QUEUE_LOCK;
 
@@ -96,7 +95,6 @@ namespace Work {
 		typedef std::shared_ptr<BigFileTask> POINTER;
 		typedef std::map<std::streampos, POINTER> POINTER_MAP;
 		typedef Lock<POINTER_MAP> POINTER_MAP_LOCK;
-		typedef std::shared_ptr<POINTER_MAP_LOCK> POINTER_MAP_LOCK_POINTER;
 
 		// outputPosition is set by the output thread, and later used by it so it knows where to jump back
 		std::streampos outputPosition = -1;
@@ -122,7 +120,6 @@ namespace Work {
 		typedef std::shared_ptr<FileTask> POINTER;
 		typedef std::queue<POINTER> POINTER_QUEUE;
 		typedef Lock<POINTER_QUEUE> POINTER_QUEUE_LOCK;
-		typedef std::shared_ptr<POINTER_QUEUE_LOCK> POINTER_QUEUE_LOCK_POINTER;
 		typedef std::variant<Ubi::BigFile::File::POINTER_VECTOR_POINTER, Ubi::BigFile::File*> FILE_VARIANT;
 
 		private:
@@ -182,8 +179,8 @@ namespace Work {
 		nvtt::Context &context;
 		nvtt::CompressionOptions &compressionOptions;
 
-		Work::FileTask::POINTER fileTaskPointer = 0;
-		Work::Data::POINTER dataPointer = 0;
+		FileTask::POINTER fileTaskPointer = 0;
+		Data::POINTER dataPointer = 0;
 
 		Convert(
 			Ubi::BigFile::File &file,

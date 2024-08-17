@@ -59,6 +59,10 @@ class M4Revolution {
 	nvtt::Context context = {};
 	nvtt::CompressionOptions compressionOptions = {};
 
+	#ifdef MULTITHREADED
+	PTP_POOL pool = NULL;
+	#endif
+
 	void convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
 
 	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type files);
@@ -84,18 +88,13 @@ class M4Revolution {
 	void fixLoading(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
 	static void color32X(COLOR32* color32Pointer, size_t stride, size_t size);
-
 	static void convertZAPWorkCallback(Work::Convert* convertPointer);
-
 	#ifdef MULTITHREADED
-	PTP_POOL pool = NULL;
-
 	static VOID CALLBACK convertZAPProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
 	#endif
-
 	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
-	static void outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield);
-	static void outputFiles(Work::Output &output, Work::FileTask &fileTask);
+	static void outputData(std::ofstream &fileStream, Work::FileTask &fileTask, bool &yield);
+	static void outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
 	static void outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield);
 
 	public:
@@ -103,7 +102,7 @@ class M4Revolution {
 	~M4Revolution();
 	M4Revolution(const M4Revolution &m4Revolution) = delete;
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
-	void editTransitionSpeed(const char* outputFileName);
+	void editTransitionTime(const char* outputFileName);
 	void editInertia(const char* outputFileName);
 	void fixLoading(const char* outputFileName);
 };

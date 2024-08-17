@@ -114,8 +114,9 @@ void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::Big
 	dataPointer = Work::Data::POINTER(new unsigned char[file.size]);
 	readFileStreamSafe(inputFileStream, dataPointer.get(), file.size);
 
-	convertPointer->fileTaskPointer = std::make_shared<Work::FileTask>(ownerBigFileInputPosition, &file);
-	tasks.fileLock().get().push(convertPointer->fileTaskPointer);
+	Work::FileTask::POINTER &fileTaskPointer = convertPointer->fileTaskPointer;
+	fileTaskPointer = std::make_shared<Work::FileTask>(ownerBigFileInputPosition, &file);
+	tasks.fileLock().get().push(fileTaskPointer);
 
 	#ifdef MULTITHREADED
 	PTP_WORK work = CreateThreadpoolWork(convertZAPProc, convertPointer, NULL);
@@ -500,10 +501,13 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 	return true;
 }
 
-void M4Revolution::outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield) {
+void M4Revolution::outputData(std::ofstream &fileStream, Work::FileTask &fileTask, bool &yield) {
 	Work::Data::QUEUE dataQueue = {};
 
 	for (;;) {
+		// copy out the queue
+		// this is fast since data is just a struct with a number and pointer
+		// (this is several times faster than holding the lock while writing)
 		{
 			Work::Data::QUEUE_LOCK lock = fileTask.lock(yield);
 			Work::Data::QUEUE &queue = lock.get();
@@ -519,26 +523,24 @@ void M4Revolution::outputData(Work::Output &output, Work::FileTask &fileTask, bo
 		while (!dataQueue.empty()) {
 			Work::Data &data = dataQueue.front();
 
-			// a NULL pointer signifies the file is complete
+			// a null pointer signals that the file is complete
 			if (!data.pointer) {
 				return;
 			}
 
-			writeFileStreamSafe(output.fileStream, data.pointer.get(), data.size);
+			writeFileStreamSafe(fileStream, data.pointer.get(), data.size);
 
 			dataQueue.pop();
 		}
 	}
 }
 
-void M4Revolution::outputFiles(Work::Output &output, Work::FileTask &fileTask) {
+void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant) {
 	Ubi::BigFile::File::SIZE &filePosition = output.filePosition;
 	Ubi::BigFile::File::POINTER_VECTOR::size_type &filesWritten = output.filesWritten;
 
 	// depending on if the files was copied or converted
 	// we will either have a vector or a singular dataPointer
-	Work::FileTask::FILE_VARIANT fileVariant = fileTask.getFileVariant();
-
 	if (std::holds_alternative<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant)) {
 		Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = std::get<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant);
 
@@ -571,16 +573,18 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 	Work::FileTask::POINTER_QUEUE fileTaskPointerQueue = {};
 
 	for (;;) {
+		// copy out the queue
+		// (this is fast because it's just a queue of pointers, much faster than holding the lock while writing)
 		{
 			Work::FileTask::POINTER_QUEUE_LOCK fileLock = tasks.fileLock(yield);
 			Work::FileTask::POINTER_QUEUE &queue = fileLock.get();
 
-			// this would mean we made it to the end, but didn't write all the filesystems somehow
 			if (queue.empty()) {
 				if (yield) {
 					continue;
 				}
 
+				// this would mean we made it to the end, but didn't write all the filesystems somehow
 				throw std::logic_error("fileTaskPointerQueue must not be empty if yield is false");
 			}
 
@@ -596,8 +600,8 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 				return;
 			}
 
-			outputData(output, fileTask, yield);
-			outputFiles(output, fileTask);
+			outputData(output.fileStream, fileTask, yield);
+			outputFiles(output, fileTask.getFileVariant());
 
 			fileTaskPointerQueue.pop();
 		}

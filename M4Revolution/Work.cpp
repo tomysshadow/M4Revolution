@@ -132,7 +132,7 @@ void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count)
 		countRead = (std::streamsize)min((size_t)count, (size_t)countRead);
 
 		{
-			Work::Data::POINTER pointer = Work::Data::POINTER(new unsigned char[countRead]);
+			Data::POINTER pointer = Data::POINTER(new unsigned char[countRead]);
 
 			readFileStreamPartial(inputFileStream, pointer.get(), countRead, gcountRead);
 
@@ -154,7 +154,7 @@ void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count)
 
 	if (count != -1) {
 		if (count) {
-			throw std::runtime_error("count must not be greater than file size");
+			throw std::logic_error("count must not be greater than file size");
 		}
 	}
 }
