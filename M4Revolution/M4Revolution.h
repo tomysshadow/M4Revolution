@@ -32,14 +32,14 @@ class M4Revolution {
 	};
 
 	struct OutputHandler : public nvtt::OutputHandler {
-		OutputHandler(Work::ConvertFileTask &convertFileTask);
+		OutputHandler(Work::FileTask &fileTask);
 		OutputHandler(const OutputHandler &outputHandler) = delete;
 		OutputHandler &operator=(const OutputHandler &outputHandler) = delete;
 		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel);
 		virtual void endImage();
 		virtual bool writeData(const void* data, int size);
 
-		Work::ConvertFileTask &convertFileTask;
+		Work::FileTask &fileTask;
 
 		unsigned int size = 0;
 	};
@@ -92,10 +92,8 @@ class M4Revolution {
 	#endif
 
 	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
-	static bool outputDataQueue(Work::Output &output, Work::Data::QUEUE &queue);
-	static void outputData(Work::Output &output, Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant, bool &yield);
-	static void outputFileVariant(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
-	static void outputFiles(Work::Output &output, Work::Tasks::FILE_TASK_VARIANT_QUEUE &fileTaskVariantQueue);
+	static void outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield);
+	static void outputFiles(Work::Output &output, Work::FileTask::QUEUE &fileTaskQueue);
 	static void outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield);
 
 	public:

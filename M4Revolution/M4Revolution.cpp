@@ -60,8 +60,8 @@ void M4Revolution::Log::finishing() {
 	std::cout << "Finishing, please wait..." << std::endl;
 }
 
-M4Revolution::OutputHandler::OutputHandler(Work::ConvertFileTask &convertFileTask)
-	: convertFileTask(convertFileTask) {
+M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask)
+	: fileTask(fileTask) {
 }
 
 void M4Revolution::OutputHandler::beginImage(int size, int width, int height, int depth, int face, int miplevel) {
@@ -87,7 +87,7 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 		// this locks the FileTask for a single line
 		// when it unlocks, the output thread will wake up to write the data
 		// then it will wait on more data again
-		convertFileTask.queue.emplace(size, pointer);
+		fileTask.lock().get().emplace(size, pointer);
 
 		this->size += size;
 	} catch (...) {
@@ -139,10 +139,9 @@ void M4Revolution::copyFiles(
 
 	// note: this must get created even if filePointerVectorPointer is empty or the count to copy would be zero
 	// so that the bigFileInputPosition is reliably seen by the output thread
-	Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant = tasks.fileLock().get().emplace(std::make_shared<Work::CopyFileTask>(bigFileInputPosition, filePointerVectorPointer));
-	Work::CopyFileTask &copyFileTask = *std::get<Work::CopyFileTask::POINTER>(fileTaskVariant);
-	copyFileTask.copy(inputFileStream, inputPosition - inputCopyPosition);
-	copyFileTask.complete();
+	Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, filePointerVectorPointer);
+	fileTask.copy(inputFileStream, inputPosition - inputCopyPosition);
+	fileTask.complete();
 
 	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
 
@@ -162,10 +161,9 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
-		Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant = tasks.fileLock().get().emplace(std::make_shared<Work::CopyFileTask>(bigFileInputPosition, &file));
-		Work::CopyFileTask &copyFileTask = *std::get<Work::CopyFileTask::POINTER>(fileTaskVariant);
-		copyFileTask.copy(inputFileStream, file.size);
-		copyFileTask.complete();
+		Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, &file);
+		fileTask.copy(inputFileStream, file.size);
+		fileTask.complete();
 	}
 
 	log.converting(file);
@@ -322,34 +320,35 @@ void M4Revolution::convertZAPWorkCallback(Work::Convert* convertPointer) {
 	// when this unlocks one line later, the output thread will begin waiting on data
 	Ubi::BigFile::File &file = convertPointer->file;
 
-	Work::ConvertFileTask convertFileTask(convertPointer->ownerBigFileInputPosition, &file);
+	{
+		Work::FileTask::QUEUE_LOCK fileLock = convertPointer->tasks.fileLock();
+		Work::FileTask &fileTask = fileLock.get().emplace(convertPointer->ownerBigFileInputPosition, &file);
 
-	nvtt::OutputOptions outputOptions = {};
-	outputOptions.setContainer(nvtt::Container_DDS);
+		nvtt::OutputOptions outputOptions = {};
+		outputOptions.setContainer(nvtt::Container_DDS);
 
-	OutputHandler outputHandler(convertFileTask);
-	outputOptions.setOutputHandler(&outputHandler);
+		OutputHandler outputHandler(fileTask);
+		outputOptions.setOutputHandler(&outputHandler);
 
-	ErrorHandler errorHandler;
-	outputOptions.setErrorHandler(&errorHandler);
+		ErrorHandler errorHandler;
+		outputOptions.setErrorHandler(&errorHandler);
 
-	nvtt::Context &context = convertPointer->context;
-	nvtt::CompressionOptions &compressionOptions = convertPointer->compressionOptions;
+		nvtt::Context &context = convertPointer->context;
+		nvtt::CompressionOptions &compressionOptions = convertPointer->compressionOptions;
 
-	if (!context.outputHeader(surface, 1, compressionOptions, outputOptions)) {
-		throw std::runtime_error("Failed to Output Context Header");
+		if (!context.outputHeader(surface, 1, compressionOptions, outputOptions)) {
+			throw std::runtime_error("Failed to Output Context Header");
+		}
+
+		if (!context.compress(surface, 0, 0, compressionOptions, outputOptions) || !errorHandler.result) {
+			throw std::runtime_error("Failed to Compress Context");
+		}
+
+		file.size = outputHandler.size;
+
+		// this will wake up the output thread to tell it we have no more data to add, and to move on to the next FileTask
+		fileTask.complete();
 	}
-
-	if (!context.compress(surface, 0, 0, compressionOptions, outputOptions) || !errorHandler.result) {
-		throw std::runtime_error("Failed to Compress Context");
-	}
-
-	file.size = outputHandler.size;
-
-	// this will wake up the output thread to tell it we have no more data to add, and to move on to the next FileTask
-	convertFileTask.complete();
-
-	convertPointer->tasks.fileLock().get().push(convertFileTask);
 }
 
 VOID CALLBACK M4Revolution::convertZAPProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work) {
@@ -455,41 +454,32 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 	return true;
 }
 
-bool M4Revolution::outputDataQueue(Work::Output &output, Work::Data::QUEUE &queue) {
-	while (!queue.empty()) {
-		Work::Data &data = queue.front();
-
-		// a NULL pointer signifies the file is completed
-		if (!data.pointer) {
-			return false;
-		}
-
-		writeFileStreamSafe(output.fileStream, data.pointer.get(), data.size);
-		queue.pop();
-	}
-	return true;
-}
-
-void M4Revolution::outputData(Work::Output &output, Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant, bool &yield) {
+void M4Revolution::outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield) {
 	for (;;) {
-		if (std::holds_alternative<Work::CopyFileTask::POINTER>(fileTaskVariant)) {
-			Work::Data::QUEUE_LOCK lock = std::get<Work::CopyFileTask::POINTER>(fileTaskVariant)->lock(yield);
-			Work::Data::QUEUE &queue = lock.get();
-			
-			if (!outputDataQueue(output, queue)) {
+		Work::Data::QUEUE_LOCK lock = fileTask.lock(yield);
+		Work::Data::QUEUE &queue = lock.get();
+
+		while (!queue.empty()) {
+			Work::Data &data = queue.front();
+
+			// a NULL pointer signifies the file is completed
+			if (!data.pointer) {
 				return;
 			}
-		} else {
-			if (!outputDataQueue(output, std::get<Work::ConvertFileTask>(fileTaskVariant).queue)) {
-				return;
-			}
+
+			writeFileStreamSafe(output.fileStream, data.pointer.get(), data.size);
+			queue.pop();
 		}
 	}
 }
 
-void M4Revolution::outputFileVariant(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant) {
+void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::QUEUE &fileTaskQueue) {
 	Ubi::BigFile::File::SIZE &filePosition = output.filePosition;
 	Ubi::BigFile::File::POINTER_VECTOR::size_type &filesWritten = output.filesWritten;
+
+	// depending on if the files was copied or converted
+	// we will either have a vector or a singular pointer
+	Work::FileTask::FILE_VARIANT fileVariant = fileTaskQueue.front().getFileVariant();
 
 	if (std::holds_alternative<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant)) {
 		Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = std::get<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant);
@@ -515,54 +505,33 @@ void M4Revolution::outputFileVariant(Work::Output &output, Work::FileTask::FILE_
 		filePosition += file.size;
 		filesWritten++;
 	}
-}
-
-void M4Revolution::outputFiles(Work::Output &output, Work::Tasks::FILE_TASK_VARIANT_QUEUE &fileTaskVariantQueue) {
-	// depending on if the files was copied or converted
-	// we will either have a vector or a singular pointer
-	Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant = fileTaskVariantQueue.front();
-
-	if (std::holds_alternative<Work::CopyFileTask::POINTER>(fileTaskVariant)) {
-		outputFileVariant(output, std::get<Work::CopyFileTask::POINTER>(fileTaskVariant)->getFileVariant());
-	} else {
-		outputFileVariant(output, std::get<Work::ConvertFileTask>(fileTaskVariant).getFileVariant());
-	}
 
 	// note that we do not continue looping here - need to check on the BigFile next after doing this
-	fileTaskVariantQueue.pop();
+	fileTaskQueue.pop();
 }
 
 void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield) {
 	Work::Output output(outputFileName);
 
 	for (;;) {
-		Work::Tasks::FILE_TASK_VARIANT_QUEUE_LOCK queueLock = tasks.fileLock(yield);
-		Work::Tasks::FILE_TASK_VARIANT_QUEUE &fileTaskVariantQueue = queueLock.get();
+		Work::FileTask::QUEUE_LOCK queueLock = tasks.fileLock(yield);
+		Work::FileTask::QUEUE &fileTaskQueue = queueLock.get();
 
 		// this would mean we made it to the end, but didn't write all the filesystems somehow
-		if (!yield && fileTaskVariantQueue.empty()) {
+		if (!yield && fileTaskQueue.empty()) {
 			throw std::logic_error("fileTaskQueue must not be empty if yield is false");
 		}
 
-		while (!fileTaskVariantQueue.empty()) {
-			Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant = fileTaskVariantQueue.front();
+		while (!fileTaskQueue.empty()) {
+			Work::FileTask &fileTask = fileTaskQueue.front();
 
 			// if this returns false it means we're done
-			if (!outputBigFiles(
-					output,
-
-					std::holds_alternative<Work::CopyFileTask::POINTER>(fileTaskVariant)
-					? std::get<Work::CopyFileTask::POINTER>(fileTaskVariant)->getOwnerBigFileInputPosition()
-					: std::get<Work::ConvertFileTask>(fileTaskVariant).getOwnerBigFileInputPosition(),
-
-					tasks
-				)
-			) {
+			if (!outputBigFiles(output, fileTask.getOwnerBigFileInputPosition(), tasks)) {
 				return;
 			}
 
-			outputData(output, fileTaskVariant, yield);
-			outputFiles(output, fileTaskVariantQueue);
+			outputData(output, fileTask, yield);
+			outputFiles(output, fileTaskQueue);
 		}
 	}
 }
@@ -613,7 +582,7 @@ void M4Revolution::fixLoading(const char* outputFileName) {
 	log.finishing();
 
 	// necessary to wake up the output thread one last time at the end
-	std::get<Work::CopyFileTask::POINTER>(tasks.fileLock().get().emplace(std::make_shared<Work::CopyFileTask>(-1, &inputFile)))->complete();
+	tasks.fileLock().get().emplace(-1, &inputFile).complete();
 	yield = false;
 	outputThread.join();
 }
