@@ -1,5 +1,6 @@
 #include "M4Revolution.h"
 #include <iostream>
+#include <chrono>
 
 #define M4REVOLUTION_OUT true, 1
 #define M4REVOLUTION_ERR true, 1, true, __FILE__, __LINE__
@@ -131,6 +132,24 @@ void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::Big
 	#endif
 }
 
+void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type files) {
+	// this function waits for the output thread to catch up
+	// if too many files are queued at once (to prevent running out of memory)
+	// this is 216 because it is the standard number of tiles in a cube
+	const Work::FileTask::POINTER_QUEUE::size_type MAX_FILES = 216;
+
+	if (files < MAX_FILES) {
+		return;
+	}
+
+	// this is just some moderately small amount of time
+	const std::chrono::milliseconds MILLISECONDS = std::chrono::milliseconds(25);
+
+	while (tasks.fileLock().get().size() >= MAX_FILES) {
+		std::this_thread::sleep_for(MILLISECONDS);
+	}
+}
+
 void M4Revolution::copyFiles(
 	Ubi::BigFile::File::SIZE inputPosition,
 	Ubi::BigFile::File::SIZE inputCopyPosition,
@@ -140,14 +159,25 @@ void M4Revolution::copyFiles(
 ) {
 	inputFileStream.seekg((std::streampos)inputCopyPosition + bigFileInputPosition);
 
+	Work::FileTask::POINTER_QUEUE::size_type files = 0;
+
 	// note: this must get created even if filePointerVectorPointer is empty or the count to copy would be zero
 	// so that the bigFileInputPosition is reliably seen by the output thread
 	Work::FileTask::POINTER fileTaskPointer = std::make_shared<Work::FileTask>(bigFileInputPosition, filePointerVectorPointer);
-	tasks.fileLock().get().push(fileTaskPointer);
+
+	// we grab files in this scope so we won't have to lock this twice unnecessarily
+	{
+		Work::FileTask::POINTER_QUEUE_LOCK &fileLock = tasks.fileLock();
+		Work::FileTask::POINTER_QUEUE &queue = fileLock.get();
+		queue.push(fileTaskPointer);
+		files = queue.size();
+	}
 
 	Work::FileTask &fileTask = *fileTaskPointer;
 	fileTask.copy(inputFileStream, inputPosition - inputCopyPosition);
 	fileTask.complete();
+
+	waitFiles(files);
 
 	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
 
@@ -465,31 +495,43 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 }
 
 void M4Revolution::outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield) {
+	Work::Data::QUEUE dataQueue = {};
+
 	for (;;) {
-		Work::Data::QUEUE_LOCK lock = fileTask.lock(yield);
-		Work::Data::QUEUE &queue = lock.get();
+		{
+			Work::Data::QUEUE_LOCK lock = fileTask.lock(yield);
+			Work::Data::QUEUE &queue = lock.get();
 
-		while (!queue.empty()) {
-			Work::Data &data = queue.front();
+			if (queue.empty()) {
+				continue;
+			}
 
-			// a NULL dataPointer signifies the file is completed
+			dataQueue = queue;
+			queue = {};
+		}
+
+		while (!dataQueue.empty()) {
+			Work::Data &data = dataQueue.front();
+
+			// a NULL pointer signifies the file is complete
 			if (!data.pointer) {
 				return;
 			}
 
 			writeFileStreamSafe(output.fileStream, data.pointer.get(), data.size);
-			queue.pop();
+
+			dataQueue.pop();
 		}
 	}
 }
 
-void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::POINTER_QUEUE &fileTaskPointerQueue) {
+void M4Revolution::outputFiles(Work::Output &output, Work::FileTask &fileTask) {
 	Ubi::BigFile::File::SIZE &filePosition = output.filePosition;
 	Ubi::BigFile::File::POINTER_VECTOR::size_type &filesWritten = output.filesWritten;
 
 	// depending on if the files was copied or converted
 	// we will either have a vector or a singular dataPointer
-	Work::FileTask::FILE_VARIANT fileVariant = fileTaskPointerQueue.front()->getFileVariant();
+	Work::FileTask::FILE_VARIANT fileVariant = fileTask.getFileVariant();
 
 	if (std::holds_alternative<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant)) {
 		Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = std::get<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant);
@@ -515,21 +557,29 @@ void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::POINTER_QUE
 		filePosition += file.size;
 		filesWritten++;
 	}
-
-	// note that we do not continue looping here - need to check on the BigFile next after doing this
-	fileTaskPointerQueue.pop();
 }
 
 void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield) {
 	Work::Output output(outputFileName);
 
-	for (;;) {
-		Work::FileTask::POINTER_QUEUE_LOCK pointerQueueLock = tasks.fileLock(yield);
-		Work::FileTask::POINTER_QUEUE &fileTaskPointerQueue = pointerQueueLock.get();
+	Work::FileTask::POINTER_QUEUE fileTaskPointerQueue = {};
 
-		// this would mean we made it to the end, but didn't write all the filesystems somehow
-		if (!yield && fileTaskPointerQueue.empty()) {
-			throw std::logic_error("fileTaskPointerQueue must not be empty if yield is false");
+	for (;;) {
+		{
+			Work::FileTask::POINTER_QUEUE_LOCK fileLock = tasks.fileLock(yield);
+			Work::FileTask::POINTER_QUEUE &queue = fileLock.get();
+
+			// this would mean we made it to the end, but didn't write all the filesystems somehow
+			if (queue.empty()) {
+				if (yield) {
+					continue;
+				}
+
+				throw std::logic_error("fileTaskPointerQueue must not be empty if yield is false");
+			}
+
+			fileTaskPointerQueue = queue;
+			queue = {};
 		}
 
 		while (!fileTaskPointerQueue.empty()) {
@@ -541,7 +591,9 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 			}
 
 			outputData(output, fileTask, yield);
-			outputFiles(output, fileTaskPointerQueue);
+			outputFiles(output, fileTask);
+
+			fileTaskPointerQueue.pop();
 		}
 	}
 }
@@ -561,6 +613,8 @@ M4Revolution::M4Revolution(const char* inputFileName, bool logFileNames, bool di
 		throw std::runtime_error("Failed to Create Threadpool");
 	}
 
+	// chosen so that if you have a quad core there will still be at least two threads for other system stuff
+	// (meanwhile, barely affecting even more powerful processors)
 	const DWORD RESERVED_THREADS = 2;
 
 	SYSTEM_INFO systemInfo = {};

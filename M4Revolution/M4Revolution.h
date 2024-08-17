@@ -61,6 +61,8 @@ class M4Revolution {
 
 	void convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
 
+	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type files);
+
 	void copyFiles(
 		Ubi::BigFile::File::SIZE inputPosition,
 		Ubi::BigFile::File::SIZE inputCopyPosition,
@@ -93,7 +95,7 @@ class M4Revolution {
 
 	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
 	static void outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield);
-	static void outputFiles(Work::Output &output, Work::FileTask::POINTER_QUEUE &fileTaskPointerQueue);
+	static void outputFiles(Work::Output &output, Work::FileTask &fileTask);
 	static void outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield);
 
 	public:
