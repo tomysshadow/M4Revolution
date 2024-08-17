@@ -93,9 +93,10 @@ namespace Work {
 		Ubi::BigFile::POINTER bigFilePointer = 0;
 
 		public:
-		typedef std::map<std::streampos, BigFileTask> MAP;
-		typedef Lock<MAP> MAP_LOCK;
-		typedef std::shared_ptr<MAP_LOCK> MAP_LOCK_POINTER;
+		typedef std::shared_ptr<BigFileTask> POINTER;
+		typedef std::map<std::streampos, POINTER> POINTER_MAP;
+		typedef Lock<POINTER_MAP> POINTER_MAP_LOCK;
+		typedef std::shared_ptr<POINTER_MAP_LOCK> POINTER_MAP_LOCK_POINTER;
 
 		// outputPosition is set by the output thread, and later used by it so it knows where to jump back
 		std::streampos outputPosition = -1;
@@ -159,7 +160,7 @@ namespace Work {
 		// they can't be handled in FIFO order
 		// (otherwise, the first BigFile would block for the entire duration)
 		Event bigFileEvent;
-		BigFileTask::MAP bigFileTaskMap = {};
+		BigFileTask::POINTER_MAP bigFileTaskPointerMap = {};
 
 		// the list of FileTasks must be a queue, because
 		// they must be written in order, start to finish
@@ -169,8 +170,8 @@ namespace Work {
 
 		public:
 		Tasks();
-		BigFileTask::MAP_LOCK bigFileLock(bool &yield);
-		BigFileTask::MAP_LOCK bigFileLock();
+		BigFileTask::POINTER_MAP_LOCK bigFileLock(bool &yield);
+		BigFileTask::POINTER_MAP_LOCK bigFileLock();
 		FileTask::POINTER_QUEUE_LOCK fileLock(bool &yield);
 		FileTask::POINTER_QUEUE_LOCK fileLock();
 	};
@@ -195,7 +196,7 @@ namespace Work {
 		std::ofstream fileStream = {};
 
 		std::streampos currentBigFileInputPosition = -1;
-		BigFileTask* bigFileTaskPointer = 0;
+		BigFileTask::POINTER bigFileTaskPointer = 0;
 
 		Ubi::BigFile::File::SIZE filePosition = 0;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;

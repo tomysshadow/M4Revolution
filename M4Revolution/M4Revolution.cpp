@@ -135,6 +135,7 @@ void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::Big
 void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type files) {
 	// this function waits for the output thread to catch up
 	// if too many files are queued at once (to prevent running out of memory)
+	// this is only done on copying files so that it isn't run too often
 	// this is 216 because it is the standard number of tiles in a cube
 	const Work::FileTask::POINTER_QUEUE::size_type MAX_FILES = 216;
 
@@ -225,7 +226,7 @@ void M4Revolution::fixLoading(std::streampos ownerBigFileInputPosition, Ubi::Big
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
 	std::streampos bigFileInputPosition = inputFileStream.tellg();
-	tasks.bigFileLock().get().try_emplace(bigFileInputPosition, inputFileStream, ownerBigFileInputPosition, file, filePointerSetMap);
+	tasks.bigFileLock().get().insert({bigFileInputPosition, std::make_shared<Work::BigFileTask>(inputFileStream, ownerBigFileInputPosition, file, filePointerSetMap)});
 
 	// inputCopyPosition is the position of the files to copy
 	// inputFilePosition is the position of a specific input file (for file.size calculation)
@@ -405,19 +406,17 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 	}
 
 	std::ofstream &fileStream = output.fileStream;
-	Work::BigFileTask* &bigFileTaskPointer = output.bigFileTaskPointer;
+	Work::BigFileTask::POINTER &bigFileTaskPointer = output.bigFileTaskPointer;
 	Ubi::BigFile::File::SIZE &filePosition = output.filePosition;
 	Ubi::BigFile::File::POINTER_VECTOR::size_type &filesWritten = output.filesWritten;
 
 	Ubi::BigFile::File::POINTER_VECTOR::size_type files = 0;
 
+	Work::BigFileTask::POINTER eraseBigFileTaskPointer = 0;
+	Work::BigFileTask::POINTER currentBigFileTaskPointer = 0;
+
 	std::streampos eraseBigFileInputPosition = -1;
-
 	std::streampos currentOutputPosition = -1;
-	std::streampos eraseOutputPosition = -1;
-
-	Work::BigFileTask::MAP_LOCK bigFileLock = tasks.bigFileLock();
-	Work::BigFileTask::MAP &bigFileTaskMap = bigFileLock.get();
 
 	// may be zero if this is the first BigFile so this hasn't been set before
 	if (bigFileTaskPointer) {
@@ -425,7 +424,7 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 		files = bigFileTask.getFiles();
 
 		// checks if divisible, in case same BigFile referenced from multiple locations
-		if (files && filesWritten % files) {
+		if (files && (!filesWritten || filesWritten % files)) {
 			// we might be coming back to this BigFile later
 			// so set the number of files we've written
 			bigFileTask.filesWritten = filesWritten;
@@ -433,51 +432,58 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 			do {
 				// we're done with this BigFile, so
 				// write it, then erase it
-				Work::BigFileTask &eraseBigFileTask = *bigFileTaskPointer;
+				eraseBigFileTaskPointer = bigFileTaskPointer;
+				Work::BigFileTask &eraseBigFileTask = *eraseBigFileTaskPointer;
 
 				// jump to the beginning where the filesystem is meant to be
 				// then jump to the end again
 				currentOutputPosition = fileStream.tellp();
-				eraseOutputPosition = eraseBigFileTask.outputPosition;
 
+				std::streampos &eraseOutputPosition = eraseBigFileTask.outputPosition;
 				fileStream.seekp(eraseOutputPosition);
+
 				eraseBigFileTask.getBigFilePointer()->write(fileStream);
 
 				fileStream.seekp(currentOutputPosition);
 
-				// need to get these now, before the BigFile is erased and we can't anymore
-				// (this is fine because they don't live on the BigFile object)
-				Ubi::BigFile::File &file = eraseBigFileTask.getFile();
-
 				eraseBigFileInputPosition = currentBigFileInputPosition;
 				currentBigFileInputPosition = eraseBigFileTask.getOwnerBigFileInputPosition();
 
-				bigFileTaskMap.erase(eraseBigFileInputPosition);
+				{
+					Work::BigFileTask::POINTER_MAP_LOCK bigFileLock = tasks.bigFileLock();
+					Work::BigFileTask::POINTER_MAP &bigFileTaskPointerMap = bigFileLock.get();
 
-				// if the BigFile owns itself that means it's the top, and we're done
-				if (eraseBigFileInputPosition == currentBigFileInputPosition) {
-					return false;
+					bigFileTaskPointerMap.erase(eraseBigFileInputPosition);
+
+					// if the BigFile owns itself that means it's the top, and we're done
+					if (eraseBigFileInputPosition == currentBigFileInputPosition) {
+						return false;
+					}
+
+					// since we're already holding the lock, might as well get this now
+					currentBigFileTaskPointer = bigFileTaskPointerMap.at(bigFileInputPosition);
+					bigFileTaskPointer = bigFileTaskPointerMap.at(currentBigFileInputPosition);
 				}
 
 				// we now need to check the owner in case we are the last file in the owner and now all its files are written
-				Work::BigFileTask &ownerBigFileTask = bigFileTaskMap.at(currentBigFileInputPosition);
-				bigFileTaskPointer = &ownerBigFileTask;
+				Work::BigFileTask &ownerBigFileTask = *bigFileTaskPointer;
 
 				// update the size and position in the owner's filesystem
+				Ubi::BigFile::File &file = eraseBigFileTask.getFile();
 				file.size = (Ubi::BigFile::File::SIZE)(currentOutputPosition - eraseOutputPosition);
 				file.position = (Ubi::BigFile::File::SIZE)(eraseOutputPosition - ownerBigFileTask.outputPosition);
 				filePosition = file.size + file.position;
 				ownerBigFileTask.filesWritten++;
 
 				files = bigFileTaskPointer->getFiles();
-			} while (!files || !(bigFileTaskPointer->filesWritten % files));
+			} while (!files || (bigFileTaskPointer->filesWritten && !(bigFileTaskPointer->filesWritten % files)));
 		}
 	}
 
-	// get the current BigFile now
+	// get the current BigFile now, if we didn't before already
 	currentBigFileInputPosition = bigFileInputPosition;
-	Work::BigFileTask &currentBigFileTask = bigFileTaskMap.at(currentBigFileInputPosition);
-	bigFileTaskPointer = &currentBigFileTask;
+	bigFileTaskPointer = currentBigFileTaskPointer ? currentBigFileTaskPointer : tasks.bigFileLock().get().at(currentBigFileInputPosition);
+	Work::BigFileTask &currentBigFileTask = *bigFileTaskPointer;
 
 	// get files written in case we are coming back to this BigFile from before
 	filesWritten = currentBigFileTask.filesWritten;

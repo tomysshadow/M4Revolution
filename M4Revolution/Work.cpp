@@ -177,11 +177,11 @@ Work::Tasks::Tasks()
 	fileEvent(true) {
 }
 
-Work::BigFileTask::MAP_LOCK Work::Tasks::bigFileLock(bool &yield) {
-	return BigFileTask::MAP_LOCK(bigFileEvent, bigFileTaskMap, yield);
+Work::BigFileTask::POINTER_MAP_LOCK Work::Tasks::bigFileLock(bool &yield) {
+	return BigFileTask::POINTER_MAP_LOCK(bigFileEvent, bigFileTaskPointerMap, yield);
 }
 
-Work::BigFileTask::MAP_LOCK Work::Tasks::bigFileLock() {
+Work::BigFileTask::POINTER_MAP_LOCK Work::Tasks::bigFileLock() {
 	bool yield = false;
 	return bigFileLock(yield);
 }
