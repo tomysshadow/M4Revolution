@@ -97,28 +97,34 @@ Ubi::BigFile::POINTER Work::BigFileTask::getBigFilePointer() const {
 
 Work::FileTask::FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer)
 	: ownerBigFileInputPosition(ownerBigFileInputPosition),
-	fileVariant(filePointer),
-	event(true) {
+	fileVariant(filePointer) {
 }
 
 Work::FileTask::FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer)
 	: ownerBigFileInputPosition(ownerBigFileInputPosition),
-	fileVariant(filePointerVectorPointer),
-	event(true) {
+	fileVariant(filePointerVectorPointer) {
+}
+
+std::streampos Work::FileTask::getOwnerBigFileInputPosition() {
+	return ownerBigFileInputPosition;
+}
+
+Work::FileTask::FILE_VARIANT Work::FileTask::getFileVariant() {
+	return fileVariant;
 }
 
 // called in order to lock the data queue so we can add new data
 // the Lock class ensures the output thread will automatically wake up to write it after we add the new data
-Work::Data::QUEUE_LOCK Work::FileTask::lock(bool &yield) {
+Work::Data::QUEUE_LOCK Work::CopyFileTask::lock(bool &yield) {
 	return Data::QUEUE_LOCK(event, queue, yield);
 }
 
-Work::Data::QUEUE_LOCK Work::FileTask::lock() {
+Work::Data::QUEUE_LOCK Work::CopyFileTask::lock() {
 	bool yield = false;
 	return lock(yield);
 }
 
-void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count) {
+void Work::CopyFileTask::copy(std::ifstream &inputFileStream, std::streamsize count) {
 	if (!count) {
 		return;
 	}
@@ -159,17 +165,31 @@ void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count)
 	}
 }
 
+Work::CopyFileTask::CopyFileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer)
+	: FileTask(ownerBigFileInputPosition, filePointer),
+	event(true) {
+}
+
+Work::CopyFileTask::CopyFileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer)
+	: FileTask(ownerBigFileInputPosition, filePointerVectorPointer),
+	event(true) {
+}
+
 // called to signal to the output thread that we are done adding new data
-void Work::FileTask::complete() {
+void Work::CopyFileTask::complete() {
 	lock().get().emplace();
 }
 
-std::streampos Work::FileTask::getOwnerBigFileInputPosition() {
-	return ownerBigFileInputPosition;
+Work::ConvertFileTask::ConvertFileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer)
+	: FileTask(ownerBigFileInputPosition, filePointer) {
 }
 
-Work::FileTask::FILE_VARIANT Work::FileTask::getFileVariant() {
-	return fileVariant;
+Work::ConvertFileTask::ConvertFileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer)
+	: FileTask(ownerBigFileInputPosition, filePointerVectorPointer) {
+}
+
+void Work::ConvertFileTask::complete() {
+	queue.emplace();
 }
 
 Work::Tasks::Tasks()
@@ -186,13 +206,27 @@ Work::BigFileTask::MAP_LOCK Work::Tasks::bigFileLock() {
 	return bigFileLock(yield);
 }
 
-Work::FileTask::QUEUE_LOCK Work::Tasks::fileLock(bool &yield) {
-	return FileTask::QUEUE_LOCK(fileEvent, fileTaskQueue, yield);
+Work::Tasks::FILE_TASK_VARIANT_QUEUE_LOCK Work::Tasks::fileLock(bool &yield) {
+	return FILE_TASK_VARIANT_QUEUE_LOCK(fileEvent, fileTaskVariantQueue, yield);
 }
 
-Work::FileTask::QUEUE_LOCK Work::Tasks::fileLock() {
+Work::Tasks::FILE_TASK_VARIANT_QUEUE_LOCK Work::Tasks::fileLock() {
 	bool yield = false;
 	return fileLock(yield);
+}
+
+Work::Convert::Convert(
+	std::streampos ownerBigFileInputPosition,
+	Ubi::BigFile::File &file,
+	Tasks &tasks,
+	nvtt::Context &context,
+	nvtt::CompressionOptions &compressionOptions
+)
+	: ownerBigFileInputPosition(ownerBigFileInputPosition),
+	file(file),
+	tasks(tasks),
+	context(context),
+	compressionOptions(compressionOptions) {
 }
 
 Work::Output::Output(const char* fileName)

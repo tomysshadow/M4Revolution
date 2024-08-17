@@ -4,6 +4,12 @@
 #define M4REVOLUTION_OUT true, 1
 #define M4REVOLUTION_ERR true, 1, true, __FILE__, __LINE__
 
+void M4Revolution::destroy() {
+	#ifdef MULTITHREADED
+	CloseThreadpool(pool);
+	#endif
+};
+
 M4Revolution::Log::Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames)
 	: inputFileStream(inputFileStream),
 	inputFileSize(inputFileSize),
@@ -54,8 +60,8 @@ void M4Revolution::Log::finishing() {
 	std::cout << "Finishing, please wait..." << std::endl;
 }
 
-M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask)
-	: fileTask(fileTask) {
+M4Revolution::OutputHandler::OutputHandler(Work::ConvertFileTask &convertFileTask)
+	: convertFileTask(convertFileTask) {
 }
 
 void M4Revolution::OutputHandler::beginImage(int size, int width, int height, int depth, int face, int miplevel) {
@@ -81,7 +87,7 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 		// this locks the FileTask for a single line
 		// when it unlocks, the output thread will wake up to write the data
 		// then it will wait on more data again
-		fileTask.lock().get().emplace(size, pointer);
+		convertFileTask.queue.emplace(size, pointer);
 
 		this->size += size;
 	} catch (...) {
@@ -101,60 +107,25 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = 
 };
 
 void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file) {
-	{
-		Work::Data::POINTER pointer = Work::Data::POINTER(new unsigned char[file.size]);
-		readFileStreamSafe(inputFileStream, pointer.get(), file.size);
+	Work::Convert* convertPointer = new Work::Convert(ownerBigFileInputPosition, file, tasks, context, compressionOptions);
 
-		{
-			zap_byte_t* out = 0;
-			zap_size_t outSize = 0;
-			zap_int_t outWidth = 0;
-			zap_int_t outHeight = 0;
+	Work::Data::POINTER &pointer = convertPointer->pointer;
+	pointer = Work::Data::POINTER(new unsigned char[file.size]);
+	readFileStreamSafe(inputFileStream, pointer.get(), file.size);
 
-			if (zap_load_memory(pointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
-				throw std::runtime_error("Failed to Load ZAP From Memory");
-			}
+	#ifdef MULTITHREADED
+	PTP_WORK work = CreateThreadpoolWork(convertZAPProc, convertPointer, NULL);
 
-			SCOPE_EXIT {
-				if (!freeZAP(out)) {
-					throw std::runtime_error("Failed to Free ZAP");
-				}
-			};
-		
-			const size_t COLOR32_SIZE = sizeof(COLOR32);
-
-			COLOR32* color32Pointer = (COLOR32*)out;
-
-			// need to flip the endianness, NVTT expects BGR instead of RGB
-			color32X(color32Pointer, outWidth * COLOR32_SIZE, outSize);
-
-			if (!surface.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, outWidth, outHeight, 1, out)) {
-				throw std::runtime_error("Failed to Set Image");
-			}
-		}
+	if (!work) {
+		throw std::runtime_error("Failed to Create Threadpool Work");
 	}
 
-	// when this unlocks one line later, the output thread will begin waiting on data
-	Work::FileTask &fileTask = tasks.fileLock().get().emplace(ownerBigFileInputPosition, &file);
-
-	OutputHandler outputHandler(fileTask);
-	outputOptions.setOutputHandler(&outputHandler);
-
-	ErrorHandler errorHandler;
-	outputOptions.setErrorHandler(&errorHandler);
-
-	if (!context.outputHeader(surface, 1, compressionOptions, outputOptions)) {
-		throw std::runtime_error("Failed to Process Context");
-	}
-
-	if (!context.compress(surface, 0, 0, compressionOptions, outputOptions) || !errorHandler.result) {
-		throw std::runtime_error("Failed to Process Context");
-	}
-
-	file.size = outputHandler.size;
-
-	// this will wake up the output thread to tell it we have no more data to add, and to move on to the next FileTask
-	fileTask.complete();
+	SubmitThreadpoolWork(work);
+	CloseThreadpoolWork(work);
+	#endif
+	#ifdef SINGLETHREADED
+	convertZAPWorkCallback(convertPointer);
+	#endif
 }
 
 void M4Revolution::copyFiles(
@@ -168,9 +139,10 @@ void M4Revolution::copyFiles(
 
 	// note: this must get created even if filePointerVectorPointer is empty or the count to copy would be zero
 	// so that the bigFileInputPosition is reliably seen by the output thread
-	Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, filePointerVectorPointer);
-	fileTask.copy(inputFileStream, inputPosition - inputCopyPosition);
-	fileTask.complete();
+	Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant = tasks.fileLock().get().emplace(std::make_shared<Work::CopyFileTask>(bigFileInputPosition, filePointerVectorPointer));
+	Work::CopyFileTask &copyFileTask = *std::get<Work::CopyFileTask::POINTER>(fileTaskVariant);
+	copyFileTask.copy(inputFileStream, inputPosition - inputCopyPosition);
+	copyFileTask.complete();
 
 	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
 
@@ -190,9 +162,10 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
-		Work::FileTask &fileTask = tasks.fileLock().get().emplace(bigFileInputPosition, &file);
-		fileTask.copy(inputFileStream, file.size);
-		fileTask.complete();
+		Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant = tasks.fileLock().get().emplace(std::make_shared<Work::CopyFileTask>(bigFileInputPosition, &file));
+		Work::CopyFileTask &copyFileTask = *std::get<Work::CopyFileTask::POINTER>(fileTaskVariant);
+		copyFileTask.copy(inputFileStream, file.size);
+		copyFileTask.complete();
 	}
 
 	log.converting(file);
@@ -311,6 +284,79 @@ void M4Revolution::color32X(COLOR32* color32Pointer, size_t stride, size_t size)
 	}
 }
 
+void M4Revolution::convertZAPWorkCallback(Work::Convert* convertPointer) {
+	SCOPE_EXIT {
+		delete convertPointer;
+	};
+
+	nvtt::Surface surface = {};
+
+	{
+		zap_byte_t* out = 0;
+		zap_size_t outSize = 0;
+		zap_int_t outWidth = 0;
+		zap_int_t outHeight = 0;
+
+		if (zap_load_memory(convertPointer->pointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
+			throw std::runtime_error("Failed to Load ZAP From Memory");
+		}
+
+		SCOPE_EXIT {
+			if (!freeZAP(out)) {
+				throw std::runtime_error("Failed to Free ZAP");
+			}
+		};
+
+		const size_t COLOR32_SIZE = sizeof(COLOR32);
+
+		COLOR32* color32Pointer = (COLOR32*)out;
+
+		// need to flip the endianness, NVTT expects BGR instead of RGB
+		color32X(color32Pointer, outWidth * COLOR32_SIZE, outSize);
+
+		if (!surface.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, outWidth, outHeight, 1, out)) {
+			throw std::runtime_error("Failed to Set Image");
+		}
+	}
+
+	// when this unlocks one line later, the output thread will begin waiting on data
+	Ubi::BigFile::File &file = convertPointer->file;
+
+	Work::ConvertFileTask convertFileTask(convertPointer->ownerBigFileInputPosition, &file);
+
+	nvtt::OutputOptions outputOptions = {};
+	outputOptions.setContainer(nvtt::Container_DDS);
+
+	OutputHandler outputHandler(convertFileTask);
+	outputOptions.setOutputHandler(&outputHandler);
+
+	ErrorHandler errorHandler;
+	outputOptions.setErrorHandler(&errorHandler);
+
+	nvtt::Context &context = convertPointer->context;
+	nvtt::CompressionOptions &compressionOptions = convertPointer->compressionOptions;
+
+	if (!context.outputHeader(surface, 1, compressionOptions, outputOptions)) {
+		throw std::runtime_error("Failed to Output Context Header");
+	}
+
+	if (!context.compress(surface, 0, 0, compressionOptions, outputOptions) || !errorHandler.result) {
+		throw std::runtime_error("Failed to Compress Context");
+	}
+
+	file.size = outputHandler.size;
+
+	// this will wake up the output thread to tell it we have no more data to add, and to move on to the next FileTask
+	convertFileTask.complete();
+
+	convertPointer->tasks.fileLock().get().push(convertFileTask);
+}
+
+VOID CALLBACK M4Revolution::convertZAPProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work) {
+	Work::Convert* convertPointer = (Work::Convert*)parameter;
+	convertZAPWorkCallback(convertPointer);
+}
+
 bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks) {
 	std::streampos &currentBigFileInputPosition = output.currentBigFileInputPosition;
 
@@ -409,32 +455,41 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 	return true;
 }
 
-void M4Revolution::outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield) {
+bool M4Revolution::outputDataQueue(Work::Output &output, Work::Data::QUEUE &queue) {
+	while (!queue.empty()) {
+		Work::Data &data = queue.front();
+
+		// a NULL pointer signifies the file is completed
+		if (!data.pointer) {
+			return false;
+		}
+
+		writeFileStreamSafe(output.fileStream, data.pointer.get(), data.size);
+		queue.pop();
+	}
+	return true;
+}
+
+void M4Revolution::outputData(Work::Output &output, Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant, bool &yield) {
 	for (;;) {
-		Work::Data::QUEUE_LOCK lock = fileTask.lock(yield);
-		Work::Data::QUEUE &queue = lock.get();
-
-		while (!queue.empty()) {
-			Work::Data &data = queue.front();
-
-			// a NULL pointer signifies the file is completed
-			if (!data.pointer) {
+		if (std::holds_alternative<Work::CopyFileTask::POINTER>(fileTaskVariant)) {
+			Work::Data::QUEUE_LOCK lock = std::get<Work::CopyFileTask::POINTER>(fileTaskVariant)->lock(yield);
+			Work::Data::QUEUE &queue = lock.get();
+			
+			if (!outputDataQueue(output, queue)) {
 				return;
 			}
-
-			writeFileStreamSafe(output.fileStream, data.pointer.get(), data.size);
-			queue.pop();
+		} else {
+			if (!outputDataQueue(output, std::get<Work::ConvertFileTask>(fileTaskVariant).queue)) {
+				return;
+			}
 		}
 	}
 }
 
-void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::QUEUE &fileTaskQueue) {
+void M4Revolution::outputFileVariant(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant) {
 	Ubi::BigFile::File::SIZE &filePosition = output.filePosition;
 	Ubi::BigFile::File::POINTER_VECTOR::size_type &filesWritten = output.filesWritten;
-
-	// depending on if the files was copied or converted
-	// we will either have a vector or a singular pointer
-	Work::FileTask::FILE_VARIANT fileVariant = fileTaskQueue.front().getFileVariant();
 
 	if (std::holds_alternative<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant)) {
 		Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = std::get<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant);
@@ -460,33 +515,54 @@ void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::QUEUE &file
 		filePosition += file.size;
 		filesWritten++;
 	}
+}
+
+void M4Revolution::outputFiles(Work::Output &output, Work::Tasks::FILE_TASK_VARIANT_QUEUE &fileTaskVariantQueue) {
+	// depending on if the files was copied or converted
+	// we will either have a vector or a singular pointer
+	Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant = fileTaskVariantQueue.front();
+
+	if (std::holds_alternative<Work::CopyFileTask::POINTER>(fileTaskVariant)) {
+		outputFileVariant(output, std::get<Work::CopyFileTask::POINTER>(fileTaskVariant)->getFileVariant());
+	} else {
+		outputFileVariant(output, std::get<Work::ConvertFileTask>(fileTaskVariant).getFileVariant());
+	}
 
 	// note that we do not continue looping here - need to check on the BigFile next after doing this
-	fileTaskQueue.pop();
+	fileTaskVariantQueue.pop();
 }
 
 void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield) {
 	Work::Output output(outputFileName);
 
 	for (;;) {
-		Work::FileTask::QUEUE_LOCK queueLock = tasks.fileLock(yield);
-		Work::FileTask::QUEUE &fileTaskQueue = queueLock.get();
+		Work::Tasks::FILE_TASK_VARIANT_QUEUE_LOCK queueLock = tasks.fileLock(yield);
+		Work::Tasks::FILE_TASK_VARIANT_QUEUE &fileTaskVariantQueue = queueLock.get();
 
 		// this would mean we made it to the end, but didn't write all the filesystems somehow
-		if (!yield && fileTaskQueue.empty()) {
+		if (!yield && fileTaskVariantQueue.empty()) {
 			throw std::logic_error("fileTaskQueue must not be empty if yield is false");
 		}
 
-		while (!fileTaskQueue.empty()) {
-			Work::FileTask &fileTask = fileTaskQueue.front();
+		while (!fileTaskVariantQueue.empty()) {
+			Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant = fileTaskVariantQueue.front();
 
 			// if this returns false it means we're done
-			if (!outputBigFiles(output, fileTask.getOwnerBigFileInputPosition(), tasks)) {
+			if (!outputBigFiles(
+					output,
+
+					std::holds_alternative<Work::CopyFileTask::POINTER>(fileTaskVariant)
+					? std::get<Work::CopyFileTask::POINTER>(fileTaskVariant)->getOwnerBigFileInputPosition()
+					: std::get<Work::ConvertFileTask>(fileTaskVariant).getOwnerBigFileInputPosition(),
+
+					tasks
+				)
+			) {
 				return;
 			}
 
-			outputData(output, fileTask, yield);
-			outputFiles(output, fileTaskQueue);
+			outputData(output, fileTaskVariant, yield);
+			outputFiles(output, fileTaskVariantQueue);
 		}
 	}
 }
@@ -499,7 +575,29 @@ M4Revolution::M4Revolution(const char* inputFileName, bool logFileNames, bool di
 	compressionOptions.setFormat(nvtt::Format_DXT5);
 	compressionOptions.setQuality(nvtt::Quality_Highest);
 
-	outputOptions.setContainer(nvtt::Container_DDS);
+	#ifdef MULTITHREADED
+	pool = CreateThreadpool(NULL);
+
+	if (!pool) {
+		throw std::runtime_error("Failed to Create Threadpool");
+	}
+
+	const DWORD RESERVED_THREADS = 2;
+
+	SYSTEM_INFO systemInfo = {};
+	GetSystemInfo(&systemInfo);
+
+	DWORD maxThreads = systemInfo.dwNumberOfProcessors - RESERVED_THREADS;
+	SetThreadpoolThreadMaximum(pool, max(maxThreads, 1));
+
+	if (!SetThreadpoolThreadMinimum(pool, 1)) {
+		throw std::runtime_error("Failed to Set Threadpool Thread Minimum");
+	}
+	#endif
+}
+
+M4Revolution::~M4Revolution() {
+	destroy();
 }
 
 void M4Revolution::fixLoading(const char* outputFileName) {
@@ -515,7 +613,7 @@ void M4Revolution::fixLoading(const char* outputFileName) {
 	log.finishing();
 
 	// necessary to wake up the output thread one last time at the end
-	tasks.fileLock().get().emplace(-1, &inputFile).complete();
+	std::get<Work::CopyFileTask::POINTER>(tasks.fileLock().get().emplace(std::make_shared<Work::CopyFileTask>(-1, &inputFile)))->complete();
 	yield = false;
 	outputThread.join();
 }

@@ -7,6 +7,8 @@
 
 class M4Revolution {
 	private:
+	void destroy();
+
 	typedef uint32_t COLOR32;
 
 	class Log {
@@ -30,14 +32,14 @@ class M4Revolution {
 	};
 
 	struct OutputHandler : public nvtt::OutputHandler {
-		OutputHandler(Work::FileTask &fileTask);
+		OutputHandler(Work::ConvertFileTask &convertFileTask);
 		OutputHandler(const OutputHandler &outputHandler) = delete;
 		OutputHandler &operator=(const OutputHandler &outputHandler) = delete;
 		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel);
 		virtual void endImage();
 		virtual bool writeData(const void* data, int size);
 
-		Work::FileTask &fileTask;
+		Work::ConvertFileTask &convertFileTask;
 
 		unsigned int size = 0;
 	};
@@ -55,9 +57,7 @@ class M4Revolution {
 	bool logFileNames = false;
 
 	nvtt::Context context = {};
-	nvtt::Surface surface = {};
 	nvtt::CompressionOptions compressionOptions = {};
-	nvtt::OutputOptions outputOptions = {};
 
 	void convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
 
@@ -83,13 +83,24 @@ class M4Revolution {
 
 	static void color32X(COLOR32* color32Pointer, size_t stride, size_t size);
 
+	static void convertZAPWorkCallback(Work::Convert* convertPointer);
+
+	#ifdef MULTITHREADED
+	PTP_POOL pool = NULL;
+
+	static VOID CALLBACK convertZAPProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
+	#endif
+
 	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
-	static void outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield);
-	static void outputFiles(Work::Output &output, Work::FileTask::QUEUE &fileTaskQueue);
+	static bool outputDataQueue(Work::Output &output, Work::Data::QUEUE &queue);
+	static void outputData(Work::Output &output, Work::Tasks::FILE_TASK_VARIANT &fileTaskVariant, bool &yield);
+	static void outputFileVariant(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
+	static void outputFiles(Work::Output &output, Work::Tasks::FILE_TASK_VARIANT_QUEUE &fileTaskVariantQueue);
 	static void outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield);
 
 	public:
 	M4Revolution(const char* inputFileName, bool logFileNames = false, bool disableHardwareAcceleration = false);
+	~M4Revolution();
 	M4Revolution(const M4Revolution &m4Revolution) = delete;
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
 	void editTransitionSpeed(const char* outputFileName);

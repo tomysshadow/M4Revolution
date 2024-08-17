@@ -5,6 +5,9 @@
 #include <vector>
 #include <queue>
 #include <atomic>
+#include <variant>
+
+#include <nvtt/nvtt.h>
 
 #if defined(_WIN32)
 #define MULTITHREADED
@@ -116,11 +119,20 @@ namespace Work {
 	// FileTask (must be written in order)
 	class FileTask {
 		public:
-		typedef std::queue<FileTask> QUEUE;
-		typedef Lock<FileTask::QUEUE> QUEUE_LOCK;
-		typedef std::shared_ptr<QUEUE_LOCK> QUEUE_LOCK_POINTER;
 		typedef std::variant<Ubi::BigFile::File::POINTER_VECTOR_POINTER, Ubi::BigFile::File*> FILE_VARIANT;
 
+		private:
+		std::streampos ownerBigFileInputPosition = -1;
+		FILE_VARIANT fileVariant = {};
+
+		public:
+		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer);
+		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
+		std::streampos getOwnerBigFileInputPosition();
+		FILE_VARIANT getFileVariant();
+	};
+
+	class CopyFileTask : public FileTask {
 		private:
 		// this needs its own queue, because
 		// different files will be converted at the same time, each with their own FileTask
@@ -133,24 +145,36 @@ namespace Work {
 		// if it's false, it'll wait on more data again, otherwise it'll move to the next FileTask
 		// the output thread will check if the next file in the queue has a lesser value for bigFileInputPosition
 		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
-		std::streampos ownerBigFileInputPosition = -1;
-		FILE_VARIANT fileVariant = {};
 		Event event;
 		Data::QUEUE queue = {};
 
 		public:
-		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer);
-		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
+		typedef std::shared_ptr<CopyFileTask> POINTER;
+
+		CopyFileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer);
+		CopyFileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
 		Data::QUEUE_LOCK lock(bool &yield);
 		Data::QUEUE_LOCK lock();
 		void copy(std::ifstream &inputFileStream, std::streamsize count);
 		void complete();
-		std::streampos getOwnerBigFileInputPosition();
-		FILE_VARIANT getFileVariant();
+	};
+
+	class ConvertFileTask : public FileTask {
+		public:
+		Data::QUEUE queue = {};
+
+		ConvertFileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer);
+		ConvertFileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
+		void complete();
 	};
 
 	// Tasks (to be performed by the output thread)
 	class Tasks {
+		public:
+		typedef std::variant<CopyFileTask::POINTER, ConvertFileTask> FILE_TASK_VARIANT;
+		typedef std::queue<FILE_TASK_VARIANT> FILE_TASK_VARIANT_QUEUE;
+		typedef Lock<FILE_TASK_VARIANT_QUEUE> FILE_TASK_VARIANT_QUEUE_LOCK;
+
 		private:
 		// the list of BigFileTasks must be a vector, because
 		// they can't be handled in FIFO order
@@ -162,14 +186,34 @@ namespace Work {
 		// they must be written in order, start to finish
 		// regardless of the order the data becomes available in
 		Event fileEvent;
-		FileTask::QUEUE fileTaskQueue = {};
+		FILE_TASK_VARIANT_QUEUE fileTaskVariantQueue = {};
 
 		public:
 		Tasks();
 		BigFileTask::MAP_LOCK bigFileLock(bool &yield);
 		BigFileTask::MAP_LOCK bigFileLock();
-		FileTask::QUEUE_LOCK fileLock(bool &yield);
-		FileTask::QUEUE_LOCK fileLock();
+		FILE_TASK_VARIANT_QUEUE_LOCK fileLock(bool &yield);
+		FILE_TASK_VARIANT_QUEUE_LOCK fileLock();
+	};
+
+	struct Convert {
+		std::streampos ownerBigFileInputPosition;
+		Ubi::BigFile::File &file;
+
+		Tasks &tasks;
+
+		nvtt::Context &context;
+		nvtt::CompressionOptions &compressionOptions;
+
+		Work::Data::POINTER pointer = 0;
+
+		Convert(
+			std::streampos ownerBigFileInputPosition,
+			Ubi::BigFile::File &file,
+			Tasks &tasks,
+			nvtt::Context &context,
+			nvtt::CompressionOptions &compressionOptions
+		);
 	};
 
 	struct Output {
