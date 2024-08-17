@@ -118,9 +118,10 @@ namespace Work {
 	// FileTask (must be written in order)
 	class FileTask {
 		public:
-		typedef std::queue<FileTask> QUEUE;
-		typedef Lock<FileTask::QUEUE> QUEUE_LOCK;
-		typedef std::shared_ptr<QUEUE_LOCK> QUEUE_LOCK_POINTER;
+		typedef std::shared_ptr<FileTask> POINTER;
+		typedef std::queue<POINTER> POINTER_QUEUE;
+		typedef Lock<POINTER_QUEUE> POINTER_QUEUE_LOCK;
+		typedef std::shared_ptr<POINTER_QUEUE_LOCK> POINTER_QUEUE_LOCK_POINTER;
 		typedef std::variant<Ubi::BigFile::File::POINTER_VECTOR_POINTER, Ubi::BigFile::File*> FILE_VARIANT;
 
 		private:
@@ -164,31 +165,27 @@ namespace Work {
 		// they must be written in order, start to finish
 		// regardless of the order the data becomes available in
 		Event fileEvent;
-		FileTask::QUEUE fileTaskQueue = {};
+		FileTask::POINTER_QUEUE fileTaskPointerQueue = {};
 
 		public:
 		Tasks();
 		BigFileTask::MAP_LOCK bigFileLock(bool &yield);
 		BigFileTask::MAP_LOCK bigFileLock();
-		FileTask::QUEUE_LOCK fileLock(bool &yield);
-		FileTask::QUEUE_LOCK fileLock();
+		FileTask::POINTER_QUEUE_LOCK fileLock(bool &yield);
+		FileTask::POINTER_QUEUE_LOCK fileLock();
 	};
 
 	struct Convert {
-		std::streampos ownerBigFileInputPosition;
 		Ubi::BigFile::File &file;
-
-		Tasks &tasks;
 
 		nvtt::Context &context;
 		nvtt::CompressionOptions &compressionOptions;
 
-		Work::Data::POINTER pointer = 0;
+		Work::FileTask::POINTER fileTaskPointer = 0;
+		Work::Data::POINTER dataPointer = 0;
 
 		Convert(
-			std::streampos ownerBigFileInputPosition,
 			Ubi::BigFile::File &file,
-			Tasks &tasks,
 			nvtt::Context &context,
 			nvtt::CompressionOptions &compressionOptions
 		);

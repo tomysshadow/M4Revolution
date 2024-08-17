@@ -93,7 +93,7 @@ class M4Revolution {
 
 	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
 	static void outputData(Work::Output &output, Work::FileTask &fileTask, bool &yield);
-	static void outputFiles(Work::Output &output, Work::FileTask::QUEUE &fileTaskQueue);
+	static void outputFiles(Work::Output &output, Work::FileTask::POINTER_QUEUE &fileTaskPointerQueue);
 	static void outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield);
 
 	public:

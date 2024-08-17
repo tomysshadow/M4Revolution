@@ -186,25 +186,21 @@ Work::BigFileTask::MAP_LOCK Work::Tasks::bigFileLock() {
 	return bigFileLock(yield);
 }
 
-Work::FileTask::QUEUE_LOCK Work::Tasks::fileLock(bool &yield) {
-	return FileTask::QUEUE_LOCK(fileEvent, fileTaskQueue, yield);
+Work::FileTask::POINTER_QUEUE_LOCK Work::Tasks::fileLock(bool &yield) {
+	return FileTask::POINTER_QUEUE_LOCK(fileEvent, fileTaskPointerQueue, yield);
 }
 
-Work::FileTask::QUEUE_LOCK Work::Tasks::fileLock() {
+Work::FileTask::POINTER_QUEUE_LOCK Work::Tasks::fileLock() {
 	bool yield = false;
 	return fileLock(yield);
 }
 
 Work::Convert::Convert(
-	std::streampos ownerBigFileInputPosition,
 	Ubi::BigFile::File &file,
-	Tasks &tasks,
 	nvtt::Context &context,
 	nvtt::CompressionOptions &compressionOptions
 )
-	: ownerBigFileInputPosition(ownerBigFileInputPosition),
-	file(file),
-	tasks(tasks),
+	: file(file),
 	context(context),
 	compressionOptions(compressionOptions) {
 }
