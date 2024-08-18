@@ -56,7 +56,6 @@ class M4Revolution {
 	Work::Tasks tasks = {};
 	std::ifstream inputFileStream = {};
 	bool logFileNames = false;
-	unsigned long maxFileTasks = 0;
 
 	nvtt::Context context = {};
 	nvtt::CompressionOptions compressionOptions = {};
@@ -64,6 +63,8 @@ class M4Revolution {
 	#ifdef MULTITHREADED
 	PTP_POOL pool = NULL;
 	#endif
+
+	unsigned long maxFileTasks = 0;
 
 	void convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
 
