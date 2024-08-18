@@ -1,3 +1,4 @@
+#pragma once
 #include "shared.h"
 #include "Ubi.h"
 #include <mutex>

@@ -50,11 +50,13 @@ class M4Revolution {
 		bool result = true;
 	};
 
+	static const char* OUTPUT_FILE_NAME;
 	static const Ubi::BigFile::Path::VECTOR AI_TRANSITION_FADE_PATH_VECTOR;
 
 	Work::Tasks tasks = {};
 	std::ifstream inputFileStream = {};
 	bool logFileNames = false;
+	unsigned long maxFileTasks = 0;
 
 	nvtt::Context context = {};
 	nvtt::CompressionOptions compressionOptions = {};
@@ -65,7 +67,7 @@ class M4Revolution {
 
 	void convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
 
-	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type files);
+	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks);
 
 	void copyFiles(
 		Ubi::BigFile::File::SIZE inputPosition,
@@ -98,11 +100,18 @@ class M4Revolution {
 	static void outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield);
 
 	public:
-	M4Revolution(const char* inputFileName, bool logFileNames = false, bool disableHardwareAcceleration = false);
+	M4Revolution(
+		const char* inputFileName,
+		bool logFileNames = false,
+		bool disableHardwareAcceleration = false,
+		unsigned long maxThreads = 0,
+		unsigned long maxFileTasks = 0
+	);
+	
 	~M4Revolution();
 	M4Revolution(const M4Revolution &m4Revolution) = delete;
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
-	void editTransitionTime(const char* outputFileName);
-	void editInertia(const char* outputFileName);
-	void fixLoading(const char* outputFileName);
+	void editTransitionTime();
+	void editInertia();
+	void fixLoading();
 };

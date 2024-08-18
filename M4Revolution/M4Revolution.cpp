@@ -102,6 +102,8 @@ void M4Revolution::ErrorHandler::error(nvtt::Error error) {
 	result = false;
 }
 
+const char* M4Revolution::OUTPUT_FILE_NAME = "data.m4b.tmp";
+
 const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = {
 		{{"common"}, "common.m4b"},
 		{{"ai", "aitransitionfade"}, "ai_transition_fade.ai"}
@@ -133,21 +135,18 @@ void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::Big
 	#endif
 }
 
-void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type files) {
+void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks) {
 	// this function waits for the output thread to catch up
 	// if too many files are queued at once (to prevent running out of memory)
 	// this is only done on copying files so that it isn't run too often
-	// this is 216 because it is the standard number of tiles in a cube
-	const Work::FileTask::POINTER_QUEUE::size_type MAX_FILES = 216;
-
-	if (files < MAX_FILES) {
+	if (fileTasks < maxFileTasks) {
 		return;
 	}
 
 	// this is just some moderately small amount of time
 	const std::chrono::milliseconds MILLISECONDS = std::chrono::milliseconds(25);
 
-	while (tasks.fileLock().get().size() >= MAX_FILES) {
+	while (tasks.fileLock().get().size() >= maxFileTasks) {
 		std::this_thread::sleep_for(MILLISECONDS);
 	}
 }
@@ -161,7 +160,7 @@ void M4Revolution::copyFiles(
 ) {
 	inputFileStream.seekg((std::streampos)inputCopyPosition + bigFileInputPosition);
 
-	Work::FileTask::POINTER_QUEUE::size_type files = 0;
+	Work::FileTask::POINTER_QUEUE::size_type fileTasks = 0;
 
 	// note: this must get created even if filePointerVectorPointer is empty or the count to copy would be zero
 	// so that the bigFileInputPosition is reliably seen by the output thread
@@ -172,14 +171,14 @@ void M4Revolution::copyFiles(
 		Work::FileTask::POINTER_QUEUE_LOCK &fileLock = tasks.fileLock();
 		Work::FileTask::POINTER_QUEUE &queue = fileLock.get();
 		queue.push(fileTaskPointer);
-		files = queue.size();
+		fileTasks = queue.size();
 	}
 
 	Work::FileTask &fileTask = *fileTaskPointer;
 	fileTask.copy(inputFileStream, inputPosition - inputCopyPosition);
 	fileTask.complete();
 
-	waitFiles(files);
+	waitFiles(fileTasks);
 
 	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
 
@@ -608,9 +607,20 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 	}
 }
 
-M4Revolution::M4Revolution(const char* inputFileName, bool logFileNames, bool disableHardwareAcceleration)
+M4Revolution::M4Revolution(
+	const char* inputFileName,
+	bool logFileNames,
+	bool disableHardwareAcceleration,
+	unsigned long maxThreads,
+	unsigned long maxFileTasks
+)
 	: inputFileStream(inputFileName, std::ios::binary),
 	logFileNames(logFileNames) {
+	// the number 216 was chosen for being the standard number of tiles in a cube
+	const unsigned long DEFAULT_MAX_FILE_TASKS = 216;
+
+	this->maxFileTasks = maxFileTasks ? maxFileTasks : DEFAULT_MAX_FILE_TASKS;
+
 	context.enableCudaAcceleration(!disableHardwareAcceleration);
 
 	compressionOptions.setFormat(nvtt::Format_DXT5);
@@ -623,15 +633,19 @@ M4Revolution::M4Revolution(const char* inputFileName, bool logFileNames, bool di
 		throw std::runtime_error("Failed to Create Threadpool");
 	}
 
-	// chosen so that if you have a quad core there will still be at least two threads for other system stuff
-	// (meanwhile, barely affecting even more powerful processors)
-	const DWORD RESERVED_THREADS = 2;
+	if (!maxThreads) {
+		// chosen so that if you have a quad core there will still be at least two threads for other system stuff
+		// (meanwhile, barely affecting even more powerful processors)
+		const DWORD RESERVED_THREADS = 2;
 
-	SYSTEM_INFO systemInfo = {};
-	GetSystemInfo(&systemInfo);
+		SYSTEM_INFO systemInfo = {};
+		GetSystemInfo(&systemInfo);
 
-	DWORD maxThreads = systemInfo.dwNumberOfProcessors - RESERVED_THREADS;
-	SetThreadpoolThreadMaximum(pool, max(maxThreads, 1));
+		// can't use max because this is unsigned
+		maxThreads = systemInfo.dwNumberOfProcessors > RESERVED_THREADS ? systemInfo.dwNumberOfProcessors - RESERVED_THREADS : 1;
+	}
+
+	SetThreadpoolThreadMaximum(pool, maxThreads);
 
 	if (!SetThreadpoolThreadMinimum(pool, 1)) {
 		throw std::runtime_error("Failed to Set Threadpool Thread Minimum");
@@ -643,13 +657,13 @@ M4Revolution::~M4Revolution() {
 	destroy();
 }
 
-void M4Revolution::fixLoading(const char* outputFileName) {
+void M4Revolution::fixLoading() {
 	inputFileStream.seekg(0, std::ios::end);
 	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputFileStream.tellg());
 	inputFileStream.seekg(0, std::ios::beg);
 
 	bool yield = true;
-	std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks), std::ref(yield));
+	std::thread outputThread(M4Revolution::outputThread, OUTPUT_FILE_NAME, std::ref(tasks), std::ref(yield));
 
 	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames);
 	fixLoading(0, inputFile, log);
