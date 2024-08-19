@@ -1,6 +1,5 @@
 #include "shared.h"
 #include "M4Revolution.h"
-#include "Work.h"
 #include <chrono>
 #include <iostream>
 

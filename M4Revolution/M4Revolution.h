@@ -64,7 +64,7 @@ class M4Revolution {
 	PTP_POOL pool = NULL;
 	#endif
 
-	unsigned long maxFileTasks = 0;
+	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0;
 
 	void convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
 
@@ -105,8 +105,8 @@ class M4Revolution {
 		const char* inputFileName,
 		bool logFileNames = false,
 		bool disableHardwareAcceleration = false,
-		unsigned long maxThreads = 0,
-		unsigned long maxFileTasks = 0
+		uint32_t maxThreads = 0,
+		Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0
 	);
 	
 	~M4Revolution();

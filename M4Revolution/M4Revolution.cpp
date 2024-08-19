@@ -611,13 +611,13 @@ M4Revolution::M4Revolution(
 	const char* inputFileName,
 	bool logFileNames,
 	bool disableHardwareAcceleration,
-	unsigned long maxThreads,
-	unsigned long maxFileTasks
+	uint32_t maxThreads,
+	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks
 )
 	: inputFileStream(inputFileName, std::ios::binary),
 	logFileNames(logFileNames) {
 	// the number 216 was chosen for being the standard number of tiles in a cube
-	const unsigned long DEFAULT_MAX_FILE_TASKS = 216;
+	const Work::FileTask::POINTER_QUEUE::size_type DEFAULT_MAX_FILE_TASKS = 216;
 
 	this->maxFileTasks = maxFileTasks ? maxFileTasks : DEFAULT_MAX_FILE_TASKS;
 
