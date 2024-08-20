@@ -109,19 +109,27 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = 
 		{{"ai", "aitransitionfade"}, "ai_transition_fade.ai"}
 };
 
-void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file) {
-	Work::Convert* convertPointer = new Work::Convert(file, context, compressionOptions);
+const Ubi::BigFile::Path::VECTOR M4Revolution::AI_USER_CONTROLS_PATH_VECTOR = {
+		{{"common"}, "common.m4b"},
+		{{"ai", "aiusercontrols"}, "user_controls.ai"}
+};
 
-	Work::Data::POINTER &dataPointer = convertPointer->dataPointer;
+void M4Revolution::convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback) {
+	Work::Convert* convertPointer = new Work::Convert(file, context, compressionOptions);
+	Work::Convert &convert = *convertPointer;
+
+	Work::Data::POINTER &dataPointer = convert.dataPointer;
 	dataPointer = Work::Data::POINTER(new unsigned char[file.size]);
 	readFileStreamSafe(inputFileStream, dataPointer.get(), file.size);
 
-	Work::FileTask::POINTER &fileTaskPointer = convertPointer->fileTaskPointer;
+	Work::FileTask::POINTER &fileTaskPointer = convert.fileTaskPointer;
 	fileTaskPointer = std::make_shared<Work::FileTask>(ownerBigFileInputPosition, &file);
 	tasks.fileLock().get().push(fileTaskPointer);
 
+	convert.fileWorkCallback = fileWorkCallback;
+
 	#ifdef MULTITHREADED
-	PTP_WORK work = CreateThreadpoolWork(convertZAPProc, convertPointer, NULL);
+	PTP_WORK work = CreateThreadpoolWork(convertFileProc, &convert, NULL);
 
 	if (!work) {
 		throw std::runtime_error("Failed to Create Threadpool Work");
@@ -131,7 +139,7 @@ void M4Revolution::convertZAP(std::streampos ownerBigFileInputPosition, Ubi::Big
 	CloseThreadpoolWork(work);
 	#endif
 	#ifdef SINGLETHREADED
-	convertZAPWorkCallback(convertPointer);
+	convert.fileWorkCallback(&convert);
 	#endif
 }
 
@@ -193,8 +201,11 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		case Ubi::BigFile::File::TYPE::BIG_FILE:
 		fixLoading(bigFileInputPosition, file, log);
 		break;
+		case Ubi::BigFile::File::TYPE::JPEG:
+		convertFile(bigFileInputPosition, file, convertJPEGWorkCallback);
+		break;
 		case Ubi::BigFile::File::TYPE::ZAP:
-		convertZAP(bigFileInputPosition, file);
+		convertFile(bigFileInputPosition, file, convertZAPWorkCallback);
 		break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
@@ -322,11 +333,57 @@ void M4Revolution::color32X(COLOR32* color32Pointer, size_t stride, size_t size)
 	}
 }
 
+void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface) {
+	nvtt::OutputOptions outputOptions = {};
+	outputOptions.setContainer(nvtt::Container_DDS);
+
+	Work::FileTask &fileTask = *convert.fileTaskPointer;
+
+	OutputHandler outputHandler(fileTask);
+	outputOptions.setOutputHandler(&outputHandler);
+
+	ErrorHandler errorHandler;
+	outputOptions.setErrorHandler(&errorHandler);
+
+	nvtt::Context &context = convert.context;
+	nvtt::CompressionOptions &compressionOptions = convert.compressionOptions;
+
+	if (!context.outputHeader(surface, 1, compressionOptions, outputOptions)) {
+		throw std::runtime_error("Failed to Output Context Header");
+	}
+
+	if (!context.compress(surface, 0, 0, compressionOptions, outputOptions) || !errorHandler.result) {
+		throw std::runtime_error("Failed to Compress Context");
+	}
+
+	convert.file.size = outputHandler.size;
+
+	// this will wake up the output thread to tell it we have no more data to add, and to move on to the next FileTask
+	fileTask.complete();
+}
+
+void M4Revolution::convertJPEGWorkCallback(Work::Convert* convertPointer) {
+	SCOPE_EXIT {
+		delete convertPointer;
+	};
+
+	Work::Convert &convert = *convertPointer;
+	nvtt::Surface surface = {};
+
+	if (!surface.loadFromMemory(convert.dataPointer.get(), convert.file.size)) {
+		throw std::runtime_error("Failed to Load Surface From Memory");
+	}
+
+	// when this unlocks one line later, the output thread will begin waiting on data
+	convertSurface(convert, surface);
+}
+
 void M4Revolution::convertZAPWorkCallback(Work::Convert* convertPointer) {
 	SCOPE_EXIT {
 		delete convertPointer;
 	};
 
+	Work::Convert &convert = *convertPointer;
 	nvtt::Surface surface = {};
 
 	{
@@ -335,7 +392,7 @@ void M4Revolution::convertZAPWorkCallback(Work::Convert* convertPointer) {
 		zap_int_t outWidth = 0;
 		zap_int_t outHeight = 0;
 
-		if (zap_load_memory(convertPointer->dataPointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
+		if (zap_load_memory(convert.dataPointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
 			throw std::runtime_error("Failed to Load ZAP From Memory");
 		}
 
@@ -353,47 +410,18 @@ void M4Revolution::convertZAPWorkCallback(Work::Convert* convertPointer) {
 		color32X(color32Pointer, outWidth * COLOR32_SIZE, outSize);
 
 		if (!surface.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, outWidth, outHeight, 1, out)) {
-			throw std::runtime_error("Failed to Set Image");
+			throw std::runtime_error("Failed to Set Surface Image");
 		}
 	}
 
 	// when this unlocks one line later, the output thread will begin waiting on data
-	Ubi::BigFile::File &file = convertPointer->file;
-
-	{
-		nvtt::OutputOptions outputOptions = {};
-		outputOptions.setContainer(nvtt::Container_DDS);
-
-		Work::FileTask &fileTask = *convertPointer->fileTaskPointer;
-
-		OutputHandler outputHandler(fileTask);
-		outputOptions.setOutputHandler(&outputHandler);
-
-		ErrorHandler errorHandler;
-		outputOptions.setErrorHandler(&errorHandler);
-
-		nvtt::Context &context = convertPointer->context;
-		nvtt::CompressionOptions &compressionOptions = convertPointer->compressionOptions;
-
-		if (!context.outputHeader(surface, 1, compressionOptions, outputOptions)) {
-			throw std::runtime_error("Failed to Output Context Header");
-		}
-
-		if (!context.compress(surface, 0, 0, compressionOptions, outputOptions) || !errorHandler.result) {
-			throw std::runtime_error("Failed to Compress Context");
-		}
-
-		file.size = outputHandler.size;
-
-		// this will wake up the output thread to tell it we have no more data to add, and to move on to the next FileTask
-		fileTask.complete();
-	}
+	convertSurface(convert, surface);
 }
 
 #ifdef MULTITHREADED
-VOID CALLBACK M4Revolution::convertZAPProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work) {
+VOID CALLBACK M4Revolution::convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work) {
 	Work::Convert* convertPointer = (Work::Convert*)parameter;
-	convertZAPWorkCallback(convertPointer);
+	convertPointer->fileWorkCallback(convertPointer);
 }
 #endif
 

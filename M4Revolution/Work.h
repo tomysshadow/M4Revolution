@@ -175,6 +175,10 @@ namespace Work {
 	};
 
 	struct Convert {
+		typedef void(*FileWorkCallback)(Work::Convert* convertPointer);
+
+		FileWorkCallback fileWorkCallback = 0;
+
 		Ubi::BigFile::File &file;
 
 		nvtt::Context &context;

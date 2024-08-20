@@ -52,6 +52,7 @@ class M4Revolution {
 
 	static const char* OUTPUT_FILE_NAME;
 	static const Ubi::BigFile::Path::VECTOR AI_TRANSITION_FADE_PATH_VECTOR;
+	static const Ubi::BigFile::Path::VECTOR AI_USER_CONTROLS_PATH_VECTOR;
 
 	Work::Tasks tasks = {};
 	std::ifstream inputFileStream = {};
@@ -66,7 +67,7 @@ class M4Revolution {
 
 	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0;
 
-	void convertZAP(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file);
+	void convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback);
 
 	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks);
 
@@ -91,9 +92,11 @@ class M4Revolution {
 	void fixLoading(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
 	static void color32X(COLOR32* color32Pointer, size_t stride, size_t size);
+	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface);
+	static void convertJPEGWorkCallback(Work::Convert* convertPointer);
 	static void convertZAPWorkCallback(Work::Convert* convertPointer);
 	#ifdef MULTITHREADED
-	static VOID CALLBACK convertZAPProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
+	static VOID CALLBACK convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
 	#endif
 	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
 	static void outputData(std::ofstream &fileStream, Work::FileTask &fileTask, bool &yield);
