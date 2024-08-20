@@ -67,8 +67,6 @@ class M4Revolution {
 
 	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0;
 
-	void convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback);
-
 	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks);
 
 	void copyFiles(
@@ -79,6 +77,7 @@ class M4Revolution {
 		Log &log
 	);
 
+	void convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback);
 	void convertFile(std::streampos bigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
 	void stepFile(

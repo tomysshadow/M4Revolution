@@ -14,6 +14,7 @@ namespace Ubi {
 
 		std::optional<std::string> readOptional(std::ifstream &inputFileStream);
 		void writeOptional(std::ofstream &outputFileStream, const std::optional<std::string> &strOptional);
+		std::string swizzle(std::string &encryptedString);
 	};
 
 	struct BigFile {
@@ -40,7 +41,7 @@ namespace Ubi {
 				BIG_FILE,
 				JPEG,
 				ZAP,
-				TEXTURE
+				IMAGE_DATA
 			};
 
 			// the name in the output file (so example.dds, not example.jpg)

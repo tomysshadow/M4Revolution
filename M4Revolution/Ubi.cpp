@@ -24,6 +24,19 @@ void Ubi::String::writeOptional(std::ofstream &outputFileStream, const std::opti
 	writeFileStreamSafe(outputFileStream, strOptional.value().c_str(), size);
 }
 
+std::string Ubi::String::swizzle(std::string &encryptedString) {
+	const char MAGIC = 0x55;
+
+	for (std::string::iterator encryptedStringIterator = encryptedString.begin(); encryptedStringIterator != encryptedString.end(); encryptedStringIterator++) {
+		char &encryptedChar = *encryptedStringIterator;
+		char encryptedCharLeft = encryptedChar << 1;
+		char encryptedCharRight = encryptedChar >> 1;
+
+		encryptedChar = (encryptedCharLeft ^ encryptedCharRight) & MAGIC ^ encryptedCharLeft;
+	}
+	return encryptedString;
+}
+
 Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, bool texture) {
 	read(inputFileStream);
 
@@ -107,7 +120,7 @@ const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTEN
 	{"m4b", {TYPE::BIG_FILE, "m4b"}},
 	{"jpg", {TYPE::JPEG, "dds"}},
 	{"zap", {TYPE::ZAP, "dds"}},
-	{"bin", {TYPE::TEXTURE, "bin"}}
+	{"bin", {TYPE::IMAGE_DATA, "bin"}}
 };
 
 Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap)

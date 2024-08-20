@@ -114,35 +114,6 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_USER_CONTROLS_PATH_VECTOR = {
 		{{"ai", "aiusercontrols"}, "user_controls.ai"}
 };
 
-void M4Revolution::convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback) {
-	Work::Convert* convertPointer = new Work::Convert(file, context, compressionOptions);
-	Work::Convert &convert = *convertPointer;
-
-	Work::Data::POINTER &dataPointer = convert.dataPointer;
-	dataPointer = Work::Data::POINTER(new unsigned char[file.size]);
-	readFileStreamSafe(inputFileStream, dataPointer.get(), file.size);
-
-	Work::FileTask::POINTER &fileTaskPointer = convert.fileTaskPointer;
-	fileTaskPointer = std::make_shared<Work::FileTask>(ownerBigFileInputPosition, &file);
-	tasks.fileLock().get().push(fileTaskPointer);
-
-	convert.fileWorkCallback = fileWorkCallback;
-
-	#ifdef MULTITHREADED
-	PTP_WORK work = CreateThreadpoolWork(convertFileProc, &convert, NULL);
-
-	if (!work) {
-		throw std::runtime_error("Failed to Create Threadpool Work");
-	}
-
-	SubmitThreadpoolWork(work);
-	CloseThreadpoolWork(work);
-	#endif
-	#ifdef SINGLETHREADED
-	convert.fileWorkCallback(&convert);
-	#endif
-}
-
 void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks) {
 	// this function waits for the output thread to catch up
 	// if too many files are queued at once (to prevent running out of memory)
@@ -191,6 +162,35 @@ void M4Revolution::copyFiles(
 	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
 
 	log.copying();
+}
+
+void M4Revolution::convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback) {
+	Work::Convert* convertPointer = new Work::Convert(file, context, compressionOptions);
+	Work::Convert &convert = *convertPointer;
+
+	Work::Data::POINTER &dataPointer = convert.dataPointer;
+	dataPointer = Work::Data::POINTER(new unsigned char[file.size]);
+	readFileStreamSafe(inputFileStream, dataPointer.get(), file.size);
+
+	Work::FileTask::POINTER &fileTaskPointer = convert.fileTaskPointer;
+	fileTaskPointer = std::make_shared<Work::FileTask>(ownerBigFileInputPosition, &file);
+	tasks.fileLock().get().push(fileTaskPointer);
+
+	convert.fileWorkCallback = fileWorkCallback;
+
+	#ifdef MULTITHREADED
+	PTP_WORK work = CreateThreadpoolWork(convertFileProc, &convert, NULL);
+
+	if (!work) {
+		throw std::runtime_error("Failed to Create Threadpool Work");
+	}
+
+	SubmitThreadpoolWork(work);
+	CloseThreadpoolWork(work);
+	#endif
+	#ifdef SINGLETHREADED
+	convert.fileWorkCallback(&convert);
+	#endif
 }
 
 void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
