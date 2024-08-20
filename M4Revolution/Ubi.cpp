@@ -55,16 +55,20 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, b
 		if (nameTypeExtensionMapIterator != NAME_TYPE_EXTENSION_MAP.end()) {
 			type = nameTypeExtensionMapIterator->second.type;
 
-			const std::string &NAME = nameOptional.value();
-			const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
+			if (type == TYPE::IMAGE_DATA && !texture) {
+				type = TYPE::NONE;
+			} else {
+				const std::string &NAME = nameOptional.value();
+				const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
 
-			nameOptional = NAME.substr(
-				0,
-				NAME.length() - EXTENSION.length() - PERIOD_SIZE
-			)
+				nameOptional = NAME.substr(
+					0,
+					NAME.length() - EXTENSION.length() - PERIOD_SIZE
+				)
 
-			+ PERIOD
-			+ EXTENSION;
+				+ PERIOD
+				+ EXTENSION;
+			}
 		}
 	}
 	#endif
@@ -293,6 +297,7 @@ void Ubi::BigFile::Directory::write(std::ofstream &outputFileStream) const {
 }
 
 const std::string Ubi::BigFile::Directory::NAME_TEXTURE = "texture";
+const std::string Ubi::BigFile::Directory::NAME_WATER = "water";
 
 Ubi::BigFile::Header::Header(std::ifstream &inputFileStream, File::SIZE &fileSystemSize) {
 	read(inputFileStream);

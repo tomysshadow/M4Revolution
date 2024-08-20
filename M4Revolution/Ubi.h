@@ -99,6 +99,7 @@ namespace Ubi {
 
 			private:
 			static const std::string NAME_TEXTURE;
+			static const std::string NAME_WATER;
 		};
 
 		struct Header {

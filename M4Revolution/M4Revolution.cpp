@@ -165,6 +165,7 @@ void M4Revolution::copyFiles(
 }
 
 void M4Revolution::convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback) {
+	// TODO: compressionOptionsWater here if necessary
 	Work::Convert* convertPointer = new Work::Convert(file, context, compressionOptions);
 	Work::Convert &convert = *convertPointer;
 
@@ -653,6 +654,9 @@ M4Revolution::M4Revolution(
 
 	compressionOptions.setFormat(nvtt::Format_DXT5);
 	compressionOptions.setQuality(nvtt::Quality_Highest);
+
+	compressionOptionsWater.setFormat(nvtt::Format_RGBA);
+	compressionOptionsWater.setQuality(nvtt::Quality_Highest);
 
 	#ifdef MULTITHREADED
 	pool = CreateThreadpool(NULL);
