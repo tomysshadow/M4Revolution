@@ -14,7 +14,7 @@ namespace Ubi {
 
 		std::optional<std::string> readOptional(std::ifstream &inputFileStream);
 		void writeOptional(std::ofstream &outputFileStream, const std::optional<std::string> &strOptional);
-		std::string swizzle(std::string &encryptedString);
+		std::string &swizzle(std::string &encryptedString);
 	};
 
 	struct BigFile {

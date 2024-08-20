@@ -25,15 +25,15 @@ void Ubi::String::writeOptional(std::ofstream &outputFileStream, const std::opti
 	writeFileStreamSafe(outputFileStream, strOptional.value().c_str(), size);
 }
 
-std::string Ubi::String::swizzle(std::string &encryptedString) {
-	const char MAGIC = 0x55;
+std::string &Ubi::String::swizzle(std::string &encryptedString) {
+	const char MASK = 85;
 
 	for (std::string::iterator encryptedStringIterator = encryptedString.begin(); encryptedStringIterator != encryptedString.end(); encryptedStringIterator++) {
 		char &encryptedChar = *encryptedStringIterator;
 		char encryptedCharLeft = encryptedChar << 1;
 		char encryptedCharRight = encryptedChar >> 1;
 
-		encryptedChar = (encryptedCharLeft ^ encryptedCharRight) & MAGIC ^ encryptedCharLeft;
+		encryptedChar = (encryptedCharLeft ^ encryptedCharRight) & MASK ^ encryptedCharLeft;
 	}
 	return encryptedString;
 }
@@ -191,13 +191,9 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &p
 		fileOptional = std::nullopt;
 	};
 
-	nameOptional = String::readOptional(inputFileStream);
-
-	if (!nameOptional.has_value()) {
-		return;
-	}
-
 	const Path::NAME_VECTOR &DIRECTORY_NAME_VECTOR = path.directoryNameVector;
+
+	nameOptional = String::readOptional(inputFileStream);
 
 	bool match = false;
 

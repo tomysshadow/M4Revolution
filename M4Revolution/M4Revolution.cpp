@@ -105,13 +105,13 @@ void M4Revolution::ErrorHandler::error(nvtt::Error error) {
 const char* M4Revolution::OUTPUT_FILE_NAME = "data.m4b.tmp";
 
 const Ubi::BigFile::Path::VECTOR M4Revolution::AI_TRANSITION_FADE_PATH_VECTOR = {
-		{{"common"}, "common.m4b"},
-		{{"ai", "aitransitionfade"}, "ai_transition_fade.ai"}
+		{{"gamedata", "common"}, "common.m4b"},
+		{{"common", "ai", "aitransitionfade"}, "ai_transition_fade.ai"}
 };
 
 const Ubi::BigFile::Path::VECTOR M4Revolution::AI_USER_CONTROLS_PATH_VECTOR = {
-		{{"common"}, "common.m4b"},
-		{{"ai", "aiusercontrols"}, "user_controls.ai"}
+		{{"gamedata", "common"}, "common.m4b"},
+		{{"common", "ai", "aiusercontrols"}, "user_controls.ai"}
 };
 
 void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks) {
