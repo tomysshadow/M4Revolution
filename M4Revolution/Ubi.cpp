@@ -8,7 +8,8 @@ std::optional<std::string> Ubi::String::readOptional(std::ifstream &inputFileStr
 		return std::nullopt;
 	}
 
-	std::unique_ptr<char> str = std::unique_ptr<char>(new char[size]);
+	// add one for strings that don't end in a null terminator (like encrypted strings)
+	std::unique_ptr<char> str = std::unique_ptr<char>(new char[(size_t)size + 1]);
 	readFileStreamSafe(inputFileStream, str.get(), size);
 	return str.get();
 }
