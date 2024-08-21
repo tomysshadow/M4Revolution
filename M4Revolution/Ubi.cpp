@@ -142,12 +142,15 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &f
 		);
 	}
 
-	FILE_VECTOR_SIZE fileVectorSize = 0;
-	readFileStreamSafe(inputFileStream, &fileVectorSize, FILE_VECTOR_SIZE_SIZE);
+	FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
+	readFileStreamSafe(inputFileStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
+
+	File::POINTER filePointer = 0;
+	File::POINTER_SET_MAP::iterator filePointerSetMapIterator = {};
 
 	// the NAME_TEXTURE comparison is so we only convert textures in the texture folder specifically, even if the extension matches
-	for (FILE_VECTOR_SIZE i = 0; i < fileVectorSize; i++) {
-		fileVector.emplace_back(
+	for (FILE_POINTER_VECTOR_SIZE i = 0; i < filePointerVectorSize; i++) {
+		filePointer = std::make_shared<File>(
 			inputFileStream,
 			fileSystemSize,
 
@@ -155,26 +158,28 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &f
 			? nameOptional.value() == NAME_TEXTURE
 			: false
 		);
-	}
 
-	files += fileVectorSize;
+		File &file = *filePointer;
 
-	// MUST BE DONE SEPERATELY AFTERWARDS!
-	// (otherwise iterator invalidation)
-	File::POINTER_SET_MAP::iterator filePointerSetMapIterator = {};
+		if (file.type == File::TYPE::BINARY) {
+			binaryFilePointerVector.push_back(filePointer);
+		} else {
+			filePointerVector.push_back(filePointer);
+		}
 
-	for (File::VECTOR::iterator fileVectorIterator = fileVector.begin(); fileVectorIterator != fileVector.end(); fileVectorIterator++) {
 		// are there any other files at this position?
-		filePointerSetMapIterator = filePointerSetMap.find(fileVectorIterator->position);
+		filePointerSetMapIterator = filePointerSetMap.find(file.position);
 
 		// if not, then create a new set
 		if (filePointerSetMapIterator == filePointerSetMap.end()) {
-			filePointerSetMapIterator = filePointerSetMap.insert({fileVectorIterator->position, {}}).first;
+			filePointerSetMapIterator = filePointerSetMap.insert({ file.position, {} }).first;
 		}
 
 		// add this file to the set
-		filePointerSetMapIterator->second.insert(&*fileVectorIterator);
+		filePointerSetMapIterator->second.insert(filePointer);
 	}
+
+	files += filePointerVectorSize;
 
 	fileSystemSize += (File::SIZE)(
 		String::SIZE_SIZE
@@ -186,7 +191,7 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &f
 		)
 
 		+ DIRECTORY_VECTOR_SIZE_SIZE
-		+ FILE_VECTOR_SIZE_SIZE
+		+ FILE_POINTER_VECTOR_SIZE_SIZE
 	);
 }
 
@@ -248,14 +253,17 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &p
 		directoryVector = {};
 	}
 
-	FILE_VECTOR_SIZE fileVectorSize = 0;
-	readFileStreamSafe(inputFileStream, &fileVectorSize, FILE_VECTOR_SIZE_SIZE);
+	FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
+	readFileStreamSafe(inputFileStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
 
 	if (match) {
-		for (FILE_VECTOR_SIZE i = 0; i < fileVectorSize; i++) {
-			File &file = fileVector.emplace_back(
-				inputFileStream
-			);
+		File::POINTER filePointer = 0;
+
+		for (FILE_POINTER_VECTOR_SIZE i = 0; i < filePointerVectorSize; i++) {
+			filePointer = std::make_shared<File>(inputFileStream);
+
+			filePointerVector.push_back(filePointer);
+			File &file = *filePointer;
 
 			// is this the file we are looking for?
 			const std::optional<std::string> &NAME_OPTIONAL = file.nameOptional;
@@ -263,16 +271,16 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &p
 			if (NAME_OPTIONAL.has_value() && NAME_OPTIONAL.value() == path.fileName) {
 				// erase all but the last element
 				// (there should always be at least one element in the vector at this point)
-				fileVector.erase(fileVector.begin(), fileVector.end() - 1);
+				filePointerVector.erase(filePointerVector.begin(), filePointerVector.end() - 1);
 				fileOptional = file;
 				fileOptionalScopeExit.dismiss();
 				return;
 			}
 		}
 
-		fileVector = {};
+		filePointerVector = {};
 	} else {
-		for (FILE_VECTOR_SIZE i = 0; i < fileVectorSize; i++) {
+		for (FILE_POINTER_VECTOR_SIZE i = 0; i < filePointerVectorSize; i++) {
 			File file(inputFileStream);
 		}
 	}
@@ -288,11 +296,15 @@ void Ubi::BigFile::Directory::write(std::ofstream &outputFileStream) const {
 		directoryVectorIterator->write(outputFileStream);
 	}
 
-	FILE_VECTOR_SIZE fileVectorSize = (FILE_VECTOR_SIZE)fileVector.size();
-	writeFileStreamSafe(outputFileStream, &fileVectorSize, FILE_VECTOR_SIZE_SIZE);
+	FILE_POINTER_VECTOR_SIZE fileVectorSize = (FILE_POINTER_VECTOR_SIZE)filePointerVector.size();
+	writeFileStreamSafe(outputFileStream, &fileVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
 
-	for (File::VECTOR::const_iterator fileVectorIterator = fileVector.begin(); fileVectorIterator != fileVector.end(); fileVectorIterator++) {
-		fileVectorIterator->write(outputFileStream);
+	for (
+		File::POINTER_VECTOR::const_iterator filePointerVectorIterator = filePointerVector.begin();
+		filePointerVectorIterator != filePointerVector.end();
+		filePointerVectorIterator++
+	) {
+		(*filePointerVectorIterator)->write(outputFileStream);
 	}
 }
 

@@ -29,11 +29,11 @@ namespace Ubi {
 		};
 
 		struct File {
-			typedef std::vector<File> VECTOR;
 			typedef uint32_t SIZE;
-			typedef std::unordered_set<File*> POINTER_SET;
+			typedef std::shared_ptr<File> POINTER;
+			typedef std::unordered_set<POINTER> POINTER_SET;
 			typedef std::map<SIZE, POINTER_SET> POINTER_SET_MAP;
-			typedef std::vector<File*> POINTER_VECTOR;
+			typedef std::vector<POINTER> POINTER_VECTOR;
 			typedef std::shared_ptr<POINTER_VECTOR> POINTER_VECTOR_POINTER;
 
 			enum struct TYPE {
@@ -84,15 +84,17 @@ namespace Ubi {
 		struct Directory {
 			typedef std::vector<Directory> VECTOR;
 			typedef uint8_t DIRECTORY_VECTOR_SIZE;
-			typedef uint32_t FILE_VECTOR_SIZE;
+			typedef uint32_t FILE_POINTER_VECTOR_SIZE;
+			typedef std::vector<FILE_POINTER_VECTOR_SIZE> FILE_POINTER_VECTOR_SIZE_VECTOR;
 
 			std::optional<std::string> nameOptional = std::nullopt;
 
 			static const size_t DIRECTORY_VECTOR_SIZE_SIZE = sizeof(DIRECTORY_VECTOR_SIZE);
 			Directory::VECTOR directoryVector = {};
 
-			static const size_t FILE_VECTOR_SIZE_SIZE = sizeof(FILE_VECTOR_SIZE);
-			File::VECTOR fileVector = {};
+			static const size_t FILE_POINTER_VECTOR_SIZE_SIZE = sizeof(FILE_POINTER_VECTOR_SIZE);
+			File::POINTER_VECTOR binaryFilePointerVector = {};
+			File::POINTER_VECTOR filePointerVector = {};
 
 			Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 			Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, std::optional<File> &fileOptional);

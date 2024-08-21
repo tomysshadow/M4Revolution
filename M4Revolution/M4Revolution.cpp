@@ -225,11 +225,11 @@ void M4Revolution::stepFile(
 	Ubi::BigFile::File::SIZE inputPosition,
 	Ubi::BigFile::File::SIZE &inputFilePosition,
 	Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
-	Ubi::BigFile::File &file,
+	Ubi::BigFile::File::POINTER filePointer,
 	Log &log
 ) {
 	inputFilePosition = inputPosition;
-	filePointerVectorPointer->push_back(&file);
+	filePointerVectorPointer->push_back(filePointer);
 
 	log.step();
 }
@@ -292,7 +292,7 @@ void M4Revolution::fixLoading(std::streampos ownerBigFileInputPosition, Ubi::Big
 			} else {
 				// other identical, copied files at the same position in the input should likewise be at the same position in the output
 				file.padding = filePointerSetMapIterator->first - inputFilePosition;
-				stepFile(filePointerSetMapIterator->first, inputFilePosition, filePointerVectorPointer, file, log);
+				stepFile(filePointerSetMapIterator->first, inputFilePosition, filePointerVectorPointer, *filePointerSetIterator, log);
 			}
 		}
 	}

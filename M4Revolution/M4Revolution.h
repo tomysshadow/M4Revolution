@@ -85,7 +85,7 @@ class M4Revolution {
 		Ubi::BigFile::File::SIZE inputPosition,
 		Ubi::BigFile::File::SIZE &inputFilePosition,
 		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
-		Ubi::BigFile::File &file,
+		Ubi::BigFile::File::POINTER filePointer,
 		Log &log
 	);
 
