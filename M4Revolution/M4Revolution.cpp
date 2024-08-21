@@ -274,7 +274,7 @@ void M4Revolution::fixLoading(std::streampos ownerBigFileInputPosition, Ubi::Big
 			Ubi::BigFile::File &file = **filePointerSetIterator;
 
 			// if we encounter a file we need to convert for the first time, then first copy the files before it
-			if (!convert && file.type != Ubi::BigFile::File::TYPE::NONE) {
+			if (!convert && file.type != Ubi::BigFile::File::TYPE::NONE && file.type != Ubi::BigFile::File::TYPE::BINARY) {
 				file.padding = filePointerSetMapIterator->first - inputFilePosition;
 
 				// prevent copying if there are no files (this is safe in this scenario only)

@@ -55,8 +55,8 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, b
 		if (nameTypeExtensionMapIterator != NAME_TYPE_EXTENSION_MAP.end()) {
 			type = nameTypeExtensionMapIterator->second.type;
 
-			if (type == TYPE::IMAGE_DATA && !texture) {
-				type = TYPE::NONE;
+			if (texture && type == TYPE::BINARY) {
+				type = TYPE::BINARY_RESOURCE_IMAGE_DATA;
 			} else {
 				const std::string &NAME = nameOptional.value();
 				const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
@@ -123,9 +123,9 @@ std::string Ubi::BigFile::File::getNameExtension() {
 
 const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTENSION_MAP = {
 	{"m4b", {TYPE::BIG_FILE, "m4b"}},
+	{"bin", {TYPE::BINARY, "bin"}},
 	{"jpg", {TYPE::JPEG, "dds"}},
-	{"zap", {TYPE::ZAP, "dds"}},
-	{"bin", {TYPE::IMAGE_DATA, "bin"}}
+	{"zap", {TYPE::ZAP, "dds"}}
 };
 
 Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap)

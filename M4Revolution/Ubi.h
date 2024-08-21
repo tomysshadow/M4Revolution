@@ -38,10 +38,11 @@ namespace Ubi {
 
 			enum struct TYPE {
 				NONE = 0,
+				BINARY,
+				BINARY_RESOURCE_IMAGE_DATA,
 				BIG_FILE,
 				JPEG,
-				ZAP,
-				IMAGE_DATA
+				ZAP
 			};
 
 			// the name in the output file (so example.dds, not example.jpg)
