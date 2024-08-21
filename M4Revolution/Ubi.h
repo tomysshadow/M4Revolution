@@ -17,6 +17,95 @@ namespace Ubi {
 		std::string &swizzle(std::string &encryptedString);
 	};
 
+	namespace Binary {
+		class Resource {
+			protected:
+			virtual void serialize(std::ifstream &inputFileStream);
+
+			public:
+			typedef uint32_t ID;
+			typedef uint32_t VERSION;
+
+			const ID MS_ID = 0;
+			const VERSION MS_VERSION = 1;
+			std::optional<std::string> name = std::nullopt;
+
+			Resource(std::ifstream &inputFileStream);
+			Resource(const Resource &resource) = delete;
+			Resource &operator=(const Resource &resource) = delete;
+		};
+
+		class TextureBox : public virtual Binary::Resource {
+			protected:
+			virtual void serialize(std::ifstream &inputFileStream);
+
+			public:
+			std::string layerFile = "";
+
+			TextureBox(std::ifstream &inputFileStream);
+			TextureBox(const TextureBox &textureBox) = delete;
+			TextureBox &operator=(const TextureBox &textureBox) = delete;
+		};
+
+		// TODO: InteractiveOffsetProvider, TextureAlignedOffsetProvider
+		class StateData : public virtual Binary::Resource {
+			protected:
+			virtual void serialize(std::ifstream &inputFileStream);
+
+			public:
+			const ID MS_ID = 45;
+			const VERSION MS_VERSION = 1;
+
+			//std::string maskFile = ""; // may or may not need?
+
+			StateData(std::ifstream &inputFileStream);
+			StateData(const StateData &stateData) = delete;
+			StateData &operator=(const StateData &stateData) = delete;
+		};
+
+		class Water : public virtual Binary::Resource {
+			protected:
+			virtual void serialize(std::ifstream &inputFileStream);
+
+			public:
+			enum struct FACE {
+				BACK,
+				FRONT,
+				LEFT,
+				RIGHT,
+				TOP,
+				BOTTOM
+			};
+
+			struct Slice {
+				typedef uint32_t ROW;
+				typedef uint32_t COLUMN;
+				typedef std::vector<Slice> VECTOR;
+				typedef std::map<FACE, VECTOR> FACE_VECTOR_MAP;
+
+				ROW row = 0;
+				COLUMN column = 0;
+			};
+
+			typedef std::map<std::string, Slice::FACE_VECTOR_MAP> TEXTURE_BOX_NAME_FACE_VECTOR_MAP;
+
+			typedef bool ASSIGN_REFLECTION_ALPHA;
+			typedef float REFLECTION_ALPHA_AT_EDGE;
+			typedef float REFLECTION_ALPHA_AT_HORIZON;
+
+			const ID MS_ID = 42;
+			const VERSION MS_VERSION = 1;
+			std::optional<std::string> name = "water";
+
+			std::string textureBoxName = "";
+
+			Water(std::ifstream &inputFileStream, TEXTURE_BOX_NAME_FACE_VECTOR_MAP &textureBoxNameFaceVectorMap);
+			Water(std::ifstream &inputFileStream);
+			Water(const Water &water) = delete;
+			Water &operator=(const Water &water) = delete;
+		};
+	};
+
 	struct BigFile {
 		typedef std::shared_ptr<BigFile> POINTER;
 

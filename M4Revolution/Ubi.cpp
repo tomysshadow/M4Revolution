@@ -133,13 +133,33 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &f
 	DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
+	// currently not used (yet!)
+	/*
+	FILE_POINTER_VECTOR_SIZE_VECTOR cubeIndices = {};
+	FILE_POINTER_VECTOR_SIZE_VECTOR waterIndices = {};
+	*/
+
 	for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
-		directoryVector.emplace_back(
+		/*Directory &directory = */directoryVector.emplace_back(
 			inputFileStream,
 			fileSystemSize,
 			files,
 			filePointerSetMap
 		);
+
+		/*
+		const std::optional<std::string> &NAME_OPTIONAL = directory.nameOptional;
+
+		if (NAME_OPTIONAL.has_value()) {
+			const std::string &NAME = nameOptional.value();
+
+			if (NAME == "cube") {
+				cubeIndices.push_back(i);
+			} else if (NAME == "water") {
+				waterIndices.push_back(i);
+			}
+		}
+		*/
 	}
 
 	FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
