@@ -18,92 +18,96 @@ namespace Ubi {
 	};
 
 	namespace Binary {
-		class Resource {
-			protected:
-			virtual void serialize(std::ifstream &inputFileStream);
-
-			public:
+		namespace {
 			typedef uint32_t ID;
 			typedef uint32_t VERSION;
 
-			const ID MS_ID = 0;
-			const VERSION MS_VERSION = 1;
-			std::optional<std::string> name = std::nullopt;
+			struct Reader {
+				ID id = 0;
+				VERSION version = 1;
+				std::optional<std::string> name = std::nullopt;
 
-			Resource(std::ifstream &inputFileStream);
-			Resource(const Resource &resource) = delete;
-			Resource &operator=(const Resource &resource) = delete;
-		};
-
-		class TextureBox : public virtual Binary::Resource {
-			protected:
-			virtual void serialize(std::ifstream &inputFileStream);
-
-			public:
-			std::string layerFile = "";
-
-			TextureBox(std::ifstream &inputFileStream);
-			TextureBox(const TextureBox &textureBox) = delete;
-			TextureBox &operator=(const TextureBox &textureBox) = delete;
-		};
-
-		// TODO: InteractiveOffsetProvider, TextureAlignedOffsetProvider
-		class StateData : public virtual Binary::Resource {
-			protected:
-			virtual void serialize(std::ifstream &inputFileStream);
-
-			public:
-			const ID MS_ID = 45;
-			const VERSION MS_VERSION = 1;
-
-			//std::string maskFile = ""; // may or may not need?
-
-			StateData(std::ifstream &inputFileStream);
-			StateData(const StateData &stateData) = delete;
-			StateData &operator=(const StateData &stateData) = delete;
-		};
-
-		class Water : public virtual Binary::Resource {
-			protected:
-			virtual void serialize(std::ifstream &inputFileStream);
-
-			public:
-			enum struct FACE {
-				BACK,
-				FRONT,
-				LEFT,
-				RIGHT,
-				TOP,
-				BOTTOM
+				Reader(std::ifstream &inputFileStream);
 			};
 
-			struct Slice {
-				typedef uint32_t ROW;
-				typedef uint32_t COLUMN;
-				typedef std::vector<Slice> VECTOR;
-				typedef std::map<FACE, VECTOR> FACE_VECTOR_MAP;
+			class Resource {
+				protected:
+				Reader &reader;
 
-				ROW row = 0;
-				COLUMN column = 0;
+				public:
+				typedef std::shared_ptr<Resource> POINTER;
+
+				const ID MS_ID = 0;
+				const VERSION MS_VERSION = 1;
+
+				Resource(std::ifstream &inputFileStream, Reader &reader);
+				Resource(const Resource &resource) = delete;
+				Resource &operator=(const Resource &resource) = delete;
+			};
+		
+			class TextureBox : public virtual Binary::Resource {
+				public:
+				std::string layerFile = "";
+
+				TextureBox(std::ifstream &inputFileStream, Reader &reader);
+				TextureBox(const TextureBox &textureBox) = delete;
+				TextureBox &operator=(const TextureBox &textureBox) = delete;
 			};
 
-			typedef std::map<std::string, Slice::FACE_VECTOR_MAP> TEXTURE_BOX_NAME_FACE_VECTOR_MAP;
+			// TODO: InteractiveOffsetProvider, TextureAlignedOffsetProvider
+			class StateData : public virtual Binary::Resource {
+				public:
+				const ID MS_ID = 45;
+				const VERSION MS_VERSION = 1;
 
-			typedef bool ASSIGN_REFLECTION_ALPHA;
-			typedef float REFLECTION_ALPHA_AT_EDGE;
-			typedef float REFLECTION_ALPHA_AT_HORIZON;
+				//std::string maskFile = ""; // may or may not need?
 
-			const ID MS_ID = 42;
-			const VERSION MS_VERSION = 1;
-			std::optional<std::string> name = "water";
+				StateData(std::ifstream &inputFileStream, Reader &reader);
+				StateData(const StateData &stateData) = delete;
+				StateData &operator=(const StateData &stateData) = delete;
+			};
 
-			std::string textureBoxName = "";
+			class Water : public virtual Binary::Resource {
+				public:
+				enum struct FACE {
+					BACK,
+					FRONT,
+					LEFT,
+					RIGHT,
+					TOP,
+					BOTTOM
+				};
 
-			Water(std::ifstream &inputFileStream, TEXTURE_BOX_NAME_FACE_VECTOR_MAP &textureBoxNameFaceVectorMap);
-			Water(std::ifstream &inputFileStream);
-			Water(const Water &water) = delete;
-			Water &operator=(const Water &water) = delete;
+				struct Slice {
+					typedef uint32_t ROW;
+					typedef uint32_t COLUMN;
+					typedef std::vector<Slice> VECTOR;
+					typedef std::map<FACE, VECTOR> FACE_VECTOR_MAP;
+
+					ROW row = 0;
+					COLUMN column = 0;
+				};
+
+				typedef std::map<std::string, Slice::FACE_VECTOR_MAP> TEXTURE_BOX_NAME_FACE_VECTOR_MAP;
+
+				typedef bool ASSIGN_REFLECTION_ALPHA;
+				typedef float REFLECTION_ALPHA_AT_EDGE;
+				typedef float REFLECTION_ALPHA_AT_HORIZON;
+
+				const ID MS_ID = 42;
+				const VERSION MS_VERSION = 1;
+				std::optional<std::string> name = "water";
+
+				std::string textureBoxName = "";
+
+				Water(std::ifstream &inputFileStream, Reader &reader, TEXTURE_BOX_NAME_FACE_VECTOR_MAP &textureBoxNameFaceVectorMap);
+				Water(std::ifstream &inputFileStream, Reader &reader);
+				Water(const Water &water) = delete;
+				Water &operator=(const Water &water) = delete;
+			};
 		};
+
+		Resource::POINTER createResource(std::ifstream &inputFileStream);
 	};
 
 	struct BigFile {
