@@ -39,7 +39,7 @@ std::string &Ubi::String::swizzle(std::string &encryptedString) {
 }
 
 Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inputFileStream) {
-	Ubi::Binary::testHeader(inputFileStream);
+	testHeader(inputFileStream);
 
 	uint32_t waterSlices = 0;
 
@@ -53,6 +53,7 @@ Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inp
 
 	uint32_t groups = 0;
 	uint32_t subGroups = 0;
+
 	uint32_t pixels = 0;
 	std::streamsize pixelsSize = 0;
 
@@ -107,7 +108,7 @@ Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inp
 }
 
 void Ubi::Binary::testHeader(std::ifstream &inputFileStream) {
-	uint64_t header = 0;
+	HEADER header = 0;
 	size_t HEADER_SIZE = sizeof(header);
 
 	readFileStreamSafe(inputFileStream, &header, HEADER_SIZE);
