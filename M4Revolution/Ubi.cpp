@@ -38,6 +38,85 @@ std::string &Ubi::String::swizzle(std::string &encryptedString) {
 	return encryptedString;
 }
 
+Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inputFileStream) {
+	Ubi::Binary::testHeader(inputFileStream);
+
+	uint32_t waterSlices = 0;
+
+	ROW sliceRow = 0;
+	COLUMN sliceCol = 0;
+
+	SLICE_MAP sliceMap = {};
+	SLICE_MAP::iterator sliceMapIterator = {};
+
+	uint32_t waterRLERegions = 0;
+
+	uint32_t groups = 0;
+	uint32_t subGroups = 0;
+	uint32_t pixels = 0;
+	std::streamsize pixelsSize = 0;
+
+	const size_t WATER_FACE_FIELDS_SIZE = 20; // Type, Width, Height, SliceWidth, SliceHeight
+	const size_t WATER_SLICES_SIZE = sizeof(waterSlices);
+	const size_t SLICE_ROW_SIZE = sizeof(sliceRow);
+	const size_t SLICE_COL_SIZE = sizeof(sliceCol);
+	const size_t WATER_SLICE_FIELDS_SIZE = 8; // Width, Height
+	const size_t WATER_RLE_REGIONS_SIZE = sizeof(waterRLERegions);
+	const size_t WATER_RLE_REGION_FIELDS_SIZE = 20; // TextureCoordsInFace (X, Y,) TextureCoordsInSlice (X, Y,) RegionSize
+	const size_t GROUPS_SIZE = sizeof(groups);
+	const size_t WATER_RLE_REGION_GROUP_FIELDS_SIZE = 4; // Unknown
+	const size_t SUB_GROUPS_SIZE = sizeof(subGroups);
+	const size_t PIXELS_SIZE = sizeof(pixels);
+
+	inputFileStream.seekg(WATER_FACE_FIELDS_SIZE, std::ios::cur);
+	readFileStreamSafe(inputFileStream, &waterSlices, WATER_SLICES_SIZE);
+
+	for (uint32_t i = 0; i < waterSlices; i++) {
+		readFileStreamSafe(inputFileStream, &sliceRow, SLICE_ROW_SIZE);
+		sliceMapIterator = sliceMap.find(sliceRow);
+
+		if (sliceMapIterator == sliceMap.end()) {
+			sliceMapIterator = sliceMap.insert({sliceRow, {}}).first;
+		}
+
+		readFileStreamSafe(inputFileStream, &sliceCol, SLICE_COL_SIZE);
+		sliceMapIterator->second.insert(sliceCol);
+
+		inputFileStream.seekg(WATER_SLICE_FIELDS_SIZE, std::ios::cur);
+
+		readFileStreamSafe(inputFileStream, &waterRLERegions, WATER_RLE_REGIONS_SIZE);
+
+		for (uint32_t j = 0; j < waterRLERegions; j++) {
+			inputFileStream.seekg(WATER_RLE_REGION_FIELDS_SIZE, std::ios::cur);
+			readFileStreamSafe(inputFileStream, &groups, GROUPS_SIZE);
+
+			for (uint32_t l = 0; l < groups; l++) {
+				inputFileStream.seekg(WATER_RLE_REGION_GROUP_FIELDS_SIZE, std::ios::cur);
+				readFileStreamSafe(inputFileStream, &subGroups, SUB_GROUPS_SIZE);
+
+				for (uint32_t m = 0; m < subGroups; m++) {
+					readFileStreamSafe(inputFileStream, &pixels, PIXELS_SIZE);
+
+					pixelsSize = pixels;
+					inputFileStream.seekg(pixelsSize + pixelsSize, std::ios::cur);
+				}
+			}
+		}
+	}
+	return sliceMap;
+}
+
+void Ubi::Binary::testHeader(std::ifstream &inputFileStream) {
+	uint64_t header = 0;
+	size_t HEADER_SIZE = sizeof(header);
+
+	readFileStreamSafe(inputFileStream, &header, HEADER_SIZE);
+
+	if (header != UBI_B0_L) {
+		throw Invalid();
+	}
+}
+
 Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, bool texture) {
 	read(inputFileStream);
 

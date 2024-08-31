@@ -19,8 +19,12 @@ namespace Ubi {
 
 	namespace Binary {
 		namespace {
+			typedef uint64_t HEADER;
 			typedef uint32_t ID;
 			typedef uint32_t VERSION;
+
+			// "ubi/b0-l"
+			static const HEADER UBI_B0_L = 0x6C2D30622F696275;
 
 			struct Reader {
 				ID id = 0;
@@ -78,17 +82,13 @@ namespace Ubi {
 					BOTTOM
 				};
 
-				struct Slice {
-					typedef uint32_t ROW;
-					typedef uint32_t COLUMN;
-					typedef std::vector<Slice> VECTOR;
-					typedef std::map<FACE, VECTOR> FACE_VECTOR_MAP;
+				typedef uint32_t ROW;
+				typedef uint32_t COLUMN;
+				typedef std::unordered_set<COLUMN> COLUMN_SET;
+				typedef std::map<ROW, COLUMN_SET> SLICE_MAP;
+				typedef std::map<FACE, SLICE_MAP> SLICES_MAP;
 
-					ROW row = 0;
-					COLUMN column = 0;
-				};
-
-				typedef std::map<std::string, Slice::FACE_VECTOR_MAP> TEXTURE_BOX_NAME_FACE_VECTOR_MAP;
+				typedef std::map<std::string, SLICES_MAP> TEXTURE_BOX_NAME_SLICES_MAP;
 
 				typedef bool ASSIGN_REFLECTION_ALPHA;
 				typedef float REFLECTION_ALPHA_AT_EDGE;
@@ -100,13 +100,22 @@ namespace Ubi {
 
 				std::string textureBoxName = "";
 
-				Water(std::ifstream &inputFileStream, Reader &reader, TEXTURE_BOX_NAME_FACE_VECTOR_MAP &textureBoxNameFaceVectorMap);
+				Water(std::ifstream &inputFileStream, Reader &reader, TEXTURE_BOX_NAME_SLICES_MAP &textureBoxNameFaceVectorMap);
 				Water(std::ifstream &inputFileStream, Reader &reader);
 				Water(const Water &water) = delete;
 				Water &operator=(const Water &water) = delete;
+
+				static SLICE_MAP readRLEFile(std::ifstream &inputFileStream);
 			};
 		};
 
+		class Invalid : public std::invalid_argument {
+			public:
+			Invalid() noexcept : std::invalid_argument("Binary invalid") {
+			}
+		};
+
+		void testHeader(std::ifstream &inputFileStream);
 		Resource::POINTER createResource(std::ifstream &inputFileStream);
 	};
 
