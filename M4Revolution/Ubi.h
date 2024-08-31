@@ -83,9 +83,9 @@ namespace Ubi {
 				};
 
 				typedef uint32_t ROW;
-				typedef uint32_t COLUMN;
-				typedef std::unordered_set<COLUMN> COLUMN_SET;
-				typedef std::map<ROW, COLUMN_SET> SLICE_MAP;
+				typedef uint32_t COL;
+				typedef std::unordered_set<COL> COL_SET;
+				typedef std::map<ROW, COL_SET> SLICE_MAP;
 				typedef std::map<FACE, SLICE_MAP> SLICES_MAP;
 
 				typedef std::map<std::string, SLICES_MAP> TEXTURE_BOX_NAME_SLICES_MAP;

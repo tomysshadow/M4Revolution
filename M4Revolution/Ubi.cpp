@@ -44,7 +44,7 @@ Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inp
 	uint32_t waterSlices = 0;
 
 	ROW sliceRow = 0;
-	COLUMN sliceCol = 0;
+	COL sliceCol = 0;
 
 	SLICE_MAP sliceMap = {};
 	SLICE_MAP::iterator sliceMapIterator = {};
