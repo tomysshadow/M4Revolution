@@ -51,6 +51,9 @@ namespace Ubi {
 		
 			class TextureBox : public virtual Binary::Resource {
 				public:
+				const ID MS_ID = 15;
+				const VERSION MS_VERSION = 5;
+
 				std::string layerFile = "";
 
 				TextureBox(std::ifstream &inputFileStream, ResourceLoader &resourceLoader);
