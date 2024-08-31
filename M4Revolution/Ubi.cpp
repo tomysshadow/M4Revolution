@@ -84,7 +84,6 @@ Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inp
 		sliceMapIterator->second.insert(sliceCol);
 
 		inputFileStream.seekg(WATER_SLICE_FIELDS_SIZE, std::ios::cur);
-
 		readFileStreamSafe(inputFileStream, &waterRLERegions, WATER_RLE_REGIONS_SIZE);
 
 		for (uint32_t j = 0; j < waterRLERegions; j++) {
