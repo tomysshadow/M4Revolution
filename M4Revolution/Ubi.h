@@ -26,17 +26,17 @@ namespace Ubi {
 			// "ubi/b0-l"
 			static const HEADER UBI_B0_L = 0x6C2D30622F696275;
 
-			struct Reader {
+			struct ResourceLoader {
 				ID id = 0;
 				VERSION version = 1;
 				std::optional<std::string> name = std::nullopt;
 
-				Reader(std::ifstream &inputFileStream);
+				ResourceLoader(std::ifstream &inputFileStream);
 			};
 
 			class Resource {
 				protected:
-				Reader &reader;
+				ResourceLoader &resourceLoader;
 
 				public:
 				typedef std::shared_ptr<Resource> POINTER;
@@ -44,7 +44,7 @@ namespace Ubi {
 				const ID MS_ID = 0;
 				const VERSION MS_VERSION = 1;
 
-				Resource(std::ifstream &inputFileStream, Reader &reader);
+				Resource(std::ifstream &inputFileStream, ResourceLoader &resourceLoader);
 				Resource(const Resource &resource) = delete;
 				Resource &operator=(const Resource &resource) = delete;
 			};
@@ -53,7 +53,7 @@ namespace Ubi {
 				public:
 				std::string layerFile = "";
 
-				TextureBox(std::ifstream &inputFileStream, Reader &reader);
+				TextureBox(std::ifstream &inputFileStream, ResourceLoader &resourceLoader);
 				TextureBox(const TextureBox &textureBox) = delete;
 				TextureBox &operator=(const TextureBox &textureBox) = delete;
 			};
@@ -66,7 +66,7 @@ namespace Ubi {
 
 				//std::string maskFile = ""; // may or may not need?
 
-				StateData(std::ifstream &inputFileStream, Reader &reader);
+				StateData(std::ifstream &inputFileStream, ResourceLoader &resourceLoader);
 				StateData(const StateData &stateData) = delete;
 				StateData &operator=(const StateData &stateData) = delete;
 			};
@@ -100,8 +100,8 @@ namespace Ubi {
 
 				std::string textureBoxName = "";
 
-				Water(std::ifstream &inputFileStream, Reader &reader, TEXTURE_BOX_NAME_SLICES_MAP &textureBoxNameFaceVectorMap);
-				Water(std::ifstream &inputFileStream, Reader &reader);
+				Water(std::ifstream &inputFileStream, ResourceLoader &resourceLoader, TEXTURE_BOX_NAME_SLICES_MAP &textureBoxNameFaceVectorMap);
+				Water(std::ifstream &inputFileStream, ResourceLoader &resourceLoader);
 				Water(const Water &water) = delete;
 				Water &operator=(const Water &water) = delete;
 
