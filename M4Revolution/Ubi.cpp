@@ -108,7 +108,7 @@ Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inp
 
 void Ubi::Binary::testHeader(std::ifstream &inputFileStream) {
 	HEADER header = 0;
-	size_t HEADER_SIZE = sizeof(header);
+	const size_t HEADER_SIZE = sizeof(header);
 
 	readFileStreamSafe(inputFileStream, &header, HEADER_SIZE);
 
