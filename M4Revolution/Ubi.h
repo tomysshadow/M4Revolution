@@ -27,6 +27,8 @@ namespace Ubi {
 			static const HEADER UBI_B0_L = 0x6C2D30622F696275;
 
 			struct ResourceLoader {
+				typedef std::shared_ptr<ResourceLoader> POINTER;
+
 				ID id = 0;
 				VERSION version = 1;
 				std::optional<std::string> name = std::nullopt;
@@ -36,27 +38,27 @@ namespace Ubi {
 
 			class Resource {
 				protected:
-				ResourceLoader &resourceLoader;
+				ResourceLoader::POINTER resourceLoaderPointer = 0;
 
 				public:
 				typedef std::shared_ptr<Resource> POINTER;
 
-				const ID MS_ID = 0;
-				const VERSION MS_VERSION = 1;
+				static const ID MS_ID = 0;
+				static const VERSION MS_VERSION = 1;
 
-				Resource(std::ifstream &inputFileStream, ResourceLoader &resourceLoader);
+				Resource(ResourceLoader::POINTER resourceLoaderPointer);
 				Resource(const Resource &resource) = delete;
 				Resource &operator=(const Resource &resource) = delete;
 			};
 		
 			class TextureBox : public virtual Binary::Resource {
 				public:
-				const ID MS_ID = 15;
-				const VERSION MS_VERSION = 5;
+				static const ID MS_ID = 15;
+				static const VERSION MS_VERSION = 5;
 
 				std::string layerFile = "";
 
-				TextureBox(std::ifstream &inputFileStream, ResourceLoader &resourceLoader);
+				TextureBox(ResourceLoader::POINTER resourceLoaderPointer, std::ifstream &inputFileStream);
 				TextureBox(const TextureBox &textureBox) = delete;
 				TextureBox &operator=(const TextureBox &textureBox) = delete;
 			};
@@ -64,12 +66,12 @@ namespace Ubi {
 			// TODO: InteractiveOffsetProvider, TextureAlignedOffsetProvider
 			class StateData : public virtual Binary::Resource {
 				public:
-				const ID MS_ID = 45;
-				const VERSION MS_VERSION = 1;
+				static const ID MS_ID = 45;
+				static const VERSION MS_VERSION = 1;
 
 				//std::string maskFile = ""; // may or may not need?
 
-				StateData(std::ifstream &inputFileStream, ResourceLoader &resourceLoader);
+				StateData(ResourceLoader::POINTER resourceLoaderPointer, std::ifstream &inputFileStream);
 				StateData(const StateData &stateData) = delete;
 				StateData &operator=(const StateData &stateData) = delete;
 			};
@@ -97,30 +99,30 @@ namespace Ubi {
 				typedef float REFLECTION_ALPHA_AT_EDGE;
 				typedef float REFLECTION_ALPHA_AT_HORIZON;
 
-				const ID MS_ID = 42;
-				const VERSION MS_VERSION = 1;
-				std::optional<std::string> name = "water";
+				static const ID MS_ID = 42;
+				static const VERSION MS_VERSION = 1;
 
 				std::string textureBoxName = "";
+				TEXTURE_BOX_NAME_SLICES_MAP textureBoxNameFaceVectorMap = {};
 
-				Water(std::ifstream &inputFileStream, ResourceLoader &resourceLoader, TEXTURE_BOX_NAME_SLICES_MAP &textureBoxNameFaceVectorMap);
-				Water(std::ifstream &inputFileStream, ResourceLoader &resourceLoader);
+				Water(ResourceLoader::POINTER resourceLoaderPointer, std::ifstream &inputFileStream);
 				Water(const Water &water) = delete;
 				Water &operator=(const Water &water) = delete;
+				TEXTURE_BOX_NAME_SLICES_MAP &getTextureBoxNameFaceVectorMap() const;
 
 				static SLICE_MAP readRLEFile(std::ifstream &inputFileStream, std::streamsize size);
 			};
 		};
 
-		class ReadPastEnd : public std::runtime_error {
-			public:
-			ReadPastEnd() noexcept : std::runtime_error("Read Past End of Binary") {
-			}
-		};
-
 		class Invalid : public std::invalid_argument {
 			public:
 			Invalid() noexcept : std::invalid_argument("Binary invalid") {
+			}
+		};
+
+		class ReadPastEnd : public std::runtime_error {
+			public:
+			ReadPastEnd() noexcept : std::runtime_error("Read past end of Binary") {
 			}
 		};
 
