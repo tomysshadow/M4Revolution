@@ -18,43 +18,40 @@ namespace Ubi {
 	};
 
 	namespace Binary {
-		namespace {
-			typedef uint64_t HEADER;
+		class Resource {
+			public:
 			typedef uint32_t ID;
 			typedef uint32_t VERSION;
+			typedef std::shared_ptr<Resource> POINTER;
+
+			struct Loader {
+				typedef std::shared_ptr<Loader> POINTER;
+
+				ID id = 0;
+				VERSION version = 1;
+				std::optional<std::string> name = std::nullopt;
+
+				Loader(std::ifstream &inputFileStream);
+			};
+
+			Resource(Loader::POINTER loaderPointer);
+			Resource(const Resource &resource) = delete;
+			Resource &operator=(const Resource &resource) = delete;
+
+			protected:
+			Loader::POINTER loaderPointer = 0;
+		};
+
+		namespace {
+			typedef uint64_t HEADER;
 
 			// "ubi/b0-l"
 			static const HEADER UBI_B0_L = 0x6C2D30622F696275;
 
-			class Resource {
+			class TextureBox : public virtual Resource {
 				public:
-				typedef std::shared_ptr<Resource> POINTER;
-
-				struct Loader {
-					typedef std::shared_ptr<Loader> POINTER;
-
-					ID id = 0;
-					VERSION version = 1;
-					std::optional<std::string> name = std::nullopt;
-
-					Loader(std::ifstream &inputFileStream);
-				};
-
-				static const ID MS_ID = 0;
-				static const VERSION MS_VERSION = 1;
-
-				Resource(Loader::POINTER loaderPointer);
-				Resource(const Resource &resource) = delete;
-				Resource &operator=(const Resource &resource) = delete;
-
-				protected:
-				Loader::POINTER loaderPointer = 0;
-			};
-		
-			class TextureBox : public virtual Binary::Resource {
-				public:
-				static const ID MS_ID = 15;
-				static const VERSION MS_VERSION = 5;
+				static const Resource::ID ID = 15;
+				static const Resource::VERSION VERSION = 5;
 
 				std::string layerFile = "";
 
@@ -64,10 +61,10 @@ namespace Ubi {
 			};
 
 			// TODO: InteractiveOffsetProvider, TextureAlignedOffsetProvider
-			class StateData : public virtual Binary::Resource {
+			class StateData : public virtual Resource {
 				public:
-				static const ID MS_ID = 45;
-				static const VERSION MS_VERSION = 1;
+				static const Resource::ID ID = 45;
+				static const Resource::VERSION VERSION = 1;
 
 				//std::string maskFile = ""; // may or may not need?
 
@@ -76,7 +73,7 @@ namespace Ubi {
 				StateData &operator=(const StateData &stateData) = delete;
 			};
 
-			class Water : public virtual Binary::Resource {
+			class Water : public virtual Resource {
 				public:
 				enum struct FACE {
 					BACK,
@@ -99,8 +96,8 @@ namespace Ubi {
 				typedef float REFLECTION_ALPHA_AT_EDGE;
 				typedef float REFLECTION_ALPHA_AT_HORIZON;
 
-				static const ID MS_ID = 42;
-				static const VERSION MS_VERSION = 1;
+				static const Resource::ID ID = 42;
+				static const Resource::VERSION VERSION = 1;
 
 				std::string textureBoxName = "";
 				TEXTURE_BOX_NAME_SLICES_MAP textureBoxNameFaceVectorMap = {};

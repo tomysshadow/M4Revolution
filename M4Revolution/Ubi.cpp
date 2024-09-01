@@ -140,12 +140,12 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createResource(std::ifstream &inputF
 	Resource::Loader::POINTER loaderPointer = std::make_shared<Resource::Loader>(inputFileStream);
 
 	/*
-	switch (resourceLoaderPointer->id) {
-		case TextureBox::MS_ID:
+	switch (loaderPointer->id) {
+		case TextureBox::ID:
 		return std::make_shared<TextureBox>(loaderPointer, inputFileStream);
-		case StateData::MS_ID:
+		case StateData::ID:
 		return std::make_shared<StateData>(loaderPointer, inputFileStream);
-		case Water::MS_ID:
+		case Water::ID:
 		return std::make_shared<Water>(loaderPointer, inputFileStream);
 	}
 	*/
