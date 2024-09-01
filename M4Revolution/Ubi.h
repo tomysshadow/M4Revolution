@@ -108,8 +108,14 @@ namespace Ubi {
 				Water(const Water &water) = delete;
 				Water &operator=(const Water &water) = delete;
 
-				static SLICE_MAP readRLEFile(std::ifstream &inputFileStream);
+				static SLICE_MAP readRLEFile(std::ifstream &inputFileStream, std::streamsize size);
 			};
+		};
+
+		class ReadPastEnd : public std::runtime_error {
+			public:
+			ReadPastEnd() noexcept : std::runtime_error("Read Past End of Binary") {
+			}
 		};
 
 		class Invalid : public std::invalid_argument {

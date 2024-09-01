@@ -38,7 +38,9 @@ std::string &Ubi::String::swizzle(std::string &encryptedString) {
 	return encryptedString;
 }
 
-Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inputFileStream) {
+Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inputFileStream, std::streamsize size) {
+	std::streampos position = inputFileStream.tellg();
+
 	testHeader(inputFileStream);
 
 	uint32_t waterSlices = 0;
@@ -102,6 +104,10 @@ Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inp
 				}
 			}
 		}
+	}
+
+	if (inputFileStream.tellg() - position > size) {
+		throw ReadPastEnd();
 	}
 	return sliceMap;
 }
