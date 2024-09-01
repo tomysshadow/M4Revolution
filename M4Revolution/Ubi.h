@@ -26,29 +26,29 @@ namespace Ubi {
 			// "ubi/b0-l"
 			static const HEADER UBI_B0_L = 0x6C2D30622F696275;
 
-			struct ResourceLoader {
-				typedef std::shared_ptr<ResourceLoader> POINTER;
-
-				ID id = 0;
-				VERSION version = 1;
-				std::optional<std::string> name = std::nullopt;
-
-				ResourceLoader(std::ifstream &inputFileStream);
-			};
-
 			class Resource {
-				protected:
-				ResourceLoader::POINTER resourceLoaderPointer = 0;
-
 				public:
 				typedef std::shared_ptr<Resource> POINTER;
+
+				struct Loader {
+					typedef std::shared_ptr<Loader> POINTER;
+
+					ID id = 0;
+					VERSION version = 1;
+					std::optional<std::string> name = std::nullopt;
+
+					Loader(std::ifstream &inputFileStream);
+				};
 
 				static const ID MS_ID = 0;
 				static const VERSION MS_VERSION = 1;
 
-				Resource(ResourceLoader::POINTER resourceLoaderPointer);
+				Resource(Loader::POINTER loaderPointer);
 				Resource(const Resource &resource) = delete;
 				Resource &operator=(const Resource &resource) = delete;
+
+				protected:
+				Loader::POINTER loaderPointer = 0;
 			};
 		
 			class TextureBox : public virtual Binary::Resource {
@@ -58,7 +58,7 @@ namespace Ubi {
 
 				std::string layerFile = "";
 
-				TextureBox(ResourceLoader::POINTER resourceLoaderPointer, std::ifstream &inputFileStream);
+				TextureBox(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
 				TextureBox(const TextureBox &textureBox) = delete;
 				TextureBox &operator=(const TextureBox &textureBox) = delete;
 			};
@@ -71,7 +71,7 @@ namespace Ubi {
 
 				//std::string maskFile = ""; // may or may not need?
 
-				StateData(ResourceLoader::POINTER resourceLoaderPointer, std::ifstream &inputFileStream);
+				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
 				StateData(const StateData &stateData) = delete;
 				StateData &operator=(const StateData &stateData) = delete;
 			};
@@ -105,7 +105,7 @@ namespace Ubi {
 				std::string textureBoxName = "";
 				TEXTURE_BOX_NAME_SLICES_MAP textureBoxNameFaceVectorMap = {};
 
-				Water(ResourceLoader::POINTER resourceLoaderPointer, std::ifstream &inputFileStream);
+				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
 				Water(const Water &water) = delete;
 				Water &operator=(const Water &water) = delete;
 				TEXTURE_BOX_NAME_SLICES_MAP &getTextureBoxNameFaceVectorMap() const;

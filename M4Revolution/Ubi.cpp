@@ -38,7 +38,7 @@ std::string &Ubi::String::swizzle(std::string &encryptedString) {
 	return encryptedString;
 }
 
-Ubi::Binary::ResourceLoader::ResourceLoader(std::ifstream &inputFileStream) {
+Ubi::Binary::Resource::Loader::Loader(std::ifstream &inputFileStream) {
 	const size_t ID_SIZE = sizeof(id);
 	const size_t VERSION_SIZE = sizeof(version);
 
@@ -47,8 +47,8 @@ Ubi::Binary::ResourceLoader::ResourceLoader(std::ifstream &inputFileStream) {
 	name = String::readOptional(inputFileStream);
 }
 
-Ubi::Binary::Resource::Resource(ResourceLoader::POINTER resourceLoaderPointer)
-	: resourceLoaderPointer(resourceLoaderPointer) {
+Ubi::Binary::Resource::Resource(Loader::POINTER loaderPointer)
+	: loaderPointer(loaderPointer) {
 }
 
 Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inputFileStream, std::streamsize size) {
@@ -137,16 +137,16 @@ void Ubi::Binary::testHeader(std::ifstream &inputFileStream) {
 }
 
 Ubi::Binary::Resource::POINTER Ubi::Binary::createResource(std::ifstream &inputFileStream) {
-	ResourceLoader::POINTER resourceLoaderPointer = std::make_shared<ResourceLoader>(inputFileStream);
+	Resource::Loader::POINTER loaderPointer = std::make_shared<Resource::Loader>(inputFileStream);
 
 	/*
 	switch (resourceLoaderPointer->id) {
 		case TextureBox::MS_ID:
-		return std::make_shared<TextureBox>(resourceLoaderPointer, inputFileStream);
+		return std::make_shared<TextureBox>(loaderPointer, inputFileStream);
 		case StateData::MS_ID:
-		return std::make_shared<StateData>(resourceLoaderPointer, inputFileStream);
+		return std::make_shared<StateData>(loaderPointer, inputFileStream);
 		case Water::MS_ID:
-		return std::make_shared<Water>(resourceLoaderPointer, inputFileStream);
+		return std::make_shared<Water>(loaderPointer, inputFileStream);
 	}
 	*/
 	return 0;
