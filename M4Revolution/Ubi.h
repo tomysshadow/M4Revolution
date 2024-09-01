@@ -122,7 +122,7 @@ namespace Ubi {
 
 		class ReadPastEnd : public std::runtime_error {
 			public:
-			ReadPastEnd() noexcept : std::runtime_error("Read past end of Binary") {
+			ReadPastEnd() noexcept : std::runtime_error("Binary read past end") {
 			}
 		};
 
