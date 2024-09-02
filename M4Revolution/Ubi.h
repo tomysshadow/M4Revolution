@@ -121,7 +121,7 @@ namespace Ubi {
 
 		void testHeader(std::ifstream &inputFileStream);
 		Resource::POINTER createResourcePointer(std::ifstream &inputFileStream);
-		void appendSlicesMap(std::ifstream &inputFileStream, Water::SLICES_MAP &slicesMap);
+		void appendToSlicesMap(std::ifstream &inputFileStream, Water::SLICES_MAP &slicesMap);
 		Water::TEXTURE_BOX_NAME_SLICES_MAP getTextureBoxNameSlicesMap(std::ifstream &inputFileStream);
 	};
 
