@@ -18,6 +18,18 @@ namespace Ubi {
 	};
 
 	namespace Binary {
+		class Invalid : public std::invalid_argument {
+			public:
+			Invalid() noexcept : std::invalid_argument("Binary invalid") {
+			}
+		};
+
+		class ReadPastEnd : public std::runtime_error {
+			public:
+			ReadPastEnd() noexcept : std::runtime_error("Binary read past end") {
+			}
+		};
+
 		class Resource {
 			public:
 			typedef uint32_t ID;
@@ -42,6 +54,39 @@ namespace Ubi {
 			Loader::POINTER loaderPointer = 0;
 		};
 
+		class Water : public virtual Resource {
+			public:
+			enum struct FACE {
+				BACK,
+				FRONT,
+				LEFT,
+				RIGHT,
+				TOP,
+				BOTTOM
+			};
+
+			typedef uint32_t ROW;
+			typedef uint32_t COL;
+			typedef std::unordered_set<COL> COL_SET;
+			typedef std::map<ROW, COL_SET> SLICE_MAP;
+			typedef std::map<FACE, SLICE_MAP> SLICES_MAP;
+
+			typedef std::map<std::string, SLICES_MAP> TEXTURE_BOX_NAME_SLICES_MAP;
+
+			static const Resource::ID ID = 42;
+			static const Resource::VERSION VERSION = 1;
+
+			std::optional<std::string> textureBoxNameOptional = "";
+			TEXTURE_BOX_NAME_SLICES_MAP textureBoxNameFaceVectorMap = {};
+
+			Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, TEXTURE_BOX_NAME_SLICES_MAP &textureBoxNameSlicesMap);
+			Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
+			Water(const Water &water) = delete;
+			Water &operator=(const Water &water) = delete;
+
+			static SLICE_MAP readRLEFile(std::ifstream &inputFileStream, std::streamsize size);
+		};
+
 		namespace {
 			typedef uint64_t HEADER;
 
@@ -53,7 +98,7 @@ namespace Ubi {
 				static const Resource::ID ID = 15;
 				static const Resource::VERSION VERSION = 5;
 
-				std::string layerFile = "";
+				std::optional<std::string> layerFileOptional = "";
 
 				TextureBox(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
 				TextureBox(const TextureBox &textureBox) = delete;
@@ -66,65 +111,18 @@ namespace Ubi {
 				static const Resource::ID ID = 45;
 				static const Resource::VERSION VERSION = 1;
 
-				//std::string maskFile = ""; // may or may not need?
+				//std::optional<std::string> maskFileOptional = ""; // may or may not need?
 
-				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
+				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, Water::SLICES_MAP &slicesMap);
 				StateData(const StateData &stateData) = delete;
 				StateData &operator=(const StateData &stateData) = delete;
 			};
-
-			class Water : public virtual Resource {
-				public:
-				enum struct FACE {
-					BACK,
-					FRONT,
-					LEFT,
-					RIGHT,
-					TOP,
-					BOTTOM
-				};
-
-				typedef uint32_t ROW;
-				typedef uint32_t COL;
-				typedef std::unordered_set<COL> COL_SET;
-				typedef std::map<ROW, COL_SET> SLICE_MAP;
-				typedef std::map<FACE, SLICE_MAP> SLICES_MAP;
-
-				typedef std::map<std::string, SLICES_MAP> TEXTURE_BOX_NAME_SLICES_MAP;
-
-				typedef bool ASSIGN_REFLECTION_ALPHA;
-				typedef float REFLECTION_ALPHA_AT_EDGE;
-				typedef float REFLECTION_ALPHA_AT_HORIZON;
-
-				static const Resource::ID ID = 42;
-				static const Resource::VERSION VERSION = 1;
-
-				std::string textureBoxName = "";
-				TEXTURE_BOX_NAME_SLICES_MAP textureBoxNameFaceVectorMap = {};
-
-				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
-				Water(const Water &water) = delete;
-				Water &operator=(const Water &water) = delete;
-				TEXTURE_BOX_NAME_SLICES_MAP &getTextureBoxNameFaceVectorMap() const;
-
-				static SLICE_MAP readRLEFile(std::ifstream &inputFileStream, std::streamsize size);
-			};
-		};
-
-		class Invalid : public std::invalid_argument {
-			public:
-			Invalid() noexcept : std::invalid_argument("Binary invalid") {
-			}
-		};
-
-		class ReadPastEnd : public std::runtime_error {
-			public:
-			ReadPastEnd() noexcept : std::runtime_error("Binary read past end") {
-			}
 		};
 
 		void testHeader(std::ifstream &inputFileStream);
-		Resource::POINTER createResource(std::ifstream &inputFileStream);
+		Resource::POINTER createResourcePointer(std::ifstream &inputFileStream);
+		void appendSlicesMap(std::ifstream &inputFileStream, Water::SLICES_MAP &slicesMap);
+		Water::TEXTURE_BOX_NAME_SLICES_MAP getTextureBoxNameSlicesMap(std::ifstream &inputFileStream);
 	};
 
 	struct BigFile {
