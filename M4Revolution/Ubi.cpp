@@ -38,53 +38,8 @@ std::string &Ubi::String::swizzle(std::string &encryptedString) {
 	return encryptedString;
 }
 
-Ubi::Binary::Resource::Loader::Loader(std::ifstream &inputFileStream) {
-	const size_t ID_SIZE = sizeof(id);
-	const size_t VERSION_SIZE = sizeof(version);
-
-	readFileStreamSafe(inputFileStream, &id, ID_SIZE);
-	readFileStreamSafe(inputFileStream, &version, VERSION_SIZE);
-	name = String::readOptional(inputFileStream);
-}
-
-Ubi::Binary::Resource::Resource(Loader::POINTER loaderPointer)
-	: loaderPointer(loaderPointer) {
-}
-
-Ubi::Binary::Water::Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, TEXTURE_BOX_NAME_SLICES_MAP &textureBoxNameSlicesMap)
-	: Resource(loaderPointer) {
-	textureBoxNameOptional = String::readOptional(inputFileStream);
-
-	if (!textureBoxNameOptional.has_value()) {
-		return;
-	}
-
-	const size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
-	inputFileStream.seekg(WATER_FIELDS_SIZE, std::ios::cur);
-
-	uint32_t resources = 0;
-	const size_t RESOURCES_SIZE = sizeof(resources);
-
-	readFileStreamSafe(inputFileStream, &resources, RESOURCES_SIZE);
-
-	TEXTURE_BOX_NAME_SLICES_MAP::iterator textureBoxNameSlicesMapIterator = {};
-	std::string &textureBoxName = textureBoxNameOptional.value();
-
-	for (uint32_t i = 0; i < resources; i++) {
-		textureBoxNameSlicesMapIterator = textureBoxNameSlicesMap.find(textureBoxName);
-
-		if (textureBoxNameSlicesMapIterator == textureBoxNameSlicesMap.end()) {
-			textureBoxNameSlicesMapIterator = textureBoxNameSlicesMap.insert({textureBoxNameOptional.value(), {}}).first;
-		}
-
-		//appendSlicesMap(inputFileStream, textureBoxNameSlicesMapIterator->second);
-	}
-}
-
-Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inputFileStream, std::streamsize size) {
-	std::streampos position = inputFileStream.tellg();
-
-	testHeader(inputFileStream);
+Ubi::Binary::RLE::SLICE_MAP Ubi::Binary::RLE::readFile(std::ifstream &inputFileStream, std::streamsize size) {
+	Header header(inputFileStream, size);
 
 	uint32_t waterSlices = 0;
 
@@ -122,7 +77,7 @@ Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inp
 		sliceMapIterator = sliceMap.find(sliceRow);
 
 		if (sliceMapIterator == sliceMap.end()) {
-			sliceMapIterator = sliceMap.insert({sliceRow, {}}).first;
+			sliceMapIterator = sliceMap.insert({ sliceRow, {} }).first;
 		}
 
 		readFileStreamSafe(inputFileStream, &sliceCol, SLICE_COL_SIZE);
@@ -148,50 +103,90 @@ Ubi::Binary::Water::SLICE_MAP Ubi::Binary::Water::readRLEFile(std::ifstream &inp
 			}
 		}
 	}
-
-	if (inputFileStream.tellg() - position > size) {
-		throw ReadPastEnd();
-	}
 	return sliceMap;
 }
 
-void Ubi::Binary::testHeader(std::ifstream &inputFileStream) {
-	HEADER header = 0;
-	const size_t HEADER_SIZE = sizeof(header);
+Ubi::Binary::Resource::Loader::Loader(std::ifstream &inputFileStream) {
+	const size_t ID_SIZE = sizeof(id);
+	const size_t VERSION_SIZE = sizeof(version);
 
-	readFileStreamSafe(inputFileStream, &header, HEADER_SIZE);
+	readFileStreamSafe(inputFileStream, &id, ID_SIZE);
+	readFileStreamSafe(inputFileStream, &version, VERSION_SIZE);
+	name = String::readOptional(inputFileStream);
+}
 
-	if (header != UBI_B0_L) {
+Ubi::Binary::Resource::Resource(Loader::POINTER loaderPointer)
+	: loaderPointer(loaderPointer) {
+}
+
+Ubi::Binary::Water::Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::TEXTURE_BOX_NAME_SLICES_MAP &textureBoxNameSlicesMap)
+	: Resource(loaderPointer) {
+	textureBoxNameOptional = String::readOptional(inputFileStream);
+
+	if (!textureBoxNameOptional.has_value()) {
+		return;
+	}
+
+	const size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
+	inputFileStream.seekg(WATER_FIELDS_SIZE, std::ios::cur);
+
+	uint32_t resources = 0;
+	const size_t RESOURCES_SIZE = sizeof(resources);
+
+	readFileStreamSafe(inputFileStream, &resources, RESOURCES_SIZE);
+
+	RLE::TEXTURE_BOX_NAME_SLICES_MAP::iterator textureBoxNameSlicesMapIterator = {};
+	std::string &textureBoxName = textureBoxNameOptional.value();
+
+	for (uint32_t i = 0; i < resources; i++) {
+		textureBoxNameSlicesMapIterator = textureBoxNameSlicesMap.find(textureBoxName);
+
+		if (textureBoxNameSlicesMapIterator == textureBoxNameSlicesMap.end()) {
+			textureBoxNameSlicesMapIterator = textureBoxNameSlicesMap.insert({textureBoxNameOptional.value(), {}}).first;
+		}
+
+		//appendSlicesMap(inputFileStream, textureBoxNameSlicesMapIterator->second);
+	}
+}
+
+void Ubi::Binary::Header::testReadPastEnd() {
+	if (fileSize < inputFileStream.tellg() - filePosition) {
+		throw ReadPastEnd();
+	}
+}
+
+Ubi::Binary::Header::Header(std::ifstream &inputFileStream, std::streamsize fileSize)
+	: inputFileStream(inputFileStream),
+	fileSize(fileSize),
+	filePosition(inputFileStream.tellg()) {
+	ID id = 0;
+	const size_t ID_SIZE = sizeof(id);
+
+	readFileStreamSafe(inputFileStream, &id, ID_SIZE);
+	testReadPastEnd();
+
+	if (id != UBI_B0_L) {
 		throw Invalid();
 	}
 }
 
-Ubi::Binary::Resource::POINTER Ubi::Binary::createResourcePointer(std::ifstream &inputFileStream) {
-	Resource::Loader::POINTER loaderPointer = std::make_shared<Resource::Loader>(inputFileStream);
-
-	/*
-	switch (loaderPointer->id) {
-		case TextureBox::ID:
-		return std::make_shared<TextureBox>(loaderPointer, inputFileStream);
-		case StateData::ID:
-		return std::make_shared<StateData>(loaderPointer, inputFileStream);
-		case Water::ID:
-		return std::make_shared<Water>(loaderPointer, inputFileStream);
-	}
-	*/
-	return 0;
+Ubi::Binary::Header::~Header() {
+	testReadPastEnd();
 }
 
-Ubi::Binary::Water::TEXTURE_BOX_NAME_SLICES_MAP Ubi::Binary::getTextureBoxNameSlicesMap(std::ifstream &inputFileStream) {
+Ubi::Binary::RLE::TEXTURE_BOX_NAME_SLICES_MAP Ubi::Binary::readFile(std::ifstream &inputFileStream, std::streamsize size) {
+	Header header(inputFileStream, size);
+
 	Resource::Loader::POINTER loaderPointer = std::make_shared<Resource::Loader>(inputFileStream);
-	Water::TEXTURE_BOX_NAME_SLICES_MAP textureBoxNameSlicesMap = {};
+	RLE::TEXTURE_BOX_NAME_SLICES_MAP textureBoxNameSlicesMap = {};
 
 	switch (loaderPointer->id) {
 		case Water::ID:
 		Water water(loaderPointer, inputFileStream, textureBoxNameSlicesMap);
 		return textureBoxNameSlicesMap;
 	}
-	throw std::logic_error("Not implemented");
+
+	throw NotImplemented();
 }
 
 Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, bool texture) {

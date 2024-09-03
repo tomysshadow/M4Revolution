@@ -24,10 +24,37 @@ namespace Ubi {
 			}
 		};
 
+		class NotImplemented : public std::logic_error {
+			public:
+			NotImplemented() noexcept : std::logic_error("Binary not implemented") {
+			}
+		};
+
 		class ReadPastEnd : public std::runtime_error {
 			public:
 			ReadPastEnd() noexcept : std::runtime_error("Binary read past end") {
 			}
+		};
+
+		namespace RLE {
+			enum struct FACE {
+				BACK,
+				FRONT,
+				LEFT,
+				RIGHT,
+				TOP,
+				BOTTOM
+			};
+
+			typedef uint32_t ROW;
+			typedef uint32_t COL;
+			typedef std::unordered_set<COL> COL_SET;
+			typedef std::map<ROW, COL_SET> SLICE_MAP;
+			typedef std::map<FACE, SLICE_MAP> SLICES_MAP;
+
+			typedef std::map<std::string, SLICES_MAP> TEXTURE_BOX_NAME_SLICES_MAP;
+
+			static SLICE_MAP readFile(std::ifstream &inputFileStream, std::streamsize size);
 		};
 
 		class Resource {
@@ -54,45 +81,7 @@ namespace Ubi {
 			Loader::POINTER loaderPointer = 0;
 		};
 
-		class Water : public virtual Resource {
-			public:
-			enum struct FACE {
-				BACK,
-				FRONT,
-				LEFT,
-				RIGHT,
-				TOP,
-				BOTTOM
-			};
-
-			typedef uint32_t ROW;
-			typedef uint32_t COL;
-			typedef std::unordered_set<COL> COL_SET;
-			typedef std::map<ROW, COL_SET> SLICE_MAP;
-			typedef std::map<FACE, SLICE_MAP> SLICES_MAP;
-
-			typedef std::map<std::string, SLICES_MAP> TEXTURE_BOX_NAME_SLICES_MAP;
-
-			static const Resource::ID ID = 42;
-			static const Resource::VERSION VERSION = 1;
-
-			std::optional<std::string> textureBoxNameOptional = "";
-			TEXTURE_BOX_NAME_SLICES_MAP textureBoxNameFaceVectorMap = {};
-
-			Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, TEXTURE_BOX_NAME_SLICES_MAP &textureBoxNameSlicesMap);
-			Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
-			Water(const Water &water) = delete;
-			Water &operator=(const Water &water) = delete;
-
-			static SLICE_MAP readRLEFile(std::ifstream &inputFileStream, std::streamsize size);
-		};
-
 		namespace {
-			typedef uint64_t HEADER;
-
-			// "ubi/b0-l"
-			static const HEADER UBI_B0_L = 0x6C2D30622F696275;
-
 			class TextureBox : public virtual Resource {
 				public:
 				static const Resource::ID ID = 15;
@@ -113,16 +102,65 @@ namespace Ubi {
 
 				//std::optional<std::string> maskFileOptional = ""; // may or may not need?
 
-				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, Water::SLICES_MAP &slicesMap);
+				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::SLICES_MAP &slicesMap);
 				StateData(const StateData &stateData) = delete;
 				StateData &operator=(const StateData &stateData) = delete;
 			};
+
+			class Water : public virtual Resource {
+				public:
+				static const Resource::ID ID = 42;
+				static const Resource::VERSION VERSION = 1;
+
+				std::optional<std::string> textureBoxNameOptional = "";
+				RLE::TEXTURE_BOX_NAME_SLICES_MAP textureBoxNameFaceVectorMap = {};
+
+				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::TEXTURE_BOX_NAME_SLICES_MAP &textureBoxNameSlicesMap);
+				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
+				Water(const Water &water) = delete;
+				Water &operator=(const Water &water) = delete;
+			};
+
+			class Header {
+				private:
+				void testReadPastEnd();
+
+				typedef uint64_t ID;
+
+				// "ubi/b0-l"
+				static const ID UBI_B0_L = 0x6C2D30622F696275;
+
+				std::ifstream &inputFileStream;
+				std::streamsize fileSize = 0;
+				std::streampos filePosition = 0;
+
+				public:
+				Header(std::ifstream &inputFileStream, std::streamsize fileSize);
+				~Header();
+				Header(const Header &header) = delete;
+				Header &operator=(const Header &header) = delete;
+			};
+
+			Ubi::Binary::Resource::POINTER createResourcePointer(std::ifstream &inputFileStream) {
+				Resource::Loader::POINTER loaderPointer = std::make_shared<Resource::Loader>(inputFileStream);
+
+				/*
+				switch (loaderPointer->id) {
+					case TextureBox::ID:
+					return std::make_shared<TextureBox>(loaderPointer, inputFileStream);
+					case StateData::ID:
+					return std::make_shared<StateData>(loaderPointer, inputFileStream);
+					case Water::ID:
+					return std::make_shared<Water>(loaderPointer, inputFileStream);
+				}
+				*/
+				return 0;
+			}
+
+			//void appendToSlicesMap(std::ifstream &inputFileStream, RLE::SLICES_MAP &slicesMap);
 		};
 
-		void testHeader(std::ifstream &inputFileStream);
-		Resource::POINTER createResourcePointer(std::ifstream &inputFileStream);
-		void appendToSlicesMap(std::ifstream &inputFileStream, Water::SLICES_MAP &slicesMap);
-		Water::TEXTURE_BOX_NAME_SLICES_MAP getTextureBoxNameSlicesMap(std::ifstream &inputFileStream);
+		RLE::TEXTURE_BOX_NAME_SLICES_MAP readFile(std::ifstream &inputFileStream, std::streamsize size);
 	};
 
 	struct BigFile {
