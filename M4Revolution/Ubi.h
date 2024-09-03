@@ -54,7 +54,6 @@ namespace Ubi {
 			typedef std::map<FACE, SLICE_MAP> MASK_MAP;
 			typedef std::unordered_set<std::string> MASK_NAME_SET;
 			typedef std::variant<MASK_NAME_SET, MASK_MAP> MASK_VARIANT;
-
 			typedef std::map<std::string, MASK_VARIANT> TEXTURE_BOX_NAME_MASK_VARIANT_MAP;
 
 			static SLICE_MAP readFile(std::ifstream &inputFileStream, std::streamsize size);
