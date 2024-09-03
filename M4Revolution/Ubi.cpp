@@ -148,12 +148,12 @@ Ubi::Binary::TextureAlignedOffsetProvider::TextureAlignedOffsetProvider(Loader::
 }
 
 void Ubi::Binary::StateData::create(std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet) {
-	uint32_t aliases = 0;
-	const size_t ALIASES_SIZE = sizeof(aliases);
+	uint32_t nbrAliases = 0;
+	const size_t NBR_ALIASES_SIZE = sizeof(nbrAliases);
 
-	readFileStreamSafe(inputFileStream, &aliases, ALIASES_SIZE);
+	readFileStreamSafe(inputFileStream, &nbrAliases, NBR_ALIASES_SIZE);
 
-	for (uint32_t i = 0; i < aliases; i++) {
+	for (uint32_t i = 0; i < nbrAliases; i++) {
 		String::readOptional(inputFileStream);
 	}
 
