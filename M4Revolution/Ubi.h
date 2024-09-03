@@ -1,9 +1,10 @@
 #pragma once
 #include "shared.h"
-#include <vector>
+#include <optional>
 #include <unordered_set>
 #include <map>
-#include <optional>
+#include <variant>
+#include <vector>
 
 #define CONVERSION_ENABLED
 
@@ -50,9 +51,11 @@ namespace Ubi {
 			typedef uint32_t COL;
 			typedef std::unordered_set<COL> COL_SET;
 			typedef std::map<ROW, COL_SET> SLICE_MAP;
-			typedef std::map<FACE, SLICE_MAP> SLICES_MAP;
+			typedef std::map<FACE, SLICE_MAP> MASK_MAP;
+			typedef std::unordered_set<std::string> MASK_NAME_SET;
+			typedef std::variant<MASK_NAME_SET, MASK_MAP> MASK_VARIANT;
 
-			typedef std::map<std::string, SLICES_MAP> TEXTURE_BOX_NAME_SLICES_MAP;
+			typedef std::map<std::string, MASK_VARIANT> TEXTURE_BOX_NAME_MASK_VARIANT_MAP;
 
 			static SLICE_MAP readFile(std::ifstream &inputFileStream, std::streamsize size);
 		};
@@ -94,31 +97,56 @@ namespace Ubi {
 				TextureBox &operator=(const TextureBox &textureBox) = delete;
 			};
 
-			// TODO: InteractiveOffsetProvider, TextureAlignedOffsetProvider
-			class StateData : public virtual Resource {
-				public:
-				static const Resource::ID ID = 45;
-				static const Resource::VERSION VERSION = 1;
-
-				//std::optional<std::string> maskFileOptional = ""; // may or may not need?
-
-				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::SLICES_MAP &slicesMap);
-				StateData(const StateData &stateData) = delete;
-				StateData &operator=(const StateData &stateData) = delete;
-			};
-
 			class Water : public virtual Resource {
+				private:
+				void create(std::ifstream &inputFileStream, RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap);
+
 				public:
 				static const Resource::ID ID = 42;
 				static const Resource::VERSION VERSION = 1;
 
 				std::optional<std::string> textureBoxNameOptional = "";
-				RLE::TEXTURE_BOX_NAME_SLICES_MAP textureBoxNameFaceVectorMap = {};
 
-				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::TEXTURE_BOX_NAME_SLICES_MAP &textureBoxNameSlicesMap);
+				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap);
 				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
 				Water(const Water &water) = delete;
 				Water &operator=(const Water &water) = delete;
+			};
+
+			class InteractiveOffsetProvider : public virtual Resource {
+				public:
+				static const Resource::ID ID = 43;
+				static const Resource::VERSION VERSION = 1;
+
+				InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
+				InteractiveOffsetProvider(const InteractiveOffsetProvider &interactiveOffsetProvider) = delete;
+				InteractiveOffsetProvider &operator=(const InteractiveOffsetProvider &interactiveOffsetProvider) = delete;
+			};
+
+			class TextureAlignedOffsetProvider : public virtual Resource {
+				public:
+				static const Resource::ID ID = 44;
+				static const Resource::VERSION VERSION = 1;
+
+				TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
+				TextureAlignedOffsetProvider(const TextureAlignedOffsetProvider &textureAlignedOffsetProvider) = delete;
+				TextureAlignedOffsetProvider &operator=(const TextureAlignedOffsetProvider &textureAlignedOffsetProvider) = delete;
+			};
+
+			class StateData : public virtual Resource {
+				private:
+				void create(std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet);
+
+				public:
+				static const Resource::ID ID = 45;
+				static const Resource::VERSION VERSION = 1;
+
+				std::optional<std::string> maskFileOptional = "";
+
+				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet);
+				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
+				StateData(const StateData &stateData) = delete;
+				StateData &operator=(const StateData &stateData) = delete;
 			};
 
 			class Header {
@@ -140,27 +168,11 @@ namespace Ubi {
 				Header(const Header &header) = delete;
 				Header &operator=(const Header &header) = delete;
 			};
-
-			Ubi::Binary::Resource::POINTER createResourcePointer(std::ifstream &inputFileStream) {
-				Resource::Loader::POINTER loaderPointer = std::make_shared<Resource::Loader>(inputFileStream);
-
-				/*
-				switch (loaderPointer->id) {
-					case TextureBox::ID:
-					return std::make_shared<TextureBox>(loaderPointer, inputFileStream);
-					case StateData::ID:
-					return std::make_shared<StateData>(loaderPointer, inputFileStream);
-					case Water::ID:
-					return std::make_shared<Water>(loaderPointer, inputFileStream);
-				}
-				*/
-				return 0;
-			}
-
-			//void appendToSlicesMap(std::ifstream &inputFileStream, RLE::SLICES_MAP &slicesMap);
 		};
 
-		RLE::TEXTURE_BOX_NAME_SLICES_MAP readFile(std::ifstream &inputFileStream, std::streamsize size);
+		Resource::POINTER createResourcePointer(std::ifstream &inputFileStream);
+		void getMaskNameSet(std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet);
+		void readFile(std::ifstream &inputFileStream, std::streamsize size, RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap);
 	};
 
 	struct BigFile {
@@ -211,6 +223,7 @@ namespace Ubi {
 			File(std::ifstream &inputFileStream);
 			File(SIZE inputFileSize);
 			void write(std::ofstream &outputFileStream) const;
+			void appendToTextureBoxNameMaskVariantMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap);
 
 			private:
 			void read(std::ifstream &inputFileStream);
@@ -242,11 +255,14 @@ namespace Ubi {
 			File::POINTER_VECTOR binaryFilePointerVector = {};
 			File::POINTER_VECTOR filePointerVector = {};
 
-			Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &fileVectorIteratorSetMap);
+			Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemPosition, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &fileVectorIteratorSetMap);
 			Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, std::optional<File> &fileOptional);
 			void write(std::ofstream &outputFileStream) const;
+			void appendToTextureBoxNameMaskVariantMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap);
 
 			private:
+			void appendToTextureBoxNameMaskVariantMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap, File::POINTER_VECTOR &binaryFilePointerVector);
+
 			static const std::string NAME_TEXTURE;
 			static const std::string NAME_WATER;
 		};
@@ -262,7 +278,7 @@ namespace Ubi {
 				}
 			};
 
-			Header(std::ifstream &inputFileStream, File::SIZE &fileSystemSize);
+			Header(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemPosition);
 			Header(std::ifstream &inputFileStream, std::optional<File> &fileOptional);
 			void write(std::ofstream &outputFileStream) const;
 
@@ -273,6 +289,7 @@ namespace Ubi {
 			static const VERSION CURRENT_VERSION = 1;
 		};
 
+		File::SIZE fileSystemPosition = 0;
 		Header header;
 		Directory directory;
 

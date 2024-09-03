@@ -9,9 +9,11 @@ std::optional<std::string> Ubi::String::readOptional(std::ifstream &inputFileStr
 	}
 
 	// add one for strings that don't end in a null terminator (like encrypted strings)
-	std::unique_ptr<char> str = std::unique_ptr<char>(new char[(size_t)size + 1]);
-	readFileStreamSafe(inputFileStream, str.get(), size);
-	return str.get();
+	std::unique_ptr<char> strPointer = std::unique_ptr<char>(new char[(size_t)size + 1]);
+	char* str = strPointer.get();
+	readFileStreamSafe(inputFileStream, str, size);
+	str[size] = 0;
+	return str;
 }
 
 void Ubi::String::writeOptional(std::ofstream &outputFileStream, const std::optional<std::string> &strOptional) {
@@ -113,14 +115,72 @@ Ubi::Binary::Resource::Loader::Loader(std::ifstream &inputFileStream) {
 	readFileStreamSafe(inputFileStream, &id, ID_SIZE);
 	readFileStreamSafe(inputFileStream, &version, VERSION_SIZE);
 	name = String::readOptional(inputFileStream);
+
+	if (name.has_value()) {
+		String::swizzle(name.value());
+	}
 }
 
 Ubi::Binary::Resource::Resource(Loader::POINTER loaderPointer)
 	: loaderPointer(loaderPointer) {
 }
 
-Ubi::Binary::Water::Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::TEXTURE_BOX_NAME_SLICES_MAP &textureBoxNameSlicesMap)
+Ubi::Binary::InteractiveOffsetProvider::InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::ifstream &inputFileStream)
 	: Resource(loaderPointer) {
+	const size_t FIELDS_SIZE = 33;
+	inputFileStream.seekg(FIELDS_SIZE, std::ios::cur);
+}
+
+Ubi::Binary::TextureAlignedOffsetProvider::TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::ifstream &inputFileStream)
+	: Resource(loaderPointer) {
+	const size_t FIELDS_SIZE = 65;
+	inputFileStream.seekg(FIELDS_SIZE, std::ios::cur);
+}
+
+void Ubi::Binary::StateData::create(std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet) {
+	uint32_t aliases = 0;
+	const size_t ALIASES_SIZE = sizeof(aliases);
+
+	readFileStreamSafe(inputFileStream, &aliases, ALIASES_SIZE);
+
+	for (uint32_t i = 0; i < aliases; i++) {
+		String::readOptional(inputFileStream);
+	}
+
+	const size_t REFRESH_RATE_SIZE = 4;
+	inputFileStream.seekg(REFRESH_RATE_SIZE, std::ios::cur);
+
+	maskFileOptional = String::readOptional(inputFileStream);
+
+	if (maskFileOptional.has_value()) {
+		maskNameSet.insert(String::swizzle(maskFileOptional.value()));
+	}
+
+	uint32_t resources = 0;
+	const size_t RESOURCES_SIZE = sizeof(resources);
+
+	readFileStreamSafe(inputFileStream, &resources, RESOURCES_SIZE);
+
+	for (uint32_t i = 0; i < resources; i++) {
+		createResourcePointer(inputFileStream);
+	}
+
+	const size_t WATER_FACE_BILERP_FIELDS_SIZE = 6;
+	inputFileStream.seekg(WATER_FACE_BILERP_FIELDS_SIZE, std::ios::cur);
+}
+
+Ubi::Binary::StateData::StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet)
+	: Resource(loaderPointer) {
+	create(inputFileStream, maskNameSet);
+}
+
+Ubi::Binary::StateData::StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream)
+	: Resource(loaderPointer) {
+	RLE::MASK_NAME_SET maskNameSet = {};
+	create(inputFileStream, maskNameSet);
+}
+
+void Ubi::Binary::Water::create(std::ifstream &inputFileStream, RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap) {
 	textureBoxNameOptional = String::readOptional(inputFileStream);
 
 	if (!textureBoxNameOptional.has_value()) {
@@ -135,18 +195,31 @@ Ubi::Binary::Water::Water(Loader::POINTER loaderPointer, std::ifstream &inputFil
 
 	readFileStreamSafe(inputFileStream, &resources, RESOURCES_SIZE);
 
-	RLE::TEXTURE_BOX_NAME_SLICES_MAP::iterator textureBoxNameSlicesMapIterator = {};
+	RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP::iterator textureBoxNameMaskVariantMapIterator = {};
+
 	std::string &textureBoxName = textureBoxNameOptional.value();
+	String::swizzle(textureBoxName);
 
 	for (uint32_t i = 0; i < resources; i++) {
-		textureBoxNameSlicesMapIterator = textureBoxNameSlicesMap.find(textureBoxName);
+		textureBoxNameMaskVariantMapIterator = textureBoxNameMaskVariantMap.find(textureBoxName);
 
-		if (textureBoxNameSlicesMapIterator == textureBoxNameSlicesMap.end()) {
-			textureBoxNameSlicesMapIterator = textureBoxNameSlicesMap.insert({textureBoxNameOptional.value(), {}}).first;
+		if (textureBoxNameMaskVariantMapIterator == textureBoxNameMaskVariantMap.end()) {
+			textureBoxNameMaskVariantMapIterator = textureBoxNameMaskVariantMap.insert({ textureBoxName, {} }).first;
 		}
 
-		//appendSlicesMap(inputFileStream, textureBoxNameSlicesMapIterator->second);
+		getMaskNameSet(inputFileStream, std::get<RLE::MASK_NAME_SET>(textureBoxNameMaskVariantMapIterator->second));
 	}
+}
+
+Ubi::Binary::Water::Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap)
+	: Resource(loaderPointer) {
+	create(inputFileStream, textureBoxNameMaskVariantMap);
+}
+
+Ubi::Binary::Water::Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream)
+	: Resource(loaderPointer) {
+	RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP textureBoxNameMaskVariantMap = {};
+	create(inputFileStream, textureBoxNameMaskVariantMap);
 }
 
 void Ubi::Binary::Header::testReadPastEnd() {
@@ -174,16 +247,45 @@ Ubi::Binary::Header::~Header() {
 	testReadPastEnd();
 }
 
-Ubi::Binary::RLE::TEXTURE_BOX_NAME_SLICES_MAP Ubi::Binary::readFile(std::ifstream &inputFileStream, std::streamsize size) {
+Ubi::Binary::Resource::POINTER Ubi::Binary::createResourcePointer(std::ifstream &inputFileStream) {
+	Resource::Loader::POINTER loaderPointer = std::make_shared<Resource::Loader>(inputFileStream);
+
+	switch (loaderPointer->id) {
+		//case TextureBox::ID:
+		//return std::make_shared<TextureBox>(loaderPointer, inputFileStream);
+		case Water::ID:
+		return std::make_shared<Water>(loaderPointer, inputFileStream);
+		case StateData::ID:
+		return std::make_shared<StateData>(loaderPointer, inputFileStream);
+		case InteractiveOffsetProvider::ID:
+		return std::make_shared<InteractiveOffsetProvider>(loaderPointer, inputFileStream);
+		case TextureAlignedOffsetProvider::ID:
+		return std::make_shared<TextureAlignedOffsetProvider>(loaderPointer, inputFileStream);
+	}
+	return 0;
+}
+
+void Ubi::Binary::getMaskNameSet(std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet) {
+	Resource::Loader::POINTER loaderPointer = std::make_shared<Resource::Loader>(inputFileStream);
+
+	switch (loaderPointer->id) {
+		case StateData::ID:
+		StateData stateData(loaderPointer, inputFileStream, maskNameSet);
+		return;
+	}
+
+	throw NotImplemented();
+}
+
+void Ubi::Binary::readFile(std::ifstream &inputFileStream, std::streamsize size, RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap) {
 	Header header(inputFileStream, size);
 
 	Resource::Loader::POINTER loaderPointer = std::make_shared<Resource::Loader>(inputFileStream);
-	RLE::TEXTURE_BOX_NAME_SLICES_MAP textureBoxNameSlicesMap = {};
 
 	switch (loaderPointer->id) {
 		case Water::ID:
-		Water water(loaderPointer, inputFileStream, textureBoxNameSlicesMap);
-		return textureBoxNameSlicesMap;
+		Water water(loaderPointer, inputFileStream, textureBoxNameMaskVariantMap);
+		return;
 	}
 
 	throw NotImplemented();
@@ -251,6 +353,19 @@ void Ubi::BigFile::File::write(std::ofstream &outputFileStream) const {
 	writeFileStreamSafe(outputFileStream, &position, POSITION_SIZE);
 }
 
+void Ubi::BigFile::File::appendToTextureBoxNameMaskVariantMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap) {
+	std::streampos position = inputFileStream.tellg();
+	
+	try {
+		inputFileStream.seekg(fileSystemPosition + (std::streampos)this->position);
+		Binary::readFile(inputFileStream, this->size, textureBoxNameMaskVariantMap);
+	} catch (...) {
+		// fail silently
+	}
+
+	inputFileStream.seekg(position);
+}
+
 void Ubi::BigFile::File::read(std::ifstream &inputFileStream) {
 	nameOptional = String::readOptional(inputFileStream);
 	readFileStreamSafe(inputFileStream, &size, SIZE_SIZE);
@@ -279,30 +394,27 @@ const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTEN
 	{"zap", {TYPE::ZAP, "dds"}}
 };
 
-Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap)
+Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemPosition, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap)
 	: nameOptional(String::readOptional(inputFileStream)) {
 	DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
-	// currently not used (yet!)
-	/*
 	FILE_POINTER_VECTOR_SIZE_VECTOR cubeIndices = {};
 	FILE_POINTER_VECTOR_SIZE_VECTOR waterIndices = {};
-	*/
 
 	for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
-		/*Directory &directory = */directoryVector.emplace_back(
+		Directory &directory = directoryVector.emplace_back(
 			inputFileStream,
 			fileSystemSize,
+			fileSystemPosition,
 			files,
 			filePointerSetMap
 		);
 
-		/*
 		const std::optional<std::string> &NAME_OPTIONAL = directory.nameOptional;
 
 		if (NAME_OPTIONAL.has_value()) {
-			const std::string &NAME = nameOptional.value();
+			const std::string &NAME = NAME_OPTIONAL.value();
 
 			if (NAME == "cube") {
 				cubeIndices.push_back(i);
@@ -310,7 +422,23 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &f
 				waterIndices.push_back(i);
 			}
 		}
-		*/
+	}
+
+	if (!cubeIndices.empty()) {
+		Binary::RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP textureBoxNameMaskVariantMap = {};
+
+		for (
+			FILE_POINTER_VECTOR_SIZE_VECTOR::iterator waterIndicesIterator = waterIndices.begin();
+			waterIndicesIterator != waterIndices.end();
+			waterIndicesIterator++
+		) {
+			directoryVector[*waterIndicesIterator].appendToTextureBoxNameMaskVariantMap(inputFileStream, fileSystemPosition, textureBoxNameMaskVariantMap);
+
+			// TODO: we now need to navigate down textureBoxNameMaskVariantMap
+			// find the texture box (from cube directory) with the matching name to each key
+			// as well as find each RLE file to read
+			// then assign all this information onto the cube
+		}
 	}
 
 	FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
@@ -479,10 +607,33 @@ void Ubi::BigFile::Directory::write(std::ofstream &outputFileStream) const {
 	}
 }
 
+void Ubi::BigFile::Directory::appendToTextureBoxNameMaskVariantMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap) {
+	appendToTextureBoxNameMaskVariantMap(inputFileStream, fileSystemPosition, textureBoxNameMaskVariantMap, binaryFilePointerVector);
+
+	for (
+		VECTOR::iterator directoryVectorIterator = directoryVector.begin();
+		directoryVectorIterator != directoryVector.end();
+		directoryVectorIterator++
+	) {
+		appendToTextureBoxNameMaskVariantMap(inputFileStream, fileSystemPosition, textureBoxNameMaskVariantMap, directoryVectorIterator->binaryFilePointerVector);
+	}
+}
+
+void Ubi::BigFile::Directory::appendToTextureBoxNameMaskVariantMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP &textureBoxNameMaskVariantMap, File::POINTER_VECTOR &binaryFilePointerVector) {
+	for (
+		File::POINTER_VECTOR::iterator binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
+		binaryFilePointerVectorIterator != binaryFilePointerVector.end();
+		binaryFilePointerVectorIterator++
+	) {
+		(*binaryFilePointerVectorIterator)->appendToTextureBoxNameMaskVariantMap(inputFileStream, fileSystemPosition, textureBoxNameMaskVariantMap);
+	}
+}
+
 const std::string Ubi::BigFile::Directory::NAME_TEXTURE = "texture";
 const std::string Ubi::BigFile::Directory::NAME_WATER = "water";
 
-Ubi::BigFile::Header::Header(std::ifstream &inputFileStream, File::SIZE &fileSystemSize) {
+Ubi::BigFile::Header::Header(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemPosition) {
+	fileSystemPosition = (File::SIZE)inputFileStream.tellg();
 	read(inputFileStream);
 
 	fileSystemSize += (File::SIZE)(
@@ -526,8 +677,8 @@ void Ubi::BigFile::Header::read(std::ifstream &inputFileStream) {
 const std::string Ubi::BigFile::Header::SIGNATURE = "UBI_BF_SIG";
 
 Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap)
-	: header(inputFileStream, fileSystemSize),
-	directory(inputFileStream, fileSystemSize, files, filePointerSetMap) {
+	: header(inputFileStream, fileSystemSize, fileSystemPosition),
+	directory(inputFileStream, fileSystemSize, fileSystemPosition, files, filePointerSetMap) {
 }
 
 Ubi::BigFile::BigFile(std::ifstream &inputFileStream, const Path &path, std::optional<File> &fileOptional)
