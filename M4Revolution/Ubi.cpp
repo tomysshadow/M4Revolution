@@ -1,6 +1,10 @@
 #include "Ubi.h"
 
-std::optional<std::string> Ubi::String::readOptional(std::ifstream &inputFileStream) {
+std::optional<std::string> Ubi::String::readOptional(std::ifstream &inputFileStream, bool &nullTerminator) {
+	MAKE_SCOPE_EXIT(nullTerminatorScopeExit) {
+		nullTerminator = true;
+	};
+
 	SIZE size = 0;
 	readFileStreamSafe(inputFileStream, &size, SIZE_SIZE);
 
@@ -8,16 +12,22 @@ std::optional<std::string> Ubi::String::readOptional(std::ifstream &inputFileStr
 		return std::nullopt;
 	}
 
-	// add one for strings that don't end in a null terminator (like encrypted strings)
 	std::unique_ptr<char> strPointer = std::unique_ptr<char>(new char[(size_t)size + 1]);
 	char* str = strPointer.get();
 	readFileStreamSafe(inputFileStream, str, size);
+	nullTerminator = !str[size - 1];
 	str[size] = 0;
+	nullTerminatorScopeExit.dismiss();
 	return str;
 }
 
-void Ubi::String::writeOptional(std::ofstream &outputFileStream, const std::optional<std::string> &strOptional) {
-	SIZE size = strOptional.has_value() ? (SIZE)strOptional.value().size() + 1 : 0;
+std::optional<std::string> Ubi::String::readOptional(std::ifstream &inputFileStream) {
+	bool nullTerminator = true;
+	return readOptional(inputFileStream, nullTerminator);
+}
+
+void Ubi::String::writeOptional(std::ofstream &outputFileStream, const std::optional<std::string> &strOptional, bool nullTerminator) {
+	SIZE size = strOptional.has_value() ? (SIZE)strOptional.value().size() + nullTerminator : 0;
 	writeFileStreamSafe(outputFileStream, &size, SIZE_SIZE);
 
 	if (!size) {

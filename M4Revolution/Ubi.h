@@ -13,8 +13,9 @@ namespace Ubi {
 		typedef uint32_t SIZE;
 		static const size_t SIZE_SIZE = sizeof(SIZE);
 
+		std::optional<std::string> readOptional(std::ifstream &inputFileStream, bool &nullTerminator);
 		std::optional<std::string> readOptional(std::ifstream &inputFileStream);
-		void writeOptional(std::ofstream &outputFileStream, const std::optional<std::string> &strOptional);
+		void writeOptional(std::ofstream &outputFileStream, const std::optional<std::string> &strOptional, bool nullTerminator = true);
 		std::string &swizzle(std::string &encryptedString);
 	};
 
