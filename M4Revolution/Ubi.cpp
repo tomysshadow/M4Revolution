@@ -785,7 +785,7 @@ void Ubi::BigFile::Directory::write(std::ofstream &outputFileStream) const {
 	}
 }
 
-bool Ubi::BigFile::Directory::isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) {
+bool Ubi::BigFile::Directory::isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) {
 	bool match = false;
 
 	// should we care about this directory at all?
