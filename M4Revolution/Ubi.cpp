@@ -282,7 +282,7 @@ Ubi::Binary::StateData::StateData(Loader::POINTER loaderPointer, std::ifstream &
 	create(inputFileStream, maskNameSet);
 }
 
-void Ubi::Binary::Water::create(std::ifstream &inputFileStream, RLE::RESOURCE_NAME_MASK_VARIANT_MAP &resourceNameMaskVariantMap) {
+void Ubi::Binary::Water::create(std::ifstream &inputFileStream, RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap) {
 	resourceNameOptional = String::swizzle(String::readOptional(inputFileStream));
 
 	if (!resourceNameOptional.has_value()) {
@@ -299,28 +299,28 @@ void Ubi::Binary::Water::create(std::ifstream &inputFileStream, RLE::RESOURCE_NA
 
 	const std::string &RESOURCE_NAME = resourceNameOptional.value();
 
-	RLE::RESOURCE_NAME_MASK_VARIANT_MAP::iterator resourceNameMaskVariantMapIterator = {};
+	RLE::RESOURCE_NAME_MASK_NAME_SET_MAP::iterator resourceNameMaskNameSetMapIterator = {};
 
 	for (uint32_t i = 0; i < resources; i++) {
-		resourceNameMaskVariantMapIterator = resourceNameMaskVariantMap.find(RESOURCE_NAME);
+		resourceNameMaskNameSetMapIterator = resourceNameMaskNameSetMap.find(RESOURCE_NAME);
 
-		if (resourceNameMaskVariantMapIterator == resourceNameMaskVariantMap.end()) {
-			resourceNameMaskVariantMapIterator = resourceNameMaskVariantMap.insert({ RESOURCE_NAME, {} }).first;
+		if (resourceNameMaskNameSetMapIterator == resourceNameMaskNameSetMap.end()) {
+			resourceNameMaskNameSetMapIterator = resourceNameMaskNameSetMap.insert({ RESOURCE_NAME, RLE::MASK_NAME_SET() }).first;
 		}
 
-		createMaskNameSet(inputFileStream, std::get<RLE::MASK_NAME_SET>(resourceNameMaskVariantMapIterator->second));
+		createMaskNameSet(inputFileStream, resourceNameMaskNameSetMapIterator->second);
 	}
 }
 
-Ubi::Binary::Water::Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::RESOURCE_NAME_MASK_VARIANT_MAP &resourceNameMaskVariantMap)
+Ubi::Binary::Water::Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap)
 	: Resource(loaderPointer, VERSION) {
-	create(inputFileStream, resourceNameMaskVariantMap);
+	create(inputFileStream, resourceNameMaskNameSetMap);
 }
 
 Ubi::Binary::Water::Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream)
 	: Resource(loaderPointer, VERSION) {
-	RLE::RESOURCE_NAME_MASK_VARIANT_MAP resourceNameMaskVariantMap = {};
-	create(inputFileStream, resourceNameMaskVariantMap);
+	RLE::RESOURCE_NAME_MASK_NAME_SET_MAP resourceNameMaskNameSetMap = {};
+	create(inputFileStream, resourceNameMaskNameSetMap);
 }
 
 void Ubi::Binary::Header::testReadPastEnd() {
@@ -425,9 +425,9 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createMaskNameSet(std::ifstream &inp
 	return resourcePointer;
 }
 
-Ubi::Binary::Resource::POINTER Ubi::Binary::createResourceNameMaskVariantMap(std::ifstream &inputFileStream, RLE::RESOURCE_NAME_MASK_VARIANT_MAP &resourceNameMaskVariantMap, std::streamsize size) {
-	MAKE_SCOPE_EXIT(resourceNameMaskVariantMapScopeExit) {
-		resourceNameMaskVariantMap = {};
+Ubi::Binary::Resource::POINTER Ubi::Binary::createResourceNameMaskNameSetMap(std::ifstream &inputFileStream, RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap, std::streamsize size) {
+	MAKE_SCOPE_EXIT(resourceNameMaskNameSetMapScopeExit) {
+		resourceNameMaskNameSetMap = {};
 	};
 
 	std::optional<Header> headerOptional = std::nullopt;
@@ -436,11 +436,11 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createResourceNameMaskVariantMap(std
 
 	switch (loaderPointer->id) {
 		case Water::ID:
-		resourcePointer = std::make_shared<Water>(loaderPointer, inputFileStream, resourceNameMaskVariantMap);
+		resourcePointer = std::make_shared<Water>(loaderPointer, inputFileStream, resourceNameMaskNameSetMap);
 	}
 
 	if (resourcePointer) {
-		resourceNameMaskVariantMapScopeExit.dismiss();
+		resourceNameMaskNameSetMapScopeExit.dismiss();
 	}
 	return resourcePointer;
 }
@@ -504,7 +504,9 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, c
 
 			if (texture && type == TYPE::BINARY) {
 				type = TYPE::BINARY_RESOURCE_IMAGE_DATA;
-			} else if (!isWaterSlice(layerMaskMapOptional)) {
+			} else if (isWaterSlice(layerMaskMapOptional)) {
+				type = TYPE::NONE;
+			} else {
 				const std::string &NAME = nameOptional.value();
 				const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
 
@@ -609,13 +611,13 @@ void Ubi::BigFile::File::write(std::ofstream &outputFileStream) const {
 	writeFileStreamSafe(outputFileStream, &position, POSITION_SIZE);
 }
 
-Ubi::Binary::Resource::POINTER Ubi::BigFile::File::appendToResourceNameMaskVariantMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_VARIANT_MAP &resourceNameMaskVariantMap) {
+Ubi::Binary::Resource::POINTER Ubi::BigFile::File::appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap) {
 	std::streampos position = inputFileStream.tellg();
 	Binary::Resource::POINTER resourcePointer = 0;
 	
 	try {
 		inputFileStream.seekg(fileSystemPosition + (std::streampos)this->position);
-		resourcePointer = Binary::createResourceNameMaskVariantMap(inputFileStream, resourceNameMaskVariantMap, this->size);
+		resourcePointer = Binary::createResourceNameMaskNameSetMap(inputFileStream, resourceNameMaskNameSetMap, this->size);
 	} catch (...) {
 		// fail silently
 	}
@@ -688,21 +690,7 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &p
 	const Path::NAME_VECTOR &DIRECTORY_NAME_VECTOR = path.directoryNameVector;
 
 	nameOptional = String::readOptional(inputFileStream);
-
-	bool match = false;
-
-	// should we care about this directory at all?
-	if (directoryNameVectorIterator != DIRECTORY_NAME_VECTOR.end()) {
-		// does this directory's name match the one we are trying to find?
-		if (!nameOptional.has_value() || nameOptional.value() == *directoryNameVectorIterator) {
-			// look for matching subdirectories, or
-			// if there are no further subdirectories, look for matching files
-			match = ++directoryNameVectorIterator == DIRECTORY_NAME_VECTOR.end();
-		} else {
-			// don't look for matching subdirectories or files
-			directoryNameVectorIterator = DIRECTORY_NAME_VECTOR.end();
-		}
-	}
+	bool match = isMatch(DIRECTORY_NAME_VECTOR, directoryNameVectorIterator);
 
 	DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
@@ -797,24 +785,28 @@ void Ubi::BigFile::Directory::write(std::ofstream &outputFileStream) const {
 	}
 }
 
-Ubi::BigFile::File::POINTER Ubi::BigFile::Directory::find(const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) {
-	const Path::NAME_VECTOR &DIRECTORY_NAME_VECTOR = path.directoryNameVector;
-
+bool Ubi::BigFile::Directory::isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) {
 	bool match = false;
 
 	// should we care about this directory at all?
-	if (directoryNameVectorIterator != DIRECTORY_NAME_VECTOR.end()) {
+	if (directoryNameVectorIterator != directoryNameVector.end()) {
 		// does this directory's name match the one we are trying to find?
 		if (!nameOptional.has_value() || nameOptional.value() == *directoryNameVectorIterator) {
 			// look for matching subdirectories, or
 			// if there are no further subdirectories, look for matching files
-			match = ++directoryNameVectorIterator == DIRECTORY_NAME_VECTOR.end();
+			match = ++directoryNameVectorIterator == directoryNameVector.end();
 		} else {
 			// don't look for matching subdirectories or files
-			directoryNameVectorIterator = DIRECTORY_NAME_VECTOR.end();
+			directoryNameVectorIterator = directoryNameVector.end();
 		}
 	}
+	return match;
+}
 
+Ubi::BigFile::File::POINTER Ubi::BigFile::Directory::find(const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) {
+	const Path::NAME_VECTOR &DIRECTORY_NAME_VECTOR = path.directoryNameVector;
+
+	bool match = isMatch(DIRECTORY_NAME_VECTOR, directoryNameVectorIterator);
 	Ubi::BigFile::File::POINTER filePointer = 0;
 
 	if (directoryNameVectorIterator != DIRECTORY_NAME_VECTOR.end()) {
@@ -855,15 +847,15 @@ Ubi::BigFile::File::POINTER Ubi::BigFile::Directory::find(const Path &path) {
 	return find(path, path.directoryNameVector.begin());
 }
 
-void Ubi::BigFile::Directory::appendToResourceNameMaskVariantMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_VARIANT_MAP &resourceNameMaskVariantMap) {
-	appendToResourceNameMaskVariantMap(inputFileStream, fileSystemPosition, resourceNameMaskVariantMap, binaryFilePointerVector);
+void Ubi::BigFile::Directory::appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap) {
+	appendToResourceNameMaskNameSetMap(inputFileStream, fileSystemPosition, resourceNameMaskNameSetMap, binaryFilePointerVector);
 
 	for (
 		VECTOR::iterator directoryVectorIterator = directoryVector.begin();
 		directoryVectorIterator != directoryVector.end();
 		directoryVectorIterator++
 	) {
-		appendToResourceNameMaskVariantMap(inputFileStream, fileSystemPosition, resourceNameMaskVariantMap, directoryVectorIterator->binaryFilePointerVector);
+		appendToResourceNameMaskNameSetMap(inputFileStream, fileSystemPosition, resourceNameMaskNameSetMap, directoryVectorIterator->binaryFilePointerVector);
 	}
 }
 
@@ -947,13 +939,13 @@ void Ubi::BigFile::Directory::read(std::ifstream &inputFileStream, File::SIZE &f
 	);
 }
 
-void Ubi::BigFile::Directory::appendToResourceNameMaskVariantMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_VARIANT_MAP &resourceNameMaskVariantMap, File::POINTER_VECTOR &binaryFilePointerVector) {
+void Ubi::BigFile::Directory::appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap, File::POINTER_VECTOR &binaryFilePointerVector) {
 	for (
 		File::POINTER_VECTOR::iterator binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
 		binaryFilePointerVectorIterator != binaryFilePointerVector.end();
 		binaryFilePointerVectorIterator++
 	) {
-		(*binaryFilePointerVectorIterator)->appendToResourceNameMaskVariantMap(inputFileStream, fileSystemPosition, resourceNameMaskVariantMap);
+		(*binaryFilePointerVectorIterator)->appendToResourceNameMaskNameSetMap(inputFileStream, fileSystemPosition, resourceNameMaskNameSetMap);
 	}
 }
 
@@ -1075,17 +1067,17 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 		return;
 	}
 
-	Binary::RLE::RESOURCE_NAME_MASK_VARIANT_MAP resourceNameMaskVariantMap = {};
+	Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP resourceNameMaskNameSetMap = {};
 
 	for (
 		Directory::VECTOR_ITERATOR_VECTOR::iterator waterVectorIteratorsIterator = waterVectorIterators.begin();
 		waterVectorIteratorsIterator != waterVectorIterators.end();
 		waterVectorIteratorsIterator++
 	) {
-		(*waterVectorIteratorsIterator)->appendToResourceNameMaskVariantMap(inputFileStream, fileSystemPosition, resourceNameMaskVariantMap);
+		(*waterVectorIteratorsIterator)->appendToResourceNameMaskNameSetMap(inputFileStream, fileSystemPosition, resourceNameMaskNameSetMap);
 	}
 
-	if (resourceNameMaskVariantMap.empty()) {
+	if (resourceNameMaskNameSetMap.empty()) {
 		return;
 	}
 
@@ -1097,14 +1089,15 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 
 	std::optional<std::string> textureBoxNameOptional = std::nullopt;
 	Binary::RLE::LAYER_FILE_SET layerFileSet = {};
+	Binary::RLE::MASK_MAP maskMap = {};
 	File::POINTER filePointer = 0;
 
 	for (
-		Binary::RLE::RESOURCE_NAME_MASK_VARIANT_MAP::iterator resourceNameMaskVariantMapIterator = resourceNameMaskVariantMap.begin();
-		resourceNameMaskVariantMapIterator != resourceNameMaskVariantMap.end();
-		resourceNameMaskVariantMapIterator++
+		Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP::iterator resourceNameMaskNameSetMapIterator = resourceNameMaskNameSetMap.begin();
+		resourceNameMaskNameSetMapIterator != resourceNameMaskNameSetMap.end();
+		resourceNameMaskNameSetMapIterator++
 	) {
-		textureBoxNameOptional = getTextureBoxNameOptional(resourceNameMaskVariantMapIterator->first);
+		textureBoxNameOptional = getTextureBoxNameOptional(resourceNameMaskNameSetMapIterator->first);
 
 		if (!textureBoxNameOptional.has_value()) {
 			continue;
@@ -1125,58 +1118,51 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 			continue;
 		}
 
-		Binary::RLE::MASK_VARIANT &maskVariant = resourceNameMaskVariantMapIterator->second;
+		const Binary::RLE::MASK_NAME_SET &MASK_NAME_SET = resourceNameMaskNameSetMapIterator->second;
 
-		if (std::holds_alternative<Binary::RLE::MASK_NAME_SET>(maskVariant)) {
-			Binary::RLE::MASK_NAME_SET maskNameSet = std::get<Binary::RLE::MASK_NAME_SET>(maskVariant);
-			maskVariant = Binary::RLE::MASK_MAP();
+		maskMap = {};
 
-			Binary::RLE::MASK_MAP &maskMap = std::get<Binary::RLE::MASK_MAP>(maskVariant);
+		for (
+			Binary::RLE::MASK_NAME_SET::const_iterator maskNameSetIterator = MASK_NAME_SET.begin();
+			maskNameSetIterator != MASK_NAME_SET.end();
+			maskNameSetIterator++
+		) {
+			inputFileStream.seekg(fileSystemPosition);
+			filePointer = 0;
+			BigFile bigFile(inputFileStream, *maskNameSetIterator, filePointer);
+
+			if (!filePointer) {
+				continue;
+			}
+
+			std::streampos maskFileSystemPosition = (std::streampos)fileSystemPosition + (std::streampos)filePointer->position;
+			inputFileStream.seekg(maskFileSystemPosition);
+
+			BigFile maskBigFile(inputFileStream);
+
+			File::POINTER_VECTOR &maskFilePointerVector = maskBigFile.directory.filePointerVector;
 
 			for (
-				Binary::RLE::MASK_NAME_SET::iterator maskNameSetIterator = maskNameSet.begin();
-				maskNameSetIterator != maskNameSet.end();
-				maskNameSetIterator++
+				File::POINTER_VECTOR::iterator maskFilePointerVectorIterator = maskFilePointerVector.begin();
+				maskFilePointerVectorIterator != maskFilePointerVector.end();
+				maskFilePointerVectorIterator++
 			) {
-				inputFileStream.seekg(fileSystemPosition);
-				filePointer = 0;
-				BigFile bigFile(inputFileStream, *maskNameSetIterator, filePointer);
+				File &maskFile = **maskFilePointerVectorIterator;
 
-				if (!filePointer) {
+				if (!maskFile.nameOptional.has_value()) {
 					continue;
 				}
 
-				std::streampos maskFileSystemPosition = (std::streampos)fileSystemPosition + (std::streampos)filePointer->position;
-				inputFileStream.seekg(maskFileSystemPosition);
+				Binary::RLE::FACE_STR_MAP::const_iterator &fileFaceStrMapIterator = Binary::RLE::fileFaceStrMap.find(maskFile.nameOptional.value());
 
-				BigFile maskBigFile(inputFileStream);
-
-				File::POINTER_VECTOR &maskFilePointerVector = maskBigFile.directory.filePointerVector;
-
-				for (
-					File::POINTER_VECTOR::iterator maskFilePointerVectorIterator = maskFilePointerVector.begin();
-					maskFilePointerVectorIterator != maskFilePointerVector.end();
-					maskFilePointerVectorIterator++
-				) {
-					File &maskFile = **maskFilePointerVectorIterator;
-
-					if (!maskFile.nameOptional.has_value()) {
-						continue;
-					}
-
-					Binary::RLE::FACE_STR_MAP::const_iterator &fileFaceStrMapIterator = Binary::RLE::fileFaceStrMap.find(maskFile.nameOptional.value());
-
-					if (fileFaceStrMapIterator == Binary::RLE::fileFaceStrMap.end()) {
-						continue;
-					}
-
-					inputFileStream.seekg(maskFileSystemPosition + (std::streampos)maskFile.position);
-					maskMap.insert({ fileFaceStrMapIterator->second, Binary::RLE::createSliceMap(inputFileStream, maskFile.size) });
+				if (fileFaceStrMapIterator == Binary::RLE::fileFaceStrMap.end()) {
+					continue;
 				}
+
+				inputFileStream.seekg(maskFileSystemPosition + (std::streampos)maskFile.position);
+				maskMap.insert({ fileFaceStrMapIterator->second, Binary::RLE::createSliceMap(inputFileStream, maskFile.size) });
 			}
 		}
-
-		Binary::RLE::MASK_MAP &maskMap = std::get<Binary::RLE::MASK_MAP>(maskVariant);
 
 		for (
 			Binary::RLE::LAYER_FILE_SET::iterator layerFileSetIterator = layerFileSet.begin();
