@@ -281,13 +281,13 @@ namespace Ubi {
 			File(std::ifstream &inputFileStream);
 			File(SIZE inputFileSize);
 			void write(std::ofstream &outputFileStream) const;
-			Binary::Resource::POINTER appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap);
-			Binary::Resource::POINTER createLayerFileOptional(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, std::optional<std::string> &layerFileOptional);
+			Binary::Resource::POINTER appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap) const;
+			Binary::Resource::POINTER createLayerFileOptional(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, std::optional<std::string> &layerFileOptional) const;
 
 			private:
 			void read(std::ifstream &inputFileStream);
-			bool isWaterSlice(const std::optional<Binary::RLE::MASK_MAP> &layerMaskMapOptional);
-			std::string getNameExtension();
+			bool isWaterSlice(const std::optional<Binary::RLE::MASK_MAP> &layerMaskMapOptional) const;
+			std::string getNameExtension() const;
 
 			struct TypeExtension {
 				TYPE type = TYPE::NONE;
@@ -302,7 +302,7 @@ namespace Ubi {
 
 		struct Directory {
 			typedef std::vector<Directory> VECTOR;
-			typedef std::vector<VECTOR::iterator> VECTOR_ITERATOR_VECTOR;
+			typedef std::vector<VECTOR::const_iterator> VECTOR_ITERATOR_VECTOR;
 			typedef uint8_t DIRECTORY_VECTOR_SIZE;
 			typedef uint32_t FILE_POINTER_VECTOR_SIZE;
 
@@ -319,16 +319,16 @@ namespace Ubi {
 			Directory(std::ifstream &inputFileStream);
 			Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
 			void write(std::ofstream &outputFileStream) const;
-			File::POINTER find(const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator);
-			File::POINTER find(const Path &path);
-			void appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap);
-			void appendToLayerFileSet(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, const std::string &textureBoxName, Binary::RLE::LAYER_FILE_SET &layerFileSet);
+			File::POINTER find(const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) const;
+			File::POINTER find(const Path &path) const;
+			void appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap) const;
+			void appendToLayerFileSet(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, const std::string &textureBoxName, Binary::RLE::LAYER_FILE_SET &layerFileSet) const;
 
 			private:
 			void read(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<Binary::RLE::MASK_MAP> &layerMaskMapOptional);
-			bool isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator);
-			void appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap, File::POINTER_VECTOR &binaryFilePointerVector);
-			void appendToLayerFileSet(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, const std::string &textureBoxName, Binary::RLE::LAYER_FILE_SET &layerFileSet, File::POINTER_VECTOR &binaryFilePointerVector);
+			bool isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const;
+			void appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap, const File::POINTER_VECTOR &binaryFilePointerVector) const;
+			void appendToLayerFileSet(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, const std::string &textureBoxName, Binary::RLE::LAYER_FILE_SET &layerFileSet, const File::POINTER_VECTOR &binaryFilePointerVector) const;
 
 			static const std::string NAME_TEXTURE;
 			static const std::string NAME_WATER;
