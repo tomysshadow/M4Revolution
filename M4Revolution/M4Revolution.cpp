@@ -655,8 +655,8 @@ M4Revolution::M4Revolution(
 	compressionOptions.setFormat(nvtt::Format_DXT5);
 	compressionOptions.setQuality(nvtt::Quality_Highest);
 
-	compressionOptionsWater.setFormat(nvtt::Format_RGBA);
-	compressionOptionsWater.setQuality(nvtt::Quality_Highest);
+	//compressionOptionsWater.setFormat(nvtt::Format_RGBA);
+	//compressionOptionsWater.setQuality(nvtt::Quality_Highest);
 
 	#ifdef MULTITHREADED
 	pool = CreateThreadpool(NULL);
