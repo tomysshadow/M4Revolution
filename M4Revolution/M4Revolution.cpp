@@ -211,7 +211,7 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		convertFile(bigFileInputPosition, file, compressionOptions, convertZAPWorkCallback);
 		break;
 		//case Ubi::BigFile::File::TYPE::ZAP_WATER_SLICE:
-		///convertFile(bigFileInputPosition, file, compressionOptionsWaterSlice, convertZAPWorkCallback);
+		//convertFile(bigFileInputPosition, file, compressionOptionsWaterSlice, convertZAPWorkCallback);
 		//break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
