@@ -72,7 +72,7 @@ Work::BigFileTask::BigFileTask(
 )
 	: ownerBigFileInputPosition(ownerBigFileInputPosition),
 	file(file),
-	bigFilePointer(std::make_unique<Ubi::BigFile>(inputFileStream, fileSystemSize, files, fileVectorIteratorSetMap, file.maskMapOptional)) {
+	bigFilePointer(std::make_unique<Ubi::BigFile>(inputFileStream, fileSystemSize, files, fileVectorIteratorSetMap, file.maskMapPointer)) {
 }
 
 std::streampos Work::BigFileTask::getOwnerBigFileInputPosition() const {

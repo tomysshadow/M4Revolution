@@ -73,6 +73,7 @@ namespace Ubi {
 			typedef std::unordered_set<COL> COL_SET;
 			typedef std::map<ROW, COL_SET> SLICE_MAP;
 			typedef std::map<FACE, SLICE_MAP> MASK_MAP;
+			typedef std::shared_ptr<MASK_MAP> MASK_MAP_POINTER;
 			typedef std::unordered_set<std::string> MASK_NAME_SET;
 			typedef std::map<std::string, MASK_NAME_SET> RESOURCE_NAME_MASK_NAME_SET_MAP;
 			typedef std::unordered_set<std::string> LAYER_FILE_SET;
@@ -275,9 +276,9 @@ namespace Ubi {
 
 			TYPE type = TYPE::NONE;
 
-			std::optional<Binary::RLE::MASK_MAP> maskMapOptional = std::nullopt;
+			Binary::RLE::MASK_MAP_POINTER maskMapPointer = 0;
 
-			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const std::optional<Binary::RLE::MASK_MAP> &layerMaskMapOptional, bool texture);
+			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const Binary::RLE::MASK_MAP_POINTER &layerMaskMapPointer, bool texture);
 			File(std::ifstream &inputFileStream);
 			File(SIZE inputFileSize);
 			void write(std::ofstream &outputFileStream) const;
@@ -286,7 +287,7 @@ namespace Ubi {
 
 			private:
 			void read(std::ifstream &inputFileStream);
-			bool isWaterSlice(const std::optional<Binary::RLE::MASK_MAP> &layerMaskMapOptional) const;
+			bool isWaterSlice(const Binary::RLE::MASK_MAP_POINTER &layerMaskMapPointer) const;
 			std::string getNameExtension() const;
 
 			struct TypeExtension {
@@ -315,7 +316,7 @@ namespace Ubi {
 			File::POINTER_VECTOR binaryFilePointerVector = {};
 			File::POINTER_VECTOR filePointerVector = {};
 
-			Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<Binary::RLE::MASK_MAP> &layerMaskMapOptional);
+			Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const Binary::RLE::MASK_MAP_POINTER &layerMaskMapPointer);
 			Directory(std::ifstream &inputFileStream);
 			Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
 			void write(std::ofstream &outputFileStream) const;
@@ -325,7 +326,7 @@ namespace Ubi {
 			void appendToLayerFileSet(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, const std::string &textureBoxName, Binary::RLE::LAYER_FILE_SET &layerFileSet) const;
 
 			private:
-			void read(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<Binary::RLE::MASK_MAP> &layerMaskMapOptional);
+			void read(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const Binary::RLE::MASK_MAP_POINTER &layerMaskMapPointer);
 			bool isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const;
 			void appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap, const File::POINTER_VECTOR &binaryFilePointerVector) const;
 			void appendToLayerFileSet(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, const std::string &textureBoxName, Binary::RLE::LAYER_FILE_SET &layerFileSet, const File::POINTER_VECTOR &binaryFilePointerVector) const;
@@ -368,7 +369,7 @@ namespace Ubi {
 		Header header;
 		Directory directory;
 
-		BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<Binary::RLE::MASK_MAP> &layerMaskMapOptional);
+		BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const Binary::RLE::MASK_MAP_POINTER &layerMaskMapPointer);
 		BigFile(std::ifstream &inputFileStream);
 		BigFile(std::ifstream &inputFileStream, const Path &path, File::POINTER &filePointer);
 		void write(std::ofstream &outputFileStream) const;
