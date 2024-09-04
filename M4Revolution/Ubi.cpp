@@ -348,7 +348,7 @@ Ubi::Binary::Header::~Header() {
 	testReadPastEnd();
 }
 
-void Ubi::Binary::readFileHeader(std::ifstream &inputFileStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size) {
+void Ubi::Binary::readFileHeader(std::ifstream &inputFileStream, std::optional<Binary::Header> &headerOptional, std::streamsize size) {
 	MAKE_SCOPE_EXIT(headerOptionalScopeExit) {
 		headerOptional = std::nullopt;
 	};
@@ -359,7 +359,7 @@ void Ubi::Binary::readFileHeader(std::ifstream &inputFileStream, std::optional<U
 	}
 }
 
-Ubi::Binary::Resource::Loader::POINTER Ubi::Binary::readFileLoader(std::ifstream &inputFileStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size) {
+Ubi::Binary::Resource::Loader::POINTER Ubi::Binary::readFileLoader(std::ifstream &inputFileStream, std::optional<Binary::Header> &headerOptional, std::streamsize size) {
 	readFileHeader(inputFileStream, headerOptional, size);
 	return std::make_shared<Resource::Loader>(inputFileStream);
 }
@@ -552,7 +552,7 @@ bool Ubi::BigFile::File::isWaterSlice(const std::optional<Binary::RLE::MASK_MAP>
 	}
 
 	const std::regex FACE_SLICE("^([a-z]+)_(\\d{2})_(\\d{2})\\.[^\\.]+$");
-	const Ubi::Binary::RLE::MASK_MAP &MASK_MAP = layerMaskMapOptional.value();
+	const Binary::RLE::MASK_MAP &MASK_MAP = layerMaskMapOptional.value();
 
 	std::smatch matches = {};
 
@@ -565,7 +565,13 @@ bool Ubi::BigFile::File::isWaterSlice(const std::optional<Binary::RLE::MASK_MAP>
 	const std::string &ROW_STR = matches[2];
 	const std::string &COL_STR = matches[3];
 
-	Ubi::Binary::RLE::MASK_MAP::const_iterator maskMapIterator = MASK_MAP.find(Ubi::Binary::RLE::faceStrMap.at(FACE_STR));
+	Binary::RLE::FACE_STR_MAP::const_iterator faceStrMapIterator = Binary::RLE::faceStrMap.find(FACE_STR);
+
+	if (faceStrMapIterator == Binary::RLE::faceStrMap.end()) {
+		return false;
+	}
+
+	Binary::RLE::MASK_MAP::const_iterator maskMapIterator = MASK_MAP.find(faceStrMapIterator->second);
 
 	if (maskMapIterator == MASK_MAP.end()) {
 		return false;
@@ -577,8 +583,8 @@ bool Ubi::BigFile::File::isWaterSlice(const std::optional<Binary::RLE::MASK_MAP>
 		return false;
 	}
 
-	const Ubi::Binary::RLE::SLICE_MAP &SLICE_MAP = maskMapIterator->second;
-	Ubi::Binary::RLE::SLICE_MAP::const_iterator sliceMapIterator = SLICE_MAP.find(row);
+	const Binary::RLE::SLICE_MAP &SLICE_MAP = maskMapIterator->second;
+	Binary::RLE::SLICE_MAP::const_iterator sliceMapIterator = SLICE_MAP.find(row);
 
 	if (sliceMapIterator == SLICE_MAP.end()) {
 		return false;
@@ -590,7 +596,7 @@ bool Ubi::BigFile::File::isWaterSlice(const std::optional<Binary::RLE::MASK_MAP>
 		return false;
 	}
 
-	const Ubi::Binary::RLE::COL_SET &colSet = sliceMapIterator->second;
+	const Binary::RLE::COL_SET &colSet = sliceMapIterator->second;
 
 	if (colSet.find(col) == colSet.end()) {
 		return false;
@@ -807,7 +813,7 @@ Ubi::BigFile::File::POINTER Ubi::BigFile::Directory::find(const Path &path, Path
 	const Path::NAME_VECTOR &DIRECTORY_NAME_VECTOR = path.directoryNameVector;
 
 	bool match = isMatch(DIRECTORY_NAME_VECTOR, directoryNameVectorIterator);
-	Ubi::BigFile::File::POINTER filePointer = 0;
+	File::POINTER filePointer = 0;
 
 	if (directoryNameVectorIterator != DIRECTORY_NAME_VECTOR.end()) {
 		for (VECTOR::iterator directoryVectorIterator = directoryVector.begin(); directoryVectorIterator != directoryVector.end(); directoryVectorIterator++) {
