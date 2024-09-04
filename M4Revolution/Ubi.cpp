@@ -444,27 +444,30 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createTextureBoxNameMaskVariantMap(s
 	return resourcePointer;
 }
 
-/*
-Ubi::Binary::Resource::POINTER Ubi::Binary::createNameSet(std::ifstream &inputFileStream, RLE::NAME_SET &nameSet, std::streamsize size) {
-	MAKE_SCOPE_EXIT(nameSetScopeExit) {
-		nameSet = {};
-	};
-
-	std::optional<Header> headerOptional = std::nullopt;
-	Resource::Loader::POINTER loaderPointer = readFileLoader(inputFileStream, headerOptional, size);
-	Resource::POINTER resourcePointer = 0;
-
-	switch (loaderPointer->id) {
-		case Node::ID:
-		resourcePointer = std::make_shared<Node>(loaderPointer, inputFileStream, nameSet);
-	}
-
-	if (resourcePointer) {
-		nameSetScopeExit.dismiss();
-	}
-	return resourcePointer;
+Ubi::BigFile::Path::Path() {
 }
-*/
+
+Ubi::BigFile::Path::Path(const NAME_VECTOR &directoryNameVector, const std::string &fileName)
+	: directoryNameVector(directoryNameVector),
+	fileName(fileName) {
+}
+
+Ubi::BigFile::Path::Path(const std::string &file) {
+	std::string::size_type begin = 0;
+	std::string::size_type end = 0;
+
+	while ((begin = file.find_first_not_of(SEPERATOR, end)) != std::string::npos) {
+		end = file.find(SEPERATOR, begin);
+
+		const std::string &NAME = file.substr(begin, end - begin);
+
+		if (end == std::string::npos) {
+			fileName = NAME;
+		} else {
+			directoryNameVector.push_back(NAME);
+		}
+	}
+}
 
 Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, bool texture) {
 	read(inputFileStream);
@@ -704,6 +707,7 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &p
 				// erase all but the last element
 				// (there should always be at least one element in the vector at this point)
 				directoryVector.erase(directoryVector.begin(), directoryVector.end() - 1);
+				fileOptionalScopeExit.dismiss();
 				return;
 			}
 		}
@@ -901,8 +905,10 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 			(*waterVectorIteratorsIterator)->appendToTextureBoxNameMaskVariantMap(inputFileStream, fileSystemPosition, textureBoxNameMaskVariantMap);
 		}
 
+		std::streampos position = inputFileStream.tellg();
 		std::optional<std::string> textureBoxBinaryNameOptional = std::nullopt;
 		Binary::RLE::LAYER_FILE_SET layerFileSet = {};
+		std::optional<File> fileOptional = std::nullopt;
 
 		for (
 			Binary::RLE::TEXTURE_BOX_NAME_MASK_VARIANT_MAP::iterator textureBoxNameMaskVariantMapIterator = textureBoxNameMaskVariantMap.begin();
@@ -911,18 +917,38 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 		) {
 			textureBoxBinaryNameOptional = getTextureBoxBinaryNameOptional(textureBoxNameMaskVariantMapIterator->first);
 
-			if (textureBoxBinaryNameOptional.has_value()) {
-				for (
-					Directory::VECTOR_ITERATOR_VECTOR::iterator cubeVectorIteratorsIterator = cubeVectorIterators.begin();
-					cubeVectorIteratorsIterator != cubeVectorIterators.end();
-					cubeVectorIteratorsIterator++
-				) {
-					(*cubeVectorIteratorsIterator)->appendToLayerFileSet(inputFileStream, fileSystemPosition, textureBoxBinaryNameOptional.value(), layerFileSet);
+			if (!textureBoxBinaryNameOptional.has_value()) {
+				continue;
+			}
+
+			// reset this so it's not left over from previous texture box
+			layerFileSet = {};
+
+			for (
+				Directory::VECTOR_ITERATOR_VECTOR::iterator cubeVectorIteratorsIterator = cubeVectorIterators.begin();
+				cubeVectorIteratorsIterator != cubeVectorIterators.end();
+				cubeVectorIteratorsIterator++
+			) {
+				(*cubeVectorIteratorsIterator)->appendToLayerFileSet(inputFileStream, fileSystemPosition, textureBoxBinaryNameOptional.value(), layerFileSet);
+			}
+
+			for(
+				Binary::RLE::LAYER_FILE_SET::iterator layerFileSetIterator = layerFileSet.begin();
+				layerFileSetIterator != layerFileSet.end();
+				layerFileSetIterator++
+			) {
+				Path path(*layerFileSetIterator);
+
+				inputFileStream.seekg(fileSystemPosition);
+				BigFile bigFile(inputFileStream, path, fileOptional);
+
+				if (fileOptional.has_value()) {
+					// TODO: set appropriate tiles here
 				}
+
+				inputFileStream.seekg(position);
 			}
 		}
-
-		// TODO: need to actually read the RLE files!
 	}
 }
 

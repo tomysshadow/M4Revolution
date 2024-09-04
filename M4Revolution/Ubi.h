@@ -210,6 +210,13 @@ namespace Ubi {
 
 			NAME_VECTOR directoryNameVector = {};
 			std::string fileName = "";
+
+			Path();
+			Path(const NAME_VECTOR &directoryNameVector, const std::string &fileName);
+			Path(const std::string &file);
+
+			private:
+			static const char SEPERATOR = '/';
 		};
 
 		struct File {
