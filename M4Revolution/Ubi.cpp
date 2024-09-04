@@ -551,10 +551,10 @@ bool Ubi::BigFile::File::isWaterSlice(const std::optional<Binary::RLE::MASK_MAP>
 		return false;
 	}
 
+	const std::regex FACE_SLICE("^([a-z]+)_(\\d{2})_(\\d{2})\\.[^\\.]+$");
 	const Ubi::Binary::RLE::MASK_MAP &MASK_MAP = layerMaskMapOptional.value();
 
 	std::smatch matches = {};
-	const std::regex FACE_SLICE("^([a-z]+)_(\\d{2})_(\\d{2})\\.[^\\.]+$");
 
 	if (!std::regex_search(NAME_OPTIONAL.value(), matches, FACE_SLICE)
 		|| matches.length() <= 3) {
