@@ -257,7 +257,9 @@ namespace Ubi {
 				BINARY_RESOURCE_IMAGE_DATA,
 				BIG_FILE,
 				JPEG,
-				ZAP
+				JPEG_WATER_SLICE,
+				ZAP,
+				ZAP_WATER_SLICE
 			};
 
 			// the name in the output file (so example.dds, not example.jpg)

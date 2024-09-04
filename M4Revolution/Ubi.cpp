@@ -502,10 +502,10 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, c
 		if (nameTypeExtensionMapIterator != NAME_TYPE_EXTENSION_MAP.end()) {
 			type = nameTypeExtensionMapIterator->second.type;
 
-			if (texture && type == TYPE::BINARY) {
+			if (type == TYPE::BINARY && texture) {
 				type = TYPE::BINARY_RESOURCE_IMAGE_DATA;
-			} else if (isWaterSlice(layerMaskMapPointer)) {
-				type = TYPE::NONE;
+			} else if ((type == TYPE::JPEG || type == TYPE::ZAP) && isWaterSlice(layerMaskMapPointer)) {
+				type = type == TYPE::JPEG ? TYPE::JPEG_WATER_SLICE : TYPE::ZAP_WATER_SLICE;
 			} else {
 				const std::string &NAME = nameOptional.value();
 				const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
@@ -538,10 +538,6 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, c
 
 bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::MASK_MAP_POINTER &layerMaskMapPointer) const {
 	if (!layerMaskMapPointer) {
-		return false;
-	}
-
-	if (type != TYPE::JPEG && type != TYPE::ZAP) {
 		return false;
 	}
 

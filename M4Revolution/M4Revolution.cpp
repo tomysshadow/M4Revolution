@@ -164,8 +164,7 @@ void M4Revolution::copyFiles(
 	log.copying();
 }
 
-void M4Revolution::convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback) {
-	// TODO: compressionOptionsWater here if necessary
+void M4Revolution::convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, nvtt::CompressionOptions &compressionOptions, Work::Convert::FileWorkCallback fileWorkCallback) {
 	Work::Convert* convertPointer = new Work::Convert(file, context, compressionOptions);
 	Work::Convert &convert = *convertPointer;
 
@@ -203,11 +202,17 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		fixLoading(bigFileInputPosition, file, log);
 		break;
 		case Ubi::BigFile::File::TYPE::JPEG:
-		convertFile(bigFileInputPosition, file, convertJPEGWorkCallback);
+		convertFile(bigFileInputPosition, file, compressionOptions, convertJPEGWorkCallback);
 		break;
+		//case Ubi::BigFile::File::TYPE::JPEG_WATER_SLICE:
+		//convertFile(bigFileInputPosition, file, compressionOptionsWaterSlice, convertJPEGWorkCallback);
+		//break;
 		case Ubi::BigFile::File::TYPE::ZAP:
-		convertFile(bigFileInputPosition, file, convertZAPWorkCallback);
+		convertFile(bigFileInputPosition, file, compressionOptions, convertZAPWorkCallback);
 		break;
+		//case Ubi::BigFile::File::TYPE::ZAP_WATER_SLICE:
+		///convertFile(bigFileInputPosition, file, compressionOptionsWaterSlice, convertZAPWorkCallback);
+		//break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
 		Work::FileTask::POINTER fileTaskPointer = std::make_shared<Work::FileTask>(bigFileInputPosition, &file);
@@ -655,8 +660,8 @@ M4Revolution::M4Revolution(
 	compressionOptions.setFormat(nvtt::Format_DXT5);
 	compressionOptions.setQuality(nvtt::Quality_Highest);
 
-	//compressionOptionsWater.setFormat(nvtt::Format_RGBA);
-	//compressionOptionsWater.setQuality(nvtt::Quality_Highest);
+	compressionOptionsWaterSlice.setFormat(nvtt::Format_RGBA);
+	compressionOptionsWaterSlice.setQuality(nvtt::Quality_Highest);
 
 	#ifdef MULTITHREADED
 	pool = CreateThreadpool(NULL);
