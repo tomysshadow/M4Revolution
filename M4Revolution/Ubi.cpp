@@ -693,9 +693,9 @@ const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTEN
 	{"zap", {TYPE::ZAP, "dds"}}
 };
 
-Ubi::BigFile::Directory::Directory(Directory* ownerDirectory, std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &fileOptional)
+Ubi::BigFile::Directory::Directory(Directory* ownerDirectory, std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &layerFileOptional)
 	: nameOptional(String::readOptional(inputFileStream)) {
-	read(ownerDirectory, inputFileStream, fileSystemSize, files, filePointerSetMap, fileOptional);
+	read(ownerDirectory, inputFileStream, fileSystemSize, files, filePointerSetMap, layerFileOptional);
 }
 
 Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream)
@@ -720,7 +720,7 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &p
 	readFileStreamSafe(inputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
 	if (directoryNameVectorIterator == DIRECTORY_NAME_VECTOR.end()) {
-		// in this case we just read the directories and don't bother checking fileOptional
+		// in this case we just read the directories and don't bother checking filePointer
 		for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
 			Directory directory(
 				inputFileStream,
@@ -877,7 +877,7 @@ void Ubi::BigFile::Directory::appendToResourceNameMaskNameSetMap(std::ifstream &
 	}
 }
 
-void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &fileOptional) {
+void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &layerFileOptional) {
 	DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
@@ -900,7 +900,7 @@ void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, F
 			// only if this directory matches the "bftex" name, pass the file
 			// (if this directory has no name, any name matches, so the file is passed)
 			bftex
-			? fileOptional
+			? layerFileOptional
 			: std::nullopt
 		);
 	}
@@ -909,7 +909,7 @@ void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, F
 	readFileStreamSafe(inputFileStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
 
 	File::POINTER filePointer = 0;
-	Binary::RLE::LayerInformation::POINTER layerInformationPointer = getLayerInformationPointer(bftex, fileOptional);
+	Binary::RLE::LayerInformation::POINTER layerInformationPointer = getLayerInformationPointer(bftex, layerFileOptional);
 	File::POINTER_SET_MAP::iterator filePointerSetMapIterator = {};
 
 	for (FILE_POINTER_VECTOR_SIZE i = 0; i < filePointerVectorSize; i++) {
@@ -1000,18 +1000,18 @@ void Ubi::BigFile::Directory::appendToResourceNameMaskNameSetMap(std::ifstream &
 	}
 }
 
-Ubi::Binary::RLE::LayerInformation::POINTER Ubi::BigFile::Directory::getLayerInformationPointer(bool bftex, const std::optional<File> &fileOptional) const {
+Ubi::Binary::RLE::LayerInformation::POINTER Ubi::BigFile::Directory::getLayerInformationPointer(bool bftex, const std::optional<File> &layerFileOptional) const {
 	if (bftex) {
 		return 0;
 	}
 
-	if (!fileOptional.has_value()) {
+	if (!layerFileOptional.has_value()) {
 		return 0;
 	}
 
-	const File &FILE = fileOptional.value();
+	const File &LAYER_FILE = layerFileOptional.value();
 
-	Binary::RLE::LayerInformation::POINTER layerInformationPointer = FILE.layerInformationPointer;
+	Binary::RLE::LayerInformation::POINTER layerInformationPointer = LAYER_FILE.layerInformationPointer;
 
 	if (!layerInformationPointer) {
 		return 0;
@@ -1022,7 +1022,7 @@ Ubi::Binary::RLE::LayerInformation::POINTER Ubi::BigFile::Directory::getLayerInf
 		return layerInformationPointer;
 	}
 
-	const Binary::RLE::SETS_SET &SETS_SET = FILE.layerMapIterator->second;
+	const Binary::RLE::SETS_SET &SETS_SET = LAYER_FILE.layerMapIterator->second;
 
 	if (SETS_SET.find(nameOptional.value()) == SETS_SET.end()) {
 		return 0;
