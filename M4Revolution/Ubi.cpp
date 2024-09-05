@@ -619,7 +619,6 @@ bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::LayerInformation::POINT
 	}
 
 	const Binary::RLE::MASK_MAP &MASK_MAP = layerInformationPointer->maskMap;
-
 	const std::regex FACE_SLICE("^([a-z]+)_(\\d{2})_(\\d{2})\\.[^\\.]+$");
 
 	std::smatch matches = {};
@@ -645,9 +644,13 @@ bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::LayerInformation::POINT
 		return false;
 	}
 
+	// since these have leading zeros, I use base 10 specifically
+	// (the row/col should not be misinterpreted as octal)
+	const int BASE = 10;
+
 	unsigned long row = 0;
 
-	if (!stringToLongUnsigned(ROW_STR.c_str(), row, 10)) {
+	if (!stringToLongUnsigned(ROW_STR.c_str(), row, BASE)) {
 		return false;
 	}
 
@@ -660,16 +663,12 @@ bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::LayerInformation::POINT
 
 	unsigned long col = 0;
 
-	if (!stringToLongUnsigned(COL_STR.c_str(), col, 10)) {
+	if (!stringToLongUnsigned(COL_STR.c_str(), col, BASE)) {
 		return false;
 	}
 
-	const Binary::RLE::COL_SET &colSet = sliceMapIterator->second;
-
-	if (colSet.find(col) == colSet.end()) {
-		return false;
-	}
-	return true;
+	const Binary::RLE::COL_SET &COL_SET = sliceMapIterator->second;
+	return COL_SET.find(col) != COL_SET.end();
 }
 
 std::string Ubi::BigFile::File::getNameExtension() const {
@@ -694,9 +693,9 @@ const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTEN
 	{"zap", {TYPE::ZAP, "dds"}}
 };
 
-Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &fileOptional)
+Ubi::BigFile::Directory::Directory(Directory* ownerDirectory, std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &fileOptional)
 	: nameOptional(String::readOptional(inputFileStream)) {
-	read(inputFileStream, fileSystemSize, files, filePointerSetMap, fileOptional);
+	read(ownerDirectory, inputFileStream, fileSystemSize, files, filePointerSetMap, fileOptional);
 }
 
 Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream)
@@ -704,7 +703,7 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream)
 	File::SIZE fileSystemSize = 0;
 	File::POINTER_VECTOR::size_type files = 0;
 	File::POINTER_SET_MAP filePointerSetMap = {};
-	read(inputFileStream, fileSystemSize, files, filePointerSetMap, std::nullopt);
+	read(false, inputFileStream, fileSystemSize, files, filePointerSetMap, std::nullopt);
 }
 
 Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer) {
@@ -810,24 +809,6 @@ void Ubi::BigFile::Directory::write(std::ofstream &outputFileStream) const {
 	}
 }
 
-bool Ubi::BigFile::Directory::isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const {
-	bool match = false;
-
-	// should we care about this directory at all?
-	if (directoryNameVectorIterator != directoryNameVector.end()) {
-		// does this directory's name match the one we are trying to find?
-		if (!nameOptional.has_value() || nameOptional.value() == *directoryNameVectorIterator) {
-			// look for matching subdirectories, or
-			// if there are no further subdirectories, look for matching files
-			match = ++directoryNameVectorIterator == directoryNameVector.end();
-		} else {
-			// don't look for matching subdirectories or files
-			directoryNameVectorIterator = directoryNameVector.end();
-		}
-	}
-	return match;
-}
-
 Ubi::BigFile::File::POINTER Ubi::BigFile::Directory::find(const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) const {
 	const Path::NAME_VECTOR &DIRECTORY_NAME_VECTOR = path.directoryNameVector;
 
@@ -896,42 +877,37 @@ void Ubi::BigFile::Directory::appendToResourceNameMaskNameSetMap(std::ifstream &
 	}
 }
 
-void Ubi::BigFile::Directory::read(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &fileOptional) {
+void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &fileOptional) {
 	DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
+	bool bftex = !owner
+
+	&& (
+		nameOptional.has_value()
+		? nameOptional == "bftex"
+		: true
+	);
+
 	for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
 		directoryVector.emplace_back(
+			this,
 			inputFileStream,
 			fileSystemSize,
 			files,
 			filePointerSetMap,
 
-			// only if this directory has no name, pass the file
-			nameOptional.has_value()
-			? std::nullopt
-			: fileOptional
+			// only if this directory matches the "bftex" name, pass the file
+			// (if this directory has no name, any name matches, so the file is passed)
+			bftex
+			? fileOptional
+			: std::nullopt
 		);
 	}
 
 	// check if we are in one of the sets in the layer
-	bool set = false;
-
-	Binary::RLE::LayerInformation::POINTER layerInformationPointer = fileOptional.has_value()
-		? fileOptional.value().layerInformationPointer
-		: 0;
-
-	if (layerInformationPointer && nameOptional.has_value()) {
-		const Binary::RLE::LAYER_MAP &LAYER_MAP = layerInformationPointer->layerMap;
-
-		Binary::RLE::LAYER_MAP::const_iterator layerMapIterator = LAYER_MAP.find(fileOptional.value().resourceName);
-
-		if (layerMapIterator != LAYER_MAP.end()) {
-			const Binary::RLE::MASK_NAME_SET &MASK_NAME_SET = layerMapIterator->second;
-
-			set = MASK_NAME_SET.find(nameOptional.value()) != MASK_NAME_SET.end();
-		}
-	}
+	Binary::RLE::LayerInformation::POINTER layerInformationPointer = 0;
+	bool set = isSet(bftex, fileOptional, layerInformationPointer);
 
 	FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
@@ -989,6 +965,57 @@ void Ubi::BigFile::Directory::read(std::ifstream &inputFileStream, File::SIZE &f
 		+ DIRECTORY_VECTOR_SIZE_SIZE
 		+ FILE_POINTER_VECTOR_SIZE_SIZE
 	);
+}
+
+bool Ubi::BigFile::Directory::isSet(bool bftex, const std::optional<File> &fileOptional, Binary::RLE::LayerInformation::POINTER &layerInformationPointer) {
+	if (bftex) {
+		return false;
+	}
+
+	if (!fileOptional.has_value()) {
+		return false;
+	}
+
+	layerInformationPointer = fileOptional.value().layerInformationPointer;
+
+	if (!layerInformationPointer) {
+		return false;
+	}
+
+	// need to make sure this is even the right layer first
+	const Binary::RLE::LAYER_MAP &LAYER_MAP = layerInformationPointer->layerMap;
+
+	Binary::RLE::LAYER_MAP::const_iterator layerMapIterator = LAYER_MAP.find(fileOptional.value().resourceName);
+
+	if (layerMapIterator == LAYER_MAP.end()) {
+		return false;
+	}
+
+	// if we don't have a name, anything matches
+	if (!nameOptional.has_value()) {
+		return true;
+	}
+
+	const Binary::RLE::MASK_NAME_SET &MASK_NAME_SET = layerMapIterator->second;
+	return MASK_NAME_SET.find(nameOptional.value()) != MASK_NAME_SET.end();
+}
+
+bool Ubi::BigFile::Directory::isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const {
+	bool match = false;
+
+	// should we care about this directory at all?
+	if (directoryNameVectorIterator != directoryNameVector.end()) {
+		// does this directory's name match the one we are trying to find?
+		if (!nameOptional.has_value() || nameOptional.value() == *directoryNameVectorIterator) {
+			// look for matching subdirectories, or
+			// if there are no further subdirectories, look for matching files
+			match = ++directoryNameVectorIterator == directoryNameVector.end();
+		} else {
+			// don't look for matching subdirectories or files
+			directoryNameVectorIterator = directoryNameVector.end();
+		}
+	}
+	return match;
 }
 
 void Ubi::BigFile::Directory::createLayerInformationPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LayerInformation::POINTER &layerInformationPointer, const File::POINTER_VECTOR &binaryFilePointerVector) const {
@@ -1086,7 +1113,7 @@ std::optional<std::string> Ubi::BigFile::getTextureBoxNameOptional(const std::st
 
 Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, File &file)
 	: header(inputFileStream, fileSystemSize, fileSystemPosition),
-	directory(inputFileStream, fileSystemSize, files, filePointerSetMap, file) {
+	directory(0, inputFileStream, fileSystemSize, files, filePointerSetMap, file) {
 	#ifdef WATER_SLICES_ENABLED
 	const Directory::VECTOR &DIRECTORY_VECTOR = directory.directoryVector;
 
