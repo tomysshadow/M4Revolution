@@ -69,16 +69,18 @@ namespace Ubi {
 				{"bottom.rle", Ubi::Binary::RLE::FACE::BOTTOM}
 			};
 
+			typedef std::unordered_set<std::string> MASK_NAME_SET;
+			typedef std::map<std::string, MASK_NAME_SET> RESOURCE_NAME_MASK_NAME_SET_MAP;
+
+			typedef std::unordered_set<std::string> SETS_SET;
+			typedef std::map<std::string, SETS_SET> LAYER_MAP;
+
 			typedef uint32_t ROW;
 			typedef uint32_t COL;
-			typedef std::unordered_set<std::string> SETS_SET;
 			typedef std::unordered_set<COL> COL_SET;
 			typedef std::map<ROW, COL_SET> SLICE_MAP;
 			typedef std::map<FACE, SLICE_MAP> MASK_MAP;
 			typedef std::shared_ptr<MASK_MAP> MASK_MAP_POINTER;
-			typedef std::unordered_set<std::string> MASK_NAME_SET;
-			typedef std::map<std::string, MASK_NAME_SET> RESOURCE_NAME_MASK_NAME_SET_MAP;
-			typedef std::map<std::string, SETS_SET> LAYER_MAP;
 
 			struct LayerInformation {
 				typedef std::shared_ptr<LayerInformation> POINTER;
@@ -288,7 +290,7 @@ namespace Ubi {
 			TYPE type = TYPE::NONE;
 
 			Binary::RLE::LayerInformation::POINTER layerInformationPointer = 0;
-			std::string resourceName = "";
+			Binary::RLE::LAYER_MAP::const_iterator layerMapIterator = {};
 
 			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const Binary::RLE::LayerInformation::POINTER &layerInformationPointer, bool texture);
 			File(std::ifstream &inputFileStream);
@@ -339,10 +341,10 @@ namespace Ubi {
 
 			private:
 			void read(bool owner, std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &fileOptional);
-			bool isSet(bool bftex, const std::optional<File> &fileOptional, Binary::RLE::LayerInformation::POINTER &layerInformationPointer);
 			bool isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const;
 			void createLayerInformationPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LayerInformation::POINTER &layerInformationPointer, const File::POINTER_VECTOR &binaryFilePointerVector) const;
 			void appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap, const File::POINTER_VECTOR &binaryFilePointerVector) const;
+			Binary::RLE::LayerInformation::POINTER getLayerInformationPointer(bool bftex, const std::optional<File> &fileOptional) const;
 
 			static const std::string NAME_TEXTURE;
 			static const std::string NAME_WATER;

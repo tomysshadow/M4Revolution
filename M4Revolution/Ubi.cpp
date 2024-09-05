@@ -883,9 +883,11 @@ void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, F
 
 	bool bftex = !owner
 
-	&& nameOptional.has_value()
-	? nameOptional == "bftex"
-	: true;
+	&& (
+		nameOptional.has_value()
+		? nameOptional == "bftex"
+		: true
+	);
 
 	for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
 		directoryVector.emplace_back(
@@ -903,25 +905,18 @@ void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, F
 		);
 	}
 
-	// check if we are in one of the sets in the layer
-	Binary::RLE::LayerInformation::POINTER layerInformationPointer = 0;
-	bool set = isSet(bftex, fileOptional, layerInformationPointer);
-
 	FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
 
 	File::POINTER filePointer = 0;
+	Binary::RLE::LayerInformation::POINTER layerInformationPointer = getLayerInformationPointer(bftex, fileOptional);
 	File::POINTER_SET_MAP::iterator filePointerSetMapIterator = {};
 
 	for (FILE_POINTER_VECTOR_SIZE i = 0; i < filePointerVectorSize; i++) {
 		filePointer = std::make_shared<File>(
 			inputFileStream,
 			fileSystemSize,
-
-			// only if we are in a set, pass the layer information
-			set
-			? layerInformationPointer
-			: 0,
+			layerInformationPointer,
 
 			// the NAME_TEXTURE comparison is so we only convert textures in the texture folder specifically, even if the extension matches
 			nameOptional.has_value()
@@ -965,39 +960,6 @@ void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, F
 	);
 }
 
-bool Ubi::BigFile::Directory::isSet(bool bftex, const std::optional<File> &fileOptional, Binary::RLE::LayerInformation::POINTER &layerInformationPointer) {
-	if (bftex) {
-		return false;
-	}
-
-	if (!fileOptional.has_value()) {
-		return false;
-	}
-
-	layerInformationPointer = fileOptional.value().layerInformationPointer;
-
-	if (!layerInformationPointer) {
-		return false;
-	}
-
-	// need to make sure this is even the right layer first
-	const Binary::RLE::LAYER_MAP &LAYER_MAP = layerInformationPointer->layerMap;
-
-	Binary::RLE::LAYER_MAP::const_iterator layerMapIterator = LAYER_MAP.find(fileOptional.value().resourceName);
-
-	if (layerMapIterator == LAYER_MAP.end()) {
-		return false;
-	}
-
-	// if we don't have a name, anything matches
-	if (!nameOptional.has_value()) {
-		return true;
-	}
-
-	const Binary::RLE::MASK_NAME_SET &MASK_NAME_SET = layerMapIterator->second;
-	return MASK_NAME_SET.find(nameOptional.value()) != MASK_NAME_SET.end();
-}
-
 bool Ubi::BigFile::Directory::isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const {
 	bool match = false;
 
@@ -1036,6 +998,36 @@ void Ubi::BigFile::Directory::appendToResourceNameMaskNameSetMap(std::ifstream &
 	) {
 		(*binaryFilePointerVectorIterator)->appendToResourceNameMaskNameSetMap(inputFileStream, fileSystemPosition, resourceNameMaskNameSetMap);
 	}
+}
+
+Ubi::Binary::RLE::LayerInformation::POINTER Ubi::BigFile::Directory::getLayerInformationPointer(bool bftex, const std::optional<File> &fileOptional) const {
+	if (bftex) {
+		return 0;
+	}
+
+	if (!fileOptional.has_value()) {
+		return 0;
+	}
+
+	const File &FILE = fileOptional.value();
+
+	Binary::RLE::LayerInformation::POINTER layerInformationPointer = FILE.layerInformationPointer;
+
+	if (!layerInformationPointer) {
+		return 0;
+	}
+
+	// if we don't have a name, anything matches
+	if (!nameOptional.has_value()) {
+		return layerInformationPointer;
+	}
+
+	const Binary::RLE::SETS_SET &SETS_SET = FILE.layerMapIterator->second;
+
+	if (SETS_SET.find(nameOptional.value()) == SETS_SET.end()) {
+		return 0;
+	}
+	return layerInformationPointer;
 }
 
 const std::string Ubi::BigFile::Directory::NAME_TEXTURE = "texture";
@@ -1160,8 +1152,8 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 		inputFileStream.seekg(position);
 	};
 
-	Binary::RLE::LayerInformation::POINTER fileLayerInformationPointer = 0;
-	File::POINTER filePointer = 0;
+	Binary::RLE::LayerInformation::POINTER layerInformationPointer = 0;
+	File::POINTER layerFilePointer = 0;
 
 	for (
 		Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP::iterator resourceNameMaskNameSetMapIterator = resourceNameMaskNameSetMap.begin();
@@ -1175,17 +1167,17 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 		}
 
 		// reset this so it's not left over from previous texture box
-		fileLayerInformationPointer = std::make_shared<Binary::RLE::LayerInformation>(TEXTURE_BOX_NAME_OPTIONAL.value());
+		layerInformationPointer = std::make_shared<Binary::RLE::LayerInformation>(TEXTURE_BOX_NAME_OPTIONAL.value());
 
 		for (
 			Directory::VECTOR_ITERATOR_VECTOR::iterator cubeVectorIteratorsIterator = cubeVectorIterators.begin();
 			cubeVectorIteratorsIterator != cubeVectorIterators.end();
 			cubeVectorIteratorsIterator++
 		) {
-			(*cubeVectorIteratorsIterator)->createLayerInformationPointer(inputFileStream, fileSystemPosition, fileLayerInformationPointer);
+			(*cubeVectorIteratorsIterator)->createLayerInformationPointer(inputFileStream, fileSystemPosition, layerInformationPointer);
 		}
 
-		const Binary::RLE::LAYER_MAP &LAYER_MAP = fileLayerInformationPointer->layerMap;
+		const Binary::RLE::LAYER_MAP &LAYER_MAP = layerInformationPointer->layerMap;
 
 		if (LAYER_MAP.empty()) {
 			continue;
@@ -1193,20 +1185,20 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 
 		const Binary::RLE::MASK_NAME_SET &MASK_NAME_SET = resourceNameMaskNameSetMapIterator->second;
 
-		Binary::RLE::MASK_MAP &maskMap = fileLayerInformationPointer->maskMap;
+		Binary::RLE::MASK_MAP &maskMap = layerInformationPointer->maskMap;
 
 		for (
 			Binary::RLE::MASK_NAME_SET::const_iterator maskNameSetIterator = MASK_NAME_SET.begin();
 			maskNameSetIterator != MASK_NAME_SET.end();
 			maskNameSetIterator++
 		) {
-			filePointer = directory.find(*maskNameSetIterator);
+			layerFilePointer = directory.find(*maskNameSetIterator);
 
-			if (!filePointer) {
+			if (!layerFilePointer) {
 				continue;
 			}
 
-			std::streampos maskFileSystemPosition = (std::streampos)fileSystemPosition + (std::streampos)filePointer->position;
+			std::streampos maskFileSystemPosition = (std::streampos)fileSystemPosition + (std::streampos)layerFilePointer->position;
 			inputFileStream.seekg(maskFileSystemPosition);
 
 			BigFile maskBigFile(inputFileStream);
@@ -1242,11 +1234,12 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 		) {
 			const std::string &RESOURCE_NAME = layerMapIterator->first;
 
-			filePointer = directory.find(RESOURCE_NAME);
+			layerFilePointer = directory.find(RESOURCE_NAME);
 
-			if (filePointer) {
-				filePointer->layerInformationPointer = fileLayerInformationPointer;
-				filePointer->resourceName = RESOURCE_NAME;
+			if (layerFilePointer) {
+				File &layerFile = *layerFilePointer;
+				layerFile.layerInformationPointer = layerInformationPointer;
+				layerFile.layerMapIterator = layerMapIterator;
 			}
 		}
 	}
