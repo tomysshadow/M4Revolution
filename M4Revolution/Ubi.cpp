@@ -694,9 +694,9 @@ const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTEN
 	{"zap", {TYPE::ZAP, "dds"}}
 };
 
-Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const std::optional<File> &fileOptional, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap)
+Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &fileOptional)
 	: nameOptional(String::readOptional(inputFileStream)) {
-	read(inputFileStream, fileOptional, fileSystemSize, files, filePointerSetMap);
+	read(inputFileStream, fileSystemSize, files, filePointerSetMap, fileOptional);
 }
 
 Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream)
@@ -704,7 +704,7 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream)
 	File::SIZE fileSystemSize = 0;
 	File::POINTER_VECTOR::size_type files = 0;
 	File::POINTER_SET_MAP filePointerSetMap = {};
-	read(inputFileStream, std::nullopt, fileSystemSize, files, filePointerSetMap);
+	read(inputFileStream, fileSystemSize, files, filePointerSetMap, std::nullopt);
 }
 
 Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer) {
@@ -896,17 +896,21 @@ void Ubi::BigFile::Directory::appendToResourceNameMaskNameSetMap(std::ifstream &
 	}
 }
 
-void Ubi::BigFile::Directory::read(std::ifstream &inputFileStream, const std::optional<File> &fileOptional, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap) {
+void Ubi::BigFile::Directory::read(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &fileOptional) {
 	DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
 	for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
 		directoryVector.emplace_back(
 			inputFileStream,
-			nameOptional.has_value() ? std::nullopt : fileOptional, // only if this directory has no name, pass the file
 			fileSystemSize,
 			files,
-			filePointerSetMap
+			filePointerSetMap,
+
+			// only if this directory has no name, pass the file
+			nameOptional.has_value()
+			? std::nullopt
+			: fileOptional
 		);
 	}
 
@@ -936,15 +940,16 @@ void Ubi::BigFile::Directory::read(std::ifstream &inputFileStream, const std::op
 	File::POINTER_SET_MAP::iterator filePointerSetMapIterator = {};
 
 	for (FILE_POINTER_VECTOR_SIZE i = 0; i < filePointerVectorSize; i++) {
-		// the NAME_TEXTURE comparison is so we only convert textures in the texture folder specifically, even if the extension matches
 		filePointer = std::make_shared<File>(
 			inputFileStream,
 			fileSystemSize,
 
+			// only if we are in a set, pass the layer information
 			set
 			? layerInformationPointer
 			: 0,
 
+			// the NAME_TEXTURE comparison is so we only convert textures in the texture folder specifically, even if the extension matches
 			nameOptional.has_value()
 			? nameOptional.value() == NAME_TEXTURE
 			: false
@@ -1079,9 +1084,9 @@ std::optional<std::string> Ubi::BigFile::getTextureBoxNameOptional(const std::st
 	);
 }
 
-Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File &file, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap)
+Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, File &file)
 	: header(inputFileStream, fileSystemSize, fileSystemPosition),
-	directory(inputFileStream, file, fileSystemSize, files, filePointerSetMap) {
+	directory(inputFileStream, fileSystemSize, files, filePointerSetMap, file) {
 	#ifdef WATER_SLICES_ENABLED
 	const Directory::VECTOR &DIRECTORY_VECTOR = directory.directoryVector;
 
