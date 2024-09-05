@@ -931,20 +931,20 @@ void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, F
 			: false
 		);
 
-		File &file = *filePointer;
+		const File &FILE = *filePointer;
 
-		if (file.type == File::TYPE::BINARY) {
+		if (FILE.type == File::TYPE::BINARY) {
 			binaryFilePointerVector.push_back(filePointer);
 		} else {
 			filePointerVector.push_back(filePointer);
 		}
 
 		// are there any other files at this position?
-		filePointerSetMapIterator = filePointerSetMap.find(file.position);
+		filePointerSetMapIterator = filePointerSetMap.find(FILE.position);
 
 		// if not, then create a new set
 		if (filePointerSetMapIterator == filePointerSetMap.end()) {
-			filePointerSetMapIterator = filePointerSetMap.insert({ file.position, {} }).first;
+			filePointerSetMapIterator = filePointerSetMap.insert({ FILE.position, {} }).first;
 		}
 
 		// add this file to the set
