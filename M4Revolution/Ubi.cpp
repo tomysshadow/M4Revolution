@@ -883,11 +883,9 @@ void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, F
 
 	bool bftex = !owner
 
-	&& (
-		nameOptional.has_value()
-		? nameOptional == "bftex"
-		: true
-	);
+	&& nameOptional.has_value()
+	? nameOptional == "bftex"
+	: true;
 
 	for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
 		directoryVector.emplace_back(
