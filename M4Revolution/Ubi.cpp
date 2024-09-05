@@ -57,6 +57,13 @@ std::optional<std::string> &Ubi::String::swizzle(std::optional<std::string> &enc
 	return encryptedStringOptional;
 }
 
+Ubi::Binary::RLE::LayerInformation::LayerInformation() {
+}
+
+Ubi::Binary::RLE::LayerInformation::LayerInformation(const std::string &textureBoxName)
+	: textureBoxName(textureBoxName) {
+}
+
 Ubi::Binary::RLE::SLICE_MAP Ubi::Binary::RLE::createSliceMap(std::ifstream &inputFileStream, std::streamsize size) {
 	std::optional<Header> headerOptional = std::nullopt;
 	readFileHeader(inputFileStream, headerOptional, size);
@@ -175,8 +182,23 @@ Ubi::Binary::Node::Node(Loader::POINTER loaderPointer, std::ifstream &inputFileS
 }
 */
 
-void Ubi::Binary::TextureBox::create(std::ifstream &inputFileStream, std::optional<std::string> &layerFileOptional) {
-	layerFileOptional = String::swizzle(String::readOptional(inputFileStream));
+void Ubi::Binary::TextureBox::create(std::ifstream &inputFileStream, Binary::RLE::LayerInformation &layerInformation) {
+	Binary::RLE::LAYER_MAP::iterator layerMapIterator = {};
+
+	std::optional<std::string> layerFileOptional = String::swizzle(String::readOptional(inputFileStream));
+
+	bool createSetsSet = layerFileOptional.has_value() && LOADER_POINTER->nameOptional == layerInformation.textureBoxName;
+
+	if (createSetsSet) {
+		const std::string &LAYER_FILE = layerFileOptional.value();
+
+		Binary::RLE::LAYER_MAP &layerMap = layerInformation.layerMap;
+		layerMapIterator = layerMap.find(LAYER_FILE);
+
+		if (layerMapIterator == layerMap.end()) {
+			layerMapIterator = layerMap.insert({ LAYER_FILE, {} }).first;
+		}
+	}
 
 	const size_t FIELDS_SIZE = 22;
 	inputFileStream.seekg(FIELDS_SIZE, std::ios::cur);
@@ -191,8 +213,8 @@ void Ubi::Binary::TextureBox::create(std::ifstream &inputFileStream, std::option
 	for (uint32_t i = 0; i < sets; i++) {
 		set = String::swizzle(String::readOptional(inputFileStream));
 
-		if (set.has_value()) {
-			setsSet.insert(set.value());
+		if (set.has_value() && createSetsSet) {
+			layerMapIterator->second.insert(set.value());
 		}
 	}
 
@@ -216,15 +238,15 @@ void Ubi::Binary::TextureBox::create(std::ifstream &inputFileStream, std::option
 	}
 }
 
-Ubi::Binary::TextureBox::TextureBox(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, std::optional<std::string> &layerFileOptional)
+Ubi::Binary::TextureBox::TextureBox(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, Binary::RLE::LayerInformation &layerInformation)
 	: Resource(loaderPointer, VERSION) {
-	create(inputFileStream, layerFileOptional);
+	create(inputFileStream, layerInformation);
 }
 
 Ubi::Binary::TextureBox::TextureBox(Loader::POINTER loaderPointer, std::ifstream &inputFileStream)
 	: Resource(loaderPointer, VERSION) {
-	std::optional<std::string> layerFileOptional = {};
-	create(inputFileStream, layerFileOptional);
+	Binary::RLE::LayerInformation layerInformation;
+	create(inputFileStream, layerInformation);
 }
 
 Ubi::Binary::InteractiveOffsetProvider::InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::ifstream &inputFileStream)
@@ -385,9 +407,9 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createResourcePointer(std::ifstream 
 	return 0;
 }
 
-Ubi::Binary::Resource::POINTER Ubi::Binary::createLayerFileOptional(std::ifstream &inputFileStream, std::optional<std::string> &layerFileOptional, std::streamsize size) {
+Ubi::Binary::Resource::POINTER Ubi::Binary::createLayerInformationPointer(std::ifstream &inputFileStream, Binary::RLE::LayerInformation::POINTER &layerInformationPointer, std::streamsize size) {
 	MAKE_SCOPE_EXIT(layerFileOptionalScopeExit) {
-		layerFileOptional = std::nullopt;
+		layerInformationPointer = 0;
 	};
 
 	std::optional<Header> headerOptional = std::nullopt;
@@ -396,7 +418,7 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createLayerFileOptional(std::ifstrea
 
 	switch (loaderPointer->id) {
 		case TextureBox::ID:
-		resourcePointer = std::make_shared<TextureBox>(loaderPointer, inputFileStream, layerFileOptional);
+		resourcePointer = std::make_shared<TextureBox>(loaderPointer, inputFileStream, *layerInformationPointer);
 	}
 
 	if (resourcePointer) {
@@ -485,7 +507,7 @@ Ubi::BigFile::Path& Ubi::BigFile::Path::create(const std::string &file) {
 	return *this;
 }
 
-Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const Binary::RLE::MASK_MAP_POINTER &layerMaskMapPointer, bool texture) {
+Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const Binary::RLE::LayerInformation::POINTER &layerInformationPointer, bool texture) {
 	read(inputFileStream);
 
 	#ifdef CONVERSION_ENABLED
@@ -504,7 +526,7 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, c
 
 			if (type == TYPE::BINARY && texture) {
 				type = TYPE::BINARY_RESOURCE_IMAGE_DATA;
-			} else if ((type == TYPE::JPEG || type == TYPE::ZAP) && isWaterSlice(layerMaskMapPointer)) {
+			} else if ((type == TYPE::JPEG || type == TYPE::ZAP) && isWaterSlice(layerInformationPointer)) {
 				type = type == TYPE::JPEG ? TYPE::JPEG_WATER_SLICE : TYPE::ZAP_WATER_SLICE;
 			} else {
 				const std::string &NAME = nameOptional.value();
@@ -536,8 +558,57 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, c
 	);
 }
 
-bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::MASK_MAP_POINTER &layerMaskMapPointer) const {
-	if (!layerMaskMapPointer) {
+Ubi::BigFile::File::File(std::ifstream &inputFileStream) {
+	read(inputFileStream);
+}
+
+Ubi::BigFile::File::File(SIZE inputFileSize) : size(inputFileSize) {
+}
+
+void Ubi::BigFile::File::write(std::ofstream &outputFileStream) const {
+	String::writeOptional(outputFileStream, nameOptional);
+	writeFileStreamSafe(outputFileStream, &size, SIZE_SIZE);
+	writeFileStreamSafe(outputFileStream, &position, POSITION_SIZE);
+}
+
+Ubi::Binary::Resource::POINTER Ubi::BigFile::File::createLayerInformationPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LayerInformation::POINTER &layerInformationPointer) const {
+	std::streampos position = inputFileStream.tellg();
+	Binary::Resource::POINTER resourcePointer = 0;
+
+	try {
+		inputFileStream.seekg(fileSystemPosition + (std::streampos)this->position);
+		resourcePointer = Binary::createLayerInformationPointer(inputFileStream, layerInformationPointer, this->size);
+	} catch (...) {
+		// fail silently
+	}
+
+	inputFileStream.seekg(position);
+	return resourcePointer;
+}
+
+Ubi::Binary::Resource::POINTER Ubi::BigFile::File::appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap) const {
+	std::streampos position = inputFileStream.tellg();
+	Binary::Resource::POINTER resourcePointer = 0;
+	
+	try {
+		inputFileStream.seekg(fileSystemPosition + (std::streampos)this->position);
+		resourcePointer = Binary::createResourceNameMaskNameSetMap(inputFileStream, resourceNameMaskNameSetMap, this->size);
+	} catch (...) {
+		// fail silently
+	}
+
+	inputFileStream.seekg(position);
+	return resourcePointer;
+}
+
+void Ubi::BigFile::File::read(std::ifstream &inputFileStream) {
+	nameOptional = String::readOptional(inputFileStream);
+	readFileStreamSafe(inputFileStream, &size, SIZE_SIZE);
+	readFileStreamSafe(inputFileStream, &position, POSITION_SIZE);
+}
+
+bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::LayerInformation::POINTER &layerInformationPointer) const {
+	if (!layerInformationPointer) {
 		return false;
 	}
 
@@ -547,8 +618,9 @@ bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::MASK_MAP_POINTER &layer
 		return false;
 	}
 
+	const Binary::RLE::MASK_MAP &MASK_MAP = layerInformationPointer->maskMap;
+
 	const std::regex FACE_SLICE("^([a-z]+)_(\\d{2})_(\\d{2})\\.[^\\.]+$");
-	const Binary::RLE::MASK_MAP &MASK_MAP = *layerMaskMapPointer;
 
 	std::smatch matches = {};
 
@@ -561,9 +633,9 @@ bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::MASK_MAP_POINTER &layer
 	const std::string &ROW_STR = matches[2];
 	const std::string &COL_STR = matches[3];
 
-	Binary::RLE::FACE_STR_MAP::const_iterator faceStrMapIterator = Binary::RLE::faceStrMap.find(FACE_STR);
+	Binary::RLE::FACE_STR_MAP::const_iterator faceStrMapIterator = Binary::RLE::WATER_SLICE_FACE_STR_MAP.find(FACE_STR);
 
-	if (faceStrMapIterator == Binary::RLE::faceStrMap.end()) {
+	if (faceStrMapIterator == Binary::RLE::WATER_SLICE_FACE_STR_MAP.end()) {
 		return false;
 	}
 
@@ -600,55 +672,6 @@ bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::MASK_MAP_POINTER &layer
 	return true;
 }
 
-Ubi::BigFile::File::File(std::ifstream &inputFileStream) {
-	read(inputFileStream);
-}
-
-Ubi::BigFile::File::File(SIZE inputFileSize) : size(inputFileSize) {
-}
-
-void Ubi::BigFile::File::write(std::ofstream &outputFileStream) const {
-	String::writeOptional(outputFileStream, nameOptional);
-	writeFileStreamSafe(outputFileStream, &size, SIZE_SIZE);
-	writeFileStreamSafe(outputFileStream, &position, POSITION_SIZE);
-}
-
-Ubi::Binary::Resource::POINTER Ubi::BigFile::File::appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap) const {
-	std::streampos position = inputFileStream.tellg();
-	Binary::Resource::POINTER resourcePointer = 0;
-	
-	try {
-		inputFileStream.seekg(fileSystemPosition + (std::streampos)this->position);
-		resourcePointer = Binary::createResourceNameMaskNameSetMap(inputFileStream, resourceNameMaskNameSetMap, this->size);
-	} catch (...) {
-		// fail silently
-	}
-
-	inputFileStream.seekg(position);
-	return resourcePointer;
-}
-
-Ubi::Binary::Resource::POINTER Ubi::BigFile::File::createLayerFileOptional(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, std::optional<std::string> &layerFileOptional) const {
-	std::streampos position = inputFileStream.tellg();
-	Binary::Resource::POINTER resourcePointer = 0;
-
-	try {
-		inputFileStream.seekg(fileSystemPosition + (std::streampos)this->position);
-		resourcePointer = Binary::createLayerFileOptional(inputFileStream, layerFileOptional, this->size);
-	} catch (...) {
-		// fail silently
-	}
-
-	inputFileStream.seekg(position);
-	return resourcePointer;
-}
-
-void Ubi::BigFile::File::read(std::ifstream &inputFileStream) {
-	nameOptional = String::readOptional(inputFileStream);
-	readFileStreamSafe(inputFileStream, &size, SIZE_SIZE);
-	readFileStreamSafe(inputFileStream, &position, POSITION_SIZE);
-}
-
 std::string Ubi::BigFile::File::getNameExtension() const {
 	const std::string::size_type PERIOD_SIZE = sizeof(PERIOD);
 	const std::string &NAME = nameOptional.value();
@@ -671,9 +694,9 @@ const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTEN
 	{"zap", {TYPE::ZAP, "dds"}}
 };
 
-Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const Binary::RLE::MASK_MAP_POINTER &layerMaskMapPointer)
+Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const std::optional<File> &fileOptional, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap)
 	: nameOptional(String::readOptional(inputFileStream)) {
-	read(inputFileStream, fileSystemSize, files, filePointerSetMap, layerMaskMapPointer);
+	read(inputFileStream, fileOptional, fileSystemSize, files, filePointerSetMap);
 }
 
 Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream)
@@ -681,7 +704,7 @@ Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream)
 	File::SIZE fileSystemSize = 0;
 	File::POINTER_VECTOR::size_type files = 0;
 	File::POINTER_SET_MAP filePointerSetMap = {};
-	read(inputFileStream, fileSystemSize, files, filePointerSetMap, 0);
+	read(inputFileStream, std::nullopt, fileSystemSize, files, filePointerSetMap);
 }
 
 Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer) {
@@ -849,6 +872,18 @@ Ubi::BigFile::File::POINTER Ubi::BigFile::Directory::find(const Path &path) cons
 	return find(path, path.directoryNameVector.begin());
 }
 
+void Ubi::BigFile::Directory::createLayerInformationPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LayerInformation::POINTER &layerInformationPointer) const {
+	createLayerInformationPointer(inputFileStream, fileSystemPosition, layerInformationPointer, binaryFilePointerVector);
+
+	for (
+		VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
+		directoryVectorIterator != directoryVector.end();
+		directoryVectorIterator++
+		) {
+		createLayerInformationPointer(inputFileStream, fileSystemPosition, layerInformationPointer, directoryVectorIterator->binaryFilePointerVector);
+	}
+}
+
 void Ubi::BigFile::Directory::appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap) const {
 	appendToResourceNameMaskNameSetMap(inputFileStream, fileSystemPosition, resourceNameMaskNameSetMap, binaryFilePointerVector);
 
@@ -861,30 +896,37 @@ void Ubi::BigFile::Directory::appendToResourceNameMaskNameSetMap(std::ifstream &
 	}
 }
 
-void Ubi::BigFile::Directory::appendToLayerFileSet(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, const std::string &textureBoxName, Binary::RLE::LAYER_FILE_SET &layerFileSet) const {
-	appendToLayerFileSet(inputFileStream, fileSystemPosition, textureBoxName, layerFileSet, binaryFilePointerVector);
-
-	for (
-		VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
-		directoryVectorIterator != directoryVector.end();
-		directoryVectorIterator++
-	) {
-		appendToLayerFileSet(inputFileStream, fileSystemPosition, textureBoxName, layerFileSet, directoryVectorIterator->binaryFilePointerVector);
-	}
-}
-
-void Ubi::BigFile::Directory::read(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const Binary::RLE::MASK_MAP_POINTER &layerMaskMapPointer) {
+void Ubi::BigFile::Directory::read(std::ifstream &inputFileStream, const std::optional<File> &fileOptional, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap) {
 	DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 	readFileStreamSafe(inputFileStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
 	for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
 		directoryVector.emplace_back(
 			inputFileStream,
+			nameOptional.has_value() ? std::nullopt : fileOptional, // only if this directory has no name, pass the file
 			fileSystemSize,
 			files,
-			filePointerSetMap,
-			layerMaskMapPointer
+			filePointerSetMap
 		);
+	}
+
+	// check if we are in one of the sets in the layer
+	bool set = false;
+
+	Binary::RLE::LayerInformation::POINTER layerInformationPointer = fileOptional.has_value()
+		? fileOptional.value().layerInformationPointer
+		: 0;
+
+	if (layerInformationPointer && nameOptional.has_value()) {
+		const Binary::RLE::LAYER_MAP &LAYER_MAP = layerInformationPointer->layerMap;
+
+		Binary::RLE::LAYER_MAP::const_iterator layerMapIterator = LAYER_MAP.find(fileOptional.value().resourceName);
+
+		if (layerMapIterator != LAYER_MAP.end()) {
+			const Binary::RLE::MASK_NAME_SET &MASK_NAME_SET = layerMapIterator->second;
+
+			set = MASK_NAME_SET.find(nameOptional.value()) != MASK_NAME_SET.end();
+		}
 	}
 
 	FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
@@ -893,17 +935,20 @@ void Ubi::BigFile::Directory::read(std::ifstream &inputFileStream, File::SIZE &f
 	File::POINTER filePointer = 0;
 	File::POINTER_SET_MAP::iterator filePointerSetMapIterator = {};
 
-	// the NAME_TEXTURE comparison is so we only convert textures in the texture folder specifically, even if the extension matches
 	for (FILE_POINTER_VECTOR_SIZE i = 0; i < filePointerVectorSize; i++) {
+		// the NAME_TEXTURE comparison is so we only convert textures in the texture folder specifically, even if the extension matches
 		filePointer = std::make_shared<File>(
 			inputFileStream,
 			fileSystemSize,
-			layerMaskMapPointer,
+
+			set
+			? layerInformationPointer
+			: 0,
 
 			nameOptional.has_value()
-				? nameOptional.value() == NAME_TEXTURE
-				: false
-			);
+			? nameOptional.value() == NAME_TEXTURE
+			: false
+		);
 
 		File &file = *filePointer;
 
@@ -941,6 +986,18 @@ void Ubi::BigFile::Directory::read(std::ifstream &inputFileStream, File::SIZE &f
 	);
 }
 
+void Ubi::BigFile::Directory::createLayerInformationPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LayerInformation::POINTER &layerInformationPointer, const File::POINTER_VECTOR &binaryFilePointerVector) const {
+	Binary::Resource::POINTER resourcePointer = 0;
+
+	for (
+		File::POINTER_VECTOR::const_iterator binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
+		binaryFilePointerVectorIterator != binaryFilePointerVector.end();
+		binaryFilePointerVectorIterator++
+		) {
+		resourcePointer = (*binaryFilePointerVectorIterator)->createLayerInformationPointer(inputFileStream, fileSystemPosition, layerInformationPointer);
+	}
+}
+
 void Ubi::BigFile::Directory::appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap, const File::POINTER_VECTOR &binaryFilePointerVector) const {
 	for (
 		File::POINTER_VECTOR::const_iterator binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
@@ -948,23 +1005,6 @@ void Ubi::BigFile::Directory::appendToResourceNameMaskNameSetMap(std::ifstream &
 		binaryFilePointerVectorIterator++
 	) {
 		(*binaryFilePointerVectorIterator)->appendToResourceNameMaskNameSetMap(inputFileStream, fileSystemPosition, resourceNameMaskNameSetMap);
-	}
-}
-
-void Ubi::BigFile::Directory::appendToLayerFileSet(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, const std::string &textureBoxName, Binary::RLE::LAYER_FILE_SET &layerFileSet, const File::POINTER_VECTOR &binaryFilePointerVector) const {
-	Binary::Resource::POINTER resourcePointer = 0;
-	std::optional<std::string> layerFileOptional = std::nullopt;
-	
-	for (
-		File::POINTER_VECTOR::const_iterator binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
-		binaryFilePointerVectorIterator != binaryFilePointerVector.end();
-		binaryFilePointerVectorIterator++
-	) {
-		resourcePointer = (*binaryFilePointerVectorIterator)->createLayerFileOptional(inputFileStream, fileSystemPosition, layerFileOptional);
-
-		if (layerFileOptional.has_value() && textureBoxName == resourcePointer->LOADER_POINTER->nameOptional) {
-			layerFileSet.insert(layerFileOptional.value());
-		}
 	}
 }
 
@@ -1039,9 +1079,10 @@ std::optional<std::string> Ubi::BigFile::getTextureBoxNameOptional(const std::st
 	);
 }
 
-Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const Binary::RLE::MASK_MAP_POINTER &layerMaskMapPointer)
+Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File &file, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap)
 	: header(inputFileStream, fileSystemSize, fileSystemPosition),
-	directory(inputFileStream, fileSystemSize, files, filePointerSetMap, layerMaskMapPointer) {
+	directory(inputFileStream, file, fileSystemSize, files, filePointerSetMap) {
+	#ifdef WATER_SLICES_ENABLED
 	const Directory::VECTOR &DIRECTORY_VECTOR = directory.directoryVector;
 
 	Directory::VECTOR_ITERATOR_VECTOR cubeVectorIterators = {};
@@ -1089,9 +1130,7 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 		inputFileStream.seekg(position);
 	};
 
-	std::optional<std::string> textureBoxNameOptional = std::nullopt;
-	Binary::RLE::LAYER_FILE_SET layerFileSet = {};
-	Binary::RLE::MASK_MAP_POINTER maskMapPointer = 0;
+	Binary::RLE::LayerInformation::POINTER fileLayerInformationPointer = 0;
 	File::POINTER filePointer = 0;
 
 	for (
@@ -1099,39 +1138,39 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 		resourceNameMaskNameSetMapIterator != resourceNameMaskNameSetMap.end();
 		resourceNameMaskNameSetMapIterator++
 	) {
-		textureBoxNameOptional = getTextureBoxNameOptional(resourceNameMaskNameSetMapIterator->first);
+		const std::optional<std::string> &TEXTURE_BOX_NAME_OPTIONAL = getTextureBoxNameOptional(resourceNameMaskNameSetMapIterator->first);
 
-		if (!textureBoxNameOptional.has_value()) {
+		if (!TEXTURE_BOX_NAME_OPTIONAL.has_value()) {
 			continue;
 		}
 
 		// reset this so it's not left over from previous texture box
-		layerFileSet = {};
+		fileLayerInformationPointer = std::make_shared<Binary::RLE::LayerInformation>(TEXTURE_BOX_NAME_OPTIONAL.value());
 
 		for (
 			Directory::VECTOR_ITERATOR_VECTOR::iterator cubeVectorIteratorsIterator = cubeVectorIterators.begin();
 			cubeVectorIteratorsIterator != cubeVectorIterators.end();
 			cubeVectorIteratorsIterator++
 		) {
-			(*cubeVectorIteratorsIterator)->appendToLayerFileSet(inputFileStream, fileSystemPosition, textureBoxNameOptional.value(), layerFileSet);
+			(*cubeVectorIteratorsIterator)->createLayerInformationPointer(inputFileStream, fileSystemPosition, fileLayerInformationPointer);
 		}
 
-		if (layerFileSet.empty()) {
+		const Binary::RLE::LAYER_MAP &LAYER_MAP = fileLayerInformationPointer->layerMap;
+
+		if (LAYER_MAP.empty()) {
 			continue;
 		}
 
 		const Binary::RLE::MASK_NAME_SET &MASK_NAME_SET = resourceNameMaskNameSetMapIterator->second;
 
-		maskMapPointer = std::make_shared<Binary::RLE::MASK_MAP>();
+		Binary::RLE::MASK_MAP &maskMap = fileLayerInformationPointer->maskMap;
 
 		for (
 			Binary::RLE::MASK_NAME_SET::const_iterator maskNameSetIterator = MASK_NAME_SET.begin();
 			maskNameSetIterator != MASK_NAME_SET.end();
 			maskNameSetIterator++
 		) {
-			inputFileStream.seekg(fileSystemPosition);
-			filePointer = 0;
-			BigFile bigFile(inputFileStream, *maskNameSetIterator, filePointer);
+			filePointer = directory.find(*maskNameSetIterator);
 
 			if (!filePointer) {
 				continue;
@@ -1155,30 +1194,33 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 					continue;
 				}
 
-				Binary::RLE::FACE_STR_MAP::const_iterator &fileFaceStrMapIterator = Binary::RLE::fileFaceStrMap.find(maskFile.nameOptional.value());
+				Binary::RLE::FACE_STR_MAP::const_iterator &fileFaceStrMapIterator = Binary::RLE::FILE_FACE_STR_MAP.find(maskFile.nameOptional.value());
 
-				if (fileFaceStrMapIterator == Binary::RLE::fileFaceStrMap.end()) {
+				if (fileFaceStrMapIterator == Binary::RLE::FILE_FACE_STR_MAP.end()) {
 					continue;
 				}
 
 				inputFileStream.seekg(maskFileSystemPosition + (std::streampos)maskFile.position);
-				maskMapPointer->insert({ fileFaceStrMapIterator->second, Binary::RLE::createSliceMap(inputFileStream, maskFile.size) });
+				maskMap.insert({ fileFaceStrMapIterator->second, Binary::RLE::createSliceMap(inputFileStream, maskFile.size) });
 			}
 		}
 
 		for (
-			Binary::RLE::LAYER_FILE_SET::iterator layerFileSetIterator = layerFileSet.begin();
-			layerFileSetIterator != layerFileSet.end();
-			layerFileSetIterator++
+			Binary::RLE::LAYER_MAP::const_iterator layerMapIterator = LAYER_MAP.begin();
+			layerMapIterator != LAYER_MAP.end();
+			layerMapIterator++
 		) {
-			inputFileStream.seekg(fileSystemPosition);
-			filePointer = directory.find(*layerFileSetIterator);
+			const std::string &RESOURCE_NAME = layerMapIterator->first;
+
+			filePointer = directory.find(RESOURCE_NAME);
 
 			if (filePointer) {
-				filePointer->maskMapPointer = maskMapPointer;
+				filePointer->layerInformationPointer = fileLayerInformationPointer;
+				filePointer->resourceName = RESOURCE_NAME;
 			}
 		}
 	}
+	#endif
 }
 
 Ubi::BigFile::BigFile(std::ifstream &inputFileStream)
