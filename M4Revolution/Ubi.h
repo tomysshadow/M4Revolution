@@ -1,5 +1,6 @@
 #pragma once
 #include "shared.h"
+#include "IgnoreCaseComparer.h"
 #include <optional>
 #include <unordered_set>
 #include <map>
@@ -39,6 +40,11 @@ namespace Ubi {
 			}
 		};
 
+		/*
+		for water slices, DXT5 is not supported and an uncompressed format must be used instead
+		in order to detect which JPEG/ZAP images are water slices, we need to read the RLE files
+		which are pointed to by the Water files (typically named water.bin)
+		*/
 		namespace RLE {
 			enum struct FACE {
 				BACK,
@@ -49,6 +55,7 @@ namespace Ubi {
 				BOTTOM
 			};
 
+			// these maps take the water slice/file name and turn them into faces
 			typedef std::map<std::string, FACE> FACE_STR_MAP;
 
 			static const FACE_STR_MAP WATER_SLICE_FACE_STR_MAP = {
@@ -69,12 +76,22 @@ namespace Ubi {
 				{"bottom.rle", Ubi::Binary::RLE::FACE::BOTTOM}
 			};
 
+			// the Water file specifies what resources it is intended to affect
+			// this set has the name of those resources as its key
+			// the value is the name of the masks (there can be multiple) which
+			// contain the RLE files to use for them
 			typedef std::unordered_set<std::string> MASK_NAME_SET;
 			typedef std::map<std::string, MASK_NAME_SET> RESOURCE_NAME_MASK_NAME_SET_MAP;
 
+			// each layer contains sets, within which are the slices
+			// this is a set of all those sets for a given layer (confusing, I know, but the strings should be unique)
 			typedef std::unordered_set<std::string> SETS_SET;
 			typedef std::map<std::string, SETS_SET> LAYER_MAP;
 
+			// MASK_MAP is a map of FACE > ROW > COL
+			// this allows us to tell which slices are water slices
+			// e.g. if the map has a BACK face with ROW 1 and COL 1, then 
+			// the file back_01_01.jpg is a water slice
 			typedef uint32_t ROW;
 			typedef uint32_t COL;
 			typedef std::unordered_set<COL> COL_SET;
@@ -82,10 +99,12 @@ namespace Ubi {
 			typedef std::map<FACE, SLICE_MAP> MASK_MAP;
 			typedef std::shared_ptr<MASK_MAP> MASK_MAP_POINTER;
 
+			// this struct contains all the information a particular layer needs to give proper types to its files
 			struct LayerInformation {
 				typedef std::shared_ptr<LayerInformation> POINTER;
 
 				std::string textureBoxName = "";
+				//bool isLayerMask = false;
 				LAYER_MAP layerMap = {};
 				MASK_MAP maskMap = {};
 
@@ -96,12 +115,15 @@ namespace Ubi {
 			static SLICE_MAP createSliceMap(std::ifstream &inputFileStream, std::streamsize size);
 		};
 
+		// this is the abstract class on which all resources are based
 		class Resource {
 			public:
 			typedef uint32_t ID;
 			typedef uint32_t VERSION;
 			typedef std::shared_ptr<Resource> POINTER;
 
+			// this struct contains the ID and Version of the resource
+			// this is used to determine which resource type to create
 			struct Loader {
 				typedef std::shared_ptr<Loader> POINTER;
 
@@ -119,6 +141,8 @@ namespace Ubi {
 			Resource &operator=(const Resource &resource) = delete;
 		};
 
+		// anonymous namespace so these can't be created directly, instead you need
+		// to go through createResourcePointer
 		namespace {
 			/*
 			class Node : public virtual Resource {
@@ -223,6 +247,7 @@ namespace Ubi {
 			};
 		};
 
+		// a basic factory pattern going on here for the creation of resources
 		void readFileHeader(std::ifstream &inputFileStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size = -1);
 		Resource::Loader::POINTER readFileLoader(std::ifstream &inputFileStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size = -1);
 		Resource::POINTER createResourcePointer(std::ifstream &inputFileStream, std::streamsize size = -1);
@@ -289,6 +314,10 @@ namespace Ubi {
 
 			TYPE type = TYPE::NONE;
 
+			// used for water slices
+			// if this file is a layer, layerInformationPointer is non-zero and
+			// points to the layer information, and layerMapIterator is an iterator
+			// into the layerMap field of layerInformationPointer (it is never the end of the map)
 			Binary::RLE::LayerInformation::POINTER layerInformationPointer = 0;
 			Binary::RLE::LAYER_MAP::const_iterator layerMapIterator = {};
 
@@ -309,7 +338,7 @@ namespace Ubi {
 				std::string extension = "";
 			};
 
-			typedef std::map<std::string, TypeExtension> TYPE_EXTENSION_MAP;
+			typedef std::map<std::string, TypeExtension, IgnoreCaseComparer> TYPE_EXTENSION_MAP;
 
 			static const char PERIOD = '.';
 			static const TYPE_EXTENSION_MAP NAME_TYPE_EXTENSION_MAP;
@@ -321,11 +350,21 @@ namespace Ubi {
 			typedef uint8_t DIRECTORY_VECTOR_SIZE;
 			typedef uint32_t FILE_POINTER_VECTOR_SIZE;
 
+			// some directories with names that are hardcoded by the binarizer
+			// normally these would be loaded through the binarizer's log file, but
+			// we are only really interested in the ones in these particular directories
+			static const std::string NAME_CUBE;
+			static const std::string NAME_WATER;
+
 			std::optional<std::string> nameOptional = std::nullopt;
 
+			// the directories that this directory owns
 			static const size_t DIRECTORY_VECTOR_SIZE_SIZE = sizeof(DIRECTORY_VECTOR_SIZE);
 			Directory::VECTOR directoryVector = {};
 
+			// the files that this directory owns
+			// binaryFilePointerVector is seperate so we can easily loop just the Binary files
+			// (this is useful for finding Water/Cube binary files)
 			static const size_t FILE_POINTER_VECTOR_SIZE_SIZE = sizeof(FILE_POINTER_VECTOR_SIZE);
 			File::POINTER_VECTOR binaryFilePointerVector = {};
 			File::POINTER_VECTOR filePointerVector = {};
@@ -347,7 +386,6 @@ namespace Ubi {
 			Binary::RLE::LayerInformation::POINTER getLayerInformationPointer(bool bftex, const std::optional<File> &layerFileOptional) const;
 
 			static const std::string NAME_TEXTURE;
-			static const std::string NAME_WATER;
 		};
 
 		struct Header {

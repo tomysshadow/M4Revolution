@@ -100,6 +100,9 @@ Ubi::Binary::RLE::SLICE_MAP Ubi::Binary::RLE::createSliceMap(std::ifstream &inpu
 	readFileStreamSafe(inputFileStream, &waterSlices, WATER_SLICES_SIZE);
 
 	for (uint32_t i = 0; i < waterSlices; i++) {
+		// sliceRow and sliceCol are incremented by one
+		// because they are indexed from zero here, but
+		// we want them indexed by one for the face names
 		readFileStreamSafe(inputFileStream, &sliceRow, SLICE_ROW_SIZE);
 		sliceMapIterator = sliceMap.find(++sliceRow);
 
@@ -110,6 +113,9 @@ Ubi::Binary::RLE::SLICE_MAP Ubi::Binary::RLE::createSliceMap(std::ifstream &inpu
 		readFileStreamSafe(inputFileStream, &sliceCol, SLICE_COL_SIZE);
 		sliceMapIterator->second.insert(sliceCol + 1);
 
+		// normally these would be in seperate classes
+		// there just isn't much point here because I don't really care about any of this data
+		// I only really care about sliceRow/sliceCol and just want to skip the rest of this stuff
 		inputFileStream.seekg(WATER_SLICE_FIELDS_SIZE, std::ios::cur);
 		readFileStreamSafe(inputFileStream, &waterRLERegions, WATER_RLE_REGIONS_SIZE);
 
@@ -361,6 +367,10 @@ Ubi::Binary::Header::Header(std::ifstream &inputFileStream, std::streamsize file
 	readFileStreamSafe(inputFileStream, &id, ID_SIZE);
 	testReadPastEnd();
 
+	// we only support the UBI_B0_L ID
+	// I obviously understand the actual game uses a serializer that
+	// can also read/write text, but this appears totally unused
+	// so I'm not implementing it
 	if (id != UBI_B0_L) {
 		throw Invalid();
 	}
@@ -490,6 +500,7 @@ void Ubi::BigFile::Path::clear() {
 }
 
 Ubi::BigFile::Path& Ubi::BigFile::Path::create(const std::string &file) {
+	// split up a string into a Path object
 	std::string::size_type begin = 0;
 	std::string::size_type end = 0;
 
@@ -619,7 +630,7 @@ bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::LayerInformation::POINT
 	}
 
 	const Binary::RLE::MASK_MAP &MASK_MAP = layerInformationPointer->maskMap;
-	const std::regex FACE_SLICE("^([a-z]+)_(\\d{2})_(\\d{2})\\.[^\\.]+$");
+	const std::regex FACE_SLICE("^([a-z]+)_(\\d{2})_(\\d{2})\\..*$");
 
 	std::smatch matches = {};
 
@@ -645,7 +656,7 @@ bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::LayerInformation::POINT
 	}
 
 	// since these have leading zeros, I use base 10 specifically
-	// (the row/col should not be misinterpreted as octal)
+	// (the ROW/COL should not be misinterpreted as octal)
 	const int BASE = 10;
 
 	unsigned long row = 0;
@@ -693,6 +704,9 @@ const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTEN
 	{"zap", {TYPE::ZAP, "dds"}}
 };
 
+const std::string Ubi::BigFile::Directory::NAME_CUBE = "cube";
+const std::string Ubi::BigFile::Directory::NAME_WATER = "water";
+
 Ubi::BigFile::Directory::Directory(Directory* ownerDirectory, std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &layerFileOptional)
 	: nameOptional(String::readOptional(inputFileStream)) {
 	read(ownerDirectory, inputFileStream, fileSystemSize, files, filePointerSetMap, layerFileOptional);
@@ -700,6 +714,7 @@ Ubi::BigFile::Directory::Directory(Directory* ownerDirectory, std::ifstream &inp
 
 Ubi::BigFile::Directory::Directory(std::ifstream &inputFileStream)
 	: nameOptional(String::readOptional(inputFileStream)) {
+	// in this case it is the same as not having an owner
 	File::SIZE fileSystemSize = 0;
 	File::POINTER_VECTOR::size_type files = 0;
 	File::POINTER_SET_MAP filePointerSetMap = {};
@@ -961,21 +976,17 @@ void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, F
 }
 
 bool Ubi::BigFile::Directory::isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const {
-	bool match = false;
-
 	// should we care about this directory at all?
-	if (directoryNameVectorIterator != directoryNameVector.end()) {
-		// does this directory's name match the one we are trying to find?
-		if (!nameOptional.has_value() || nameOptional.value() == *directoryNameVectorIterator) {
-			// look for matching subdirectories, or
-			// if there are no further subdirectories, look for matching files
-			match = ++directoryNameVectorIterator == directoryNameVector.end();
-		} else {
-			// don't look for matching subdirectories or files
-			directoryNameVectorIterator = directoryNameVector.end();
-		}
+	if (directoryNameVectorIterator == directoryNameVector.end()) {
+		return false;
 	}
-	return match;
+
+	// does this directory's name match the one we are trying to find?
+	if (nameOptional.has_value() && nameOptional.value() != *directoryNameVectorIterator) {
+		directoryNameVectorIterator = directoryNameVector.end();
+		return false;
+	}
+	return ++directoryNameVectorIterator == directoryNameVector.end();
 }
 
 void Ubi::BigFile::Directory::createLayerInformationPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LayerInformation::POINTER &layerInformationPointer, const File::POINTER_VECTOR &binaryFilePointerVector) const {
@@ -1017,7 +1028,7 @@ Ubi::Binary::RLE::LayerInformation::POINTER Ubi::BigFile::Directory::getLayerInf
 		return 0;
 	}
 
-	// if we don't have a name, anything matches
+	// as per usual, if we don't have a name, anything matches
 	if (!nameOptional.has_value()) {
 		return layerInformationPointer;
 	}
@@ -1031,7 +1042,6 @@ Ubi::Binary::RLE::LayerInformation::POINTER Ubi::BigFile::Directory::getLayerInf
 }
 
 const std::string Ubi::BigFile::Directory::NAME_TEXTURE = "texture";
-const std::string Ubi::BigFile::Directory::NAME_WATER = "water";
 
 Ubi::BigFile::Header::Header(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemPosition) {
 	fileSystemPosition = (File::SIZE)inputFileStream.tellg();
@@ -1042,7 +1052,7 @@ Ubi::BigFile::Header::Header(std::ifstream &inputFileStream, File::SIZE &fileSys
 
 		+ SIGNATURE.size() + 1
 		+ VERSION_SIZE
-		);
+	);
 }
 
 Ubi::BigFile::Header::Header(std::ifstream &inputFileStream) {
@@ -1089,9 +1099,12 @@ std::optional<std::string> Ubi::BigFile::getTextureBoxNameOptional(const std::st
 		return std::nullopt;
 	}
 
+	const std::string CONTEXT_GLOBAL = "global";
+	const std::string CONTEXT_SHARED = "shared";
+
 	const std::string &CONTEXT = resourceName.substr(0, periodIndex);
 
-	if (CONTEXT == "global" || CONTEXT == "shared") {
+	if (CONTEXT == CONTEXT_GLOBAL || CONTEXT == CONTEXT_SHARED) {
 		return std::nullopt;
 	}
 
@@ -1104,6 +1117,7 @@ std::optional<std::string> Ubi::BigFile::getTextureBoxNameOptional(const std::st
 Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, File &file)
 	: header(inputFileStream, fileSystemSize, fileSystemPosition),
 	directory(0, inputFileStream, fileSystemSize, files, filePointerSetMap, file) {
+	// do all the steps necessary to prevent water causing a crash
 	#ifdef WATER_SLICES_ENABLED
 	const Directory::VECTOR &DIRECTORY_VECTOR = directory.directoryVector;
 
@@ -1120,9 +1134,9 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 		if (NAME_OPTIONAL.has_value()) {
 			const std::string &NAME = NAME_OPTIONAL.value();
 
-			if (NAME == "cube") {
+			if (NAME == Directory::NAME_CUBE) {
 				cubeVectorIterators.push_back(directoryVectorIterator);
-			} else if (NAME == "water") {
+			} else if (NAME == Directory::NAME_WATER) {
 				waterVectorIterators.push_back(directoryVectorIterator);
 			}
 		}

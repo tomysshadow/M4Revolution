@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="IgnoreCaseComparer.h" />
     <ClInclude Include="Locale.h" />
     <ClInclude Include="M4Revolution.h" />
     <ClInclude Include="nvconfig.h" />
