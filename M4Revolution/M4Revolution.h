@@ -60,7 +60,7 @@ class M4Revolution {
 
 	nvtt::Context context = {};
 	nvtt::CompressionOptions compressionOptions = {};
-	nvtt::CompressionOptions compressionOptionsWaterSlice = {};
+	nvtt::CompressionOptions compressionOptionsRaw = {};
 
 	#ifdef MULTITHREADED
 	PTP_POOL pool = NULL;

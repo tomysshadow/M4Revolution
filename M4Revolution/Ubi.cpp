@@ -570,12 +570,21 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, c
 
 		if (nameTypeExtensionMapIterator != NAME_TYPE_EXTENSION_MAP.end()) {
 			type = nameTypeExtensionMapIterator->second.type;
+			bool image = type == TYPE::JPEG || type == TYPE::ZAP;
 
 			if (type == TYPE::BINARY && texture) {
 				type = TYPE::BINARY_RESOURCE_IMAGE_DATA;
-			} else if ((type == TYPE::JPEG || type == TYPE::ZAP) && isRaw(layerFileOptional)) {
-				type = type == TYPE::JPEG ? TYPE::JPEG_RAW : TYPE::ZAP_RAW;
+			} else if (
+				image
+				&& layerFileOptional.has_value()
+				&& layerFileOptional.value().layerMapIterator->second.isLayerMask
+			) {
+				type = TYPE::NONE;
 			} else {
+				if (image && isWaterSlice(layerFileOptional)) {
+					type = type == TYPE::JPEG ? TYPE::JPEG_RAW : TYPE::ZAP_RAW;
+				}
+
 				const std::string &NAME = nameOptional.value();
 				const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
 
@@ -654,7 +663,7 @@ void Ubi::BigFile::File::read(std::ifstream &inputFileStream) {
 	readFileStreamSafe(inputFileStream, &position, POSITION_SIZE);
 }
 
-bool Ubi::BigFile::File::isRaw(const std::optional<File> &layerFileOptional) const {
+bool Ubi::BigFile::File::isWaterSlice(const std::optional<File> &layerFileOptional) const {
 	if (!layerFileOptional.has_value()) {
 		return false;
 	}
@@ -665,15 +674,10 @@ bool Ubi::BigFile::File::isRaw(const std::optional<File> &layerFileOptional) con
 
 	const Binary::RLE::Layer &LAYER = layerFileOptional.value().layerMapIterator->second;
 
-	if (LAYER.isLayerMask) {
-		return true;
-	}
-
 	if (!LAYER.water) {
 		return false;
 	}
 
-	const Binary::RLE::MASK_MAP &MASK_MAP = LAYER.maskMap;
 	const std::regex FACE_SLICE("^([a-z]+)_(\\d{2})_(\\d{2})\\.");
 
 	std::smatch matches = {};
@@ -692,6 +696,8 @@ bool Ubi::BigFile::File::isRaw(const std::optional<File> &layerFileOptional) con
 	if (faceStrMapIterator == Binary::RLE::WATER_SLICE_FACE_STR_MAP.end()) {
 		return false;
 	}
+
+	const Binary::RLE::MASK_MAP &MASK_MAP = LAYER.maskMap;
 
 	Binary::RLE::MASK_MAP::const_iterator maskMapIterator = MASK_MAP.find(faceStrMapIterator->second);
 

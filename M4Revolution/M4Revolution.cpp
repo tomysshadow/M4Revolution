@@ -204,15 +204,15 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		case Ubi::BigFile::File::TYPE::JPEG:
 		convertFile(bigFileInputPosition, file, compressionOptions, convertJPEGWorkCallback);
 		break;
-		//case Ubi::BigFile::File::TYPE::JPEG_RAW:
-		//convertFile(bigFileInputPosition, file, compressionOptionsWaterSlice, convertJPEGWorkCallback);
-		//break;
+		case Ubi::BigFile::File::TYPE::JPEG_RAW:
+		convertFile(bigFileInputPosition, file, compressionOptionsRaw, convertJPEGWorkCallback);
+		break;
 		case Ubi::BigFile::File::TYPE::ZAP:
 		convertFile(bigFileInputPosition, file, compressionOptions, convertZAPWorkCallback);
 		break;
-		//case Ubi::BigFile::File::TYPE::ZAP_RAW:
-		//convertFile(bigFileInputPosition, file, compressionOptionsWaterSlice, convertZAPWorkCallback);
-		//break;
+		case Ubi::BigFile::File::TYPE::ZAP_RAW:
+		convertFile(bigFileInputPosition, file, compressionOptionsRaw, convertZAPWorkCallback);
+		break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
 		Work::FileTask::POINTER fileTaskPointer = std::make_shared<Work::FileTask>(bigFileInputPosition, &file);
@@ -660,8 +660,8 @@ M4Revolution::M4Revolution(
 	compressionOptions.setFormat(nvtt::Format_DXT5);
 	compressionOptions.setQuality(nvtt::Quality_Highest);
 
-	compressionOptionsWaterSlice.setFormat(nvtt::Format_RGBA);
-	compressionOptionsWaterSlice.setQuality(nvtt::Quality_Highest);
+	compressionOptionsRaw.setFormat(nvtt::Format_RGBA);
+	compressionOptionsRaw.setQuality(nvtt::Quality_Highest);
 
 	#ifdef MULTITHREADED
 	pool = CreateThreadpool(NULL);

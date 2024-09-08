@@ -331,7 +331,7 @@ namespace Ubi {
 
 			private:
 			void read(std::ifstream &inputFileStream);
-			bool isRaw(const std::optional<File> &layerFileOptional) const;
+			bool isWaterSlice(const std::optional<File> &layerFileOptional) const;
 			std::string getNameExtension() const;
 
 			struct TypeExtension {
