@@ -8,7 +8,7 @@
 #include <vector>
 
 #define CONVERSION_ENABLED
-#define WATER_SLICES_ENABLED
+#define LAYERS_ENABLED
 
 namespace Ubi {
 	namespace String {
@@ -81,12 +81,7 @@ namespace Ubi {
 			// the value is the name of the masks (there can be multiple) which
 			// contain the RLE files to use for them
 			typedef std::unordered_set<std::string> MASK_NAME_SET;
-			typedef std::map<std::string, MASK_NAME_SET> RESOURCE_NAME_MASK_NAME_SET_MAP;
-
-			// each layer contains sets, within which are the slices
-			// this is a set of all those sets for a given layer (confusing, I know, but the strings should be unique)
-			typedef std::unordered_set<std::string> SETS_SET;
-			typedef std::map<std::string, SETS_SET> LAYER_MAP;
+			typedef std::map<std::string, MASK_NAME_SET> TEXTURE_BOX_NAME_MASK_NAME_SET_MAP;
 
 			// MASK_MAP is a map of FACE > ROW > COL
 			// this allows us to tell which slices are water slices
@@ -99,18 +94,20 @@ namespace Ubi {
 			typedef std::map<FACE, SLICE_MAP> MASK_MAP;
 			typedef std::shared_ptr<MASK_MAP> MASK_MAP_POINTER;
 
-			// this struct contains all the information a particular layer needs to give proper types to its files
-			struct LayerInformation {
-				typedef std::shared_ptr<LayerInformation> POINTER;
+			// each layer contains sets, within which are the slices
+			// this is a set of all those sets for a given layer (confusing, I know, but the strings should be unique)
+			typedef std::unordered_set<std::string> SETS_SET;
 
-				std::string textureBoxName = "";
-				//bool isLayerMask = false;
-				LAYER_MAP layerMap = {};
+			struct Layer {
+				std::optional<std::string> textureBoxNameOptional = std::nullopt;
+				SETS_SET setsSet = {};
+				bool isLayerMask = false;
+				bool water = false;
 				MASK_MAP maskMap = {};
-
-				LayerInformation();
-				LayerInformation(const std::string &textureBoxName);
 			};
+
+			typedef std::map<std::string, Layer> LAYER_MAP;
+			typedef std::shared_ptr<LAYER_MAP> LAYER_MAP_POINTER;
 
 			static SLICE_MAP createSliceMap(std::ifstream &inputFileStream, std::streamsize size);
 		};
@@ -162,13 +159,13 @@ namespace Ubi {
 
 			class TextureBox : public virtual Resource {
 				private:
-				void create(std::ifstream &inputFileStream, Binary::RLE::LayerInformation &layerInformation);
+				void create(std::ifstream &inputFileStream, Binary::RLE::LAYER_MAP &layerMap);
 
 				public:
 				static const Resource::ID ID = 15;
 				static const Resource::VERSION VERSION = 5;
 
-				TextureBox(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, Binary::RLE::LayerInformation &layerInformation);
+				TextureBox(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, Binary::RLE::LAYER_MAP &layerMap);
 				TextureBox(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
 				TextureBox(const TextureBox &textureBox) = delete;
 				TextureBox &operator=(const TextureBox &textureBox) = delete;
@@ -176,7 +173,11 @@ namespace Ubi {
 
 			class Water : public virtual Resource {
 				private:
-				void create(std::ifstream &inputFileStream, RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap);
+				void create(std::ifstream &inputFileStream, RLE::TEXTURE_BOX_NAME_MASK_NAME_SET_MAP &textureBoxNameMaskNameSetMap);
+
+				static const char PERIOD = '.';
+
+				static std::optional<std::string> getTextureBoxNameOptional(const std::string &resourceName);
 
 				public:
 				static const Resource::ID ID = 42;
@@ -184,7 +185,7 @@ namespace Ubi {
 
 				std::optional<std::string> resourceNameOptional = "";
 
-				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap);
+				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::TEXTURE_BOX_NAME_MASK_NAME_SET_MAP &textureBoxNameMaskNameSetMap);
 				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
 				Water(const Water &water) = delete;
 				Water &operator=(const Water &water) = delete;
@@ -251,9 +252,9 @@ namespace Ubi {
 		void readFileHeader(std::ifstream &inputFileStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size = -1);
 		Resource::Loader::POINTER readFileLoader(std::ifstream &inputFileStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size = -1);
 		Resource::POINTER createResourcePointer(std::ifstream &inputFileStream, std::streamsize size = -1);
-		Resource::POINTER createLayerInformationPointer(std::ifstream &inputFileStream, Binary::RLE::LayerInformation::POINTER &layerInformationPointer, std::streamsize size = -1);
+		Resource::POINTER createLayerMapPointer(std::ifstream &inputFileStream, Binary::RLE::LAYER_MAP_POINTER &layerMapPointer, std::streamsize size = -1);
 		Resource::POINTER createMaskNameSet(std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet, std::streamsize size = -1);
-		Resource::POINTER createResourceNameMaskNameSetMap(std::ifstream &inputFileStream, RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap, std::streamsize size = -1);
+		Resource::POINTER createTextureBoxNameMaskNameSetMap(std::ifstream &inputFileStream, RLE::TEXTURE_BOX_NAME_MASK_NAME_SET_MAP &textureBoxNameMaskNameSetMap, std::streamsize size = -1);
 		//Resource::POINTER createNameSet(std::ifstream &inputFileStream, RLE::NAME_SET &nameSet, std::streamsize size = -1);
 	};
 
@@ -293,9 +294,9 @@ namespace Ubi {
 				BINARY_RESOURCE_IMAGE_DATA,
 				BIG_FILE,
 				JPEG,
-				JPEG_WATER_SLICE,
+				JPEG_RAW,
 				ZAP,
-				ZAP_WATER_SLICE
+				ZAP_RAW
 			};
 
 			// the name in the output file (so example.dds, not example.jpg)
@@ -318,19 +319,19 @@ namespace Ubi {
 			// if this file is a layer, layerInformationPointer is non-zero and
 			// points to the layer information, and layerMapIterator is an iterator
 			// into the layerMap field of layerInformationPointer (it is never the end of the map)
-			Binary::RLE::LayerInformation::POINTER layerInformationPointer = 0;
+			Binary::RLE::LAYER_MAP_POINTER layerMapPointer = 0;
 			Binary::RLE::LAYER_MAP::const_iterator layerMapIterator = {};
 
-			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const Binary::RLE::LayerInformation::POINTER &layerInformationPointer, bool texture);
+			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const std::optional<File> &layerFileOptional, bool texture);
 			File(std::ifstream &inputFileStream);
 			File(SIZE inputFileSize);
 			void write(std::ofstream &outputFileStream) const;
-			Binary::Resource::POINTER createLayerInformationPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LayerInformation::POINTER &layerInformationPointer) const;
-			Binary::Resource::POINTER appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap) const;
+			Binary::Resource::POINTER createLayerMapPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LAYER_MAP_POINTER &layerMapPointer) const;
+			Binary::Resource::POINTER appendToTextureBoxNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_NAME_MASK_NAME_SET_MAP &textureBoxNameMaskNameSetMap) const;
 
 			private:
 			void read(std::ifstream &inputFileStream);
-			bool isWaterSlice(const Binary::RLE::LayerInformation::POINTER &layerInformationPointer) const;
+			bool isRaw(const std::optional<File> &layerFileOptional) const;
 			std::string getNameExtension() const;
 
 			struct TypeExtension {
@@ -375,15 +376,15 @@ namespace Ubi {
 			void write(std::ofstream &outputFileStream) const;
 			File::POINTER find(const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) const;
 			File::POINTER find(const Path &path) const;
-			void createLayerInformationPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LayerInformation::POINTER &layerInformationPointer) const;
-			void appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap) const;
+			void createLayerMapPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LAYER_MAP_POINTER &layerMapPointer) const;
+			void appendToTextureBoxNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_NAME_MASK_NAME_SET_MAP &textureBoxNameMaskNameSetMap) const;
 
 			private:
 			void read(bool owner, std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &layerFileOptional);
 			bool isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const;
-			void createLayerInformationPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LayerInformation::POINTER &layerInformationPointer, const File::POINTER_VECTOR &binaryFilePointerVector) const;
-			void appendToResourceNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::RESOURCE_NAME_MASK_NAME_SET_MAP &resourceNameMaskNameSetMap, const File::POINTER_VECTOR &binaryFilePointerVector) const;
-			Binary::RLE::LayerInformation::POINTER getLayerInformationPointer(bool bftex, const std::optional<File> &layerFileOptional) const;
+			bool isSet(bool bftex, const std::optional<File> &layerFileOptional) const;
+			void createLayerMapPointer(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LAYER_MAP_POINTER &layerMapPointer, const File::POINTER_VECTOR &binaryFilePointerVector) const;
+			void appendToTextureBoxNameMaskNameSetMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_NAME_MASK_NAME_SET_MAP &textureBoxNameMaskNameSetMap, const File::POINTER_VECTOR &binaryFilePointerVector) const;
 
 			static const std::string NAME_TEXTURE;
 		};
@@ -412,11 +413,7 @@ namespace Ubi {
 		};
 
 		private:
-		static const char PERIOD = '.';
-
 		File::SIZE fileSystemPosition = 0;
-
-		static std::optional<std::string> getTextureBoxNameOptional(const std::string &resourceName);
 
 		public:
 		Header header;

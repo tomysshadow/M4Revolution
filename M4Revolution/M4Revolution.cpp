@@ -204,13 +204,13 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		case Ubi::BigFile::File::TYPE::JPEG:
 		convertFile(bigFileInputPosition, file, compressionOptions, convertJPEGWorkCallback);
 		break;
-		//case Ubi::BigFile::File::TYPE::JPEG_WATER_SLICE:
+		//case Ubi::BigFile::File::TYPE::JPEG_RAW:
 		//convertFile(bigFileInputPosition, file, compressionOptionsWaterSlice, convertJPEGWorkCallback);
 		//break;
 		case Ubi::BigFile::File::TYPE::ZAP:
 		convertFile(bigFileInputPosition, file, compressionOptions, convertZAPWorkCallback);
 		break;
-		//case Ubi::BigFile::File::TYPE::ZAP_WATER_SLICE:
+		//case Ubi::BigFile::File::TYPE::ZAP_RAW:
 		//convertFile(bigFileInputPosition, file, compressionOptionsWaterSlice, convertZAPWorkCallback);
 		//break;
 		default:
