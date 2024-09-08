@@ -673,8 +673,9 @@ bool Ubi::BigFile::File::isWaterSlice(const std::optional<File> &layerFileOption
 	}
 
 	const Binary::RLE::Layer &LAYER = layerFileOptional.value().layerMapIterator->second;
+	const Binary::RLE::MASK_MAP &WATER_MASK_MAP = LAYER.waterMaskMap;
 
-	if (!LAYER.water) {
+	if (WATER_MASK_MAP.empty()) {
 		return false;
 	}
 
@@ -688,8 +689,6 @@ bool Ubi::BigFile::File::isWaterSlice(const std::optional<File> &layerFileOption
 	}
 
 	const std::string &FACE_STR = matches[1];
-	const std::string &ROW_STR = matches[2];
-	const std::string &COL_STR = matches[3];
 
 	Binary::RLE::FACE_STR_MAP::const_iterator faceStrMapIterator = Binary::RLE::WATER_SLICE_FACE_STR_MAP.find(FACE_STR);
 
@@ -697,11 +696,9 @@ bool Ubi::BigFile::File::isWaterSlice(const std::optional<File> &layerFileOption
 		return false;
 	}
 
-	const Binary::RLE::MASK_MAP &MASK_MAP = LAYER.maskMap;
+	Binary::RLE::MASK_MAP::const_iterator waterMaskMapIterator = WATER_MASK_MAP.find(faceStrMapIterator->second);
 
-	Binary::RLE::MASK_MAP::const_iterator maskMapIterator = MASK_MAP.find(faceStrMapIterator->second);
-
-	if (maskMapIterator == MASK_MAP.end()) {
+	if (waterMaskMapIterator == WATER_MASK_MAP.end()) {
 		return false;
 	}
 
@@ -709,18 +706,22 @@ bool Ubi::BigFile::File::isWaterSlice(const std::optional<File> &layerFileOption
 	// (the ROW/COL should not be misinterpreted as octal)
 	const int BASE = 10;
 
+	const std::string &ROW_STR = matches[2];
+
 	unsigned long row = 0;
 
 	if (!stringToLongUnsigned(ROW_STR.c_str(), row, BASE)) {
 		return false;
 	}
 
-	const Binary::RLE::SLICE_MAP &SLICE_MAP = maskMapIterator->second;
+	const Binary::RLE::SLICE_MAP &SLICE_MAP = waterMaskMapIterator->second;
 	Binary::RLE::SLICE_MAP::const_iterator sliceMapIterator = SLICE_MAP.find(row);
 
 	if (sliceMapIterator == SLICE_MAP.end()) {
 		return false;
 	}
+
+	const std::string &COL_STR = matches[3];
 
 	unsigned long col = 0;
 
@@ -1217,15 +1218,14 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 			textureBoxNameMaskNameSetMapIterator++
 		) {
 			Binary::RLE::Layer &layer = layerMapIterator->second;
-			layer.water = textureBoxNameMaskNameSetMapIterator->first == layer.textureBoxNameOptional;
 
-			if (!layer.water) {
+			if (layer.textureBoxNameOptional != textureBoxNameMaskNameSetMapIterator->first) {
 				continue;
 			}
 
 			const Binary::RLE::MASK_NAME_SET &MASK_NAME_SET = textureBoxNameMaskNameSetMapIterator->second;
 
-			Binary::RLE::MASK_MAP &maskMap = layer.maskMap;
+			Binary::RLE::MASK_MAP &waterMaskMap = layer.waterMaskMap;
 
 			for (
 				Binary::RLE::MASK_NAME_SET::const_iterator maskNameSetIterator = MASK_NAME_SET.begin();
@@ -1263,7 +1263,7 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 					}
 
 					inputFileStream.seekg(maskFileSystemPosition + (std::streampos)maskFile.position);
-					maskMap.insert({ fileFaceStrMapIterator->second, Binary::RLE::createSliceMap(inputFileStream, maskFile.size) });
+					waterMaskMap.insert({ fileFaceStrMapIterator->second, Binary::RLE::createSliceMap(inputFileStream, maskFile.size) });
 				}
 			}
 		}

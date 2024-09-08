@@ -83,6 +83,10 @@ namespace Ubi {
 			typedef std::unordered_set<std::string> MASK_NAME_SET;
 			typedef std::map<std::string, MASK_NAME_SET> TEXTURE_BOX_NAME_MASK_NAME_SET_MAP;
 
+			// each layer contains sets, within which are the slices
+			// this is a set of all those sets for a given layer (confusing, I know, but the strings should be unique)
+			typedef std::unordered_set<std::string> SETS_SET;
+
 			// MASK_MAP is a map of FACE > ROW > COL
 			// this allows us to tell which slices are water slices
 			// e.g. if the map has a BACK face with ROW 1 and COL 1, then 
@@ -94,16 +98,11 @@ namespace Ubi {
 			typedef std::map<FACE, SLICE_MAP> MASK_MAP;
 			typedef std::shared_ptr<MASK_MAP> MASK_MAP_POINTER;
 
-			// each layer contains sets, within which are the slices
-			// this is a set of all those sets for a given layer (confusing, I know, but the strings should be unique)
-			typedef std::unordered_set<std::string> SETS_SET;
-
 			struct Layer {
 				std::optional<std::string> textureBoxNameOptional = std::nullopt;
 				SETS_SET setsSet = {};
 				bool isLayerMask = false;
-				bool water = false;
-				MASK_MAP maskMap = {};
+				MASK_MAP waterMaskMap = {};
 			};
 
 			typedef std::map<std::string, Layer> LAYER_MAP;
