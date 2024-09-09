@@ -521,9 +521,9 @@ Ubi::BigFile::Path& Ubi::BigFile::Path::create(const std::string &file) {
 	return *this;
 }
 
-Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const std::optional<File> &layerFileOptional, bool texture) {
+Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const std::optional<File> &layerFileOptional) {
 	read(inputFileStream);
-	convert(layerFileOptional, texture);
+	convert(layerFileOptional);
 
 	fileSystemSize += (SIZE)(
 		String::SIZE_SIZE
@@ -588,7 +588,7 @@ void Ubi::BigFile::File::read(std::ifstream &inputFileStream) {
 	readFileStreamSafe(inputFileStream, &position, POSITION_SIZE);
 }
 
-void Ubi::BigFile::File::convert(const std::optional<File> &layerFileOptional, bool texture) {
+void Ubi::BigFile::File::convert(const std::optional<File> &layerFileOptional) {
 	#ifdef CONVERSION_ENABLED
 	// predetermines what the new name will be after conversion
 	// this is necessary so we will know the position of the files before writing them
@@ -606,11 +606,6 @@ void Ubi::BigFile::File::convert(const std::optional<File> &layerFileOptional, b
 	}
 
 	type = nameTypeExtensionMapIterator->second.type;
-
-	if (texture && type == TYPE::BINARY) {
-		type = TYPE::BINARY_RESOURCE_IMAGE_DATA;
-		return;
-	}
 	
 	if (layerFileOptional.has_value() && (type == TYPE::JPEG || type == TYPE::ZAP)) {
 		const File &LAYER_FILE = layerFileOptional.value();
@@ -854,18 +849,12 @@ void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, F
 
 			set
 			? layerFileOptional
-			: std::nullopt,
-
-			#ifdef TEXTURE_ENABLED
-			// the NAME_TEXTURE comparison is so we only convert textures in the texture folder specifically, even if the extension matches
-			nameOptional.has_value() ? nameOptional.value() == NAME_TEXTURE :
-			#endif
-			false
+			: std::nullopt
 		);
 
 		const File &FILE = *filePointer;
 
-		if (FILE.type == File::TYPE::BINARY || FILE.type == File::TYPE::BINARY_RESOURCE_IMAGE_DATA) {
+		if (FILE.type == File::TYPE::BINARY) {
 			binaryFilePointerVector.push_back(filePointer);
 		} else {
 			filePointerVector.push_back(filePointer);
@@ -1079,8 +1068,6 @@ void Ubi::BigFile::Directory::appendToTextureBoxMap(std::ifstream &inputFileStre
 		(*binaryFilePointerVectorIterator)->appendToTextureBoxMap(inputFileStream, fileSystemPosition, textureBoxMap);
 	}
 }
-
-const std::string Ubi::BigFile::Directory::NAME_TEXTURE = "texture";
 
 Ubi::BigFile::Header::Header(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemPosition) {
 	fileSystemPosition = (File::SIZE)inputFileStream.tellg();

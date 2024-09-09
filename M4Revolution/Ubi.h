@@ -8,7 +8,6 @@
 
 #define CONVERSION_ENABLED
 #define LAYERS_ENABLED
-//#define TEXTURE_ENABLED
 //#define GREYSCALE_ENABLED
 #define RAW_ENABLED
 
@@ -264,7 +263,6 @@ namespace Ubi {
 			enum struct TYPE {
 				NONE = 0,
 				BINARY,
-				BINARY_RESOURCE_IMAGE_DATA,
 				BIG_FILE,
 				JPEG,
 				ZAP
@@ -296,7 +294,7 @@ namespace Ubi {
 			bool greyScale = false;
 			bool raw = false;
 
-			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const std::optional<File> &layerFileOptional, bool texture);
+			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const std::optional<File> &layerFileOptional);
 			File(std::ifstream &inputFileStream);
 			File(SIZE inputFileSize);
 			void write(std::ofstream &outputFileStream) const;
@@ -305,7 +303,7 @@ namespace Ubi {
 
 			private:
 			void read(std::ifstream &inputFileStream);
-			void convert(const std::optional<File> &layerFileOptional, bool texture);
+			void convert(const std::optional<File> &layerFileOptional);
 
 			static std::string getNameExtension(const std::string &name);
 			static bool isWaterSlice(const std::string &name, const Binary::RLE::MASK_MAP &waterMaskMap);
@@ -363,8 +361,6 @@ namespace Ubi {
 			bool isSet(bool bftex, const std::optional<File> &layerFileOptional) const;
 			void createLayerMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LAYER_MAP &layerMap, const File::POINTER_VECTOR &binaryFilePointerVector) const;
 			void appendToTextureBoxMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap, const File::POINTER_VECTOR &binaryFilePointerVector) const;
-
-			static const std::string NAME_TEXTURE;
 		};
 
 		struct Header {
