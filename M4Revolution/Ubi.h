@@ -9,6 +9,8 @@
 
 #define CONVERSION_ENABLED
 #define LAYERS_ENABLED
+//#define GREYSCALE_ENABLED
+#define RAW_ENABLED
 
 namespace Ubi {
 	namespace String {

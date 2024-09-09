@@ -581,21 +581,31 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, c
 						greyScale = true;
 					}
 
+					#ifdef RAW_ENABLED
 					if (isWaterSlice(LAYER_FILE.layerMapIterator->second.waterMaskMap)) {
 						raw = true;
 					}
+					#endif
 				}
 
-				const std::string &NAME = nameOptional.value();
-				const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
+				#ifndef GREYSCALE_ENABLED
+				if (greyScale) {
+					type = TYPE::NONE;
+				} else {
+				#endif
+					const std::string &NAME = nameOptional.value();
+					const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
 
-				nameOptional = NAME.substr(
-					0,
-					NAME.length() - EXTENSION.length() - PERIOD_SIZE
-				)
+					nameOptional = NAME.substr(
+						0,
+						NAME.length() - EXTENSION.length() - PERIOD_SIZE
+					)
 
-				+ PERIOD
-				+ EXTENSION;
+					+ PERIOD
+					+ EXTENSION;
+				#ifndef GREYSCALE_ENABLED
+				}
+				#endif
 			}
 		}
 	}
