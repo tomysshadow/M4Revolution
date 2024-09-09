@@ -4,7 +4,6 @@
 #include <optional>
 #include <unordered_set>
 #include <map>
-#include <variant>
 #include <vector>
 
 #define CONVERSION_ENABLED
