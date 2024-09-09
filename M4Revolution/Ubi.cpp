@@ -991,15 +991,16 @@ void Ubi::BigFile::Directory::read(bool owner, std::ifstream &inputFileStream, F
 			? layerFileOptional
 			: std::nullopt,
 
+			#ifdef TEXTURE_ENABLED
 			// the NAME_TEXTURE comparison is so we only convert textures in the texture folder specifically, even if the extension matches
-			nameOptional.has_value()
-			? nameOptional.value() == NAME_TEXTURE
-			: false
+			nameOptional.has_value() ? nameOptional.value() == NAME_TEXTURE :
+			#endif
+			false
 		);
 
 		const File &FILE = *filePointer;
 
-		if (FILE.type == File::TYPE::BINARY) {
+		if (FILE.type == File::TYPE::BINARY || FILE.type == File::TYPE::BINARY_RESOURCE_IMAGE_DATA) {
 			binaryFilePointerVector.push_back(filePointer);
 		} else {
 			filePointerVector.push_back(filePointer);

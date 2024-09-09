@@ -9,6 +9,7 @@
 
 #define CONVERSION_ENABLED
 #define LAYERS_ENABLED
+//#define TEXTURE_ENABLED
 //#define GREYSCALE_ENABLED
 #define RAW_ENABLED
 
