@@ -293,9 +293,7 @@ namespace Ubi {
 				BINARY_RESOURCE_IMAGE_DATA,
 				BIG_FILE,
 				JPEG,
-				JPEG_RAW,
 				ZAP,
-				ZAP_RAW
 			};
 
 			// the name in the output file (so example.dds, not example.jpg)
@@ -313,6 +311,8 @@ namespace Ubi {
 			SIZE padding = 0;
 
 			TYPE type = TYPE::NONE;
+			bool greyScale = false;
+			bool raw = false;
 
 			// used for water slices
 			// if this file is a layer, layerInformationPointer is non-zero and
@@ -330,7 +330,7 @@ namespace Ubi {
 
 			private:
 			void read(std::ifstream &inputFileStream);
-			bool isWaterSlice(const std::optional<File> &layerFileOptional) const;
+			bool isWaterSlice(const Binary::RLE::MASK_MAP &waterMaskMap) const;
 			std::string getNameExtension() const;
 
 			struct TypeExtension {

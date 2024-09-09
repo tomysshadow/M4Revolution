@@ -78,7 +78,7 @@ class M4Revolution {
 		Log &log
 	);
 
-	void convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, nvtt::CompressionOptions &compressionOptions, Work::Convert::FileWorkCallback fileWorkCallback);
+	void convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback);
 	void convertFile(std::streampos bigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
 	void stepFile(

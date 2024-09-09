@@ -164,8 +164,8 @@ void M4Revolution::copyFiles(
 	log.copying();
 }
 
-void M4Revolution::convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, nvtt::CompressionOptions &compressionOptions, Work::Convert::FileWorkCallback fileWorkCallback) {
-	Work::Convert* convertPointer = new Work::Convert(file, context, compressionOptions);
+void M4Revolution::convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback) {
+	Work::Convert* convertPointer = new Work::Convert(file, context, file.raw ? compressionOptionsRaw : compressionOptions);
 	Work::Convert &convert = *convertPointer;
 
 	Work::Data::POINTER &dataPointer = convert.dataPointer;
@@ -202,16 +202,10 @@ void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile
 		fixLoading(bigFileInputPosition, file, log);
 		break;
 		case Ubi::BigFile::File::TYPE::JPEG:
-		convertFile(bigFileInputPosition, file, compressionOptions, convertJPEGWorkCallback);
-		break;
-		case Ubi::BigFile::File::TYPE::JPEG_RAW:
-		convertFile(bigFileInputPosition, file, compressionOptionsRaw, convertJPEGWorkCallback);
+		convertFile(bigFileInputPosition, file, convertJPEGWorkCallback);
 		break;
 		case Ubi::BigFile::File::TYPE::ZAP:
-		convertFile(bigFileInputPosition, file, compressionOptions, convertZAPWorkCallback);
-		break;
-		case Ubi::BigFile::File::TYPE::ZAP_RAW:
-		convertFile(bigFileInputPosition, file, compressionOptionsRaw, convertZAPWorkCallback);
+		convertFile(bigFileInputPosition, file, convertZAPWorkCallback);
 		break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
@@ -340,6 +334,12 @@ void M4Revolution::color32X(COLOR32* color32Pointer, size_t stride, size_t size)
 }
 
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface) {
+	if (convert.file.greyScale) {
+		const float SCALE = 1.0;
+
+		surface.toGreyScale(SCALE, SCALE, SCALE, SCALE);
+	}
+
 	nvtt::OutputOptions outputOptions = {};
 	outputOptions.setContainer(nvtt::Container_DDS);
 

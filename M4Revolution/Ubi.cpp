@@ -570,19 +570,20 @@ Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, c
 
 		if (nameTypeExtensionMapIterator != NAME_TYPE_EXTENSION_MAP.end()) {
 			type = nameTypeExtensionMapIterator->second.type;
-			bool image = type == TYPE::JPEG || type == TYPE::ZAP;
 
 			if (type == TYPE::BINARY && texture) {
 				type = TYPE::BINARY_RESOURCE_IMAGE_DATA;
-			} else if (
-				image
-				&& layerFileOptional.has_value()
-				&& layerFileOptional.value().layerMapIterator->second.isLayerMask
-			) {
-				type = TYPE::NONE;
 			} else {
-				if (image && isWaterSlice(layerFileOptional)) {
-					type = type == TYPE::JPEG ? TYPE::JPEG_RAW : TYPE::ZAP_RAW;
+				if ((type == TYPE::JPEG || type == TYPE::ZAP) && layerFileOptional.has_value()) {
+					const File &LAYER_FILE = layerFileOptional.value();
+
+					if (LAYER_FILE.layerMapIterator->second.isLayerMask) {
+						greyScale = true;
+					}
+
+					if (isWaterSlice(LAYER_FILE.layerMapIterator->second.waterMaskMap)) {
+						raw = true;
+					}
 				}
 
 				const std::string &NAME = nameOptional.value();
@@ -663,19 +664,12 @@ void Ubi::BigFile::File::read(std::ifstream &inputFileStream) {
 	readFileStreamSafe(inputFileStream, &position, POSITION_SIZE);
 }
 
-bool Ubi::BigFile::File::isWaterSlice(const std::optional<File> &layerFileOptional) const {
-	if (!layerFileOptional.has_value()) {
-		return false;
-	}
-
+bool Ubi::BigFile::File::isWaterSlice(const Binary::RLE::MASK_MAP &waterMaskMap) const {
 	if (!nameOptional.has_value()) {
 		return false;
 	}
 
-	const Binary::RLE::Layer &LAYER = layerFileOptional.value().layerMapIterator->second;
-	const Binary::RLE::MASK_MAP &WATER_MASK_MAP = LAYER.waterMaskMap;
-
-	if (WATER_MASK_MAP.empty()) {
+	if (waterMaskMap.empty()) {
 		return false;
 	}
 
@@ -696,9 +690,9 @@ bool Ubi::BigFile::File::isWaterSlice(const std::optional<File> &layerFileOption
 		return false;
 	}
 
-	Binary::RLE::MASK_MAP::const_iterator waterMaskMapIterator = WATER_MASK_MAP.find(faceStrMapIterator->second);
+	Binary::RLE::MASK_MAP::const_iterator waterMaskMapIterator = waterMaskMap.find(faceStrMapIterator->second);
 
-	if (waterMaskMapIterator == WATER_MASK_MAP.end()) {
+	if (waterMaskMapIterator == waterMaskMap.end()) {
 		return false;
 	}
 
