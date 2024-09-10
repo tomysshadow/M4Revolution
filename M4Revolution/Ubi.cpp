@@ -239,7 +239,7 @@ Ubi::Binary::TextureAlignedOffsetProvider::TextureAlignedOffsetProvider(Loader::
 	inputFileStream.seekg(FIELDS_SIZE, std::ios::cur);
 }
 
-void Ubi::Binary::StateData::create(std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet) {
+void Ubi::Binary::StateData::create(std::ifstream &inputFileStream, RLE::MASK_PATH_SET &maskPathSet) {
 	uint32_t nbrAliases = 0;
 	const size_t NBR_ALIASES_SIZE = sizeof(nbrAliases);
 
@@ -252,10 +252,10 @@ void Ubi::Binary::StateData::create(std::ifstream &inputFileStream, RLE::MASK_NA
 	const size_t REFRESH_RATE_SIZE = 4;
 	inputFileStream.seekg(REFRESH_RATE_SIZE, std::ios::cur);
 
-	maskFileOptional = String::swizzle(String::readOptional(inputFileStream));
+	const std::optional<std::string> &MASK_PATH_OPTIONAL = String::swizzle(String::readOptional(inputFileStream));
 
-	if (maskFileOptional.has_value()) {
-		maskNameSet.insert(maskFileOptional.value());
+	if (MASK_PATH_OPTIONAL.has_value()) {
+		maskPathSet.insert(MASK_PATH_OPTIONAL.value());
 	}
 
 	uint32_t resources = 0;
@@ -271,19 +271,19 @@ void Ubi::Binary::StateData::create(std::ifstream &inputFileStream, RLE::MASK_NA
 	inputFileStream.seekg(WATER_FACE_BILERP_FIELDS_SIZE, std::ios::cur);
 }
 
-Ubi::Binary::StateData::StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet)
+Ubi::Binary::StateData::StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::MASK_PATH_SET &maskPathSet)
 	: Resource(loaderPointer, VERSION) {
-	create(inputFileStream, maskNameSet);
+	create(inputFileStream, maskPathSet);
 }
 
 Ubi::Binary::StateData::StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream)
 	: Resource(loaderPointer, VERSION) {
-	RLE::MASK_NAME_SET maskNameSet = {};
-	create(inputFileStream, maskNameSet);
+	RLE::MASK_PATH_SET maskPathSet = {};
+	create(inputFileStream, maskPathSet);
 }
 
 void Ubi::Binary::Water::create(std::ifstream &inputFileStream, RLE::TEXTURE_BOX_MAP &textureBoxMap) {
-	resourceNameOptional = String::swizzle(String::readOptional(inputFileStream));
+	const std::optional<std::string> &RESOURCE_NAME_OPTIONAL = String::swizzle(String::readOptional(inputFileStream));
 
 	const size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
 	inputFileStream.seekg(WATER_FIELDS_SIZE, std::ios::cur);
@@ -293,8 +293,8 @@ void Ubi::Binary::Water::create(std::ifstream &inputFileStream, RLE::TEXTURE_BOX
 
 	readFileStreamSafe(inputFileStream, &resources, RESOURCES_SIZE);
 
-	if (resourceNameOptional.has_value()) {
-		const std::optional<std::string> &TEXTURE_BOX_NAME_OPTIONAL = getTextureBoxNameOptional(resourceNameOptional.value());
+	if (RESOURCE_NAME_OPTIONAL.has_value()) {
+		const std::optional<std::string> &TEXTURE_BOX_NAME_OPTIONAL = getTextureBoxNameOptional(RESOURCE_NAME_OPTIONAL.value());
 
 		if (TEXTURE_BOX_NAME_OPTIONAL.has_value()) {
 			const std::string &TEXTURE_BOX_NAME = TEXTURE_BOX_NAME_OPTIONAL.value();
@@ -308,7 +308,7 @@ void Ubi::Binary::Water::create(std::ifstream &inputFileStream, RLE::TEXTURE_BOX
 					textureBoxMapIterator = textureBoxMap.insert({ TEXTURE_BOX_NAME, {} }).first;
 				}
 
-				createMaskNameSet(inputFileStream, textureBoxMapIterator->second);
+				createMaskPathSet(inputFileStream, textureBoxMapIterator->second);
 			}
 			return;
 		}
@@ -439,9 +439,9 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createLayerMap(std::ifstream &inputF
 	return resourcePointer;
 }
 
-Ubi::Binary::Resource::POINTER Ubi::Binary::createMaskNameSet(std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet, std::streamsize size) {
-	MAKE_SCOPE_EXIT(maskNameSetScopeExit) {
-		maskNameSet = {};
+Ubi::Binary::Resource::POINTER Ubi::Binary::createMaskPathSet(std::ifstream &inputFileStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size) {
+	MAKE_SCOPE_EXIT(maskPathSetScopeExit) {
+		maskPathSet = {};
 	};
 
 	std::optional<Header> headerOptional = std::nullopt;
@@ -450,11 +450,11 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createMaskNameSet(std::ifstream &inp
 
 	switch (loaderPointer->id) {
 		case StateData::ID:
-		resourcePointer = std::make_shared<StateData>(loaderPointer, inputFileStream, maskNameSet);
+		resourcePointer = std::make_shared<StateData>(loaderPointer, inputFileStream, maskPathSet);
 	}
 
 	if (resourcePointer) {
-		maskNameSetScopeExit.dismiss();
+		maskPathSetScopeExit.dismiss();
 	}
 	return resourcePointer;
 }
@@ -523,7 +523,7 @@ Ubi::BigFile::Path& Ubi::BigFile::Path::create(const std::string &file) {
 
 Ubi::BigFile::File::File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const std::optional<File> &layerFileOptional) {
 	read(inputFileStream);
-	convert(layerFileOptional);
+	rename(layerFileOptional);
 
 	fileSystemSize += (SIZE)(
 		String::SIZE_SIZE
@@ -588,8 +588,8 @@ void Ubi::BigFile::File::read(std::ifstream &inputFileStream) {
 	readFileStreamSafe(inputFileStream, &position, POSITION_SIZE);
 }
 
-void Ubi::BigFile::File::convert(const std::optional<File> &layerFileOptional) {
-	#ifdef CONVERSION_ENABLED
+void Ubi::BigFile::File::rename(const std::optional<File> &layerFileOptional) {
+	#ifdef RENAME_ENABLED
 	// predetermines what the new name will be after conversion
 	// this is necessary so we will know the position of the files before writing them
 	if (!nameOptional.has_value()) {
@@ -612,16 +612,16 @@ void Ubi::BigFile::File::convert(const std::optional<File> &layerFileOptional) {
 
 		if (LAYER_FILE.layerMapIterator->second.isLayerMask) {
 			#if defined(GREYSCALE_ENABLED)
-			greyScale = true;
+			luminance = true;
 			#else
 			type = TYPE::NONE;
 			return;
 			#endif
 		}
 
-		#ifdef RAW_ENABLED
+		#ifdef RGBA_ENABLED
 		if (isWaterSlice(NAME, LAYER_FILE.layerMapIterator->second.waterMaskMap)) {
-			raw = true;
+			rgba = true;
 		}
 		#endif
 	}
@@ -1198,16 +1198,16 @@ Ubi::BigFile::BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize
 				continue;
 			}
 
-			const Binary::RLE::MASK_NAME_SET &MASK_NAME_SET = textureBoxMapIterator->second;
+			const Binary::RLE::MASK_PATH_SET &MASK_PATH_SET = textureBoxMapIterator->second;
 
 			Binary::RLE::MASK_MAP &waterMaskMap = layer.waterMaskMap;
 
 			for (
-				Binary::RLE::MASK_NAME_SET::const_iterator maskNameSetIterator = MASK_NAME_SET.begin();
-				maskNameSetIterator != MASK_NAME_SET.end();
-				maskNameSetIterator++
+				Binary::RLE::MASK_PATH_SET::const_iterator maskPathSetIterator = MASK_PATH_SET.begin();
+				maskPathSetIterator != MASK_PATH_SET.end();
+				maskPathSetIterator++
 			) {
-				layerFilePointer = directory.find(*maskNameSetIterator);
+				layerFilePointer = directory.find(*maskPathSetIterator);
 
 				if (!layerFilePointer) {
 					continue;

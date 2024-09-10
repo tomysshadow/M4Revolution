@@ -182,7 +182,7 @@ namespace Work {
 		Ubi::BigFile::File &file;
 
 		nvtt::Context &context;
-		nvtt::CompressionOptions &compressionOptions;
+		nvtt::CompressionOptions &compressionOptionsDXT5;
 
 		FileTask::POINTER fileTaskPointer = 0;
 		Data::POINTER dataPointer = 0;
@@ -190,7 +190,7 @@ namespace Work {
 		Convert(
 			Ubi::BigFile::File &file,
 			nvtt::Context &context,
-			nvtt::CompressionOptions &compressionOptions
+			nvtt::CompressionOptions &compressionOptionsDXT5
 		);
 	};
 

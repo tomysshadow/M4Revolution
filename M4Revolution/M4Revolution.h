@@ -59,8 +59,8 @@ class M4Revolution {
 	bool logFileNames = false;
 
 	nvtt::Context context = {};
-	nvtt::CompressionOptions compressionOptions = {};
-	nvtt::CompressionOptions compressionOptionsRaw = {};
+	nvtt::CompressionOptions compressionOptionsDXT5 = {};
+	nvtt::CompressionOptions compressionOptionsRGBA = {};
 
 	#ifdef MULTITHREADED
 	PTP_POOL pool = NULL;

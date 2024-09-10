@@ -165,7 +165,7 @@ void M4Revolution::copyFiles(
 }
 
 void M4Revolution::convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback) {
-	Work::Convert* convertPointer = new Work::Convert(file, context, file.raw ? compressionOptionsRaw : compressionOptions);
+	Work::Convert* convertPointer = new Work::Convert(file, context, file.rgba ? compressionOptionsRGBA : compressionOptionsDXT5);
 	Work::Convert &convert = *convertPointer;
 
 	Work::Data::POINTER &dataPointer = convert.dataPointer;
@@ -334,7 +334,7 @@ void M4Revolution::color32X(COLOR32* color32Pointer, size_t stride, size_t size)
 }
 
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface) {
-	if (convert.file.greyScale) {
+	if (convert.file.luminance) {
 		const float SCALE = 1.0;
 
 		surface.toGreyScale(SCALE, SCALE, SCALE, SCALE);
@@ -352,13 +352,13 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	outputOptions.setErrorHandler(&errorHandler);
 
 	nvtt::Context &context = convert.context;
-	nvtt::CompressionOptions &compressionOptions = convert.compressionOptions;
+	nvtt::CompressionOptions &compressionOptionsDXT5 = convert.compressionOptionsDXT5;
 
-	if (!context.outputHeader(surface, 1, compressionOptions, outputOptions)) {
+	if (!context.outputHeader(surface, 1, compressionOptionsDXT5, outputOptions)) {
 		throw std::runtime_error("Failed to Output Context Header");
 	}
 
-	if (!context.compress(surface, 0, 0, compressionOptions, outputOptions) || !errorHandler.result) {
+	if (!context.compress(surface, 0, 0, compressionOptionsDXT5, outputOptions) || !errorHandler.result) {
 		throw std::runtime_error("Failed to Compress Context");
 	}
 
@@ -657,11 +657,11 @@ M4Revolution::M4Revolution(
 
 	context.enableCudaAcceleration(!disableHardwareAcceleration);
 
-	compressionOptions.setFormat(nvtt::Format_DXT5);
-	compressionOptions.setQuality(nvtt::Quality_Highest);
+	compressionOptionsDXT5.setFormat(nvtt::Format_DXT5);
+	compressionOptionsDXT5.setQuality(nvtt::Quality_Highest);
 
-	compressionOptionsRaw.setFormat(nvtt::Format_RGBA);
-	compressionOptionsRaw.setQuality(nvtt::Quality_Highest);
+	compressionOptionsRGBA.setFormat(nvtt::Format_RGBA);
+	compressionOptionsRGBA.setQuality(nvtt::Quality_Highest);
 
 	#ifdef MULTITHREADED
 	pool = CreateThreadpool(NULL);

@@ -198,11 +198,11 @@ Work::FileTask::POINTER_QUEUE_LOCK Work::Tasks::fileLock() {
 Work::Convert::Convert(
 	Ubi::BigFile::File &file,
 	nvtt::Context &context,
-	nvtt::CompressionOptions &compressionOptions
+	nvtt::CompressionOptions &compressionOptionsDXT5
 )
 	: file(file),
 	context(context),
-	compressionOptions(compressionOptions) {
+	compressionOptionsDXT5(compressionOptionsDXT5) {
 }
 
 Work::Output::Output(const char* fileName)

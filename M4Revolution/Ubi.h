@@ -6,10 +6,10 @@
 #include <map>
 #include <vector>
 
-#define CONVERSION_ENABLED
+#define RENAME_ENABLED
 #define LAYERS_ENABLED
-//#define GREYSCALE_ENABLED
-#define RAW_ENABLED
+//#define LUMINANCE_ENABLED
+#define RGBA_ENABLED
 
 namespace Ubi {
 	namespace String {
@@ -75,8 +75,8 @@ namespace Ubi {
 			// this set has the name of those resources as its key
 			// the value is the name of the masks (there can be multiple) which
 			// contain the RLE files to use for them
-			typedef std::unordered_set<std::string> MASK_NAME_SET;
-			typedef std::map<std::string, MASK_NAME_SET> TEXTURE_BOX_MAP;
+			typedef std::unordered_set<std::string> MASK_PATH_SET;
+			typedef std::map<std::string, MASK_PATH_SET> TEXTURE_BOX_MAP;
 
 			// each layer contains sets, within which are the slices
 			// this is a set of all those sets for a given layer (confusing, I know, but the strings should be unique)
@@ -158,8 +158,6 @@ namespace Ubi {
 				static const Resource::ID ID = 42;
 				static const Resource::VERSION VERSION = 1;
 
-				std::optional<std::string> resourceNameOptional = "";
-
 				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
 				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
 				Water(const Water &water) = delete;
@@ -188,15 +186,13 @@ namespace Ubi {
 
 			class StateData : public virtual Resource {
 				private:
-				void create(std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet);
+				void create(std::ifstream &inputFileStream, RLE::MASK_PATH_SET &maskPathSet);
 
 				public:
 				static const Resource::ID ID = 45;
 				static const Resource::VERSION VERSION = 1;
 
-				std::optional<std::string> maskFileOptional = "";
-
-				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet);
+				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::MASK_PATH_SET &maskPathSet);
 				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
 				StateData(const StateData &stateData) = delete;
 				StateData &operator=(const StateData &stateData) = delete;
@@ -228,7 +224,7 @@ namespace Ubi {
 		Resource::Loader::POINTER readFileLoader(std::ifstream &inputFileStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size = -1);
 		Resource::POINTER createResourcePointer(std::ifstream &inputFileStream, std::streamsize size = -1);
 		Resource::POINTER createLayerMap(std::ifstream &inputFileStream, Binary::RLE::LAYER_MAP &layerMap, std::streamsize size = -1);
-		Resource::POINTER createMaskNameSet(std::ifstream &inputFileStream, RLE::MASK_NAME_SET &maskNameSet, std::streamsize size = -1);
+		Resource::POINTER createMaskPathSet(std::ifstream &inputFileStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size = -1);
 		Resource::POINTER createTextureBoxMap(std::ifstream &inputFileStream, RLE::TEXTURE_BOX_MAP &textureBoxMap, std::streamsize size = -1);
 	};
 
@@ -291,8 +287,8 @@ namespace Ubi {
 
 			// metadata for conversion
 			TYPE type = TYPE::NONE;
-			bool greyScale = false;
-			bool raw = false;
+			bool luminance = false;
+			bool rgba = false;
 
 			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const std::optional<File> &layerFileOptional);
 			File(std::ifstream &inputFileStream);
@@ -303,7 +299,7 @@ namespace Ubi {
 
 			private:
 			void read(std::ifstream &inputFileStream);
-			void convert(const std::optional<File> &layerFileOptional);
+			void rename(const std::optional<File> &layerFileOptional);
 
 			static std::string getNameExtension(const std::string &name);
 			static bool isWaterSlice(const std::string &name, const Binary::RLE::MASK_MAP &waterMaskMap);
