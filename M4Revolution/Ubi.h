@@ -8,7 +8,7 @@
 
 #define RENAME_ENABLED
 #define LAYERS_ENABLED
-//#define LUMINANCE_ENABLED
+//#define GREYSCALE_ENABLED
 #define RGBA_ENABLED
 
 namespace Ubi {
@@ -287,7 +287,7 @@ namespace Ubi {
 
 			// metadata for conversion
 			TYPE type = TYPE::NONE;
-			bool luminance = false;
+			bool greyScale = false;
 			bool rgba = false;
 
 			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const std::optional<File> &layerFileOptional);

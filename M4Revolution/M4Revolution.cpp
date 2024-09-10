@@ -334,7 +334,7 @@ void M4Revolution::color32X(COLOR32* color32Pointer, size_t stride, size_t size)
 }
 
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface) {
-	if (convert.file.luminance) {
+	if (convert.file.greyScale) {
 		const float SCALE = 1.0;
 
 		surface.toGreyScale(SCALE, SCALE, SCALE, SCALE);
