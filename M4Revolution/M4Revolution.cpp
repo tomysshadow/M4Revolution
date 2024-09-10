@@ -808,6 +808,7 @@ void M4Revolution::editTransitionTime() {
 	std::ostringstream outputStringStream = {};
 	outputStringStream.imbue(AI_LOCALE);
 
+	std::string::size_type outputStringLengthMax = fadingTimeSize + (std::string::size_type)(aiFadingTimeEnd - aiFadingTime);
 	std::string outputString = "";
 
 	do {
@@ -819,7 +820,7 @@ void M4Revolution::editTransitionTime() {
 		outputStringStream << std::setw(fadingTimeSize) << consoleFloat("Please enter a Transition Time.", FADING_TIME_MIN, FADING_TIME_MAX, AI_LOCALE);
 
 		outputString = outputStringStream.str();
-	} while (outputString.length() > (std::string::size_type)(aiFadingTimeEnd - aiFadingTime));
+	} while (outputString.length() > outputStringLengthMax);
 
 	// write the number to the output file
 	outputFileStream.seekp(position + (aiFadingTimeBegin - ai) + (std::streampos)(FADING_TIME_POSITION - NEWLINE_SIZE));
