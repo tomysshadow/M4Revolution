@@ -182,7 +182,7 @@ namespace Work {
 		Ubi::BigFile::File &file;
 
 		nvtt::Context &context;
-		nvtt::CompressionOptions &compressionOptionsDXT5;
+		nvtt::CompressionOptions &compressionOptions;
 
 		FileTask::POINTER fileTaskPointer = 0;
 		Data::POINTER dataPointer = 0;

@@ -352,13 +352,13 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	outputOptions.setErrorHandler(&errorHandler);
 
 	nvtt::Context &context = convert.context;
-	nvtt::CompressionOptions &compressionOptionsDXT5 = convert.compressionOptionsDXT5;
+	nvtt::CompressionOptions &compressionOptions = convert.compressionOptions;
 
-	if (!context.outputHeader(surface, 1, compressionOptionsDXT5, outputOptions)) {
+	if (!context.outputHeader(surface, 1, compressionOptions, outputOptions)) {
 		throw std::runtime_error("Failed to Output Context Header");
 	}
 
-	if (!context.compress(surface, 0, 0, compressionOptionsDXT5, outputOptions) || !errorHandler.result) {
+	if (!context.compress(surface, 0, 0, compressionOptions, outputOptions) || !errorHandler.result) {
 		throw std::runtime_error("Failed to Compress Context");
 	}
 

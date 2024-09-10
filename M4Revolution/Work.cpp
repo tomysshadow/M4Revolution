@@ -202,7 +202,7 @@ Work::Convert::Convert(
 )
 	: file(file),
 	context(context),
-	compressionOptionsDXT5(compressionOptionsDXT5) {
+	compressionOptions(compressionOptions) {
 }
 
 Work::Output::Output(const char* fileName)
