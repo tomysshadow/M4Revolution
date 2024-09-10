@@ -770,7 +770,7 @@ void M4Revolution::editTransitionTime() {
 	char* aiFadingTimeBegin = strstr(ai, M_FADING_TIME_BEGIN);
 
 	if (!aiFadingTimeBegin) {
-		throw std::runtime_error("Failed to Find AI Fading Time");
+		throw std::runtime_error("Failed to Find AI Fading Time Begin");
 	}
 
 	// the position of the number itself, not including M_FADING_TIME's null terminator
@@ -779,19 +779,23 @@ void M4Revolution::editTransitionTime() {
 	char* aiFadingTime = aiFadingTimeBegin + FADING_TIME_POSITION;
 	float fadingTime = 0.0f;
 	size_t fadingTimeSize = stringToFloat(aiFadingTime, fadingTime, AI_LOCALE);
-	aiFadingTime += fadingTimeSize;
 
-	const char M_FADING_TIME_END = ')';
+	if (!fadingTimeSize) {
+		throw std::runtime_error("Failed to Convert String To Float");
+	}
 
 	// find the end, so that we can ensure the number is not too long as to replace it
 	// we set the end to a null terminator so we can ensure there is only whitespace before it
 	// (this is not written to the output file)
-	char* aiFadingTimeEnd = strchr(aiFadingTime, M_FADING_TIME_END);
+	const char M_FADING_TIME_END = ')';
+
+	char* aiFadingTimeEnd = strchr((aiFadingTime += fadingTimeSize), M_FADING_TIME_END);
 	*aiFadingTimeEnd = 0;
 
+	// there should be at least one padding space before the end
 	// there shouldn't be anything but whitespace here - if there is, it's invalid
-	if (!stringWhitespace(aiFadingTime)) {
-		throw std::runtime_error("Failed to Find AI Fading Time");
+	if (aiFadingTime == aiFadingTimeEnd || !stringWhitespace(aiFadingTime)) {
+		throw std::runtime_error("Failed to Find AI Fading Time End");
 	}
 
 	// we've now found the position of the number to replace
@@ -808,23 +812,23 @@ void M4Revolution::editTransitionTime() {
 	std::ostringstream outputStringStream = {};
 	outputStringStream.imbue(AI_LOCALE);
 
+	std::string::size_type outputStringLength = 0;
 	std::string::size_type outputStringLengthMax = fadingTimeSize + (std::string::size_type)(aiFadingTimeEnd - aiFadingTime);
-	std::string outputString = "";
 
 	do {
-		if (!outputString.empty()) {
+		if (outputStringLength) {
 			consoleLog("The number is too long. Please enter a shorter number.");
 		}
 
 		outputStringStream.str("");
 		outputStringStream << std::setw(fadingTimeSize) << consoleFloat("Please enter a Transition Time.", FADING_TIME_MIN, FADING_TIME_MAX, AI_LOCALE);
 
-		outputString = outputStringStream.str();
-	} while (outputString.length() > outputStringLengthMax);
+		outputStringLength = outputStringStream.str().length();
+	} while (outputStringLength > outputStringLengthMax);
 
 	// write the number to the output file
 	outputFileStream.seekp(position + (aiFadingTimeBegin - ai) + (std::streampos)(FADING_TIME_POSITION - NEWLINE_SIZE));
-	writeFileStreamSafe(outputFileStream, outputString.c_str(), outputString.length());
+	writeFileStreamSafe(outputFileStream, outputStringStream.str().c_str(), outputStringLength);
 }
 
 void M4Revolution::fixLoading() {
