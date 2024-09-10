@@ -777,6 +777,7 @@ void M4Revolution::editTransitionTime() {
 	const size_t FADING_TIME_POSITION = M_FADING_TIME_BEGIN_SIZE - 1;
 
 	char* aiFadingTime = aiFadingTimeBegin + FADING_TIME_POSITION;
+
 	float fadingTime = 0.0f;
 	size_t fadingTimeSize = stringToFloat(aiFadingTime, fadingTime, AI_LOCALE);
 
@@ -798,6 +799,12 @@ void M4Revolution::editTransitionTime() {
 		throw std::runtime_error("Failed to Find AI Fading Time End");
 	}
 
+	std::ostringstream outputStringStream = {};
+	outputStringStream.imbue(AI_LOCALE);
+	outputStringStream << "The current Transition Time is: " << fadingTime << ".";
+
+	consoleLog(outputStringStream.str().c_str());
+
 	// we've now found the position of the number to replace
 	// so copy the file as is
 	resetInputFileStream();
@@ -809,9 +816,6 @@ void M4Revolution::editTransitionTime() {
 
 	// get the number from the user and pad it to replace the existing number
 	// ensure it is not too long and will not replace the end
-	std::ostringstream outputStringStream = {};
-	outputStringStream.imbue(AI_LOCALE);
-
 	std::string::size_type outputStringLength = 0;
 	std::string::size_type outputStringLengthMax = fadingTimeSize + (std::string::size_type)(aiFadingTimeEnd - aiFadingTime);
 
@@ -821,7 +825,7 @@ void M4Revolution::editTransitionTime() {
 		}
 
 		outputStringStream.str("");
-		outputStringStream << std::setw(fadingTimeSize) << consoleFloat("Please enter a Transition Time.", FADING_TIME_MIN, FADING_TIME_MAX, AI_LOCALE);
+		outputStringStream << std::setw(fadingTimeSize) << consoleFloat("Please enter a new Transition Time.", FADING_TIME_MIN, FADING_TIME_MAX, AI_LOCALE);
 
 		outputStringLength = outputStringStream.str().length();
 	} while (outputStringLength > outputStringLengthMax);
