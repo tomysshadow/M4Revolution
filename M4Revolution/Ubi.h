@@ -294,8 +294,17 @@ namespace Ubi {
 			File(std::ifstream &inputFileStream);
 			File(SIZE inputFileSize);
 			void write(std::ofstream &outputFileStream) const;
-			Binary::Resource::POINTER createLayerMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LAYER_MAP &layerMap) const;
-			Binary::Resource::POINTER appendToTextureBoxMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap) const;
+
+			Binary::Resource::POINTER createLayerMap(
+				std::ifstream &inputFileStream, File::SIZE fileSystemPosition,
+				Binary::RLE::LAYER_MAP &layerMap
+			) const;
+
+			Binary::Resource::POINTER appendToTextureBoxMap(
+				std::ifstream &inputFileStream,
+				File::SIZE fileSystemPosition,
+				Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap
+			) const;
 
 			private:
 			void read(std::ifstream &inputFileStream);
@@ -340,23 +349,60 @@ namespace Ubi {
 			File::POINTER_VECTOR binaryFilePointerVector = {};
 			File::POINTER_VECTOR filePointerVector = {};
 
-			Directory(Directory* ownerDirectory, std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &layerFileOptional);
+			Directory(
+				Directory* ownerDirectory,
+				std::ifstream &inputFileStream,
+				File::SIZE &fileSystemSize,
+				File::POINTER_VECTOR::size_type &files,
+				File::POINTER_SET_MAP &filePointerSetMap,
+				const std::optional<File> &layerFileOptional
+			);
+			
 			Directory(std::ifstream &inputFileStream);
 			Directory(std::ifstream &inputFileStream, const Path &path, File::POINTER &filePointer);
 			Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
 			void write(std::ofstream &outputFileStream) const;
 			File::POINTER find(const Path &path) const;
-			void createLayerMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LAYER_MAP &layerMap) const;
-			void appendToTextureBoxMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap) const;
+
+			void createLayerMap(
+				std::ifstream &inputFileStream,
+				File::SIZE fileSystemPosition, Binary::RLE::LAYER_MAP &layerMap
+			) const;
+
+			void appendToTextureBoxMap(
+				std::ifstream &inputFileStream,
+				File::SIZE fileSystemPosition,
+				Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap
+			) const;
 
 			private:
-			void read(bool owner, std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, const std::optional<File> &layerFileOptional);
+			void read(
+				bool owner,
+				std::ifstream &inputFileStream,
+				File::SIZE &fileSystemSize,
+				File::POINTER_VECTOR::size_type &files,
+				File::POINTER_SET_MAP &filePointerSetMap,
+				const std::optional<File> &layerFileOptional
+			);
+
 			void find(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
 			File::POINTER find(const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) const;
 			bool isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const;
 			bool isSet(bool bftex, const std::optional<File> &layerFileOptional) const;
-			void createLayerMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::LAYER_MAP &layerMap, const File::POINTER_VECTOR &binaryFilePointerVector) const;
-			void appendToTextureBoxMap(std::ifstream &inputFileStream, File::SIZE fileSystemPosition, Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap, const File::POINTER_VECTOR &binaryFilePointerVector) const;
+
+			void createLayerMap(
+				std::ifstream &inputFileStream,
+				File::SIZE fileSystemPosition,
+				Binary::RLE::LAYER_MAP &layerMap,
+				const File::POINTER_VECTOR &binaryFilePointerVector
+			) const;
+
+			void appendToTextureBoxMap(
+				std::ifstream &inputFileStream,
+				File::SIZE fileSystemPosition,
+				Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap,
+				const File::POINTER_VECTOR &binaryFilePointerVector
+			) const;
 		};
 
 		struct Header {
