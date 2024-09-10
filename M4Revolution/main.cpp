@@ -97,6 +97,6 @@ int main(int argc, char** argv) {
 		}
 
 		consoleLog();
-	} while (consoleBool("The operation has been performed. Would you like to return to the menu? If not, the application will exit."));
+	} while (consoleBool("The operation has been performed. Would you like to return to the menu? If not, the application will exit.", true));
 	return 0;
 }
