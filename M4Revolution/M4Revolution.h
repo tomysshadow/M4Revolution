@@ -23,7 +23,7 @@ class M4Revolution {
 		int filesCopying = 0;
 
 		public:
-		Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames = false, bool slow = false);
+		Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
 		~Log();
 		Log(const Log &log) = delete;
 		Log &operator=(const Log &log) = delete;
@@ -55,6 +55,7 @@ class M4Revolution {
 	static const char* OUTPUT_FILE_NAME;
 	static const Ubi::BigFile::Path::VECTOR AI_TRANSITION_FADE_PATH_VECTOR;
 	static const Ubi::BigFile::Path::VECTOR AI_USER_CONTROLS_PATH_VECTOR;
+	static const Locale AI_LOCALE;
 
 	Work::Tasks tasks = {};
 	std::ifstream inputFileStream = {};
@@ -92,6 +93,9 @@ class M4Revolution {
 	);
 
 	void fixLoading(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
+
+	void resetInputFileStream();
+	Ubi::BigFile::File createInputFile();
 
 	static void color32X(COLOR32* color32Pointer, size_t stride, size_t size);
 	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface);

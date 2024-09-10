@@ -341,3 +341,4 @@ void readFileStreamSafe(std::ifstream &inputFileStream, void* buffer, std::strea
 void writeFileStreamSafe(std::ofstream &outputFileStream, const void* buffer, std::streamsize count);
 void readFileStreamPartial(std::ifstream &inputFileStream, void* buffer, std::streamsize count, std::streamsize &gcount);
 void writeFileStreamPartial(std::ofstream &outputFileStream, const void* buffer, std::streamsize count);
+void copyFileStream(std::ifstream &inputFileStream, std::ofstream &outputFileStream, std::streamsize count = -1);

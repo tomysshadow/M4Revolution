@@ -1,6 +1,8 @@
 #include "M4Revolution.h"
-#include <iostream>
 #include <chrono>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
 
 #define M4REVOLUTION_OUT true, 1
 #define M4REVOLUTION_ERR true, 1, true, __FILE__, __LINE__
@@ -26,7 +28,7 @@ M4Revolution::Log::~Log() {
 	if (beginOptional.has_value()) {
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-		std::cout << "Elapsed Seconds: " << std::chrono::duration_cast<std::chrono::seconds>(end - beginOptional.value()).count() << std::endl;
+		std::cout << "Elapsed Seconds: " << std::chrono::duration_cast<std::chrono::seconds>(end - beginOptional.value()).count() << std::endl << std::endl;
 	}
 }
 
@@ -71,6 +73,11 @@ void M4Revolution::Log::converting(const Ubi::BigFile::File &file) {
 
 void M4Revolution::Log::finishing() {
 	std::cout << "Finishing, please wait..." << std::endl;
+
+	// just so that there is an extra newline on the end so the menu looks nice
+	if (!beginOptional.has_value()) {
+		std::cout << std::endl;
+	}
 }
 
 M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask)
@@ -125,6 +132,8 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::AI_USER_CONTROLS_PATH_VECTOR = {
 		{{"gamedata", "common"}, "common.m4b"},
 		{{"common", "ai", "aiusercontrols"}, "user_controls.ai"}
 };
+
+const Locale M4Revolution::AI_LOCALE("English", LC_NUMERIC);
 
 void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks) {
 	// this function waits for the output thread to catch up
@@ -314,6 +323,19 @@ void M4Revolution::fixLoading(std::streampos ownerBigFileInputPosition, Ubi::Big
 		// (ensure every BigFile has at least one FileTask)
 		copyFiles(file.size, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
 	}
+}
+
+void M4Revolution::resetInputFileStream() {
+	inputFileStream.clear();
+	inputFileStream.seekg(0, std::ios::beg);
+}
+
+Ubi::BigFile::File M4Revolution::createInputFile() {
+	inputFileStream.clear();
+	inputFileStream.seekg(0, std::ios::end);
+	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputFileStream.tellg());
+	inputFileStream.seekg(0, std::ios::beg);
+	return inputFile;
 }
 
 void M4Revolution::color32X(COLOR32* color32Pointer, size_t stride, size_t size) {
@@ -706,10 +728,106 @@ M4Revolution::~M4Revolution() {
 	destroy();
 }
 
+void M4Revolution::editTransitionTime() {
+	Log log("Editing Transition Time", inputFileStream);
+	resetInputFileStream();
+
+	// find the relevant AI file
+	Ubi::BigFile::File::POINTER filePointer = 0;
+	std::streampos position = 0;
+
+	for (
+		Ubi::BigFile::Path::VECTOR::const_iterator pathVectorIterator = AI_TRANSITION_FADE_PATH_VECTOR.begin();
+		pathVectorIterator != AI_TRANSITION_FADE_PATH_VECTOR.end();
+		pathVectorIterator++
+	) {
+		Ubi::BigFile bigFile(inputFileStream, *pathVectorIterator, filePointer);
+
+		if (!filePointer) {
+			throw std::runtime_error("filePointer must not be NULL");
+		}
+
+		inputFileStream.seekg(position + (std::streampos)filePointer->position);
+		position = inputFileStream.tellg();
+	}
+
+	// prefix the AI file with a newline so we can find m_fadingTime in a single strstr call
+	const char NEWLINE = '\n';
+	const size_t NEWLINE_SIZE = sizeof(NEWLINE);
+
+	const Ubi::BigFile::File::SIZE &FILE_SIZE = filePointer->size;
+	const size_t SIZE = NEWLINE_SIZE + FILE_SIZE;
+
+	std::unique_ptr<char> aiPointer = std::unique_ptr<char>(new char[SIZE + 1]);
+	char* ai = aiPointer.get();
+	*ai = NEWLINE;
+	readFileStreamSafe(inputFileStream, ai + NEWLINE_SIZE, FILE_SIZE);
+	ai[SIZE] = 0;
+
+	const size_t M_FADING_TIME_BEGIN_SIZE = 57;
+	const char M_FADING_TIME_BEGIN[M_FADING_TIME_BEGIN_SIZE] = "\nm_fadingTime                             ( f32       , ";
+
+	char* aiFadingTimeBegin = strstr(ai, M_FADING_TIME_BEGIN);
+
+	if (!aiFadingTimeBegin) {
+		throw std::runtime_error("Failed to Find AI Fading Time");
+	}
+
+	// the position of the number itself, not including M_FADING_TIME's null terminator
+	const size_t FADING_TIME_POSITION = M_FADING_TIME_BEGIN_SIZE - 1;
+
+	char* aiFadingTime = aiFadingTimeBegin + FADING_TIME_POSITION;
+	float fadingTime = 0.0f;
+	size_t fadingTimeSize = stringToFloat(aiFadingTime, fadingTime, AI_LOCALE);
+	aiFadingTime += fadingTimeSize;
+
+	const char M_FADING_TIME_END = ')';
+
+	// find the end, so that we can ensure the number is not too long as to replace it
+	// we set the end to a null terminator so we can ensure there is only whitespace before it
+	// (this is not written to the output file)
+	char* aiFadingTimeEnd = strchr(aiFadingTime, M_FADING_TIME_END);
+	*aiFadingTimeEnd = 0;
+
+	// there shouldn't be anything but whitespace here - if there is, it's invalid
+	if (!stringWhitespace(aiFadingTime)) {
+		throw std::runtime_error("Failed to Find AI Fading Time");
+	}
+
+	// we've now found the position of the number to replace
+	// so copy the file as is
+	resetInputFileStream();
+	std::ofstream outputFileStream(OUTPUT_FILE_NAME, std::ios::binary);
+	copyFileStream(inputFileStream, outputFileStream);
+
+	const float FADING_TIME_MIN = 0.0f;
+	const float FADING_TIME_MAX = 500.0f;
+
+	// get the number from the user and pad it to replace the existing number
+	// ensure it is not too long and will not replace the end
+	std::ostringstream outputStringStream = {};
+	outputStringStream.imbue(AI_LOCALE);
+
+	std::string outputString = "";
+
+	do {
+		if (!outputString.empty()) {
+			consoleLog("The number is too long. Please enter a shorter number.");
+		}
+
+		outputStringStream.str("");
+		outputStringStream << std::setw(fadingTimeSize) << consoleFloat("Please enter a Transition Time.", FADING_TIME_MIN, FADING_TIME_MAX, AI_LOCALE);
+
+		outputString = outputStringStream.str();
+	} while (outputString.length() > (std::string::size_type)(aiFadingTimeEnd - aiFadingTime));
+
+	// write the number to the output file
+	outputFileStream.seekp(position + (aiFadingTimeBegin - ai) + (std::streampos)(FADING_TIME_POSITION - NEWLINE_SIZE));
+	writeFileStreamSafe(outputFileStream, outputString.c_str(), outputString.length());
+}
+
 void M4Revolution::fixLoading() {
-	inputFileStream.seekg(0, std::ios::end);
-	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputFileStream.tellg());
-	inputFileStream.seekg(0, std::ios::beg);
+	Ubi::BigFile::File inputFile = createInputFile();
 
 	bool yield = true;
 	std::thread outputThread(M4Revolution::outputThread, OUTPUT_FILE_NAME, std::ref(tasks), std::ref(yield));

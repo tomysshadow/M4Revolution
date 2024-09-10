@@ -213,3 +213,41 @@ void readFileStreamPartial(std::ifstream &inputFileStream, void* buffer, std::st
 void writeFileStreamPartial(std::ofstream &outputFileStream, const void* buffer, std::streamsize count) {
 	outputFileStream.write((const char*)buffer, count);
 }
+
+void copyFileStream(std::ifstream &inputFileStream, std::ofstream &outputFileStream, std::streamsize count) {
+	if (!count) {
+		return;
+	}
+
+	const size_t BUFFER_SIZE = 0x10000;
+	char buffer[BUFFER_SIZE] = {};
+
+	std::streamsize countRead = BUFFER_SIZE;
+	std::streamsize gcountRead = 0;
+
+	do {
+		countRead = (std::streamsize)min((size_t)count, (size_t)countRead);
+
+		readFileStreamPartial(inputFileStream, buffer, countRead, gcountRead);
+
+		if (!gcountRead) {
+			break;
+		}
+
+		writeFileStreamSafe(outputFileStream, buffer, gcountRead);
+
+		if (count != -1) {
+			count -= gcountRead;
+
+			if (!count) {
+				break;
+			}
+		}
+	} while (countRead == gcountRead);
+
+	if (count != -1) {
+		if (count) {
+			throw std::logic_error("count must not be greater than file size");
+		}
+	}
+}

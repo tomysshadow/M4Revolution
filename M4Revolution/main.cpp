@@ -84,10 +84,10 @@ int main(int argc, char** argv) {
 		}
 
 		switch (operation) {
-			/*
 			case OPERATION_EDIT_TRANSITION_TIME:
 			m4Revolution.editTransitionTime();
 			break;
+			/*
 			case OPERATION_EDIT_INERTIA:
 			m4Revolution.editInertia();
 			break;
@@ -95,8 +95,6 @@ int main(int argc, char** argv) {
 			case OPERATION_FIX_LOADING:
 			m4Revolution.fixLoading();
 		}
-
-		consoleLog();
 	} while (consoleBool("The operation has been performed. Would you like to return to the menu? If not, the application will exit.", true));
 	return 0;
 }
