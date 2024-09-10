@@ -152,10 +152,10 @@ Ubi::Binary::Resource::Resource(Loader::POINTER loaderPointer, VERSION version)
 void Ubi::Binary::TextureBox::create(std::ifstream &inputFileStream, Binary::RLE::LAYER_MAP &layerMap) {
 	Binary::RLE::LAYER_MAP::iterator layerMapIterator = {};
 
-	const std::optional<std::string> LAYER_FILE_OPTIONAL = String::swizzle(String::readOptional(inputFileStream));
+	std::optional<std::string> layerFileOptional = String::swizzle(String::readOptional(inputFileStream));
 
-	if (LAYER_FILE_OPTIONAL.has_value()) {
-		const std::string &LAYER_FILE = LAYER_FILE_OPTIONAL.value();
+	if (layerFileOptional.has_value()) {
+		const std::string &LAYER_FILE = layerFileOptional.value();
 
 		layerMapIterator = layerMap.find(LAYER_FILE);
 
@@ -191,7 +191,7 @@ void Ubi::Binary::TextureBox::create(std::ifstream &inputFileStream, Binary::RLE
 	for (uint32_t i = 0; i < sets; i++) {
 		set = String::swizzle(String::readOptional(inputFileStream));
 
-		if (set.has_value() && LAYER_FILE_OPTIONAL.has_value()) {
+		if (set.has_value() && layerFileOptional.has_value()) {
 			layerMapIterator->second.setsSet.insert(set.value());
 		}
 	}
@@ -252,10 +252,10 @@ void Ubi::Binary::StateData::create(std::ifstream &inputFileStream, RLE::MASK_PA
 	const size_t REFRESH_RATE_SIZE = 4;
 	inputFileStream.seekg(REFRESH_RATE_SIZE, std::ios::cur);
 
-	const std::optional<std::string> MASK_PATH_OPTIONAL = String::swizzle(String::readOptional(inputFileStream));
+	std::optional<std::string> maskPathOptional = String::swizzle(String::readOptional(inputFileStream));
 
-	if (MASK_PATH_OPTIONAL.has_value()) {
-		maskPathSet.insert(MASK_PATH_OPTIONAL.value());
+	if (maskPathOptional.has_value()) {
+		maskPathSet.insert(maskPathOptional.value());
 	}
 
 	uint32_t resources = 0;
@@ -283,7 +283,7 @@ Ubi::Binary::StateData::StateData(Loader::POINTER loaderPointer, std::ifstream &
 }
 
 void Ubi::Binary::Water::create(std::ifstream &inputFileStream, RLE::TEXTURE_BOX_MAP &textureBoxMap) {
-	const std::optional<std::string> RESOURCE_NAME_OPTIONAL = String::swizzle(String::readOptional(inputFileStream));
+	std::optional<std::string> resourceNameOptional = String::swizzle(String::readOptional(inputFileStream));
 
 	const size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
 	inputFileStream.seekg(WATER_FIELDS_SIZE, std::ios::cur);
@@ -293,8 +293,8 @@ void Ubi::Binary::Water::create(std::ifstream &inputFileStream, RLE::TEXTURE_BOX
 
 	readFileStreamSafe(inputFileStream, &resources, RESOURCES_SIZE);
 
-	if (RESOURCE_NAME_OPTIONAL.has_value()) {
-		const std::optional<std::string> &TEXTURE_BOX_NAME_OPTIONAL = getTextureBoxNameOptional(RESOURCE_NAME_OPTIONAL.value());
+	if (resourceNameOptional.has_value()) {
+		const std::optional<std::string> &TEXTURE_BOX_NAME_OPTIONAL = getTextureBoxNameOptional(resourceNameOptional.value());
 
 		if (TEXTURE_BOX_NAME_OPTIONAL.has_value()) {
 			const std::string &TEXTURE_BOX_NAME = TEXTURE_BOX_NAME_OPTIONAL.value();

@@ -6,6 +6,7 @@
 #include <functional>
 #include <stdexcept>
 #include <string>
+#include <optional>
 #include <fstream>
 #include <stdint.h>
 #include <string.h>
@@ -14,6 +15,24 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+inline char charWhitespaceTrim(const char* str) {
+	unsigned char space = *str;
+
+	while (space && isspace(space)) {
+		space = *++str;
+	}
+	return space;
+}
+
+inline wchar_t charWhitespaceTrimWide(const wchar_t* str) {
+	wchar_t space = *str;
+
+	while (space && iswspace(space)) {
+		space = *++str;
+	}
+	return space;
+}
 
 inline bool stringNullOrEmpty(const char* str) {
 	return !str || !*str;
@@ -313,6 +332,11 @@ inline bool freeZAP(zap_byte_t* &out) {
 }
 
 void consoleLog(const char* str = 0, short newline = true, short tab = false, bool err = false, const char* file = 0, unsigned int line = 0);
+double consoleDouble(const char* str = 0, double minValue = -DBL_MAX, double maxValue = DBL_MAX, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
+float consoleFloat(const char* str = 0, float minValue = -FLT_MAX, float maxValue = FLT_MAX, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
+long consoleLong(const char* str = 0, long minValue = -LONG_MAX, long maxValue = LONG_MAX, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
+unsigned long consoleLongUnsigned(const char* str = 0, unsigned long minValue = 0, unsigned long maxValue = ULONG_MAX, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
+bool consoleBool(const char* str = 0, const std::optional<bool> &defaultValueOptional = std::nullopt);
 void readFileStreamSafe(std::ifstream &inputFileStream, void* buffer, std::streamsize count);
 void writeFileStreamSafe(std::ofstream &outputFileStream, const void* buffer, std::streamsize count);
 void readFileStreamPartial(std::ifstream &inputFileStream, void* buffer, std::streamsize count, std::streamsize &gcount);

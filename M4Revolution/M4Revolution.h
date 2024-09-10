@@ -16,13 +16,15 @@ class M4Revolution {
 		std::ifstream &inputFileStream;
 		Ubi::BigFile::File::SIZE inputFileSize = 0;
 		bool fileNames = false;
+		std::optional<std::chrono::steady_clock::time_point> beginOptional = std::nullopt;
 
 		int progress = 0;
 		int files = 0;
 		int filesCopying = 0;
 
 		public:
-		Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames = false);
+		Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames = false, bool slow = false);
+		~Log();
 		Log(const Log &log) = delete;
 		Log &operator=(const Log &log) = delete;
 		void step();

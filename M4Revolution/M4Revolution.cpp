@@ -11,11 +11,23 @@ void M4Revolution::destroy() {
 	#endif
 };
 
-M4Revolution::Log::Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames)
+M4Revolution::Log::Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
 	: inputFileStream(inputFileStream),
 	inputFileSize(inputFileSize),
 	fileNames(fileNames) {
+	if (slow) {
+		beginOptional = std::chrono::steady_clock::now();
+	}
+
 	std::cout << title << "..." << std::endl;
+}
+
+M4Revolution::Log::~Log() {
+	if (beginOptional.has_value()) {
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+		std::cout << "Elapsed Seconds: " << std::chrono::duration_cast<std::chrono::seconds>(end - beginOptional.value()).count() << std::endl;
+	}
 }
 
 void M4Revolution::Log::step() {
@@ -702,7 +714,7 @@ void M4Revolution::fixLoading() {
 	bool yield = true;
 	std::thread outputThread(M4Revolution::outputThread, OUTPUT_FILE_NAME, std::ref(tasks), std::ref(yield));
 
-	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames);
+	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames, true);
 	fixLoading(0, inputFile, log);
 	log.finishing();
 

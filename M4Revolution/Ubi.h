@@ -1,7 +1,6 @@
 #pragma once
 #include "shared.h"
 #include "IgnoreCaseComparer.h"
-#include <optional>
 #include <unordered_set>
 #include <map>
 #include <vector>

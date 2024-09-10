@@ -56,13 +56,47 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+	static const long OPERATION_MIN = 1;
+	static const long OPERATION_EDIT_TRANSITION_TIME = 1;
+	static const long OPERATION_EDIT_INERTIA = 2;
+	static const long OPERATION_FIX_LOADING = 3;
+	static const long OPERATION_EXIT = 4;
+	static const long OPERATION_MAX = 4;
 
 	M4Revolution m4Revolution(argv[1], logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
-	m4Revolution.fixLoading();
 
-	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	do {
+		consoleLog("This menu may be used to perform the following operations.", 2);
 
-	std::cout << "Elapsed Seconds: " << std::chrono::duration_cast<std::chrono::seconds>(end - begin).count();
+		consoleLog("1) Edit Transition Time");
+		consoleLog("2) Edit Inertia");
+		consoleLog("3) Fix Loading");
+		consoleLog("4) Exit", 2);
+
+		long operation = consoleLong(
+			"Please enter the number corresponding to the operation you would like to perform.",
+			OPERATION_MIN,
+			OPERATION_MAX
+		);
+
+		if (operation == OPERATION_EXIT) {
+			break;
+		}
+
+		switch (operation) {
+			/*
+			case OPERATION_EDIT_TRANSITION_TIME:
+			m4Revolution.editTransitionTime();
+			break;
+			case OPERATION_EDIT_INERTIA:
+			m4Revolution.editInertia();
+			break;
+			*/
+			case OPERATION_FIX_LOADING:
+			m4Revolution.fixLoading();
+		}
+
+		consoleLog();
+	} while (consoleBool("The operation has been performed. Would you like to return to the menu? If not, the application will exit."));
 	return 0;
 }
