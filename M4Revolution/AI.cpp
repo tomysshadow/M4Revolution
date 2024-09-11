@@ -6,7 +6,7 @@
 void AI::copyThread(std::ifstream &inputFileStream, const char* outputFileName, Work::Edit &edit) {
 	inputFileStream.seekg(0, std::ios::beg);
 
-	std::ofstream outputFileStream(outputFileName);
+	std::ofstream outputFileStream(outputFileName, std::ios::binary);
 	copyStream(inputFileStream, outputFileStream);
 
 	edit.event.wait();
