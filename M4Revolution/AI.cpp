@@ -127,6 +127,8 @@ void AI::editF32(
 
 		f32 = consoleFloat(outputStringStream.str().c_str(), min, max, LOCALE);
 
+		// std::left is used to left align because otherwise we'll shift the number over
+		// (will become a problem if we edit multiple times)
 		outputStringStream.str("");
 		outputStringStream << std::left << std::setw(f32Size) << f32;
 
