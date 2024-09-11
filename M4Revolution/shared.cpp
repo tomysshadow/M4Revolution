@@ -65,7 +65,7 @@ void consoleLog(const char* str, short newline, short tab, bool err, const char*
 #define CONSOLE_NUMBER_GREATER_OUT(minValue) do { std::cout << "[>" << (minValue) << "]" << std::endl; } while (0)
 #define CONSOLE_NUMBER_VALID_OUT do { std::cout << std::endl; } while (0)
 
-#define CONSOLE_NUMBER_BETWEEN_OUT_RETRY(minValue, maxValue) do { std::cout << "Please enter a valid number between " << (minValue) << " and " << (maxValue) << "." << std::endl; } while (0)
+#define CONSOLE_NUMBER_BETWEEN_OUT_RETRY(minValue, maxValue) do { std::cout << "Please enter a valid number from " << (minValue) << " to " << (maxValue) << "." << std::endl; } while (0)
 #define CONSOLE_NUMBER_LESS_OUT_RETRY(maxValue) do { std::cout << "Please enter a valid number less than " << (maxValue) << "." << std::endl; } while (0)
 #define CONSOLE_NUMBER_GREATER_OUT_RETRY(minValue) do { std::cout << "Please enter a valid number greater than " << (minValue) << "." << std::endl; } while (0)
 #define CONSOLE_NUMBER_VALID_RETRY_OUT do { std::cout << "Please enter a valid number." << std::endl; } while (0)
