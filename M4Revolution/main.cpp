@@ -3,9 +3,6 @@
 #include <chrono>
 #include <iostream>
 
-#define MAIN_OUT 2
-#define MAIN_ERR true, false, true, __FILE__, __LINE__
-
 void help() {
 	consoleLog("Usage: M4Revolution path [-lfn -nohw -mt maxThreads]");
 }

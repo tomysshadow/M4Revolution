@@ -61,24 +61,6 @@ void Locale::clear() {
 	lc = LC_ALL;
 }
 
-const Locale::CATEGORY_LC_MAP Locale::categoryLCMap = {
-	{std::locale::all, LC_ALL},
-	{std::locale::collate, LC_COLLATE},
-	{std::locale::ctype, LC_CTYPE},
-	{std::locale::monetary, LC_MONETARY},
-	{std::locale::numeric, LC_NUMERIC},
-	{std::locale::time, LC_TIME}
-};
-
-const Locale::LC_CATEGORY_MAP Locale::lcCategoryMap = {
-	{LC_ALL, std::locale::all},
-	{LC_COLLATE, std::locale::collate},
-	{LC_CTYPE, std::locale::ctype},
-	{LC_MONETARY, std::locale::monetary},
-	{LC_NUMERIC, std::locale::numeric},
-	{LC_TIME, std::locale::time}
-};
-
 std::string Locale::getGlobalName() {
 	char* globalName = setlocale(LC_ALL, 0);
 	return globalName ? globalName : "C";
@@ -92,15 +74,33 @@ std::wstring Locale::getGlobalNameWide() {
 }
 
 Locale::LC Locale::categoryToLC(CATEGORY category) {
+	const Locale::CATEGORY_LC_MAP CATEGORY_LC_MAP = {
+		{std::locale::all, LC_ALL},
+		{std::locale::collate, LC_COLLATE},
+		{std::locale::ctype, LC_CTYPE},
+		{std::locale::monetary, LC_MONETARY},
+		{std::locale::numeric, LC_NUMERIC},
+		{std::locale::time, LC_TIME}
+	};
+
 	// intentionally throws if value not in map
-	return categoryLCMap.at(category & std::locale::all);
+	return CATEGORY_LC_MAP.at(category & std::locale::all);
 }
 
 Locale::CATEGORY Locale::lcToCategory(LC lc) {
-	// LC constant is not a bitmask so we can do a straight lookup with it
-	LC_CATEGORY_MAP::const_iterator lcCategoryMapIterator = lcCategoryMap.find(lc);
+	const Locale::LC_CATEGORY_MAP LC_CATEGORY_MAP = {
+		{LC_ALL, std::locale::all},
+		{LC_COLLATE, std::locale::collate},
+		{LC_CTYPE, std::locale::ctype},
+		{LC_MONETARY, std::locale::monetary},
+		{LC_NUMERIC, std::locale::numeric},
+		{LC_TIME, std::locale::time}
+	};
 
-	if (lcCategoryMapIterator == lcCategoryMap.end()) {
+	// LC constant is not a bitmask so we can do a straight lookup with it
+	LC_CATEGORY_MAP::const_iterator lcCategoryMapIterator = LC_CATEGORY_MAP.find(lc);
+
+	if (lcCategoryMapIterator == LC_CATEGORY_MAP.end()) {
 		return std::locale::none;
 	}
 	return lcCategoryMapIterator->second;

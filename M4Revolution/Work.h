@@ -78,6 +78,12 @@ namespace Work {
 		Data(size_t size, POINTER pointer);
 	};
 
+	struct Edit {
+		std::streampos position = 0;
+		std::string str = "";
+		Event event;
+	};
+
 	// BigFileTask (must seek over them, then come back later)
 	class BigFileTask {
 		private:

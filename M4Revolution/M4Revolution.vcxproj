@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AI.h" />
     <ClInclude Include="IgnoreCaseComparer.h" />
     <ClInclude Include="Locale.h" />
     <ClInclude Include="M4Revolution.h" />
@@ -169,6 +170,7 @@
     <ClInclude Include="Work.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AI.cpp" />
     <ClCompile Include="Locale.cpp" />
     <ClCompile Include="M4Revolution.cpp" />
     <ClCompile Include="main.cpp" />

@@ -1,9 +1,6 @@
 #include "shared.h"
 #include <iostream>
 
-#define SHARED_OUT true, 2
-#define SHARED_ERR true, 2, true, __FILE__, __LINE__
-
 void consoleLog(const char* str, short newline, short tab, bool err, const char* file, unsigned int line) {
 	if (!str) {
 		str = "";
@@ -192,62 +189,52 @@ bool consoleBool(const char* str, const std::optional<bool> &defaultValueOptiona
 	return result == YES;
 }
 
-void readFileStreamSafe(std::ifstream &inputFileStream, void* buffer, std::streamsize count) {
-	if (!inputFileStream.read((char*)buffer, count) || count != inputFileStream.gcount()) {
-		throw std::runtime_error("Failed to Read File Stream");
+void readStreamSafe(std::istream &inputStream, void* buffer, std::streamsize count) {
+	if (!inputStream.read((char*)buffer, count) || count != inputStream.gcount()) {
+		throw std::runtime_error("Failed to Read Input Stream");
 	}
 }
 
-void writeFileStreamSafe(std::ofstream &outputFileStream, const void* buffer, std::streamsize count) {
-	if (!outputFileStream.write((const char*)buffer, count)) {
-		throw std::runtime_error("Failed to Write File Stream");
+void writeStreamSafe(std::ostream &outputStream, const void* buffer, std::streamsize count) {
+	if (!outputStream.write((const char*)buffer, count)) {
+		throw std::runtime_error("Failed to Write Output Stream");
 	}
 }
 
-void readFileStreamPartial(std::ifstream &inputFileStream, void* buffer, std::streamsize count, std::streamsize &gcount) {
+void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize count, std::streamsize &gcount) {
 	gcount = 0;
-	inputFileStream.read((char*)buffer, count);
-	gcount = inputFileStream.gcount();
+	inputStream.read((char*)buffer, count);
+	gcount = inputStream.gcount();
 }
 
-void writeFileStreamPartial(std::ofstream &outputFileStream, const void* buffer, std::streamsize count) {
-	outputFileStream.write((const char*)buffer, count);
+void writeStreamPartial(std::ostream &outputStream, const void* buffer, std::streamsize count) {
+	outputStream.write((const char*)buffer, count);
 }
 
-void copyFileStream(std::ifstream &inputFileStream, std::ofstream &outputFileStream, std::streamsize count) {
-	if (!count) {
-		return;
-	}
+void copyStream(std::istream &inputStream, std::ostream &outputStream, std::streamsize count) {
+	copyStreamToWriteDestination(
+		inputStream,
+	
+		[&outputStream](void* buffer, std::streamsize count){
+			writeStreamSafe(outputStream, buffer, count);
+		},
+	
+		count
+	);
+}
 
-	const size_t BUFFER_SIZE = 0x10000;
-	char buffer[BUFFER_SIZE] = {};
-
-	std::streamsize countRead = BUFFER_SIZE;
-	std::streamsize gcountRead = 0;
-
-	do {
-		countRead = (std::streamsize)min((size_t)count, (size_t)countRead);
-
-		readFileStreamPartial(inputFileStream, buffer, countRead, gcountRead);
-
-		if (!gcountRead) {
-			break;
-		}
-
-		writeFileStreamSafe(outputFileStream, buffer, gcountRead);
-
-		if (count != -1) {
-			count -= gcountRead;
-
-			if (!count) {
-				break;
-			}
-		}
-	} while (countRead == gcountRead);
-
+void copyStreamToString(std::istream &inputStream, std::string &outputString, std::streamsize count) {
 	if (count != -1) {
-		if (count) {
-			throw std::logic_error("count must not be greater than file size");
-		}
+		outputString.reserve(outputString.length() + count);
 	}
+
+	copyStreamToWriteDestination(
+		inputStream,
+
+		[&outputString](void* buffer, std::streamsize count) {
+			outputString.append((char*)buffer, count);
+		},
+
+		count
+	);
 }

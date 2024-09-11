@@ -53,9 +53,6 @@ class Locale {
 	C_LOCALE cLocale = 0;
 	LC lc = LC_ALL;
 
-	static const CATEGORY_LC_MAP categoryLCMap;
-	static const LC_CATEGORY_MAP lcCategoryMap;
-
 	static std::string getGlobalName();
 	static std::wstring getGlobalNameWide();
 	public:

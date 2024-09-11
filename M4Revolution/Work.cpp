@@ -134,7 +134,7 @@ void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count)
 		{
 			Data::POINTER pointer = Data::POINTER(new unsigned char[countRead]);
 
-			readFileStreamPartial(inputFileStream, pointer.get(), countRead, gcountRead);
+			readStreamPartial(inputFileStream, pointer.get(), countRead, gcountRead);
 
 			if (!gcountRead) {
 				break;

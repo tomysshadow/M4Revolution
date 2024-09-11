@@ -337,8 +337,49 @@ float consoleFloat(const char* str = 0, float minValue = -FLT_MAX, float maxValu
 long consoleLong(const char* str = 0, long minValue = -LONG_MAX, long maxValue = LONG_MAX, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
 unsigned long consoleLongUnsigned(const char* str = 0, unsigned long minValue = 0, unsigned long maxValue = ULONG_MAX, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
 bool consoleBool(const char* str = 0, const std::optional<bool> &defaultValueOptional = std::nullopt);
-void readFileStreamSafe(std::ifstream &inputFileStream, void* buffer, std::streamsize count);
-void writeFileStreamSafe(std::ofstream &outputFileStream, const void* buffer, std::streamsize count);
-void readFileStreamPartial(std::ifstream &inputFileStream, void* buffer, std::streamsize count, std::streamsize &gcount);
-void writeFileStreamPartial(std::ofstream &outputFileStream, const void* buffer, std::streamsize count);
-void copyFileStream(std::ifstream &inputFileStream, std::ofstream &outputFileStream, std::streamsize count = -1);
+void readStreamSafe(std::istream &inputStream, void* buffer, std::streamsize count);
+void writeStreamSafe(std::ostream &outputStream, const void* buffer, std::streamsize count);
+void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize count, std::streamsize &gcount);
+void writeStreamPartial(std::ostream &outputStream, const void* buffer, std::streamsize count);
+
+template <typename WriteDestination>
+void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination writeDestination, std::streamsize count = -1) {
+	if (!count) {
+		return;
+	}
+
+	const size_t BUFFER_SIZE = 0x10000;
+	char buffer[BUFFER_SIZE] = {};
+
+	std::streamsize countRead = BUFFER_SIZE;
+	std::streamsize gcountRead = 0;
+
+	do {
+		countRead = (std::streamsize)min((size_t)count, (size_t)countRead);
+
+		readStreamPartial(inputStream, buffer, countRead, gcountRead);
+
+		if (!gcountRead) {
+			break;
+		}
+
+		writeDestination(buffer, gcountRead);
+
+		if (count != -1) {
+			count -= gcountRead;
+
+			if (!count) {
+				break;
+			}
+		}
+	} while (countRead == gcountRead);
+
+	if (count != -1) {
+		if (count) {
+			throw std::logic_error("count must not be greater than stream size");
+		}
+	}
+}
+
+void copyStream(std::istream &inputStream, std::ostream &outputStream, std::streamsize count = -1);
+void copyStreamToString(std::istream &inputStream, std::string &outputString, std::streamsize count = -1);

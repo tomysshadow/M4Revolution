@@ -53,9 +53,6 @@ class M4Revolution {
 	};
 
 	static const char* OUTPUT_FILE_NAME;
-	static const Ubi::BigFile::Path::VECTOR AI_TRANSITION_FADE_PATH_VECTOR;
-	static const Ubi::BigFile::Path::VECTOR AI_USER_CONTROLS_PATH_VECTOR;
-	static const Locale AI_LOCALE;
 
 	Work::Tasks tasks = {};
 	std::ifstream inputFileStream = {};
