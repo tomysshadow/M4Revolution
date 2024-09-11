@@ -53,12 +53,12 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	static const long OPERATION_MIN = 1;
 	static const long OPERATION_EDIT_TRANSITION_TIME = 1;
 	static const long OPERATION_EDIT_INERTIA = 2;
 	static const long OPERATION_FIX_LOADING = 3;
 	static const long OPERATION_EXIT = 4;
-	static const long OPERATION_MAX = 4;
+	static const long OPERATION_MIN = OPERATION_EDIT_TRANSITION_TIME;
+	static const long OPERATION_MAX = OPERATION_EXIT;
 
 	M4Revolution m4Revolution(argv[1], logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
 
