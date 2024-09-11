@@ -48,7 +48,7 @@ void AI::editF32(
 	copyStreamToString(inputFileStream, ai, filePointer->size);
 
 	// find the line that the value is on
-	const std::regex AI_LINE("^(([^\\s\\(]+)\\s*\\(\\s*(\\w+)\\s*,\\s*)(.*)\\)[^\\S\\r\\n]*(?=(?:\\r?\\n)|$)");
+	const std::regex AI_LINE("^(\\s*([^\\s\\(]+)\\s*\\(\\s*(\\w+)\\s*,\\s*)(.*)\\)[^\\S\\r\\n]*(?=(?:\\r?\\n)|$)");
 	const std::string TYPE_F32 = "f32";
 
 	size_t f32Size = 0;
