@@ -52,10 +52,8 @@ class M4Revolution {
 		bool result = true;
 	};
 
-	static const char* OUTPUT_FILE_NAME;
-
-	Work::Tasks tasks = {};
-	std::ifstream inputFileStream = {};
+	std::string inputFileName = "";
+	std::string outputFileName = "";
 	bool logFileNames = false;
 
 	nvtt::Context context = {};
@@ -68,9 +66,12 @@ class M4Revolution {
 
 	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0;
 
+	Work::Tasks tasks = {};
+
 	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks);
 
 	void copyFiles(
+		std::ifstream &inputFileStream,
 		Ubi::BigFile::File::SIZE inputPosition,
 		Ubi::BigFile::File::SIZE inputCopyPosition,
 		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
@@ -78,8 +79,19 @@ class M4Revolution {
 		Log &log
 	);
 
-	void convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback);
-	void convertFile(std::streampos bigFileInputPosition, Ubi::BigFile::File &file, Log &log);
+	void convertFile(
+		std::ifstream &inputFileStream,
+		std::streampos ownerBigFileInputPosition,
+		Ubi::BigFile::File &file,
+		Work::Convert::FileWorkCallback fileWorkCallback
+	);
+
+	void convertFile(
+		std::ifstream &inputFileStream,
+		std::streampos bigFileInputPosition,
+		Ubi::BigFile::File &file,
+		Log &log
+	);
 
 	void stepFile(
 		Ubi::BigFile::File::SIZE inputPosition,
@@ -89,10 +101,9 @@ class M4Revolution {
 		Log &log
 	);
 
-	void fixLoading(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
+	void fixLoading(std::ifstream &inputFileStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
-	void resetInputFileStream();
-	Ubi::BigFile::File createInputFile();
+	Ubi::BigFile::File createInputFile(std::ifstream &inputFileStream);
 
 	static void color32X(COLOR32* color32Pointer, size_t stride, size_t size);
 	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface);
@@ -104,11 +115,12 @@ class M4Revolution {
 	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
 	static void outputData(std::ofstream &fileStream, Work::FileTask &fileTask, bool &yield);
 	static void outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
-	static void outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield);
+	static void outputThread(const std::string &outputFileName, Work::Tasks &tasks, bool &yield);
 
 	public:
 	M4Revolution(
-		const char* inputFileName,
+		const std::string &inputFileName,
+		const std::string &outputFileName,
 		bool logFileNames = false,
 		bool disableHardwareAcceleration = false,
 		uint32_t maxThreads = 0,
@@ -119,6 +131,6 @@ class M4Revolution {
 	M4Revolution(const M4Revolution &m4Revolution) = delete;
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
 	void editTransitionTime();
-	void editInertia();
+	void editInertiaLevels();
 	void fixLoading();
 };

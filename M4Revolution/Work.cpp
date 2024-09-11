@@ -64,6 +64,11 @@ Work::Data::Data(size_t size, POINTER pointer)
 	pointer(pointer) {
 }
 
+Work::Edit::Edit(std::ifstream &inputFileStream, const std::string &outputFileName)
+	: inputFileStream(inputFileStream),
+	outputFileStream(outputFileName, std::ios::binary) {
+}
+
 Work::BigFileTask::BigFileTask(
 	std::ifstream &inputFileStream,
 	std::streampos ownerBigFileInputPosition,
@@ -205,6 +210,6 @@ Work::Convert::Convert(
 	compressionOptions(compressionOptions) {
 }
 
-Work::Output::Output(const char* fileName)
+Work::Output::Output(const std::string &fileName)
 	: fileStream(fileName, std::ios::binary) {
 }

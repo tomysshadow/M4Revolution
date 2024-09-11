@@ -3,29 +3,36 @@
 #include <sstream>
 #include <iomanip>
 
-void AI::copyThread(std::ifstream &inputFileStream, const char* outputFileName, Work::Edit &edit) {
-	inputFileStream.seekg(0, std::ios::beg);
+void AI::copyThread(Work::Edit &edit) {
+	std::ofstream &outputFileStream = edit.outputFileStream;
 
-	std::ofstream outputFileStream(outputFileName, std::ios::binary);
-	copyStream(inputFileStream, outputFileStream);
+	if (!edit.copied) {
+		std::ifstream &inputFileStream = edit.inputFileStream;
+		inputFileStream.seekg(0, std::ios::beg);
 
-	edit.event.wait();
+		copyStream(inputFileStream, outputFileStream);
+		edit.copied = true;
+	}
+
+	edit.event.wait(true);
 
 	outputFileStream.seekp(edit.position);
 	writeStreamSafe(outputFileStream, edit.str.c_str(), edit.str.length());
 }
 
 void AI::editF32(
-	std::ifstream &inputFileStream,
-	const char* outputFileName,
+	Work::Edit &edit,
 	const std::string &name,
 	const Ubi::BigFile::Path::VECTOR &pathVector,
 	const std::string &key,
 	float min,
-	float max,
-	bool percentage
+	float max
 ) {
 	// find the AI file
+	std::ifstream &inputFileStream = edit.inputFileStream;
+	inputFileStream.clear();
+	inputFileStream.seekg(0, std::ios::beg);
+
 	Ubi::BigFile::File::POINTER filePointer = 0;
 	std::streampos position = 0;
 
@@ -33,7 +40,7 @@ void AI::editF32(
 		Ubi::BigFile::Path::VECTOR::const_iterator pathVectorIterator = pathVector.begin();
 		pathVectorIterator != pathVector.end();
 		pathVectorIterator++
-		) {
+	) {
 		Ubi::BigFile bigFile(inputFileStream, *pathVectorIterator, filePointer);
 
 		if (!filePointer) {
@@ -92,12 +99,6 @@ void AI::editF32(
 		throw std::runtime_error("Failed to Convert String To Float");
 	}
 
-	const float F32_PERCENT = 100.0f;
-
-	if (percentage) {
-		f32 *= F32_PERCENT;
-	}
-
 	// log the current value
 	std::ostringstream outputStringStream = {};
 	outputStringStream.imbue(LOCALE);
@@ -107,8 +108,7 @@ void AI::editF32(
 	// we've now found the position of the number to replace
 	// create a new thread to begin copying the file in the background
 	// while we ask the user to input the edited value
-	Work::Edit edit = {};
-	std::thread copyThread(AI::copyThread, std::ref(inputFileStream), outputFileName, std::ref(edit));
+	std::thread copyThread(AI::copyThread, std::ref(edit));
 
 	const std::string &VALUE_STR = matches[4];
 
@@ -122,14 +122,13 @@ void AI::editF32(
 			consoleLog("The number is too long. Please enter a shorter number.");
 		}
 
-		f32 = consoleFloat("Please enter a number.", min, max, LOCALE);
+		outputStringStream.str("");
+		outputStringStream << "Please enter the new " << name << ".";
 
-		if (percentage) {
-			f32 /= F32_PERCENT;
-		}
+		f32 = consoleFloat(outputStringStream.str().c_str(), min, max, LOCALE);
 
 		outputStringStream.str("");
-		outputStringStream << std::setw(f32Size) << f32;
+		outputStringStream << std::left << std::setw(f32Size) << f32;
 
 		outputStringLength = outputStringStream.str().length();
 	} while (outputStringLength > outputStringLengthMax);
@@ -141,11 +140,18 @@ void AI::editF32(
 	edit.str = outputStringStream.str();
 	edit.event.set();
 
-	consoleLog("Please wait...", 2);
+	if (!edit.copied) {
+		consoleLog("Please wait...", 2);
+	}
 
 	copyThread.join();
 }
 
-void AI::editTransitionTime(std::ifstream &inputFileStream, const char* outputFileName) {
-	editF32(inputFileStream, outputFileName, "Transition Time", TRANSITION_FADE_PATH_VECTOR, "m_fadingTime", 0.0f, 500.0f);
+void AI::editTransitionTime(Work::Edit &edit) {
+	editF32(edit, "Transition Time", TRANSITION_FADE_PATH_VECTOR, "m_fadingTime", 0.0f, 500.0f);
+}
+
+void AI::editInertiaLevels(Work::Edit &edit) {
+	editF32(edit, "Free Look Inertia Level", USER_CONTROLS_PATH_VECTOR, "m_freeLookInertiaLevel", 1.0f, 100.0f);
+	editF32(edit, "Screen Mode Inertia Level", USER_CONTROLS_PATH_VECTOR, "m_screenModeInertiaLevel", 1.0f, 100.0f);
 }

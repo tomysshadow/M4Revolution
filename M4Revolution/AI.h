@@ -16,18 +16,17 @@ namespace AI {
 
 	static const Locale LOCALE("English", LC_NUMERIC);
 
-	void copyThread(std::ifstream &inputFileStream, const char* outputFileName, Work::Edit &edit);
+	void copyThread(Work::Edit &edit);
 
 	void editF32(
-		std::ifstream &inputFileStream,
-		const char* outputFileName,
+		Work::Edit &edit,
 		const std::string &name,
 		const Ubi::BigFile::Path::VECTOR &pathVector,
 		const std::string &key,
 		float min = -FLT_MAX,
-		float max = FLT_MAX,
-		bool percentage = false
+		float max = FLT_MAX
 	);
 
-	void editTransitionTime(std::ifstream &inputFileStream, const char* outputFileName);
+	void editTransitionTime(Work::Edit &edit);
+	void editInertiaLevels(Work::Edit &edit);
 };

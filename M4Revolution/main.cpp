@@ -54,19 +54,19 @@ int main(int argc, char** argv) {
 	}
 
 	static const long OPERATION_EDIT_TRANSITION_TIME = 1;
-	static const long OPERATION_EDIT_INERTIA = 2;
+	static const long OPERATION_EDIT_INERTIA_LEVELS = 2;
 	static const long OPERATION_FIX_LOADING = 3;
 	static const long OPERATION_EXIT = 4;
 	static const long OPERATION_MIN = OPERATION_EDIT_TRANSITION_TIME;
 	static const long OPERATION_MAX = OPERATION_EXIT;
 
-	M4Revolution m4Revolution(argv[1], logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
+	M4Revolution m4Revolution(argv[1], "data.m4b.tmp", logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
 
 	do {
 		consoleLog("This menu may be used to perform the following operations.", 2);
 
 		consoleLog("1) Edit Transition Time");
-		consoleLog("2) Edit Inertia");
+		consoleLog("2) Edit Inertia Levels");
 		consoleLog("3) Fix Loading");
 		consoleLog("4) Exit", 2);
 
@@ -84,11 +84,9 @@ int main(int argc, char** argv) {
 			case OPERATION_EDIT_TRANSITION_TIME:
 			m4Revolution.editTransitionTime();
 			break;
-			/*
-			case OPERATION_EDIT_INERTIA:
-			m4Revolution.editInertia();
+			case OPERATION_EDIT_INERTIA_LEVELS:
+			m4Revolution.editInertiaLevels();
 			break;
-			*/
 			case OPERATION_FIX_LOADING:
 			m4Revolution.fixLoading();
 		}

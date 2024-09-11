@@ -79,9 +79,16 @@ namespace Work {
 	};
 
 	struct Edit {
+		std::ifstream &inputFileStream;
+		std::ofstream outputFileStream = {};
+
 		std::streampos position = 0;
 		std::string str = "";
+
 		Event event;
+		bool copied = false;
+
+		Edit(std::ifstream &inputFileStream, const std::string &outputFileName);
 	};
 
 	// BigFileTask (must seek over them, then come back later)
@@ -209,6 +216,6 @@ namespace Work {
 		Ubi::BigFile::File::SIZE filePosition = 0;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
-		Output(const char* fileName);
+		Output(const std::string &fileName);
 	};
 };

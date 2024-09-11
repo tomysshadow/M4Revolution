@@ -117,8 +117,6 @@ void M4Revolution::ErrorHandler::error(nvtt::Error error) {
 	result = false;
 }
 
-const char* M4Revolution::OUTPUT_FILE_NAME = "data.m4b.tmp";
-
 void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks) {
 	// this function waits for the output thread to catch up
 	// if too many files are queued at once (to prevent running out of memory)
@@ -136,6 +134,7 @@ void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks)
 }
 
 void M4Revolution::copyFiles(
+	std::ifstream &inputFileStream,
 	Ubi::BigFile::File::SIZE inputPosition,
 	Ubi::BigFile::File::SIZE inputCopyPosition,
 	Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
@@ -169,7 +168,12 @@ void M4Revolution::copyFiles(
 	log.copying();
 }
 
-void M4Revolution::convertFile(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Work::Convert::FileWorkCallback fileWorkCallback) {
+void M4Revolution::convertFile(
+	std::ifstream &inputFileStream,
+	std::streampos ownerBigFileInputPosition,
+	Ubi::BigFile::File &file,
+	Work::Convert::FileWorkCallback fileWorkCallback
+) {
 	Work::Convert* convertPointer = new Work::Convert(file, context, file.rgba ? compressionOptionsRGBA : compressionOptionsDXT5);
 	Work::Convert &convert = *convertPointer;
 
@@ -198,19 +202,24 @@ void M4Revolution::convertFile(std::streampos ownerBigFileInputPosition, Ubi::Bi
 	#endif
 }
 
-void M4Revolution::convertFile(std::streampos bigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
+void M4Revolution::convertFile(
+	std::ifstream &inputFileStream,
+	std::streampos bigFileInputPosition,
+	Ubi::BigFile::File &file,
+	Log &log
+) {
 	inputFileStream.seekg((std::streampos)file.position + bigFileInputPosition);
 
 	// these conversion functions update the file sizes passed in
 	switch (file.type) {
 		case Ubi::BigFile::File::TYPE::BIG_FILE:
-		fixLoading(bigFileInputPosition, file, log);
+		fixLoading(inputFileStream, bigFileInputPosition, file, log);
 		break;
 		case Ubi::BigFile::File::TYPE::JPEG:
-		convertFile(bigFileInputPosition, file, convertJPEGWorkCallback);
+		convertFile(inputFileStream, bigFileInputPosition, file, convertJPEGWorkCallback);
 		break;
 		case Ubi::BigFile::File::TYPE::ZAP:
-		convertFile(bigFileInputPosition, file, convertZAPWorkCallback);
+		convertFile(inputFileStream, bigFileInputPosition, file, convertZAPWorkCallback);
 		break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
@@ -238,7 +247,7 @@ void M4Revolution::stepFile(
 	log.step();
 }
 
-void M4Revolution::fixLoading(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
+void M4Revolution::fixLoading(std::ifstream &inputFileStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
 	std::streampos bigFileInputPosition = inputFileStream.tellg();
@@ -283,7 +292,7 @@ void M4Revolution::fixLoading(std::streampos ownerBigFileInputPosition, Ubi::Big
 
 				// prevent copying if there are no files (this is safe in this scenario only)
 				if (!filePointerVectorPointer->empty()) {
-					copyFiles(filePointerSetMapIterator->first, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
+					copyFiles(inputFileStream, filePointerSetMapIterator->first, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
 				}
 
 				// we'll need to convert this file type
@@ -292,7 +301,7 @@ void M4Revolution::fixLoading(std::streampos ownerBigFileInputPosition, Ubi::Big
 
 			// if we are converting this or any previous file in the set
 			if (convert) {
-				convertFile(bigFileInputPosition, file, log);
+				convertFile(inputFileStream, bigFileInputPosition, file, log);
 			} else {
 				// other identical, copied files at the same position in the input should likewise be at the same position in the output
 				file.padding = filePointerSetMapIterator->first - inputFilePosition;
@@ -305,16 +314,11 @@ void M4Revolution::fixLoading(std::streampos ownerBigFileInputPosition, Ubi::Big
 	if (!convert) {
 		// always copy here even if filePointerVectorPointer is empty
 		// (ensure every BigFile has at least one FileTask)
-		copyFiles(file.size, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
+		copyFiles(inputFileStream, file.size, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
 	}
 }
 
-void M4Revolution::resetInputFileStream() {
-	inputFileStream.clear();
-	inputFileStream.seekg(0, std::ios::beg);
-}
-
-Ubi::BigFile::File M4Revolution::createInputFile() {
+Ubi::BigFile::File M4Revolution::createInputFile(std::ifstream &inputFileStream) {
 	inputFileStream.clear();
 	inputFileStream.seekg(0, std::ios::end);
 	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputFileStream.tellg());
@@ -618,7 +622,7 @@ void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::FILE_VARIAN
 	}
 }
 
-void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, bool &yield) {
+void M4Revolution::outputThread(const std::string &outputFileName, Work::Tasks &tasks, bool &yield) {
 	Work::Output output(outputFileName);
 
 	Work::FileTask::POINTER_QUEUE fileTaskPointerQueue = {};
@@ -660,13 +664,15 @@ void M4Revolution::outputThread(const char* outputFileName, Work::Tasks &tasks, 
 }
 
 M4Revolution::M4Revolution(
-	const char* inputFileName,
+	const std::string &inputFileName,
+	const std::string &outputFileName,
 	bool logFileNames,
 	bool disableHardwareAcceleration,
 	uint32_t maxThreads,
 	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks
 )
-	: inputFileStream(inputFileName, std::ios::binary),
+	: inputFileName(inputFileName),
+	outputFileName(outputFileName),
 	logFileNames(logFileNames) {
 	// the number 216 was chosen for being the standard number of tiles in a cube
 	const Work::FileTask::POINTER_QUEUE::size_type DEFAULT_MAX_FILE_TASKS = 216;
@@ -713,20 +719,31 @@ M4Revolution::~M4Revolution() {
 }
 
 void M4Revolution::editTransitionTime() {
-	resetInputFileStream();
+	std::ifstream inputFileStream(inputFileName, std::ios::binary);
 
 	Log log("Editing Transition Time", inputFileStream);
-	AI::editTransitionTime(inputFileStream, OUTPUT_FILE_NAME);
+	Work::Edit edit(inputFileStream, outputFileName);
+	AI::editTransitionTime(edit);
+}
+
+void M4Revolution::editInertiaLevels() {
+	std::ifstream inputFileStream(inputFileName, std::ios::binary);
+
+	Log log("Editing Inertia Levels", inputFileStream);
+	Work::Edit edit(inputFileStream, outputFileName);
+	AI::editInertiaLevels(edit);
 }
 
 void M4Revolution::fixLoading() {
-	Ubi::BigFile::File inputFile = createInputFile();
+	std::ifstream inputFileStream(inputFileName, std::ios::binary);
+
+	Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
 	bool yield = true;
-	std::thread outputThread(M4Revolution::outputThread, OUTPUT_FILE_NAME, std::ref(tasks), std::ref(yield));
+	std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks), std::ref(yield));
 
 	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames, true);
-	fixLoading(0, inputFile, log);
+	fixLoading(inputFileStream, 0, inputFile, log);
 	log.finishing();
 
 	// necessary to wake up the output thread one last time at the end
