@@ -11,6 +11,8 @@ class M4Revolution {
 
 	typedef uint32_t COLOR32;
 
+	const char* OUTPUT_FILE_NAME = "~data.m4b.tmp";
+
 	class Log {
 		private:
 		std::istream &inputStream;
@@ -53,7 +55,6 @@ class M4Revolution {
 	};
 
 	std::string inputFileName = "";
-	std::string outputFileName = "";
 	bool logFileNames = false;
 
 	nvtt::Context context = {};
@@ -120,7 +121,6 @@ class M4Revolution {
 	public:
 	M4Revolution(
 		const std::string &inputFileName,
-		const std::string &outputFileName,
 		bool logFileNames = false,
 		bool disableHardwareAcceleration = false,
 		uint32_t maxThreads = 0,

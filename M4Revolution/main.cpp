@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	M4Revolution m4Revolution(argv[1], "~data.m4b.tmp", logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
+	M4Revolution m4Revolution(argv[1], logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
 
 	do {
 		consoleLog("This menu may be used to perform the following operations.", 2);

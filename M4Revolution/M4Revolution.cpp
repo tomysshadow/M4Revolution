@@ -666,14 +666,12 @@ void M4Revolution::outputThread(const std::string &outputFileName, Work::Tasks &
 
 M4Revolution::M4Revolution(
 	const std::string &inputFileName,
-	const std::string &outputFileName,
 	bool logFileNames,
 	bool disableHardwareAcceleration,
 	uint32_t maxThreads,
 	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks
 )
 	: inputFileName(inputFileName),
-	outputFileName(outputFileName),
 	logFileNames(logFileNames) {
 	// the number 216 was chosen for being the standard number of tiles in a cube
 	const Work::FileTask::POINTER_QUEUE::size_type DEFAULT_MAX_FILE_TASKS = 216;
@@ -736,8 +734,9 @@ void M4Revolution::editInertiaLevels() {
 }
 
 void M4Revolution::fixLoading() {
+	// always delete the temporary file when done
 	SCOPE_EXIT {
-		std::filesystem::remove(outputFileName);
+		std::filesystem::remove(OUTPUT_FILE_NAME);
 	};
 
 	{
@@ -746,7 +745,7 @@ void M4Revolution::fixLoading() {
 		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
 		bool yield = true;
-		std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks), std::ref(yield));
+		std::thread outputThread(M4Revolution::outputThread, OUTPUT_FILE_NAME, std::ref(tasks), std::ref(yield));
 
 		Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames, true);
 		fixLoading(inputFileStream, 0, inputFile, log);
@@ -768,7 +767,7 @@ void M4Revolution::fixLoading() {
 	}
 
 	// here I use std::filesystem::rename because I do want to overwrite the file if it exists
-	std::filesystem::rename(outputFileName, inputFileName);
+	std::filesystem::rename(OUTPUT_FILE_NAME, inputFileName);
 }
 
 bool M4Revolution::restoreBackup() {
