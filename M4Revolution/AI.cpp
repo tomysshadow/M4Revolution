@@ -141,7 +141,6 @@ void AI::editF32(
 		f32 = consoleFloat(outputStringStream.str().c_str(), min, max, LOCALE);
 
 		// std::left is used to left align because otherwise we'll shift the number over
-		// (will become a problem if we edit multiple times)
 		outputStringStream.str("");
 		outputStringStream << std::left << std::setw(f32Size) << f32;
 
@@ -154,6 +153,7 @@ void AI::editF32(
 	edit.position = position + (std::streamsize)VALUE_STR_PREFIX.length();
 	edit.str = outputStringStream.str();
 
+	// must be before the event is set so we don't have two threads both logging stuff
 	if (!edit.copied) {
 		consoleLog("Please wait...", 2);
 	}
