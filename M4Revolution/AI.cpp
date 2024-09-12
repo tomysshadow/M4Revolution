@@ -12,13 +12,13 @@ void AI::copyThread(Work::Edit &edit) {
 		// check if the file exists, if it doesn't create a backup
 		std::fstream backupFileStream(BACKUP_FILE_NAME, std::ios::binary | std::ios::in);
 
-		backup = !backupFileStream.is_open();
-
-		if (backup) {
+		if (!backupFileStream.is_open()) {
 			backupFileStream.open(BACKUP_FILE_NAME, std::ios::binary | std::ios::out);
 
 			fileStream.seekg(0, std::ios::beg);
 			copyStream(fileStream, backupFileStream);
+
+			backup = true;
 		}
 
 		edit.copied = true;
