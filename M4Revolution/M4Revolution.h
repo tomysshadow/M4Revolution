@@ -13,7 +13,7 @@ class M4Revolution {
 
 	class Log {
 		private:
-		std::ifstream &inputFileStream;
+		std::istream &inputStream;
 		Ubi::BigFile::File::SIZE inputFileSize = 0;
 		bool fileNames = false;
 		std::optional<std::chrono::steady_clock::time_point> beginOptional = std::nullopt;
@@ -23,7 +23,7 @@ class M4Revolution {
 		int filesCopying = 0;
 
 		public:
-		Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
+		Log(const char* title, std::istream &inputStream, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
 		~Log();
 		Log(const Log &log) = delete;
 		Log &operator=(const Log &log) = delete;
@@ -71,7 +71,7 @@ class M4Revolution {
 	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks);
 
 	void copyFiles(
-		std::ifstream &inputFileStream,
+		std::istream &inputStream,
 		Ubi::BigFile::File::SIZE inputPosition,
 		Ubi::BigFile::File::SIZE inputCopyPosition,
 		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
@@ -80,14 +80,14 @@ class M4Revolution {
 	);
 
 	void convertFile(
-		std::ifstream &inputFileStream,
+		std::istream &inputStream,
 		std::streampos ownerBigFileInputPosition,
 		Ubi::BigFile::File &file,
 		Work::Convert::FileWorkCallback fileWorkCallback
 	);
 
 	void convertFile(
-		std::ifstream &inputFileStream,
+		std::istream &inputStream,
 		std::streampos bigFileInputPosition,
 		Ubi::BigFile::File &file,
 		Log &log
@@ -101,9 +101,9 @@ class M4Revolution {
 		Log &log
 	);
 
-	void fixLoading(std::ifstream &inputFileStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
+	void fixLoading(std::istream &inputStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
-	Ubi::BigFile::File createInputFile(std::ifstream &inputFileStream);
+	Ubi::BigFile::File createInputFile(std::istream &inputStream);
 
 	static void color32X(COLOR32* color32Pointer, size_t stride, size_t size);
 	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface);
@@ -113,7 +113,7 @@ class M4Revolution {
 	static VOID CALLBACK convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
 	#endif
 	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
-	static void outputData(std::ofstream &fileStream, Work::FileTask &fileTask, bool &yield);
+	static void outputData(std::ostream &outputStream, Work::FileTask &fileTask, bool &yield);
 	static void outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
 	static void outputThread(const std::string &outputFileName, Work::Tasks &tasks, bool &yield);
 
@@ -133,4 +133,5 @@ class M4Revolution {
 	void editTransitionTime();
 	void editInertiaLevels();
 	void fixLoading();
+	bool restoreBackup();
 };

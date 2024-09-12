@@ -1,4 +1,5 @@
 #include "Work.h"
+#include <filesystem>
 
 // acquire lock to prevent data race on predicate
 void Work::Event::setPredicate(bool value) {
@@ -64,20 +65,19 @@ Work::Data::Data(size_t size, POINTER pointer)
 	pointer(pointer) {
 }
 
-Work::Edit::Edit(std::ifstream &inputFileStream, const std::string &outputFileName)
-	: inputFileStream(inputFileStream),
-	outputFileStream(outputFileName, std::ios::binary) {
+Work::Edit::Edit(std::fstream &fileStream)
+	: fileStream(fileStream) {
 }
 
 Work::BigFileTask::BigFileTask(
-	std::ifstream &inputFileStream,
+	std::istream &inputStream,
 	std::streampos ownerBigFileInputPosition,
 	Ubi::BigFile::File &file,
 	Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap
 )
 	: ownerBigFileInputPosition(ownerBigFileInputPosition),
 	file(file),
-	bigFilePointer(std::make_shared<Ubi::BigFile>(inputFileStream, fileSystemSize, files, fileVectorIteratorSetMap, file)) {
+	bigFilePointer(std::make_shared<Ubi::BigFile>(inputStream, fileSystemSize, files, fileVectorIteratorSetMap, file)) {
 }
 
 std::streampos Work::BigFileTask::getOwnerBigFileInputPosition() const {
@@ -123,7 +123,7 @@ Work::Data::QUEUE_LOCK Work::FileTask::lock() {
 	return lock(yield);
 }
 
-void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count) {
+void Work::FileTask::copy(std::istream &inputStream, std::streamsize count) {
 	if (!count) {
 		return;
 	}
@@ -139,7 +139,7 @@ void Work::FileTask::copy(std::ifstream &inputFileStream, std::streamsize count)
 		{
 			Data::POINTER pointer = Data::POINTER(new unsigned char[countRead]);
 
-			readStreamPartial(inputFileStream, pointer.get(), countRead, gcountRead);
+			readStreamPartial(inputStream, pointer.get(), countRead, gcountRead);
 
 			if (!gcountRead) {
 				break;
@@ -211,5 +211,21 @@ Work::Convert::Convert(
 }
 
 Work::Output::Output(const std::string &fileName)
-	: fileStream(fileName, std::ios::binary) {
+	: fileName(fileName) {
+	// without this remove first it may crash trying to open a hidden file
+	// (I mean, this isn't atomic so that can happen anyway but at least it's not our fault then)
+	// this is just a temp file so deleting it should be fine
+	std::filesystem::remove(fileName);
+
+	fileStream.open(fileName, std::ios::binary | std::ios::trunc);
+
+	#ifdef _WIN32
+	setFileAttributeHidden(true, fileName.c_str());
+	#endif
+}
+
+Work::Output::~Output() {
+	#ifdef _WIN32
+	setFileAttributeHidden(false, fileName.c_str());
+	#endif
 }

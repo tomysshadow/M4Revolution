@@ -320,6 +320,9 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 	return stringToLongUnsignedWide(str, result, base, locale) ? result : defaultValue;
 }
 
+static const char* BACKUP_FILE_NAME = "data.m4b.bak";
+static const char* BACKUP_CONSOLE_LOG_STR = "A backup has been created.";
+
 inline bool freeZAP(zap_byte_t* &out) {
 	if (out) {
 		if (zap_free(out) != ZAP_ERROR_NONE) {
@@ -383,3 +386,7 @@ void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination wr
 
 void copyStream(std::istream &inputStream, std::ostream &outputStream, std::streamsize count = -1);
 void copyStreamToString(std::istream &inputStream, std::string &outputString, std::streamsize count = -1);
+
+#ifdef _WIN32
+void setFileAttributeHidden(bool hidden, LPCSTR pathStringPointer);
+#endif

@@ -79,8 +79,7 @@ namespace Work {
 	};
 
 	struct Edit {
-		std::ifstream &inputFileStream;
-		std::ofstream outputFileStream = {};
+		std::fstream &fileStream;
 
 		std::streampos position = 0;
 		std::string str = "";
@@ -88,7 +87,7 @@ namespace Work {
 		Event event;
 		bool copied = false;
 
-		Edit(std::ifstream &inputFileStream, const std::string &outputFileName);
+		Edit(std::fstream &fileStream);
 	};
 
 	// BigFileTask (must seek over them, then come back later)
@@ -115,7 +114,7 @@ namespace Work {
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
 		BigFileTask(
-			std::ifstream &inputFileStream,
+			std::istream &inputStream,
 			std::streampos ownerBigFileInputPosition,
 			Ubi::BigFile::File &file,
 			Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap
@@ -158,7 +157,7 @@ namespace Work {
 		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
 		Data::QUEUE_LOCK lock(bool &yield);
 		Data::QUEUE_LOCK lock();
-		void copy(std::ifstream &inputFileStream, std::streamsize count);
+		void copy(std::istream &inputStream, std::streamsize count);
 		void complete();
 		std::streampos getOwnerBigFileInputPosition();
 		FILE_VARIANT getFileVariant();
@@ -208,6 +207,7 @@ namespace Work {
 	};
 
 	struct Output {
+		std::string fileName = "";
 		std::ofstream fileStream = {};
 
 		std::streampos currentBigFileInputPosition = -1;
@@ -217,5 +217,6 @@ namespace Work {
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
 		Output(const std::string &fileName);
+		~Output();
 	};
 };

@@ -15,10 +15,12 @@ namespace Ubi {
 		typedef uint32_t SIZE;
 		static const size_t SIZE_SIZE = sizeof(SIZE);
 
-		std::optional<std::string> readOptional(std::ifstream &inputFileStream, bool &nullTerminator);
-		std::optional<std::string> readOptional(std::ifstream &inputFileStream);
-		void writeOptional(std::ofstream &outputFileStream, const std::optional<std::string> &strOptional, bool nullTerminator = true);
 		std::optional<std::string> &swizzle(std::optional<std::string> &encryptedStringOptional);
+		std::optional<std::string> readOptional(std::istream &inputStream, bool &nullTerminator);
+		std::optional<std::string> readOptional(std::istream &inputStream);
+		std::optional<std::string> readOptionalEncrypted(std::istream &inputStream);
+		void writeOptional(std::ostream &outputStream, const std::optional<std::string> &strOptional, bool nullTerminator = true);
+		void writeOptionalEncrypted(std::ostream &outputStream, std::optional<std::string> &strOptional);
 	};
 
 	namespace Binary {
@@ -101,7 +103,7 @@ namespace Ubi {
 			typedef std::map<std::string, Layer> LAYER_MAP;
 			typedef std::shared_ptr<LAYER_MAP> LAYER_MAP_POINTER;
 
-			static SLICE_MAP createSliceMap(std::ifstream &inputFileStream, std::streamsize size);
+			static SLICE_MAP createSliceMap(std::istream &inputStream, std::streamsize size);
 		};
 
 		// this is the abstract class on which all resources are based
@@ -120,7 +122,7 @@ namespace Ubi {
 				VERSION version = 1;
 				std::optional<std::string> nameOptional = std::nullopt;
 
-				Loader(std::ifstream &inputFileStream);
+				Loader(std::istream &inputStream);
 			};
 
 			const Loader::POINTER LOADER_POINTER;
@@ -135,21 +137,21 @@ namespace Ubi {
 		namespace {
 			class TextureBox : public virtual Resource {
 				private:
-				void create(std::ifstream &inputFileStream, Binary::RLE::LAYER_MAP &layerMap);
+				void create(std::istream &inputStream, Binary::RLE::LAYER_MAP &layerMap);
 
 				public:
 				static const Resource::ID ID = 15;
 				static const Resource::VERSION VERSION = 5;
 
-				TextureBox(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, Binary::RLE::LAYER_MAP &layerMap);
-				TextureBox(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
+				TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream, Binary::RLE::LAYER_MAP &layerMap);
+				TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream);
 				TextureBox(const TextureBox &textureBox) = delete;
 				TextureBox &operator=(const TextureBox &textureBox) = delete;
 			};
 
 			class Water : public virtual Resource {
 				private:
-				void create(std::ifstream &inputFileStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
+				void create(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
 
 				static std::optional<std::string> getTextureBoxNameOptional(const std::string &resourceName);
 
@@ -157,8 +159,8 @@ namespace Ubi {
 				static const Resource::ID ID = 42;
 				static const Resource::VERSION VERSION = 1;
 
-				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
-				Water(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
+				Water(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
+				Water(Loader::POINTER loaderPointer, std::istream &inputStream);
 				Water(const Water &water) = delete;
 				Water &operator=(const Water &water) = delete;
 			};
@@ -168,7 +170,7 @@ namespace Ubi {
 				static const Resource::ID ID = 43;
 				static const Resource::VERSION VERSION = 1;
 
-				InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
+				InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
 				InteractiveOffsetProvider(const InteractiveOffsetProvider &interactiveOffsetProvider) = delete;
 				InteractiveOffsetProvider &operator=(const InteractiveOffsetProvider &interactiveOffsetProvider) = delete;
 			};
@@ -178,21 +180,21 @@ namespace Ubi {
 				static const Resource::ID ID = 44;
 				static const Resource::VERSION VERSION = 1;
 
-				TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
+				TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
 				TextureAlignedOffsetProvider(const TextureAlignedOffsetProvider &textureAlignedOffsetProvider) = delete;
 				TextureAlignedOffsetProvider &operator=(const TextureAlignedOffsetProvider &textureAlignedOffsetProvider) = delete;
 			};
 
 			class StateData : public virtual Resource {
 				private:
-				void create(std::ifstream &inputFileStream, RLE::MASK_PATH_SET &maskPathSet);
+				void create(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet);
 
 				public:
 				static const Resource::ID ID = 45;
 				static const Resource::VERSION VERSION = 1;
 
-				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream, RLE::MASK_PATH_SET &maskPathSet);
-				StateData(Loader::POINTER loaderPointer, std::ifstream &inputFileStream);
+				StateData(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet);
+				StateData(Loader::POINTER loaderPointer, std::istream &inputStream);
 				StateData(const StateData &stateData) = delete;
 				StateData &operator=(const StateData &stateData) = delete;
 			};
@@ -206,12 +208,12 @@ namespace Ubi {
 				// "ubi/b0-l"
 				static const ID UBI_B0_L = 0x6C2D30622F696275;
 
-				std::ifstream &inputFileStream;
+				std::istream &inputStream;
 				std::streamsize fileSize = 0;
 				std::streampos filePosition = 0;
 
 				public:
-				Header(std::ifstream &inputFileStream, std::streamsize fileSize);
+				Header(std::istream &inputStream, std::streamsize fileSize);
 				~Header();
 				Header(const Header &header) = delete;
 				Header &operator=(const Header &header) = delete;
@@ -219,12 +221,12 @@ namespace Ubi {
 		};
 
 		// a basic factory pattern going on here for the creation of resources
-		void readFileHeader(std::ifstream &inputFileStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size = -1);
-		Resource::Loader::POINTER readFileLoader(std::ifstream &inputFileStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size = -1);
-		Resource::POINTER createResourcePointer(std::ifstream &inputFileStream, std::streamsize size = -1);
-		Resource::POINTER createLayerMap(std::ifstream &inputFileStream, Binary::RLE::LAYER_MAP &layerMap, std::streamsize size = -1);
-		Resource::POINTER createMaskPathSet(std::ifstream &inputFileStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size = -1);
-		Resource::POINTER createTextureBoxMap(std::ifstream &inputFileStream, RLE::TEXTURE_BOX_MAP &textureBoxMap, std::streamsize size = -1);
+		void readFileHeader(std::istream &inputStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size = -1);
+		Resource::Loader::POINTER readFileLoader(std::istream &inputStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size = -1);
+		Resource::POINTER createResourcePointer(std::istream &inputStream, std::streamsize size = -1);
+		Resource::POINTER createLayerMap(std::istream &inputStream, Binary::RLE::LAYER_MAP &layerMap, std::streamsize size = -1);
+		Resource::POINTER createMaskPathSet(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size = -1);
+		Resource::POINTER createTextureBoxMap(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap, std::streamsize size = -1);
 	};
 
 	struct BigFile {
@@ -289,24 +291,24 @@ namespace Ubi {
 			bool greyScale = false;
 			bool rgba = false;
 
-			File(std::ifstream &inputFileStream, SIZE &fileSystemSize, const std::optional<File> &layerFileOptional);
-			File(std::ifstream &inputFileStream);
+			File(std::istream &inputStream, SIZE &fileSystemSize, const std::optional<File> &layerFileOptional);
+			File(std::istream &inputStream);
 			File(SIZE inputFileSize);
-			void write(std::ofstream &outputFileStream) const;
+			void write(std::ostream &outputStream) const;
 
 			Binary::Resource::POINTER createLayerMap(
-				std::ifstream &inputFileStream, File::SIZE fileSystemPosition,
+				std::istream &inputStream, File::SIZE fileSystemPosition,
 				Binary::RLE::LAYER_MAP &layerMap
 			) const;
 
 			Binary::Resource::POINTER appendToTextureBoxMap(
-				std::ifstream &inputFileStream,
+				std::istream &inputStream,
 				File::SIZE fileSystemPosition,
 				Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap
 			) const;
 
 			private:
-			void read(std::ifstream &inputFileStream);
+			void read(std::istream &inputStream);
 			void rename(const std::optional<File> &layerFileOptional);
 
 			static std::string getNameExtension(const std::string &name);
@@ -350,26 +352,26 @@ namespace Ubi {
 
 			Directory(
 				Directory* ownerDirectory,
-				std::ifstream &inputFileStream,
+				std::istream &inputStream,
 				File::SIZE &fileSystemSize,
 				File::POINTER_VECTOR::size_type &files,
 				File::POINTER_SET_MAP &filePointerSetMap,
 				const std::optional<File> &layerFileOptional
 			);
 			
-			Directory(std::ifstream &inputFileStream);
-			Directory(std::ifstream &inputFileStream, const Path &path, File::POINTER &filePointer);
-			Directory(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
-			void write(std::ofstream &outputFileStream) const;
+			Directory(std::istream &inputStream);
+			Directory(std::istream &inputStream, const Path &path, File::POINTER &filePointer);
+			Directory(std::istream &inputStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
+			void write(std::ostream &outputStream) const;
 			File::POINTER find(const Path &path) const;
 
 			void createLayerMap(
-				std::ifstream &inputFileStream,
+				std::istream &inputStream,
 				File::SIZE fileSystemPosition, Binary::RLE::LAYER_MAP &layerMap
 			) const;
 
 			void appendToTextureBoxMap(
-				std::ifstream &inputFileStream,
+				std::istream &inputStream,
 				File::SIZE fileSystemPosition,
 				Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap
 			) const;
@@ -377,27 +379,27 @@ namespace Ubi {
 			private:
 			void read(
 				bool owner,
-				std::ifstream &inputFileStream,
+				std::istream &inputStream,
 				File::SIZE &fileSystemSize,
 				File::POINTER_VECTOR::size_type &files,
 				File::POINTER_SET_MAP &filePointerSetMap,
 				const std::optional<File> &layerFileOptional
 			);
 
-			void find(std::ifstream &inputFileStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
+			void find(std::istream &inputStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
 			File::POINTER find(const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) const;
 			bool isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const;
 			bool isSet(bool bftex, const std::optional<File> &layerFileOptional) const;
 
 			void createLayerMap(
-				std::ifstream &inputFileStream,
+				std::istream &inputStream,
 				File::SIZE fileSystemPosition,
 				Binary::RLE::LAYER_MAP &layerMap,
 				const File::POINTER_VECTOR &binaryFilePointerVector
 			) const;
 
 			void appendToTextureBoxMap(
-				std::ifstream &inputFileStream,
+				std::istream &inputStream,
 				File::SIZE fileSystemPosition,
 				Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap,
 				const File::POINTER_VECTOR &binaryFilePointerVector
@@ -415,13 +417,13 @@ namespace Ubi {
 				}
 			};
 
-			Header(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemPosition);
-			Header(std::ifstream &inputFileStream);
-			Header(std::ifstream &inputFileStream, File::POINTER &filePointer);
-			void write(std::ofstream &outputFileStream) const;
+			Header(std::istream &inputStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemPosition);
+			Header(std::istream &inputStream);
+			Header(std::istream &inputStream, File::POINTER &filePointer);
+			void write(std::ostream &outputStream) const;
 
 			private:
-			void read(std::ifstream &inputFileStream);
+			void read(std::istream &inputStream);
 
 			static const std::string SIGNATURE;
 			static const VERSION CURRENT_VERSION = 1;
@@ -434,9 +436,9 @@ namespace Ubi {
 		Header header;
 		Directory directory;
 
-		BigFile(std::ifstream &inputFileStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, File &file);
-		BigFile(std::ifstream &inputFileStream);
-		BigFile(std::ifstream &inputFileStream, const Path &path, File::POINTER &filePointer);
-		void write(std::ofstream &outputFileStream) const;
+		BigFile(std::istream &inputStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, File &file);
+		BigFile(std::istream &inputStream);
+		BigFile(std::istream &inputStream, const Path &path, File::POINTER &filePointer);
+		void write(std::ostream &outputStream) const;
 	};
 };

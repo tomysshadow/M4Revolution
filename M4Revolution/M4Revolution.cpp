@@ -2,6 +2,8 @@
 #include "AI.h"
 #include <chrono>
 #include <iostream>
+#include <filesystem>
+#include <stdio.h>
 
 void M4Revolution::destroy() {
 	#ifdef MULTITHREADED
@@ -9,8 +11,8 @@ void M4Revolution::destroy() {
 	#endif
 };
 
-M4Revolution::Log::Log(const char* title, std::ifstream &inputFileStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
-	: inputFileStream(inputFileStream),
+M4Revolution::Log::Log(const char* title, std::istream &inputStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
+	: inputStream(inputStream),
 	inputFileSize(inputFileSize),
 	fileNames(fileNames) {
 	if (slow) {
@@ -36,7 +38,7 @@ void M4Revolution::Log::copying() {
 	if (!fileNames) {
 		// use the position to log the current progress
 		// this works because we read the input file stream from beginning to end in order
-		int currentProgress = (int)(((double)inputFileStream.tellg() / inputFileSize) * 100.0);
+		int currentProgress = (int)(((double)inputStream.tellg() / inputFileSize) * 100.0);
 
 		while (progress < currentProgress) {
 			std::cout << ++progress << "% complete" << std::endl;
@@ -134,14 +136,14 @@ void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks)
 }
 
 void M4Revolution::copyFiles(
-	std::ifstream &inputFileStream,
+	std::istream &inputStream,
 	Ubi::BigFile::File::SIZE inputPosition,
 	Ubi::BigFile::File::SIZE inputCopyPosition,
 	Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
 	std::streampos bigFileInputPosition,
 	Log &log
 ) {
-	inputFileStream.seekg((std::streampos)inputCopyPosition + bigFileInputPosition);
+	inputStream.seekg((std::streampos)inputCopyPosition + bigFileInputPosition);
 
 	Work::FileTask::POINTER_QUEUE::size_type fileTasks = 0;
 
@@ -158,7 +160,7 @@ void M4Revolution::copyFiles(
 	}
 
 	Work::FileTask &fileTask = *fileTaskPointer;
-	fileTask.copy(inputFileStream, inputPosition - inputCopyPosition);
+	fileTask.copy(inputStream, inputPosition - inputCopyPosition);
 	fileTask.complete();
 
 	waitFiles(fileTasks);
@@ -169,7 +171,7 @@ void M4Revolution::copyFiles(
 }
 
 void M4Revolution::convertFile(
-	std::ifstream &inputFileStream,
+	std::istream &inputStream,
 	std::streampos ownerBigFileInputPosition,
 	Ubi::BigFile::File &file,
 	Work::Convert::FileWorkCallback fileWorkCallback
@@ -179,7 +181,7 @@ void M4Revolution::convertFile(
 
 	Work::Data::POINTER &dataPointer = convert.dataPointer;
 	dataPointer = Work::Data::POINTER(new unsigned char[file.size]);
-	readStreamSafe(inputFileStream, dataPointer.get(), file.size);
+	readStreamSafe(inputStream, dataPointer.get(), file.size);
 
 	Work::FileTask::POINTER &fileTaskPointer = convert.fileTaskPointer;
 	fileTaskPointer = std::make_shared<Work::FileTask>(ownerBigFileInputPosition, &file);
@@ -203,23 +205,23 @@ void M4Revolution::convertFile(
 }
 
 void M4Revolution::convertFile(
-	std::ifstream &inputFileStream,
+	std::istream &inputStream,
 	std::streampos bigFileInputPosition,
 	Ubi::BigFile::File &file,
 	Log &log
 ) {
-	inputFileStream.seekg((std::streampos)file.position + bigFileInputPosition);
+	inputStream.seekg((std::streampos)file.position + bigFileInputPosition);
 
 	// these conversion functions update the file sizes passed in
 	switch (file.type) {
 		case Ubi::BigFile::File::TYPE::BIG_FILE:
-		fixLoading(inputFileStream, bigFileInputPosition, file, log);
+		fixLoading(inputStream, bigFileInputPosition, file, log);
 		break;
 		case Ubi::BigFile::File::TYPE::JPEG:
-		convertFile(inputFileStream, bigFileInputPosition, file, convertJPEGWorkCallback);
+		convertFile(inputStream, bigFileInputPosition, file, convertJPEGWorkCallback);
 		break;
 		case Ubi::BigFile::File::TYPE::ZAP:
-		convertFile(inputFileStream, bigFileInputPosition, file, convertZAPWorkCallback);
+		convertFile(inputStream, bigFileInputPosition, file, convertZAPWorkCallback);
 		break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
@@ -227,7 +229,7 @@ void M4Revolution::convertFile(
 		tasks.fileLock().get().push(fileTaskPointer);
 
 		Work::FileTask &fileTask = *fileTaskPointer;
-		fileTask.copy(inputFileStream, file.size);
+		fileTask.copy(inputStream, file.size);
 		fileTask.complete();
 	}
 
@@ -247,15 +249,15 @@ void M4Revolution::stepFile(
 	log.step();
 }
 
-void M4Revolution::fixLoading(std::ifstream &inputFileStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
+void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
-	std::streampos bigFileInputPosition = inputFileStream.tellg();
-	tasks.bigFileLock().get().insert({bigFileInputPosition, std::make_shared<Work::BigFileTask>(inputFileStream, ownerBigFileInputPosition, file, filePointerSetMap)});
+	std::streampos bigFileInputPosition = inputStream.tellg();
+	tasks.bigFileLock().get().insert({bigFileInputPosition, std::make_shared<Work::BigFileTask>(inputStream, ownerBigFileInputPosition, file, filePointerSetMap)});
 
 	// inputCopyPosition is the position of the files to copy
 	// inputFilePosition is the position of a specific input file (for file.size calculation)
-	Ubi::BigFile::File::SIZE inputCopyPosition = (Ubi::BigFile::File::SIZE)(inputFileStream.tellg() - bigFileInputPosition);
+	Ubi::BigFile::File::SIZE inputCopyPosition = (Ubi::BigFile::File::SIZE)(inputStream.tellg() - bigFileInputPosition);
 	Ubi::BigFile::File::SIZE inputFilePosition = inputCopyPosition;
 
 	// convert keeps track of if we just converted any files within the inner, set loop
@@ -292,7 +294,7 @@ void M4Revolution::fixLoading(std::ifstream &inputFileStream, std::streampos own
 
 				// prevent copying if there are no files (this is safe in this scenario only)
 				if (!filePointerVectorPointer->empty()) {
-					copyFiles(inputFileStream, filePointerSetMapIterator->first, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
+					copyFiles(inputStream, filePointerSetMapIterator->first, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
 				}
 
 				// we'll need to convert this file type
@@ -301,7 +303,7 @@ void M4Revolution::fixLoading(std::ifstream &inputFileStream, std::streampos own
 
 			// if we are converting this or any previous file in the set
 			if (convert) {
-				convertFile(inputFileStream, bigFileInputPosition, file, log);
+				convertFile(inputStream, bigFileInputPosition, file, log);
 			} else {
 				// other identical, copied files at the same position in the input should likewise be at the same position in the output
 				file.padding = filePointerSetMapIterator->first - inputFilePosition;
@@ -314,15 +316,14 @@ void M4Revolution::fixLoading(std::ifstream &inputFileStream, std::streampos own
 	if (!convert) {
 		// always copy here even if filePointerVectorPointer is empty
 		// (ensure every BigFile has at least one FileTask)
-		copyFiles(inputFileStream, file.size, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
+		copyFiles(inputStream, file.size, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
 	}
 }
 
-Ubi::BigFile::File M4Revolution::createInputFile(std::ifstream &inputFileStream) {
-	inputFileStream.clear();
-	inputFileStream.seekg(0, std::ios::end);
-	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputFileStream.tellg());
-	inputFileStream.seekg(0, std::ios::beg);
+Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
+	inputStream.seekg(0, std::ios::end);
+	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputStream.tellg());
+	inputStream.seekg(0, std::ios::beg);
 	return inputFile;
 }
 
@@ -556,7 +557,7 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 	return true;
 }
 
-void M4Revolution::outputData(std::ofstream &fileStream, Work::FileTask &fileTask, bool &yield) {
+void M4Revolution::outputData(std::ostream &outputStream, Work::FileTask &fileTask, bool &yield) {
 	Work::Data::QUEUE dataQueue = {};
 
 	for (;;) {
@@ -583,7 +584,7 @@ void M4Revolution::outputData(std::ofstream &fileStream, Work::FileTask &fileTas
 				return;
 			}
 
-			writeStreamSafe(fileStream, data.pointer.get(), data.size);
+			writeStreamSafe(outputStream, data.pointer.get(), data.size);
 
 			dataQueue.pop();
 		}
@@ -719,38 +720,73 @@ M4Revolution::~M4Revolution() {
 }
 
 void M4Revolution::editTransitionTime() {
-	std::ifstream inputFileStream(inputFileName, std::ios::binary);
+	std::fstream fileStream(inputFileName, std::ios::binary | std::ios::in | std::ios::out);
 
-	Log log("Editing Transition Time", inputFileStream);
-	Work::Edit edit(inputFileStream, outputFileName);
+	Log log("Editing Transition Time", fileStream);
+	Work::Edit edit(fileStream);
 	AI::editTransitionTime(edit);
 }
 
 void M4Revolution::editInertiaLevels() {
-	std::ifstream inputFileStream(inputFileName, std::ios::binary);
+	std::fstream fileStream(inputFileName, std::ios::binary | std::ios::in | std::ios::out);
 
-	Log log("Editing Inertia Levels", inputFileStream);
-	Work::Edit edit(inputFileStream, outputFileName);
+	Log log("Editing Inertia Levels", fileStream);
+	Work::Edit edit(fileStream);
 	AI::editInertiaLevels(edit);
 }
 
 void M4Revolution::fixLoading() {
-	std::ifstream inputFileStream(inputFileName, std::ios::binary);
+	SCOPE_EXIT {
+		std::filesystem::remove(outputFileName);
+	};
 
-	Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
+	{
+		std::ifstream inputFileStream(inputFileName, std::ios::binary);
 
-	bool yield = true;
-	std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks), std::ref(yield));
+		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
-	Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames, true);
-	fixLoading(inputFileStream, 0, inputFile, log);
-	log.finishing();
+		bool yield = true;
+		std::thread outputThread(M4Revolution::outputThread, outputFileName, std::ref(tasks), std::ref(yield));
 
-	// necessary to wake up the output thread one last time at the end
-	Work::FileTask::POINTER fileTaskPointer = std::make_shared<Work::FileTask>(-1, &inputFile);
-	fileTaskPointer->complete();
-	tasks.fileLock().get().push(fileTaskPointer);
+		Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames, true);
+		fixLoading(inputFileStream, 0, inputFile, log);
+		log.finishing();
 
-	yield = false;
-	outputThread.join();
+		// necessary to wake up the output thread one last time at the end
+		Work::FileTask::POINTER fileTaskPointer = std::make_shared<Work::FileTask>(-1, &inputFile);
+		fileTaskPointer->complete();
+		tasks.fileLock().get().push(fileTaskPointer);
+
+		yield = false;
+		outputThread.join();
+	}
+
+	// here I'm using CRT rename because I don't want to be able
+	// to overwrite the backup file (which std::filesystem::rename has no option to disallow)
+	if (!rename(inputFileName.c_str(), BACKUP_FILE_NAME)) {
+		consoleLog(BACKUP_CONSOLE_LOG_STR, 2);
+	}
+
+	// here I use std::filesystem::rename because I do want to overwrite the file if it exists
+	std::filesystem::rename(outputFileName, inputFileName);
+}
+
+bool M4Revolution::restoreBackup() {
+	{
+		std::ifstream inputFileStream(BACKUP_FILE_NAME, std::ios::binary);
+
+		Log log("Restoring Backup", inputFileStream);
+
+		if (!inputFileStream.is_open()) {
+			consoleLog("No backup was found. A backup will be automatically created when any other operation is performed.", 2);
+			return false;
+		}
+	}
+
+	if (!consoleBool("Restoring the backup will revert any changes made by Myst IV: Revolution. Would you like to restore the backup?", false)) {
+		return false;
+	}
+
+	std::filesystem::rename(BACKUP_FILE_NAME, inputFileName);
+	return true;
 }

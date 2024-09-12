@@ -34,7 +34,7 @@ bld/
 Debug.zip
 Release.zip
 data.m4b
-data.m4b.tmp
+~data.m4b.tmp
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

@@ -1,23 +1,37 @@
 #include "AI.h"
+#include <filesystem>
 #include <regex>
 #include <sstream>
 #include <iomanip>
 
 void AI::copyThread(Work::Edit &edit) {
-	std::ofstream &outputFileStream = edit.outputFileStream;
+	std::fstream &fileStream = edit.fileStream;
+	bool backup = false;
 
 	if (!edit.copied) {
-		std::ifstream &inputFileStream = edit.inputFileStream;
-		inputFileStream.seekg(0, std::ios::beg);
+		// check if the file exists, if it doesn't create a backup
+		std::fstream backupFileStream(BACKUP_FILE_NAME, std::ios::binary | std::ios::in);
 
-		copyStream(inputFileStream, outputFileStream);
+		backup = !backupFileStream.is_open();
+
+		if (backup) {
+			backupFileStream.open(BACKUP_FILE_NAME, std::ios::binary | std::ios::out);
+
+			fileStream.seekg(0, std::ios::beg);
+			copyStream(fileStream, backupFileStream);
+		}
+
 		edit.copied = true;
 	}
 
 	edit.event.wait(true);
 
-	outputFileStream.seekp(edit.position);
-	writeStreamSafe(outputFileStream, edit.str.c_str(), edit.str.length());
+	if (backup) {
+		consoleLog(BACKUP_CONSOLE_LOG_STR, 2);
+	}
+
+	fileStream.seekp(edit.position);
+	writeStreamSafe(fileStream, edit.str.c_str(), edit.str.length());
 }
 
 void AI::editF32(
@@ -29,9 +43,8 @@ void AI::editF32(
 	float max
 ) {
 	// find the AI file
-	std::ifstream &inputFileStream = edit.inputFileStream;
-	inputFileStream.clear();
-	inputFileStream.seekg(0, std::ios::beg);
+	std::fstream &fileStream = edit.fileStream;
+	fileStream.seekg(0, std::ios::beg);
 
 	Ubi::BigFile::File::POINTER filePointer = 0;
 	std::streampos position = 0;
@@ -41,21 +54,21 @@ void AI::editF32(
 		pathVectorIterator != pathVector.end();
 		pathVectorIterator++
 	) {
-		Ubi::BigFile bigFile(inputFileStream, *pathVectorIterator, filePointer);
+		Ubi::BigFile bigFile(fileStream, *pathVectorIterator, filePointer);
 
 		if (!filePointer) {
 			throw std::runtime_error("filePointer must not be zero");
 		}
 
-		inputFileStream.seekg(position + (std::streampos)filePointer->position);
-		position = inputFileStream.tellg();
+		fileStream.seekg(position + (std::streampos)filePointer->position);
+		position = fileStream.tellg();
 	}
 
 	std::string ai = "";
-	copyStreamToString(inputFileStream, ai, filePointer->size);
+	copyStreamToString(fileStream, ai, filePointer->size);
 
 	// find the line that the value is on
-	const std::regex AI_LINE("^(\\s*([^\\s\\(]+)\\s*\\(\\s*(\\w+)\\s*,\\s*)(.*)\\)[^\\S\\n]*(?:\\n|$)");
+	const std::regex AI_LINE("^(\\s*([^\\s\\(]+)\\s*\\(\\s*([^\\s,]+)\\s*,\\s?)(.*)\\)[^\\S\\n]*(?:\\n|$)");
 	const std::string TYPE_F32 = "f32";
 
 	size_t f32Size = 0;
@@ -140,11 +153,12 @@ void AI::editF32(
 
 	edit.position = position + (std::streamsize)VALUE_STR_PREFIX.length();
 	edit.str = outputStringStream.str();
-	edit.event.set();
 
 	if (!edit.copied) {
 		consoleLog("Please wait...", 2);
 	}
+
+	edit.event.set();
 
 	copyThread.join();
 }

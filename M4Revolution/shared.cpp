@@ -66,8 +66,8 @@ void consoleLog(const char* str, short newline, short tab, bool err, const char*
 #define CONSOLE_NUMBER_VALID_OUT do { std::cout << std::endl; } while (0)
 
 #define CONSOLE_NUMBER_BETWEEN_OUT_RETRY(minValue, maxValue) do { std::cout << "Please enter a valid number from " << (minValue) << " to " << (maxValue) << "." << std::endl; } while (0)
-#define CONSOLE_NUMBER_LESS_OUT_RETRY(maxValue) do { std::cout << "Please enter a valid number less than " << (maxValue) << "." << std::endl; } while (0)
-#define CONSOLE_NUMBER_GREATER_OUT_RETRY(minValue) do { std::cout << "Please enter a valid number greater than " << (minValue) << "." << std::endl; } while (0)
+#define CONSOLE_NUMBER_LESS_OUT_RETRY(maxValue) do { std::cout << "Please enter a valid number less than or equal to " << (maxValue) << "." << std::endl; } while (0)
+#define CONSOLE_NUMBER_GREATER_OUT_RETRY(minValue) do { std::cout << "Please enter a valid number greater than or equal to " << (minValue) << "." << std::endl; } while (0)
 #define CONSOLE_NUMBER_VALID_RETRY_OUT do { std::cout << "Please enter a valid number." << std::endl; } while (0)
 
 #define CONSOLE_NUMBER_OUT(str, minValue, minValueDefault, maxValue, maxValueDefault, resultString) do {\
@@ -205,10 +205,12 @@ void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize 
 	gcount = 0;
 	inputStream.read((char*)buffer, count);
 	gcount = inputStream.gcount();
+	inputStream.clear();
 }
 
 void writeStreamPartial(std::ostream &outputStream, const void* buffer, std::streamsize count) {
 	outputStream.write((const char*)buffer, count);
+	outputStream.clear();
 }
 
 void copyStream(std::istream &inputStream, std::ostream &outputStream, std::streamsize count) {
@@ -238,3 +240,25 @@ void copyStreamToString(std::istream &inputStream, std::string &outputString, st
 		count
 	);
 }
+
+#ifdef _WIN32
+void setFileAttributeHidden(bool hidden, LPCSTR pathStringPointer) {
+	if (!pathStringPointer) {
+		throw std::invalid_argument("pathStringPointer must not be NULL");
+	}
+
+	DWORD fileAttributes = GetFileAttributesA(pathStringPointer);
+
+	if (fileAttributes == INVALID_FILE_ATTRIBUTES) {
+		throw std::runtime_error("Failed to Get File Attributes");
+	}
+
+	fileAttributes = hidden
+		? fileAttributes | FILE_ATTRIBUTE_HIDDEN
+		: fileAttributes & ~FILE_ATTRIBUTE_HIDDEN;
+	
+	if (!SetFileAttributesA(pathStringPointer, fileAttributes)) {
+		throw std::runtime_error("Failed to Set File Attributes");
+	}
+}
+#endif

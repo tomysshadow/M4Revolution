@@ -2,6 +2,40 @@
 #include "M4Revolution.h"
 #include <chrono>
 #include <iostream>
+#include <stdlib.h>
+
+bool performOperation(M4Revolution &m4Revolution) {
+	const long OPERATION_EDIT_TRANSITION_TIME = 1;
+	const long OPERATION_EDIT_INERTIA_LEVELS = 2;
+	const long OPERATION_FIX_LOADING = 3;
+	const long OPERATION_RESTORE_BACKUP = 4;
+	const long OPERATION_EXIT = 5;
+	const long OPERATION_MIN = OPERATION_EDIT_TRANSITION_TIME;
+	const long OPERATION_MAX = OPERATION_EXIT;
+
+	switch (
+			consoleLong(
+				"Please enter the number corresponding to the operation you would like to perform.",
+				OPERATION_MIN,
+				OPERATION_MAX
+			)
+		) {
+		case OPERATION_EDIT_TRANSITION_TIME:
+		m4Revolution.editTransitionTime();
+		break;
+		case OPERATION_EDIT_INERTIA_LEVELS:
+		m4Revolution.editInertiaLevels();
+		break;
+		case OPERATION_FIX_LOADING:
+		m4Revolution.fixLoading();
+		break;
+		case OPERATION_RESTORE_BACKUP:
+		return m4Revolution.restoreBackup();
+		case OPERATION_EXIT:
+		exit(0);
+	}
+	return true;
+}
 
 void help() {
 	consoleLog("Usage: M4Revolution path [-lfn -nohw -mt maxThreads]");
@@ -53,14 +87,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	static const long OPERATION_EDIT_TRANSITION_TIME = 1;
-	static const long OPERATION_EDIT_INERTIA_LEVELS = 2;
-	static const long OPERATION_FIX_LOADING = 3;
-	static const long OPERATION_EXIT = 4;
-	static const long OPERATION_MIN = OPERATION_EDIT_TRANSITION_TIME;
-	static const long OPERATION_MAX = OPERATION_EXIT;
-
-	M4Revolution m4Revolution(argv[1], "data.m4b.tmp", logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
+	M4Revolution m4Revolution(argv[1], "~data.m4b.tmp", logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
 
 	do {
 		consoleLog("This menu may be used to perform the following operations.", 2);
@@ -68,28 +95,25 @@ int main(int argc, char** argv) {
 		consoleLog("1) Edit Transition Time");
 		consoleLog("2) Edit Inertia Levels");
 		consoleLog("3) Fix Loading");
-		consoleLog("4) Exit", 2);
+		consoleLog("4) Restore Backup");
+		consoleLog("5) Exit", 2);
+	} while (
+		consoleBool(
+			(
+				std::string("The operation has been ")
 
-		long operation = consoleLong(
-			"Please enter the number corresponding to the operation you would like to perform.",
-			OPERATION_MIN,
-			OPERATION_MAX
-		);
-
-		if (operation == OPERATION_EXIT) {
-			break;
-		}
-
-		switch (operation) {
-			case OPERATION_EDIT_TRANSITION_TIME:
-			m4Revolution.editTransitionTime();
-			break;
-			case OPERATION_EDIT_INERTIA_LEVELS:
-			m4Revolution.editInertiaLevels();
-			break;
-			case OPERATION_FIX_LOADING:
-			m4Revolution.fixLoading();
-		}
-	} while (consoleBool("The operation has been performed. Would you like to return to the menu? If not, the application will exit.", true));
+				+ (
+					performOperation(m4Revolution)
+					
+					? "performed"
+					: "aborted"
+				)
+				
+				+ ". Would you like to return to the menu? If not, the application will exit."
+			).c_str(),
+			
+			true
+		)
+	);
 	return 0;
 }
