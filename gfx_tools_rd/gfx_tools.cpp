@@ -46,12 +46,9 @@ namespace gfx_tools {
 			rowPointer = inputPointer + (width * INPUT_PIXEL_SIZE) - INPUT_PIXEL_SIZE;
 			pixelPointer = inputPointer;
 
-			inputUPointer = inputPointer;
-
 			// inputVPointer should point to the pixel one row below
-			if (inputPointer != endPointer) {
-				inputVPointer = inputPointer + inputRowSize;
-			}
+			inputUPointer = inputPointer;
+			inputVPointer = (inputPointer == endPointer) ? inputPointer : inputPointer + inputRowSize;
 
 			outputUPointer = outputPointer + OUTPUT_U_POSITION;
 			outputVPointer = outputPointer + OUTPUT_V_POSITION;
