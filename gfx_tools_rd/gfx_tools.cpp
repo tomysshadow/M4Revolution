@@ -19,7 +19,7 @@ namespace gfx_tools {
 			return outputPointer;
 		}
 
-		const size_t INPUT_CHANNEL_ALPHA = 0;
+		const size_t INPUT_CHANNEL_UV = 0;
 		const size_t INPUT_CHANNEL_LUMINANCE = 3;
 
 		const size_t OUTPUT_CHANNEL_U = 0;
@@ -52,8 +52,8 @@ namespace gfx_tools {
 				Color32 &inputVColor = *inputVColorPointer;
 				Color16 &output = *outputPointer;
 
-				output.channels[OUTPUT_CHANNEL_U] = color.channels[INPUT_CHANNEL_ALPHA] - inputUColor.channels[INPUT_CHANNEL_ALPHA];
-				output.channels[OUTPUT_CHANNEL_V] = color.channels[INPUT_CHANNEL_ALPHA] - inputVColor.channels[INPUT_CHANNEL_ALPHA];
+				output.channels[OUTPUT_CHANNEL_U] = color.channels[INPUT_CHANNEL_UV] - inputUColor.channels[INPUT_CHANNEL_UV];
+				output.channels[OUTPUT_CHANNEL_V] = color.channels[INPUT_CHANNEL_UV] - inputVColor.channels[INPUT_CHANNEL_UV];
 
 				if (luminance) {
 					((Color32*)outputPointer)->channels[OUTPUT_CHANNEL_LUMINANCE] = color.channels[INPUT_CHANNEL_LUMINANCE];
