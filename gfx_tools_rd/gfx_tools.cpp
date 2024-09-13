@@ -1,15 +1,15 @@
 #include "gfx_tools.h"
 
 namespace gfx_tools {
-	GFX_TOOLS_RD_API unsigned char* ConvertHeightMapIntoDuDvBumpMap(
+	Color32* convertHeightMapIntoDuDvBumpMapColor(
 		unsigned long width,
 		unsigned long height,
-		unsigned char* inputPointer,
+		Color32* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
-		unsigned long inputRowSize,
-		unsigned char* outputPointer,
+		unsigned long inputStride,
+		Color32* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
-		unsigned long outputRowSize
+		unsigned long outputStride
 	) {
 		// this function normally returns a pointer to the output's end
 		// if the output pixel format is neither of the supported ones, it returns the same pointer passed in
@@ -19,74 +19,77 @@ namespace gfx_tools {
 			return outputPointer;
 		}
 
-		const unsigned long INPUT_PIXEL_SIZE = 4;
-		const unsigned long INPUT_LUMINANCE_POSITION = 3;
+		const size_t INPUT_CHANNEL_ALPHA = 0;
+		const size_t INPUT_CHANNEL_LUMINANCE = 3;
 
-		const unsigned long OUTPUT_PIXEL_VU_88_SIZE = 2;
-		const unsigned long OUTPUT_PIXEL_XLVU_8888_SIZE = 4;
-		const unsigned long OUTPUT_U_POSITION = 0;
-		const unsigned long OUTPUT_V_POSITION = 1;
-		const unsigned long OUTPUT_LUMINANCE_POSITION = 2;
+		const size_t OUTPUT_CHANNEL_U = 0;
+		const size_t OUTPUT_CHANNEL_V = 1;
+		const size_t OUTPUT_CHANNEL_LUMINANCE = 2;
 
-		unsigned long outputPixelSize = luminance ? OUTPUT_PIXEL_XLVU_8888_SIZE : OUTPUT_PIXEL_VU_88_SIZE;
+		Color32* endPointer = (Color32*)((unsigned char*)inputPointer + (height * inputStride) - inputStride);
+		Color32* rowPointer = 0;
+		Color32* colorPointer = 0;
 
-		unsigned char* endPointer = inputPointer + (height * inputRowSize) - inputRowSize;
-		unsigned char* rowPointer = 0;
-		unsigned char* pixelPointer = 0;
-
-		unsigned char* inputUPointer = 0;
-		unsigned char* inputVPointer = 0;
-		unsigned char* inputLuminancePointer = 0;
-
-		unsigned char* outputUPointer = 0;
-		unsigned char* outputVPointer = 0;
-		unsigned char* outputLuminancePointer = 0;
+		Color32* inputUColorPointer = 0;
+		Color32* inputVColorPointer = 0;
 
 		while (inputPointer <= endPointer) {
-			rowPointer = inputPointer + (width * INPUT_PIXEL_SIZE) - INPUT_PIXEL_SIZE;
-			pixelPointer = inputPointer;
+			rowPointer = inputPointer + width - 1;
+			colorPointer = inputPointer;
 
-			// inputVPointer should point to the pixel one row below
-			inputUPointer = inputPointer;
-			inputVPointer = (inputPointer == endPointer) ? inputPointer : inputPointer + inputRowSize;
+			// inputVColorPointer should point to the pixel one row below
+			inputUColorPointer = inputPointer;
+			inputVColorPointer = (inputPointer == endPointer) ? inputPointer : (Color32*)((unsigned char*)inputVColorPointer + inputStride);
 
-			outputUPointer = outputPointer + OUTPUT_U_POSITION;
-			outputVPointer = outputPointer + OUTPUT_V_POSITION;
-
-			if (luminance) {
-				inputLuminancePointer = inputPointer + INPUT_LUMINANCE_POSITION;
-				outputLuminancePointer = outputPointer + OUTPUT_LUMINANCE_POSITION;
-			}
-
-			while (pixelPointer <= rowPointer) {
-				// inputUPointer should point to the pixel one column right
-				if (pixelPointer != rowPointer) {
-					inputUPointer += INPUT_PIXEL_SIZE;
+			while (colorPointer <= rowPointer) {
+				// inputUColorPointer should point to the pixel one column right
+				if (inputUColorPointer != rowPointer) {
+					inputUColorPointer++;
 				}
 
-				// the difference between the pixel and the one right of it
-				*outputUPointer = *pixelPointer - *inputUPointer;
-				outputUPointer += outputPixelSize;
+				Color32 &color = *colorPointer;
+				Color32 &inputUColor = *inputUColorPointer;
+				Color32 &inputVColor = *inputVColorPointer;
+				Color32 &output = *outputPointer;
 
-				// the difference between the pixel and the one below it
-				*outputVPointer = *pixelPointer - *inputVPointer;
-				outputVPointer += outputPixelSize;
+				output.channels[OUTPUT_CHANNEL_U] = color.channels[INPUT_CHANNEL_ALPHA] - inputUColor.channels[INPUT_CHANNEL_ALPHA];
+				output.channels[OUTPUT_CHANNEL_V] = color.channels[INPUT_CHANNEL_ALPHA] - inputVColor.channels[INPUT_CHANNEL_ALPHA];
 
 				if (luminance) {
-					// copy the luminance from the input to the output
-					*outputLuminancePointer = *inputLuminancePointer;
-					outputLuminancePointer += outputPixelSize;
-
-					inputLuminancePointer += INPUT_PIXEL_SIZE;
+					output.channels[OUTPUT_CHANNEL_LUMINANCE] = color.channels[INPUT_CHANNEL_LUMINANCE];
+					outputPointer++;
+				} else {
+					(Color16*)outputPointer++;
 				}
 
-				inputVPointer += INPUT_PIXEL_SIZE;
-				pixelPointer += INPUT_PIXEL_SIZE;
+				colorPointer++;
 			}
 
-			inputPointer += inputRowSize;
-			outputPointer += outputRowSize;
+			inputPointer = (Color32*)((unsigned char*)inputPointer + inputStride);
+			outputPointer = (Color32*)((unsigned char*)outputPointer + outputStride);
 		}
 		return outputPointer;
+	}
+
+	GFX_TOOLS_RD_API unsigned char* ConvertHeightMapIntoDuDvBumpMap(
+		unsigned long width,
+		unsigned long height,
+		unsigned char* inputPointer,
+		EnumPixelFormat inputEnumPixelFormat,
+		unsigned long inputStride,
+		unsigned char* outputPointer,
+		EnumPixelFormat outputEnumPixelFormat,
+		unsigned long outputStride
+	) {
+		return (unsigned char*)convertHeightMapIntoDuDvBumpMapColor(
+			width,
+			height,
+			(Color32*)inputPointer,
+			inputEnumPixelFormat,
+			inputStride,
+			(Color32*)outputPointer,
+			outputEnumPixelFormat,
+			outputStride
+		);
 	}
 };

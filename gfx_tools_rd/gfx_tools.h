@@ -3,6 +3,14 @@
 #include "PixelFormat.h"
 
 namespace gfx_tools {
+	struct Color16 {
+		unsigned char channels[2] = {};
+	};
+
+	struct Color32 {
+		unsigned char channels[4] = {};
+	};
+
 	/*
 	void GFX_TOOLS_RD_API Init();
 	void GFX_TOOLS_RD_API Shutdown();
