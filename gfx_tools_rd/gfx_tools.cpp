@@ -1,13 +1,13 @@
 #include "gfx_tools.h"
 
 namespace gfx_tools {
-	Color32* convertHeightMapIntoDuDvBumpMapColor(
+	Color16* convertHeightMapIntoDuDvBumpMapColor(
 		unsigned long width,
 		unsigned long height,
 		Color32* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
 		unsigned long inputStride,
-		Color32* outputPointer,
+		Color16* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
 		unsigned long outputStride
 	) {
@@ -50,23 +50,23 @@ namespace gfx_tools {
 				Color32 &color = *colorPointer;
 				Color32 &inputUColor = *inputUColorPointer;
 				Color32 &inputVColor = *inputVColorPointer;
-				Color16 &output = *(Color16*)outputPointer;
+				Color16 &output = *outputPointer;
 
 				output.channels[OUTPUT_CHANNEL_U] = color.channels[INPUT_CHANNEL_ALPHA] - inputUColor.channels[INPUT_CHANNEL_ALPHA];
 				output.channels[OUTPUT_CHANNEL_V] = color.channels[INPUT_CHANNEL_ALPHA] - inputVColor.channels[INPUT_CHANNEL_ALPHA];
 
 				if (luminance) {
-					outputPointer->channels[OUTPUT_CHANNEL_LUMINANCE] = color.channels[INPUT_CHANNEL_LUMINANCE];
-					outputPointer++;
+					((Color32*)outputPointer)->channels[OUTPUT_CHANNEL_LUMINANCE] = color.channels[INPUT_CHANNEL_LUMINANCE];
+					(Color32*)outputPointer++;
 				} else {
-					(Color16*)outputPointer++;
+					outputPointer++;
 				}
 
 				colorPointer++;
 			}
 
 			inputPointer = (Color32*)((unsigned char*)inputPointer + inputStride);
-			outputPointer = (Color32*)((unsigned char*)outputPointer + outputStride);
+			outputPointer = (Color16*)((unsigned char*)outputPointer + outputStride);
 		}
 		return outputPointer;
 	}
@@ -87,7 +87,7 @@ namespace gfx_tools {
 			(Color32*)inputPointer,
 			inputEnumPixelFormat,
 			inputStride,
-			(Color32*)outputPointer,
+			(Color16*)outputPointer,
 			outputEnumPixelFormat,
 			outputStride
 		);
