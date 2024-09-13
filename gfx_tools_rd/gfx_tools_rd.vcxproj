@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="gfx_tools.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PixelFormat.cpp" />
   </ItemGroup>

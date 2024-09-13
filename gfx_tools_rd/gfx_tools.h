@@ -1,32 +1,33 @@
 #pragma once
 #include "shared.h"
+#include "PixelFormat.h"
 
 namespace gfx_tools {
 	/*
 	void GFX_TOOLS_RD_API Init();
 	void GFX_TOOLS_RD_API Shutdown();
+	*/
 
-	void GFX_TOOLS_RD_API ConvertHeightMapIntoDuDvBumpMap(
-		unsigned long,
-		unsigned long,
-		unsigned char*,
-		EnumPixelFormat,
-		unsigned long,
-		unsigned char*,
-		EnumPixelFormat,
-		unsigned long
+	GFX_TOOLS_RD_API unsigned char* ConvertHeightMapIntoDuDvBumpMap(
+		unsigned long width,
+		unsigned long height,
+		unsigned char* inputBuffer,
+		EnumPixelFormat inputEnumPixelFormat,
+		unsigned long inputStride,
+		unsigned char* outputBuffer,
+		EnumPixelFormat outputEnumPixelFormat,
+		unsigned long outputStride
 	);
 
-	void GFX_TOOLS_RD_API ConvertHeightMapIntoNormalMap(
-		unsigned long,
-		unsigned long,
-		unsigned char*,
-		EnumPixelFormat,
-		unsigned long,
-		unsigned char*,
-		EnumPixelFormat,
-		unsigned long,
+	GFX_TOOLS_RD_API unsigned char* ConvertHeightMapIntoNormalMap(
+		unsigned long width,
+		unsigned long height,
+		unsigned char* inputBuffer,
+		EnumPixelFormat inputEnumPixelFormat,
+		unsigned long inputStride,
+		unsigned char* outputBuffer,
+		EnumPixelFormat outputEnumPixelFormat,
+		unsigned long outputStride,
 		float
 	);
-	*/
 };
