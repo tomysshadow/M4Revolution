@@ -163,6 +163,7 @@
     <ClCompile Include="PixelFormat.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="gfx_tools.h" />
     <ClInclude Include="PixelFormat.h" />
     <ClInclude Include="shared.h" />
   </ItemGroup>

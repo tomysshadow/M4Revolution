@@ -29,5 +29,8 @@
     <ClInclude Include="shared.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="gfx_tools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
