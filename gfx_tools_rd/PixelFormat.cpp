@@ -152,71 +152,31 @@ namespace gfx_tools {
 	}
 
 	EnumPixelFormat PixelFormat::GetPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat) {
-		PixelFormat &pixelFormat = m_formatDescriptionTable[enumPixelFormat];
+		const ENUM_PIXEL_FORMAT_MAP ENUM_PIXEL_FORMAT_WITH_ALPHA_MAP = {
+			{PIXELFORMAT_XRGB_8888, PIXELFORMAT_ARGB_8888},
+			{PIXELFORMAT_XRGB_1555, PIXELFORMAT_ARGB_1555},
+			{PIXELFORMAT_XRGB_4444, PIXELFORMAT_ARGB_4444},
+			{PIXELFORMAT_XBGR_8888, PIXELFORMAT_ABGR_8888},
+			{PIXELFORMAT_XBGR_1555, PIXELFORMAT_ABGR_1555},
+			{PIXELFORMAT_XBGR_4444, PIXELFORMAT_ABGR_4444}
+		};
 
-		if (!pixelFormat.maskAlpha) {
-			const size_t PIXEL_FORMAT_SIZE = sizeof(PixelFormat);
-			const size_t FORMAT_DESCRIPTION_TABLE_SIZE = sizeof(m_formatDescriptionTable);
-
-			size_t pixelFormatsSize = 0;
-			int enumPixelFormatWithAlpha = EnumPixelFormat::PIXELFORMAT_UNKNOWN;
-			PixelFormat* pixelFormatWithAlpha = m_formatDescriptionTable;
-
-			while (
-				!pixelFormatWithAlpha->maskAlpha
-				|| pixelFormatWithAlpha->maskRed != pixelFormat.maskRed
-				|| pixelFormatWithAlpha->maskGreen != pixelFormat.maskGreen
-				|| pixelFormatWithAlpha->maskBlue != pixelFormat.maskBlue
-				|| pixelFormatWithAlpha->maskPalette != pixelFormat.maskPalette
-				|| pixelFormatWithAlpha->bitsPerPixel != pixelFormat.bitsPerPixel
-				|| pixelFormatWithAlpha->maskDepth != pixelFormat.maskDepth
-				|| pixelFormatWithAlpha->maskStencil != pixelFormat.maskStencil
-			) {
-				pixelFormatsSize += PIXEL_FORMAT_SIZE;
-				enumPixelFormatWithAlpha++;
-				pixelFormatWithAlpha++;
-
-				if (pixelFormatsSize > FORMAT_DESCRIPTION_TABLE_SIZE) {
-					return enumPixelFormat;
-				}
-			}
-			return (EnumPixelFormat)enumPixelFormatWithAlpha;
-		}
-		return enumPixelFormat;
+		ENUM_PIXEL_FORMAT_MAP::const_iterator enumPixelFormatMapIterator = ENUM_PIXEL_FORMAT_WITH_ALPHA_MAP.find(enumPixelFormat);
+		return enumPixelFormatMapIterator == ENUM_PIXEL_FORMAT_WITH_ALPHA_MAP.end() ? enumPixelFormat : enumPixelFormatMapIterator->second;
 	}
 
 	EnumPixelFormat PixelFormat::GetPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat) {
-		PixelFormat &pixelFormat = m_formatDescriptionTable[enumPixelFormat];
+		const ENUM_PIXEL_FORMAT_MAP ENUM_PIXEL_FORMAT_WITHOUT_ALPHA_MAP = {
+			{PIXELFORMAT_ARGB_8888, PIXELFORMAT_XRGB_8888},
+			{PIXELFORMAT_ARGB_1555, PIXELFORMAT_XRGB_1555},
+			{PIXELFORMAT_ARGB_4444, PIXELFORMAT_XRGB_4444},
+			{PIXELFORMAT_ABGR_8888, PIXELFORMAT_XBGR_8888},
+			{PIXELFORMAT_ABGR_1555, PIXELFORMAT_XBGR_1555},
+			{PIXELFORMAT_ABGR_4444, PIXELFORMAT_XBGR_4444}
+		};
 
-		if (!pixelFormat.maskAlpha) {
-			const size_t PIXEL_FORMAT_SIZE = sizeof(PixelFormat);
-			const size_t FORMAT_DESCRIPTION_TABLE_SIZE = sizeof(m_formatDescriptionTable);
-
-			size_t pixelFormatsSize = 0;
-			int enumPixelFormatWithoutAlpha = EnumPixelFormat::PIXELFORMAT_UNKNOWN;
-			PixelFormat* pixelFormatWithoutAlpha = m_formatDescriptionTable;
-
-			while (
-				pixelFormatWithoutAlpha->maskAlpha
-				|| pixelFormatWithoutAlpha->maskRed != pixelFormat.maskRed
-				|| pixelFormatWithoutAlpha->maskGreen != pixelFormat.maskGreen
-				|| pixelFormatWithoutAlpha->maskBlue != pixelFormat.maskBlue
-				|| pixelFormatWithoutAlpha->maskPalette != pixelFormat.maskPalette
-				|| pixelFormatWithoutAlpha->bitsPerPixel != pixelFormat.bitsPerPixel
-				|| pixelFormatWithoutAlpha->maskDepth != pixelFormat.maskDepth
-				|| pixelFormatWithoutAlpha->maskStencil != pixelFormat.maskStencil
-				) {
-				pixelFormatsSize += PIXEL_FORMAT_SIZE;
-				enumPixelFormatWithoutAlpha++;
-				pixelFormatWithoutAlpha++;
-
-				if (pixelFormatsSize > FORMAT_DESCRIPTION_TABLE_SIZE) {
-					return enumPixelFormat;
-				}
-			}
-			return (EnumPixelFormat)enumPixelFormatWithoutAlpha;
-		}
-		return enumPixelFormat;
+		ENUM_PIXEL_FORMAT_MAP::const_iterator enumPixelFormatMapIterator = ENUM_PIXEL_FORMAT_WITHOUT_ALPHA_MAP.find(enumPixelFormat);
+		return enumPixelFormatMapIterator == ENUM_PIXEL_FORMAT_WITHOUT_ALPHA_MAP.end() ? enumPixelFormat : enumPixelFormatMapIterator->second;
 	}
 
 	char* PixelFormat::GetPixelFormatString(EnumPixelFormat enumPixelFormat) {

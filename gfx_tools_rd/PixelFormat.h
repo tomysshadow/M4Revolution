@@ -1,5 +1,6 @@
 #pragma once
 #include "shared.h"
+#include <map>
 
 namespace gfx_tools {
 	enum EnumPixelFormat {
@@ -56,6 +57,8 @@ namespace gfx_tools {
 
 	class GFX_TOOLS_RD_API PixelFormat {
 		private:
+		typedef std::map<EnumPixelFormat, EnumPixelFormat> ENUM_PIXEL_FORMAT_MAP;
+
 		unsigned __int64 maskRed = 0;
 		unsigned __int64 maskGreen = 0;
 		unsigned __int64 maskBlue = 0;
