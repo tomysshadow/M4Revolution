@@ -50,13 +50,13 @@ namespace gfx_tools {
 				Color32 &color = *colorPointer;
 				Color32 &inputUColor = *inputUColorPointer;
 				Color32 &inputVColor = *inputVColorPointer;
-				Color32 &output = *outputPointer;
+				Color16 &output = *(Color16*)outputPointer;
 
 				output.channels[OUTPUT_CHANNEL_U] = color.channels[INPUT_CHANNEL_ALPHA] - inputUColor.channels[INPUT_CHANNEL_ALPHA];
 				output.channels[OUTPUT_CHANNEL_V] = color.channels[INPUT_CHANNEL_ALPHA] - inputVColor.channels[INPUT_CHANNEL_ALPHA];
 
 				if (luminance) {
-					output.channels[OUTPUT_CHANNEL_LUMINANCE] = color.channels[INPUT_CHANNEL_LUMINANCE];
+					outputPointer->channels[OUTPUT_CHANNEL_LUMINANCE] = color.channels[INPUT_CHANNEL_LUMINANCE];
 					outputPointer++;
 				} else {
 					(Color16*)outputPointer++;
