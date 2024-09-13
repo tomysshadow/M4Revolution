@@ -19,14 +19,14 @@ namespace gfx_tools {
 			return outputPointer;
 		}
 
-		const unsigned long INPUT_LUMINANCE_POSITION = 3;
 		const unsigned long INPUT_PIXEL_SIZE = 4;
+		const unsigned long INPUT_LUMINANCE_POSITION = 3;
 
+		const unsigned long OUTPUT_PIXEL_VU_88_SIZE = 2;
+		const unsigned long OUTPUT_PIXEL_XLVU_8888_SIZE = 4;
 		const unsigned long OUTPUT_U_POSITION = 0;
 		const unsigned long OUTPUT_V_POSITION = 1;
 		const unsigned long OUTPUT_LUMINANCE_POSITION = 2;
-		const unsigned long OUTPUT_PIXEL_VU_88_SIZE = 2;
-		const unsigned long OUTPUT_PIXEL_XLVU_8888_SIZE = 4;
 
 		unsigned long outputPixelSize = luminance ? OUTPUT_PIXEL_XLVU_8888_SIZE : OUTPUT_PIXEL_VU_88_SIZE;
 
