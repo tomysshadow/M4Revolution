@@ -38,14 +38,14 @@ bool performOperation(M4Revolution &m4Revolution) {
 }
 
 void help() {
-	consoleLog("Usage: M4Revolution path [-lfn -nohw -mt maxThreads]");
+	consoleLog("Usage: M4Revolution [-p path -lfn -nohw -mt maxThreads]");
 }
 
 int main(int argc, char** argv) {
 	consoleLog("Myst IV: Revolution 1.0.0");
 	consoleLog("By Anthony Kleine", 2);
 
-	const int MIN_ARGC = 2;
+	const int MIN_ARGC = 1;
 
 	if (argc < MIN_ARGC) {
 		help();
@@ -55,6 +55,7 @@ int main(int argc, char** argv) {
 	std::string arg = "";
 	int argc2 = argc - 1;
 
+	std::string path = "data.m4b"; // TODO: find install location automatically
 	bool logFileNames = false;
 	bool disableHardwareAcceleration = false;
 	unsigned long maxThreads = 0;
@@ -71,7 +72,9 @@ int main(int argc, char** argv) {
 		} else if (arg == "-nohw" || arg == "--disable-hardware-acceleration") {
 			disableHardwareAcceleration = true;
 		} else if (i < argc2) {
-			if (arg == "-mt" || arg == "--max-threads") {
+			if (arg == "-p" || arg == "-path") {
+				path = argv[++i];
+			} else if (arg == "-mt" || arg == "--max-threads") {
 				if (!stringToLongUnsigned(argv[++i], maxThreads)) {
 					consoleLog("Max Threads must be a valid number", 2);
 					help();
@@ -87,7 +90,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	M4Revolution m4Revolution(argv[1], logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
+	M4Revolution m4Revolution(path.c_str(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
 
 	do {
 		consoleLog("This menu may be used to perform the following operations.", 2);

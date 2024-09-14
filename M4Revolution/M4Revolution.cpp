@@ -782,7 +782,7 @@ bool M4Revolution::restoreBackup() {
 		}
 	}
 
-	if (!consoleBool("Restoring the backup will revert any changes made by Myst IV: Revolution. Would you like to restore the backup?", false)) {
+	if (!consoleBool("Restoring the backup will revert any changes made by this tool. Would you like to restore the backup?", false)) {
 		return false;
 	}
 
