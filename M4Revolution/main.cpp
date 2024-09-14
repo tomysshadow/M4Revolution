@@ -1,7 +1,5 @@
 #include "shared.h"
 #include "M4Revolution.h"
-#include <chrono>
-#include <iostream>
 #include <stdlib.h>
 
 bool performOperation(M4Revolution &m4Revolution) {
