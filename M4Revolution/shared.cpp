@@ -227,14 +227,14 @@ void copyStream(std::istream &inputStream, std::ostream &outputStream, std::stre
 
 void copyStreamToString(std::istream &inputStream, std::string &outputString, std::streamsize count) {
 	if (count != -1) {
-		outputString.reserve(outputString.length() + count);
+		outputString.reserve(outputString.length() + (std::string::size_type)count);
 	}
 
 	copyStreamToWriteDestination(
 		inputStream,
 
 		[&outputString](void* buffer, std::streamsize count) {
-			outputString.append((char*)buffer, count);
+			outputString.append((char*)buffer, (std::string::size_type)count);
 		},
 
 		count

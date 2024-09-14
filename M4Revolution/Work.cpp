@@ -137,7 +137,7 @@ void Work::FileTask::copy(std::istream &inputStream, std::streamsize count) {
 		countRead = (std::streamsize)min((size_t)count, (size_t)countRead);
 
 		{
-			Data::POINTER pointer = Data::POINTER(new unsigned char[countRead]);
+			Data::POINTER pointer = Data::POINTER(new unsigned char[(size_t)countRead]);
 
 			readStreamPartial(inputStream, pointer.get(), countRead, gcountRead);
 
@@ -145,7 +145,7 @@ void Work::FileTask::copy(std::istream &inputStream, std::streamsize count) {
 				break;
 			}
 
-			lock().get().emplace(gcountRead, pointer);
+			lock().get().emplace((size_t)gcountRead, pointer);
 		}
 
 		if (count != -1) {
@@ -217,7 +217,7 @@ Work::Output::Output(const std::string &fileName)
 	// this is just a temp file so deleting it should be fine
 	std::filesystem::remove(fileName);
 
-	fileStream.open(fileName, std::ios::binary | std::ios::trunc);
+	fileStream.open(fileName, std::ios::binary | std::ios::trunc, _SH_DENYRW);
 
 	#ifdef _WIN32
 	setFileAttributeHidden(true, fileName.c_str());

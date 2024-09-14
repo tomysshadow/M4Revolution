@@ -718,7 +718,7 @@ M4Revolution::~M4Revolution() {
 }
 
 void M4Revolution::editTransitionTime() {
-	std::fstream fileStream(inputFileName, std::ios::binary | std::ios::in | std::ios::out);
+	std::fstream fileStream(inputFileName, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 
 	Log log("Editing Transition Time", fileStream);
 	Work::Edit edit(fileStream);
@@ -726,7 +726,7 @@ void M4Revolution::editTransitionTime() {
 }
 
 void M4Revolution::editInertiaLevels() {
-	std::fstream fileStream(inputFileName, std::ios::binary | std::ios::in | std::ios::out);
+	std::fstream fileStream(inputFileName, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 
 	Log log("Editing Inertia Levels", fileStream);
 	Work::Edit edit(fileStream);
@@ -740,7 +740,7 @@ void M4Revolution::fixLoading() {
 	};
 
 	{
-		std::ifstream inputFileStream(inputFileName, std::ios::binary);
+		std::ifstream inputFileStream(inputFileName, std::ios::binary, _SH_DENYWR);
 
 		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
@@ -772,7 +772,7 @@ void M4Revolution::fixLoading() {
 
 bool M4Revolution::restoreBackup() {
 	{
-		std::ifstream inputFileStream(BACKUP_FILE_NAME, std::ios::binary);
+		std::ifstream inputFileStream(BACKUP_FILE_NAME, std::ios::binary, _SH_DENYWR);
 
 		Log log("Restoring Backup", inputFileStream);
 
