@@ -207,7 +207,8 @@ namespace Work {
 	};
 
 	struct Output {
-		std::string fileName = "";
+		static const char* FILE_NAME;
+
 		std::ofstream fileStream = {};
 
 		std::streampos currentBigFileInputPosition = -1;
@@ -216,7 +217,15 @@ namespace Work {
 		Ubi::BigFile::File::SIZE filePosition = 0;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
-		Output(const std::string &fileName);
+		Output();
 		~Output();
 	};
+
+	namespace Backup {
+		static const char* FILE_NAME = "data.m4b.bak";
+
+		bool create(const char* fileName);
+		void restore(const std::filesystem::path &path);
+		void log();
+	}
 };

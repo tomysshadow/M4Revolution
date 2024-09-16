@@ -623,8 +623,8 @@ void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::FILE_VARIAN
 	}
 }
 
-void M4Revolution::outputThread(const std::string &outputFileName, Work::Tasks &tasks, bool &yield) {
-	Work::Output output(outputFileName);
+void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
+	Work::Output output = {};
 
 	Work::FileTask::POINTER_QUEUE fileTaskPointerQueue = {};
 
@@ -736,7 +736,7 @@ void M4Revolution::editInertiaLevels() {
 void M4Revolution::fixLoading() {
 	// always delete the temporary file when done
 	SCOPE_EXIT {
-		std::filesystem::remove(OUTPUT_FILE_NAME);
+		std::filesystem::remove(Work::Output::FILE_NAME);
 	};
 
 	{
@@ -745,7 +745,7 @@ void M4Revolution::fixLoading() {
 		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
 		bool yield = true;
-		std::thread outputThread(M4Revolution::outputThread, OUTPUT_FILE_NAME, std::ref(tasks), std::ref(yield));
+		std::thread outputThread(M4Revolution::outputThread, std::ref(tasks), std::ref(yield));
 
 		Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames, true);
 		fixLoading(inputFileStream, 0, inputFile, log);
@@ -760,19 +760,17 @@ void M4Revolution::fixLoading() {
 		outputThread.join();
 	}
 
-	// here I'm using CRT rename because I don't want to be able
-	// to overwrite the backup file (which std::filesystem::rename has no option to disallow)
-	if (!rename(inputFileName.c_str(), BACKUP_FILE_NAME)) {
-		consoleLog(BACKUP_CONSOLE_LOG_STR, 2);
+	if (Work::Backup::create(inputFileName.c_str())) {
+		Work::Backup::log();
 	}
 
 	// here I use std::filesystem::rename because I do want to overwrite the file if it exists
-	std::filesystem::rename(OUTPUT_FILE_NAME, inputFileName);
+	std::filesystem::rename(Work::Output::FILE_NAME, inputFileName);
 }
 
 bool M4Revolution::restoreBackup() {
 	{
-		std::ifstream inputFileStream(BACKUP_FILE_NAME, std::ios::binary, _SH_DENYWR);
+		std::ifstream inputFileStream(Work::Backup::FILE_NAME, std::ios::binary, _SH_DENYWR);
 
 		Log log("Restoring Backup", inputFileStream);
 
@@ -786,6 +784,6 @@ bool M4Revolution::restoreBackup() {
 		return false;
 	}
 
-	std::filesystem::rename(BACKUP_FILE_NAME, inputFileName);
+	Work::Backup::restore(inputFileName);
 	return true;
 }

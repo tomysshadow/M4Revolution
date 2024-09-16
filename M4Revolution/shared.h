@@ -320,9 +320,6 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 	return stringToLongUnsignedWide(str, result, base, locale) ? result : defaultValue;
 }
 
-static const char* BACKUP_FILE_NAME = "data.m4b.bak";
-static const char* BACKUP_CONSOLE_LOG_STR = "A backup has been created.";
-
 inline bool freeZAP(zap_byte_t* &out) {
 	if (out) {
 		if (zap_free(out) != ZAP_ERROR_NONE) {

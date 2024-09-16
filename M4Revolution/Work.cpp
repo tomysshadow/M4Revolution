@@ -210,22 +210,38 @@ Work::Convert::Convert(
 	compressionOptions(compressionOptions) {
 }
 
-Work::Output::Output(const std::string &fileName)
-	: fileName(fileName) {
+const char* Work::Output::FILE_NAME = "~data.m4b.tmp";
+
+Work::Output::Output() {
 	// without this remove first it may crash trying to open a hidden file
 	// (I mean, this isn't atomic so that can happen anyway but at least it's not our fault then)
 	// this is just a temp file so deleting it should be fine
-	std::filesystem::remove(fileName);
+	std::filesystem::remove(FILE_NAME);
 
-	fileStream.open(fileName, std::ios::binary | std::ios::trunc, _SH_DENYRW);
+	fileStream.open(FILE_NAME, std::ios::binary | std::ios::trunc, _SH_DENYRW);
 
 	#ifdef _WIN32
-	setFileAttributeHidden(true, fileName.c_str());
+	setFileAttributeHidden(true, FILE_NAME);
 	#endif
 }
 
 Work::Output::~Output() {
 	#ifdef _WIN32
-	setFileAttributeHidden(false, fileName.c_str());
+	setFileAttributeHidden(false, FILE_NAME);
 	#endif
+}
+
+bool Work::Backup::create(const char* fileName) {
+	// here I'm using CRT rename because I don't want to be able
+	// to overwrite the backup file (which std::filesystem::rename has no option to disallow)
+	return !rename(fileName, FILE_NAME);
+}
+
+void Work::Backup::restore(const std::filesystem::path &path) {
+	// here I use std::filesystem::rename because I do want to overwrite the file if it exists
+	std::filesystem::rename(FILE_NAME, path);
+}
+
+void Work::Backup::log() {
+	consoleLog("A backup has been created.", 2);
 }

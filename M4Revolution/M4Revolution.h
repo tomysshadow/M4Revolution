@@ -11,8 +11,6 @@ class M4Revolution {
 
 	typedef uint32_t COLOR32;
 
-	const char* OUTPUT_FILE_NAME = "~data.m4b.tmp";
-
 	class Log {
 		private:
 		std::istream &inputStream;
@@ -116,7 +114,7 @@ class M4Revolution {
 	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
 	static void outputData(std::ostream &outputStream, Work::FileTask &fileTask, bool &yield);
 	static void outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
-	static void outputThread(const std::string &outputFileName, Work::Tasks &tasks, bool &yield);
+	static void outputThread(Work::Tasks &tasks, bool &yield);
 
 	public:
 	M4Revolution(

@@ -2,6 +2,7 @@
 #include <regex>
 #include <sstream>
 #include <iomanip>
+#include <filesystem>
 
 void AI::copyThread(Work::Edit &edit) {
 	std::fstream &fileStream = edit.fileStream;
@@ -9,15 +10,22 @@ void AI::copyThread(Work::Edit &edit) {
 
 	if (!edit.copied) {
 		// check if the file exists, if it doesn't create a backup
-		std::fstream backupFileStream(BACKUP_FILE_NAME, std::ios::binary | std::ios::in, _SH_DENYWR);
+		std::fstream backupFileStream(Work::Backup::FILE_NAME, std::ios::binary | std::ios::in, _SH_DENYWR);
 
 		if (!backupFileStream.is_open()) {
-			backupFileStream.open(BACKUP_FILE_NAME, std::ios::binary | std::ios::out, _SH_DENYRW);
+			// always delete the temporary file when done
+			SCOPE_EXIT {
+				std::filesystem::remove(Work::Output::FILE_NAME);
+			};
 
-			fileStream.seekg(0, std::ios::beg);
-			copyStream(fileStream, backupFileStream);
+			{
+				Work::Output output = {};
 
-			backup = true;
+				fileStream.seekg(0, std::ios::beg);
+				copyStream(fileStream, output.fileStream);
+			}
+
+			backup = Work::Backup::create(Work::Output::FILE_NAME);
 		}
 
 		edit.copied = true;
@@ -26,7 +34,7 @@ void AI::copyThread(Work::Edit &edit) {
 	edit.event.wait(true);
 
 	if (backup) {
-		consoleLog(BACKUP_CONSOLE_LOG_STR, 2);
+		Work::Backup::log();
 	}
 
 	fileStream.seekp(edit.position);
