@@ -3,7 +3,6 @@
 #include <chrono>
 #include <iostream>
 #include <filesystem>
-#include <stdio.h>
 
 void M4Revolution::destroy() {
 	#ifdef MULTITHREADED

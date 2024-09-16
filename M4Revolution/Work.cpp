@@ -1,5 +1,6 @@
 #include "Work.h"
 #include <filesystem>
+#include <stdio.h>
 
 // acquire lock to prevent data race on predicate
 void Work::Event::setPredicate(bool value) {
