@@ -1,4 +1,4 @@
-#include "M4Image\shared.h"
+#include "M4Image/shared.h"
 
 #ifdef _WIN32
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved) {

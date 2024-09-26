@@ -1,7 +1,7 @@
 #pragma once
 #define _WIN32_WINNT 0x0500
 #define NOMINMAX
-#include "M4Image\scope_guard.hpp"
+#include "M4Image/scope_guard.hpp"
 #include <pixman.h>
 
 #ifdef _WIN32

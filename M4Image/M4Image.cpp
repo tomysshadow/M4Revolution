@@ -1,4 +1,4 @@
-#include "M4Image\M4Image.h"
+#include "M4Image/M4Image.h"
 #include <map>
 #include <stdint.h>
 

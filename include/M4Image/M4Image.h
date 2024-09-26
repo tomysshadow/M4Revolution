@@ -1,5 +1,5 @@
 #pragma once
-#include "M4Image\shared.h"
+#include "M4Image/shared.h"
 #include <string>
 
 #include <mango/core/configure.hpp>
