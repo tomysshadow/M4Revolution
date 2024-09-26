@@ -4,6 +4,7 @@
 
 #include <mango/image/surface.hpp>
 #include <mango/image/decoder.hpp>
+#include <pixman.h>
 
 static M4Image::MAllocProc mallocProc = malloc;
 static M4Image::FreeProc freeProc = free;
