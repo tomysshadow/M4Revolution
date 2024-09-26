@@ -71,7 +71,7 @@ namespace gfx_tools {
 		return outputPointer;
 	}
 
-	GFX_TOOLS_RD_API unsigned char* ConvertHeightMapIntoDuDvBumpMap(
+	unsigned char* ConvertHeightMapIntoDuDvBumpMap(
 		unsigned long width,
 		unsigned long height,
 		unsigned char* inputPointer,

@@ -3,6 +3,7 @@
 #include "PixelFormat.h"
 
 namespace gfx_tools {
+	// TODO these will be imported from M4Image
 	struct Color16 {
 		unsigned char channels[2] = {};
 	};
@@ -16,7 +17,7 @@ namespace gfx_tools {
 	void GFX_TOOLS_RD_API Shutdown();
 	*/
 
-	GFX_TOOLS_RD_API unsigned char* ConvertHeightMapIntoDuDvBumpMap(
+	GFX_TOOLS_RD_API unsigned char* GFX_TOOLS_RD_CALL ConvertHeightMapIntoDuDvBumpMap(
 		unsigned long width,
 		unsigned long height,
 		unsigned char* inputBuffer,
@@ -27,7 +28,8 @@ namespace gfx_tools {
 		unsigned long outputStride
 	);
 
-	GFX_TOOLS_RD_API unsigned char* ConvertHeightMapIntoNormalMap(
+	/*
+	GFX_TOOLS_RD_API unsigned char* GFX_TOOLS_RD_CALL ConvertHeightMapIntoNormalMap(
 		unsigned long width,
 		unsigned long height,
 		unsigned char* inputBuffer,
@@ -38,4 +40,5 @@ namespace gfx_tools {
 		unsigned long outputStride,
 		float
 	);
+	*/
 };
