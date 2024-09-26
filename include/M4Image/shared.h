@@ -2,19 +2,11 @@
 #define _WIN32_WINNT 0x0500
 #define NOMINMAX
 #include "M4Image\scope_guard.hpp"
-#include <memory>
-#include <stdexcept>
-#include <vector>
-#include <stdint.h>
 #include <pixman.h>
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
-
-inline unsigned char clampUCHAR(int channel) {
-	return __min(UCHAR_MAX, __max(0, channel));
-}
 
 #define M4IMAGE_CALL __cdecl
 
@@ -27,6 +19,10 @@ inline unsigned char clampUCHAR(int channel) {
 #else
 	#define M4IMAGE_API
 #endif
+
+inline unsigned char clampUCHAR(int value) {
+	return __min(UCHAR_MAX, __max(0, value));
+}
 
 inline bool unrefImage(pixman_image_t* &image) {
 	if (image) {

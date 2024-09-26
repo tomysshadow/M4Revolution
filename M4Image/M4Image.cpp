@@ -1,5 +1,6 @@
 #include "M4Image\M4Image.h"
 #include <map>
+#include <stdint.h>
 
 #include <mango/image/surface.hpp>
 #include <mango/image/decoder.hpp>
