@@ -17,18 +17,18 @@ namespace M4Image {
         unsigned char channels[4] = {};
     };
 
-    enum struct FORMAT {
-        RGB,
-        RGBA,
-        RGBX,
-        BGR,
-        BGRA,
-        BGRX,
-        A,
-        L,
-        XXXL,
-        AL,
-        XXLA
+    enum struct COLOR_FORMAT {
+        RGB24,
+        RGBA32,
+        RGBX32,
+        BGR24,
+        BGRA32,
+        BGRX32,
+        A8,
+        L8,
+        AL16,
+        XXXL32,
+        XXLA32
     };
 
     M4IMAGE_API unsigned char* M4IMAGE_CALL load(
@@ -37,7 +37,7 @@ namespace M4Image {
         size_t size,
         int &width,
         int &height,
-        FORMAT formatDesired
+        COLOR_FORMAT colorFormat
     );
 
     M4IMAGE_API unsigned char* M4IMAGE_CALL resize(
@@ -46,7 +46,7 @@ namespace M4Image {
         size_t size,
         int width,
         int height,
-        FORMAT formatDesired
+        COLOR_FORMAT colorFormat
     );
 
     M4IMAGE_API void M4IMAGE_CALL setAllocator(MAllocProc mallocProc, FreeProc freeProc);
