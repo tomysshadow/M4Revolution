@@ -26,6 +26,8 @@ namespace M4Image {
         A8,
         L8,
         AL16,
+
+        // these colour formats are mostly for internal use (you're free to use them, though)
         XXXL32,
         XXLA32
     };
