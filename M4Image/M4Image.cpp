@@ -351,12 +351,18 @@ namespace M4Image {
         }
 
         mango::image::Surface surface;
-        setFormat(surface.format, colorFormat);
-        setSurfaceImageHeader(surface, imageDecoder.header());
-        decodeSurfaceImage(surface, imageDecoder);
 
-        width = surface.width;
-        height = surface.height;
+        try {
+            setFormat(surface.format, colorFormat);
+            setSurfaceImageHeader(surface, imageDecoder.header());
+            decodeSurfaceImage(surface, imageDecoder);
+
+            width = surface.width;
+            height = surface.height;
+        } catch (...) {
+            freeBits(surface.image);
+            return 0;
+        }
         return surface.image;
     }
 
@@ -394,9 +400,15 @@ namespace M4Image {
         }
 
         mango::image::Surface surface;
-        setFormat(surface.format, colorFormat);
-        setSurfaceImageHeader(surface, imageHeader);
-        decodeSurfaceImage(surface, imageDecoder);
+
+        try {
+            setFormat(surface.format, colorFormat);
+            setSurfaceImageHeader(surface, imageHeader);
+            decodeSurfaceImage(surface, imageDecoder);
+        } catch (...) {
+            freeBits(surface.image);
+            return 0;
+        }
 
         if (!surface.image) {
             return 0;
