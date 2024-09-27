@@ -32,7 +32,7 @@ namespace M4Image {
 
     M4IMAGE_API unsigned char* M4IMAGE_CALL load(
         const std::string &extension,
-        unsigned char* address,
+        const unsigned char* address,
         size_t size,
         int &width,
         int &height,
@@ -42,7 +42,7 @@ namespace M4Image {
 
     M4IMAGE_API unsigned char* M4IMAGE_CALL resize(
         const std::string &extension,
-        unsigned char* address,
+        const unsigned char* address,
         size_t size,
         int width,
         int height,

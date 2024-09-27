@@ -335,7 +335,7 @@ void unpremultiplyColors(M4Image::Color32* colorPointer, M4Image::Color32* endPo
 namespace M4Image {
     unsigned char* load(
         const std::string &extension,
-        unsigned char* address,
+        const unsigned char* address,
         size_t size,
         int &width,
         int &height,
@@ -371,7 +371,7 @@ namespace M4Image {
 
     unsigned char* resize(
         const std::string &extension,
-        unsigned char* address,
+        const unsigned char* address,
         size_t size,
         int width,
         int height,
