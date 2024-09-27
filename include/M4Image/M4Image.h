@@ -36,6 +36,7 @@ namespace M4Image {
         size_t size,
         int &width,
         int &height,
+        size_t &stride,
         COLOR_FORMAT colorFormat
     );
 
@@ -45,6 +46,7 @@ namespace M4Image {
         size_t size,
         int width,
         int height,
+        size_t &stride,
         COLOR_FORMAT colorFormat
     );
 

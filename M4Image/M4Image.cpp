@@ -339,6 +339,7 @@ namespace M4Image {
         size_t size,
         int &width,
         int &height,
+        size_t &stride,
         COLOR_FORMAT colorFormat
     ) {
         if (!address) {
@@ -360,6 +361,7 @@ namespace M4Image {
 
             width = surface.width;
             height = surface.height;
+            stride = surface.stride;
         } catch (...) {
             freeBits(surface.image);
             return 0;
@@ -373,6 +375,7 @@ namespace M4Image {
         size_t size,
         int width,
         int height,
+        size_t &stride,
         COLOR_FORMAT colorFormat
     ) {
         if (!address) {
@@ -417,6 +420,7 @@ namespace M4Image {
 
         // if we don't need to resize the image (width and height matches) then job done
         if (!resize) {
+            stride = surface.stride;
             return surface.image;
         }
 
@@ -534,15 +538,21 @@ namespace M4Image {
                 return 0;
             }
 
+            const size_t DIVIDE_BY_TWO = 1;
+
             // this is necessary so that, if an error occurs with unreffing the images
             // that we return zero, because bits will become set to zero
             freeBits(bits);
             bits = convertedBits;
+
+            stride = bitsStride >> DIVIDE_BY_TWO;
+            bitsScopeExit.dismiss();
             return bits;
         } else if (unpremultiply) {
             unpremultiplyColors(colorPointer, endPointer);
         }
 
+        stride = bitsStride;
         bitsScopeExit.dismiss();
         return bits;
     }
