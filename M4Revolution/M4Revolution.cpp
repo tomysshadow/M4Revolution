@@ -425,9 +425,7 @@ void M4Revolution::convertZAPWorkCallback(Work::Convert* convertPointer) {
 		}
 
 		SCOPE_EXIT {
-			if (!freeZAP(out)) {
-				throw std::runtime_error("Failed to Free ZAP");
-			}
+			free(out);
 		};
 
 		const size_t COLOR32_SIZE = sizeof(COLOR32);
