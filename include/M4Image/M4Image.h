@@ -17,9 +17,9 @@ namespace M4Image {
     enum struct COLOR_FORMAT {
         RGBA32 = 0,
         RGBX32,
-        RGB24,
         BGRA32,
         BGRX32,
+        RGB24,
         BGR24,
         AL16,
         A8,

@@ -28,14 +28,14 @@ void setFormat(mango::image::Format &format, M4Image::COLOR_FORMAT value) {
         case M4Image::COLOR_FORMAT::RGBX32:
         format = mango::image::Format(32, mango::image::Format::UNORM, mango::image::Format::RGBA, 8, 8, 8, 0);
         return;
-        case M4Image::COLOR_FORMAT::RGB24:
-        format = mango::image::Format(24, mango::image::Format::UNORM, mango::image::Format::RGB, 8, 8, 8, 0);
-        return;
         case M4Image::COLOR_FORMAT::BGRA32:
         format = mango::image::Format(32, mango::image::Format::UNORM, mango::image::Format::BGRA, 8, 8, 8, 8);
         return;
         case M4Image::COLOR_FORMAT::BGRX32:
         format = mango::image::Format(32, mango::image::Format::UNORM, mango::image::Format::BGRA, 8, 8, 8, 0);
+        return;
+        case M4Image::COLOR_FORMAT::RGB24:
+        format = mango::image::Format(24, mango::image::Format::UNORM, mango::image::Format::RGB, 8, 8, 8, 0);
         return;
         case M4Image::COLOR_FORMAT::BGR24:
         format = mango::image::Format(24, mango::image::Format::UNORM, mango::image::Format::BGR, 8, 8, 8, 0);
@@ -93,9 +93,9 @@ typedef std::map<M4Image::COLOR_FORMAT, pixman_format_code_t> PIXMAN_FORMAT_CODE
 static const PIXMAN_FORMAT_CODE_MAP RGBA_PIXMAN_FORMAT_CODE_MAP = {
     {M4Image::COLOR_FORMAT::RGBA32, PIXMAN_a8r8g8b8},
     {M4Image::COLOR_FORMAT::RGBX32, PIXMAN_x8r8g8b8},
-    {M4Image::COLOR_FORMAT::RGB24, PIXMAN_r8g8b8},
     {M4Image::COLOR_FORMAT::BGRA32, PIXMAN_a8b8g8r8},
     {M4Image::COLOR_FORMAT::BGRX32, PIXMAN_x8b8g8r8},
+    {M4Image::COLOR_FORMAT::RGB24, PIXMAN_r8g8b8},
     {M4Image::COLOR_FORMAT::BGR24, PIXMAN_b8g8r8},
     {M4Image::COLOR_FORMAT::A8, PIXMAN_a8}
 };
@@ -103,9 +103,9 @@ static const PIXMAN_FORMAT_CODE_MAP RGBA_PIXMAN_FORMAT_CODE_MAP = {
 static const PIXMAN_FORMAT_CODE_MAP BGRA_PIXMAN_FORMAT_CODE_MAP = {
     {M4Image::COLOR_FORMAT::RGBA32, PIXMAN_a8b8g8r8},
     {M4Image::COLOR_FORMAT::RGBX32, PIXMAN_x8b8g8r8},
-    {M4Image::COLOR_FORMAT::RGB24, PIXMAN_b8g8r8},
     {M4Image::COLOR_FORMAT::BGRA32, PIXMAN_a8r8g8b8},
     {M4Image::COLOR_FORMAT::BGRX32, PIXMAN_x8r8g8b8},
+    {M4Image::COLOR_FORMAT::RGB24, PIXMAN_b8g8r8},
     {M4Image::COLOR_FORMAT::BGR24, PIXMAN_r8g8b8},
     {M4Image::COLOR_FORMAT::A8, PIXMAN_a8}
 };
