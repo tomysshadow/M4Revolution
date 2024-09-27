@@ -15,7 +15,7 @@ namespace M4Image {
     };
 
     enum struct COLOR_FORMAT {
-        RGBA32,
+        RGBA32 = 0,
         RGBX32,
         RGB24,
         BGRA32,
@@ -26,7 +26,7 @@ namespace M4Image {
         L8,
 
         // these colour formats are mostly for internal use (you're free to use them, though)
-        XXXL32,
+        XXXL32 = 16000,
         XXLA32
     };
 
