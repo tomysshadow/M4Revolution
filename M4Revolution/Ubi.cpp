@@ -48,7 +48,8 @@ std::optional<std::string> Ubi::String::readOptional(std::istream &inputStream) 
 }
 
 std::optional<std::string> Ubi::String::readOptionalEncrypted(std::istream &inputStream) {
-	return swizzle(readOptional(inputStream));
+	std::optional<std::string> encryptedStringOptional = readOptional(inputStream);
+	return swizzle(encryptedStringOptional);
 }
 
 void Ubi::String::writeOptional(std::ostream &outputStream, const std::optional<std::string> &strOptional, bool nullTerminator) {
@@ -1279,7 +1280,7 @@ Ubi::BigFile::BigFile(std::istream &inputStream, File::SIZE &fileSystemSize, Fil
 						continue;
 					}
 
-					Binary::RLE::FACE_STR_MAP::const_iterator &fileFaceStrMapIterator = Binary::RLE::FILE_FACE_STR_MAP.find(maskFile.nameOptional.value());
+					Binary::RLE::FACE_STR_MAP::const_iterator fileFaceStrMapIterator = Binary::RLE::FILE_FACE_STR_MAP.find(maskFile.nameOptional.value());
 
 					if (fileFaceStrMapIterator == Binary::RLE::FILE_FACE_STR_MAP.end()) {
 						continue;

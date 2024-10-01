@@ -152,7 +152,7 @@ void M4Revolution::copyFiles(
 
 	// we grab files in this scope so we won't have to lock this twice unnecessarily
 	{
-		Work::FileTask::POINTER_QUEUE_LOCK &fileLock = tasks.fileLock();
+		Work::FileTask::POINTER_QUEUE_LOCK fileLock = tasks.fileLock();
 		Work::FileTask::POINTER_QUEUE &queue = fileLock.get();
 		queue.push(fileTaskPointer);
 		fileTasks = queue.size();
@@ -654,7 +654,9 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 			}
 
 			outputData(output.fileStream, fileTask, yield);
-			outputFiles(output, fileTask.getFileVariant());
+
+			Work::FileTask::FILE_VARIANT fileVariant = fileTask.getFileVariant();
+			outputFiles(output, fileVariant);
 
 			fileTaskPointerQueue.pop();
 		}
