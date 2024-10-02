@@ -30,8 +30,10 @@ namespace M4Image {
         XXLA32
     };
 
+    // note: extension is a string but we export it as const char* because
+    // you're not supposed to export STL classes across DLL boundaries
     M4IMAGE_API unsigned char* M4IMAGE_CALL load(
-        const std::string &extension,
+        const char* extension,
         const unsigned char* address,
         size_t size,
         int &width,
@@ -41,7 +43,7 @@ namespace M4Image {
     );
 
     M4IMAGE_API unsigned char* M4IMAGE_CALL resize(
-        const std::string &extension,
+        const char* extension,
         const unsigned char* address,
         size_t size,
         int width,
@@ -49,6 +51,8 @@ namespace M4Image {
         size_t &stride,
         COLOR_FORMAT colorFormat
     );
+
+    M4IMAGE_API void M4IMAGE_CALL free(void* block);
 
     M4IMAGE_API void M4IMAGE_CALL setAllocator(MAllocProc mallocProc, FreeProc freeProc);
 };
