@@ -326,35 +326,6 @@ Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
 	return inputFile;
 }
 
-void M4Revolution::color32X(COLOR32* color32Pointer, size_t stride, size_t size) {
-	const COLOR32 R = 0x000000FF;
-	const COLOR32 G = 0x0000FF00;
-	const COLOR32 B = 0x00FF0000;
-	const COLOR32 A = 0xFF000000;
-	const int SWAP = 16;
-
-	COLOR32* endPointer = (COLOR32*)((uint8_t*)color32Pointer + size) - 1;
-	COLOR32* rowPointer = 0;
-
-	COLOR32 color32 = 0;
-
-	while (color32Pointer <= endPointer) {
-		rowPointer = (COLOR32*)((uint8_t*)color32Pointer + stride) - 1;
-
-		while (color32Pointer <= rowPointer) {
-			color32 = *color32Pointer;
-
-			*color32Pointer = (color32 & (G | A))
-			| (color32 >> SWAP & R)
-			| (color32 << SWAP & B);
-
-			color32Pointer = color32Pointer + 1;
-		}
-
-		color32Pointer = rowPointer + 1;
-	}
-}
-
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface) {
 	if (convert.file.greyScale) {
 		const float SCALE = 1.0;
@@ -420,20 +391,15 @@ void M4Revolution::convertZAPWorkCallback(Work::Convert* convertPointer) {
 		zap_int_t outWidth = 0;
 		zap_int_t outHeight = 0;
 
-		if (zap_load_memory(convert.dataPointer.get(), ZAP_COLOR_FORMAT_RGBA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
+		if (zap_load_memory(convert.dataPointer.get(), ZAP_COLOR_FORMAT_BGRA32, &out, &outSize, &outWidth, &outHeight) != ZAP_ERROR_NONE) {
 			throw std::runtime_error("Failed to Load ZAP From Memory");
 		}
 
 		SCOPE_EXIT {
-			free(out);
+			if (!freeZAP(out)) {
+				throw std::runtime_error("Failed to Free ZAP");
+			}
 		};
-
-		const size_t COLOR32_SIZE = sizeof(COLOR32);
-
-		COLOR32* color32Pointer = (COLOR32*)out;
-
-		// need to flip the endianness, NVTT expects BGR instead of RGB
-		color32X(color32Pointer, outWidth * COLOR32_SIZE, outSize);
 
 		if (!surface.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, outWidth, outHeight, 1, out)) {
 			throw std::runtime_error("Failed to Set Surface Image");

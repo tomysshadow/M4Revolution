@@ -90,6 +90,11 @@ LIBZAP_API zap_error_t LIBZAP_CALL zap_load_memory(const unsigned char* pData, z
 /// \return 0 on success, non-zero on failure
 LIBZAP_API zap_error_t LIBZAP_CALL zap_resize_memory(const unsigned char* pData, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height);
 
+/// Free the data loaded by zap_load, zap_resize, zap_load_memory or zap_resize_memory
+/// \param pData The data to free
+/// \return 0 on success, non-zero on failure
+LIBZAP_API zap_error_t LIBZAP_CALL zap_free(zap_byte_t* pData);
+
 /// Set the allocator used by zap_load, zap_resize, zap_load_memory, or zap_resize_memory
 /// \param mallocProc The malloc procedure
 /// \param freeProc The free procedure

@@ -104,7 +104,6 @@ class M4Revolution {
 
 	Ubi::BigFile::File createInputFile(std::istream &inputStream);
 
-	static void color32X(COLOR32* color32Pointer, size_t stride, size_t size);
 	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface);
 	static void convertJPEGWorkCallback(Work::Convert* convertPointer);
 	static void convertZAPWorkCallback(Work::Convert* convertPointer);
