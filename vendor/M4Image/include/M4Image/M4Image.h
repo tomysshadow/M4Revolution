@@ -52,6 +52,7 @@ namespace M4Image {
         COLOR_FORMAT colorFormat
     );
 
+    M4IMAGE_API void* M4IMAGE_CALL malloc(size_t size);
     M4IMAGE_API void M4IMAGE_CALL free(void* block);
 
     M4IMAGE_API void M4IMAGE_CALL setAllocator(MAllocProc mallocProc, FreeProc freeProc);
