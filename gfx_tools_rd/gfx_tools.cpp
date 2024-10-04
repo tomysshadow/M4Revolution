@@ -129,8 +129,8 @@ namespace gfx_tools {
 				M4Image::Color32 &inputColor = *inputColorPointer;
 				M4Image::Color32 &outputColor = *outputColorPointer;
 
-				x = strength * (inputXColorPointer->channels[INPUT_CHANNEL_XY] - inputColor.channels[INPUT_CHANNEL_XY]);
-				y = strength * (inputYColorPointer->channels[INPUT_CHANNEL_XY] - inputColor.channels[INPUT_CHANNEL_XY]);
+				x = strength * (signed char)(inputXColorPointer->channels[INPUT_CHANNEL_XY] - inputColor.channels[INPUT_CHANNEL_XY]);
+				y = strength * (signed char)(inputYColorPointer->channels[INPUT_CHANNEL_XY] - inputColor.channels[INPUT_CHANNEL_XY]);
 				z = 1.0 / sqrt(x * x + y * y + 1.0) * MULTIPLIER;
 
 				outputColor.channels[OUTPUT_CHANNEL_B] = BGR_GRAY + (unsigned char)z;
