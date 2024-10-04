@@ -30,39 +30,43 @@ namespace gfx_tools {
 
 		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + (height * inputStride) - inputStride);
 		M4Image::Color32* rowPointer = 0;
-		M4Image::Color32* colorPointer = 0;
 
+		M4Image::Color32* inputColorPointer = 0;
 		M4Image::Color32* inputUColorPointer = 0;
 		M4Image::Color32* inputVColorPointer = 0;
 
+		M4Image::Color16* outputColorPointer = 0;
+
 		while (inputPointer <= endPointer) {
 			rowPointer = inputPointer + width - 1;
-			colorPointer = inputPointer;
 
 			// inputVColorPointer should point to the pixel one row below
+			inputColorPointer = inputPointer;
 			inputUColorPointer = inputPointer;
 			inputVColorPointer = (inputPointer == endPointer) ? inputPointer : (M4Image::Color32*)((unsigned char*)inputPointer + inputStride);
 
-			while (colorPointer <= rowPointer) {
+			outputColorPointer = outputPointer;
+
+			while (inputColorPointer <= rowPointer) {
 				// inputUColorPointer should point to the pixel one column right
 				if (inputUColorPointer != rowPointer) {
 					inputUColorPointer++;
 				}
 
-				M4Image::Color32 &color = *colorPointer;
-				M4Image::Color16 &output = *outputPointer;
+				M4Image::Color32 &inputColor = *inputColorPointer;
+				M4Image::Color16 &outputColor = *outputColorPointer;
 
-				output.channels[OUTPUT_CHANNEL_U] = color.channels[INPUT_CHANNEL_UV] - inputUColorPointer->channels[INPUT_CHANNEL_UV];
-				output.channels[OUTPUT_CHANNEL_V] = color.channels[INPUT_CHANNEL_UV] - inputVColorPointer->channels[INPUT_CHANNEL_UV];
+				outputColor.channels[OUTPUT_CHANNEL_U] = inputColor.channels[INPUT_CHANNEL_UV] - inputUColorPointer->channels[INPUT_CHANNEL_UV];
+				outputColor.channels[OUTPUT_CHANNEL_V] = inputColor.channels[INPUT_CHANNEL_UV] - inputVColorPointer->channels[INPUT_CHANNEL_UV];
 
 				if (luminance) {
-					((M4Image::Color32*)outputPointer)->channels[OUTPUT_CHANNEL_LUMINANCE] = color.channels[INPUT_CHANNEL_LUMINANCE];
-					outputPointer = (M4Image::Color16*)((M4Image::Color32*)outputPointer + 1);
+					((M4Image::Color32*)outputColorPointer)->channels[OUTPUT_CHANNEL_LUMINANCE] = inputColor.channels[INPUT_CHANNEL_LUMINANCE];
+					outputColorPointer = (M4Image::Color16*)((M4Image::Color32*)outputColorPointer + 1);
 				} else {
-					outputPointer++;
+					outputColorPointer++;
 				}
 
-				colorPointer++;
+				inputColorPointer++;
 			}
 
 			inputPointer = (M4Image::Color32*)((unsigned char*)inputPointer + inputStride);
@@ -95,10 +99,12 @@ namespace gfx_tools {
 
 		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + (height * inputStride) - inputStride);
 		M4Image::Color32* rowPointer = 0;
-		M4Image::Color32* colorPointer = 0;
 
+		M4Image::Color32* inputColorPointer = 0;
 		M4Image::Color32* inputXColorPointer = 0;
 		M4Image::Color32* inputYColorPointer = 0;
+
+		M4Image::Color32* outputColorPointer = 0;
 
 		double x = 0.0;
 		double y = 0.0;
@@ -106,32 +112,34 @@ namespace gfx_tools {
 
 		while (inputPointer <= endPointer) {
 			rowPointer = inputPointer + width - 1;
-			colorPointer = inputPointer;
 
 			// inputYColorPointer should point to the pixel one row below
+			inputColorPointer = inputPointer;
 			inputXColorPointer = inputPointer;
 			inputYColorPointer = (inputPointer == endPointer) ? inputPointer : (M4Image::Color32*)((unsigned char*)inputPointer + inputStride);
+			
+			outputColorPointer = outputPointer;
 
-			while (colorPointer <= rowPointer) {
+			while (inputColorPointer <= rowPointer) {
 				// inputXColorPointer should point to the pixel one column right
 				if (inputXColorPointer != rowPointer) {
 					inputXColorPointer++;
 				}
 
-				M4Image::Color32 &color = *colorPointer;
-				M4Image::Color32 &output = *outputPointer;
+				M4Image::Color32 &inputColor = *inputColorPointer;
+				M4Image::Color32 &outputColor = *outputColorPointer;
 
-				x = strength * (inputXColorPointer->channels[INPUT_CHANNEL_XY] - color.channels[INPUT_CHANNEL_XY]);
-				y = strength * (inputYColorPointer->channels[INPUT_CHANNEL_XY] - color.channels[INPUT_CHANNEL_XY]);
+				x = strength * (inputXColorPointer->channels[INPUT_CHANNEL_XY] - inputColor.channels[INPUT_CHANNEL_XY]);
+				y = strength * (inputYColorPointer->channels[INPUT_CHANNEL_XY] - inputColor.channels[INPUT_CHANNEL_XY]);
 				z = 1.0 / sqrt(x * x + y * y + 1.0) * MULTIPLIER;
 
-				output.channels[OUTPUT_CHANNEL_B] = BGR_GRAY + (unsigned char)z;
-				output.channels[OUTPUT_CHANNEL_G] = BGR_GRAY - (unsigned char)(y * z);
-				output.channels[OUTPUT_CHANNEL_R] = BGR_GRAY - (unsigned char)(x * z);
-				output.channels[OUTPUT_CHANNEL_A] = ALPHA_OPAQUE;
+				outputColor.channels[OUTPUT_CHANNEL_B] = BGR_GRAY + (unsigned char)z;
+				outputColor.channels[OUTPUT_CHANNEL_G] = BGR_GRAY - (unsigned char)(y * z);
+				outputColor.channels[OUTPUT_CHANNEL_R] = BGR_GRAY - (unsigned char)(x * z);
+				outputColor.channels[OUTPUT_CHANNEL_A] = ALPHA_OPAQUE;
 
-				outputPointer++;
-				colorPointer++;
+				outputColorPointer++;
+				inputColorPointer++;
 			}
 
 			inputPointer = (M4Image::Color32*)((unsigned char*)inputPointer + inputStride);
