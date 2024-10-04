@@ -690,12 +690,12 @@ void M4Revolution::editTransitionTime() {
 	AI::editTransitionTime(edit);
 }
 
-void M4Revolution::editInertiaLevels() {
+void M4Revolution::editMouseControls() {
 	std::fstream fileStream(inputFileName, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 
-	Log log("Editing Inertia Levels", fileStream);
+	Log log("Editing Mouse Controls", fileStream);
 	Work::Edit edit(fileStream);
-	AI::editInertiaLevels(edit);
+	AI::editMouseControls(edit);
 }
 
 void M4Revolution::fixLoading() {

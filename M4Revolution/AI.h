@@ -28,5 +28,5 @@ namespace AI {
 	);
 
 	void editTransitionTime(Work::Edit &edit);
-	void editInertiaLevels(Work::Edit &edit);
+	void editMouseControls(Work::Edit &edit);
 };

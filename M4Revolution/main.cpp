@@ -4,7 +4,7 @@
 
 bool performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_EDIT_TRANSITION_TIME = 1;
-	const long OPERATION_EDIT_INERTIA_LEVELS = 2;
+	const long OPERATION_EDIT_MOUSE_CONTROLS = 2;
 	const long OPERATION_FIX_LOADING = 3;
 	const long OPERATION_RESTORE_BACKUP = 4;
 	const long OPERATION_EXIT = 5;
@@ -21,8 +21,8 @@ bool performOperation(M4Revolution &m4Revolution) {
 		case OPERATION_EDIT_TRANSITION_TIME:
 		m4Revolution.editTransitionTime();
 		break;
-		case OPERATION_EDIT_INERTIA_LEVELS:
-		m4Revolution.editInertiaLevels();
+		case OPERATION_EDIT_MOUSE_CONTROLS:
+		m4Revolution.editMouseControls();
 		break;
 		case OPERATION_FIX_LOADING:
 		m4Revolution.fixLoading();
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
 		consoleLog("This menu may be used to perform the following operations.", 2);
 
 		consoleLog("1) Edit Transition Time");
-		consoleLog("2) Edit Inertia Levels");
+		consoleLog("2) Edit Mouse Controls");
 		consoleLog("3) Fix Loading");
 		consoleLog("4) Restore Backup");
 		consoleLog("5) Exit", 2);

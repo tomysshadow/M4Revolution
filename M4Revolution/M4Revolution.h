@@ -128,7 +128,7 @@ class M4Revolution {
 	M4Revolution(const M4Revolution &m4Revolution) = delete;
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
 	void editTransitionTime();
-	void editInertiaLevels();
+	void editMouseControls();
 	void fixLoading();
 	bool restoreBackup();
 };
