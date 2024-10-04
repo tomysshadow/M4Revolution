@@ -24,8 +24,8 @@ namespace gfx_tools {
 		const size_t INPUT_CHANNEL_UV = 0;
 		const size_t INPUT_CHANNEL_LUMINANCE = 3;
 
-		const size_t OUTPUT_CHANNEL_U = 0;
-		const size_t OUTPUT_CHANNEL_V = 1;
+		const size_t OUTPUT_CHANNEL_DU = 0;
+		const size_t OUTPUT_CHANNEL_DV = 1;
 		const size_t OUTPUT_CHANNEL_LUMINANCE = 2;
 
 		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + (height * inputStride) - inputStride);
@@ -56,8 +56,8 @@ namespace gfx_tools {
 				M4Image::Color32 &inputColor = *inputColorPointer;
 				M4Image::Color16 &outputColor = *outputColorPointer;
 
-				outputColor.channels[OUTPUT_CHANNEL_U] = inputColor.channels[INPUT_CHANNEL_UV] - inputUColorPointer->channels[INPUT_CHANNEL_UV];
-				outputColor.channels[OUTPUT_CHANNEL_V] = inputColor.channels[INPUT_CHANNEL_UV] - inputVColorPointer++->channels[INPUT_CHANNEL_UV];
+				outputColor.channels[OUTPUT_CHANNEL_DU] = inputColor.channels[INPUT_CHANNEL_UV] - inputUColorPointer->channels[INPUT_CHANNEL_UV];
+				outputColor.channels[OUTPUT_CHANNEL_DV] = inputColor.channels[INPUT_CHANNEL_UV] - inputVColorPointer++->channels[INPUT_CHANNEL_UV];
 
 				if (luminance) {
 					((M4Image::Color32*)outputColorPointer)->channels[OUTPUT_CHANNEL_LUMINANCE] = inputColor.channels[INPUT_CHANNEL_LUMINANCE];
@@ -75,7 +75,7 @@ namespace gfx_tools {
 		return outputPointer;
 	}
 
-	M4Image::Color32* convertHeightMapIntoNormalMap(
+	M4Image::Color32* convertHeightMapIntoNormalMapColor(
 		unsigned long width,
 		unsigned long height,
 		M4Image::Color32* inputPointer,
@@ -183,7 +183,7 @@ namespace gfx_tools {
 		unsigned long outputStride,
 		float strength
 	) {
-		return (unsigned char*)convertHeightMapIntoNormalMap(
+		return (unsigned char*)convertHeightMapIntoNormalMapColor(
 			width,
 			height,
 			(M4Image::Color32*)inputPointer,
