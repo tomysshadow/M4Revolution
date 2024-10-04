@@ -82,13 +82,15 @@ namespace gfx_tools {
 		unsigned long outputStride,
 		double strength
 	) {
+		const size_t INPUT_CHANNEL_XY = 0;
+
 		const size_t OUTPUT_CHANNEL_B = 0;
 		const size_t OUTPUT_CHANNEL_G = 1;
 		const size_t OUTPUT_CHANNEL_R = 2;
 		const size_t OUTPUT_CHANNEL_A = 3;
 
 		const double MULTIPLIER = 127.0;
-		const unsigned char COLOR_GRAY = 128;
+		const unsigned char BGR_GRAY = 128;
 		const unsigned char ALPHA_OPAQUE = 255;
 
 		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + (height * inputStride) - inputStride);
@@ -119,13 +121,13 @@ namespace gfx_tools {
 				M4Image::Color32 &color = *colorPointer;
 				M4Image::Color32 &output = *outputPointer;
 
-				x = strength * (inputXColorPointer->channels[0] - color.channels[0]);
-				y = strength * (inputYColorPointer->channels[0] - color.channels[0]);
+				x = strength * (inputXColorPointer->channels[INPUT_CHANNEL_XY] - color.channels[INPUT_CHANNEL_XY]);
+				y = strength * (inputYColorPointer->channels[INPUT_CHANNEL_XY] - color.channels[INPUT_CHANNEL_XY]);
 				z = 1.0 / sqrt(x * x + y * y + 1.0) * MULTIPLIER;
 
-				output.channels[OUTPUT_CHANNEL_B] = COLOR_GRAY + (unsigned char)z;
-				output.channels[OUTPUT_CHANNEL_G] = COLOR_GRAY - (unsigned char)(y * z);
-				output.channels[OUTPUT_CHANNEL_R] = COLOR_GRAY - (unsigned char)(x * z);
+				output.channels[OUTPUT_CHANNEL_B] = BGR_GRAY + (unsigned char)z;
+				output.channels[OUTPUT_CHANNEL_G] = BGR_GRAY - (unsigned char)(y * z);
+				output.channels[OUTPUT_CHANNEL_R] = BGR_GRAY - (unsigned char)(x * z);
 				output.channels[OUTPUT_CHANNEL_A] = ALPHA_OPAQUE;
 
 				outputPointer++;
