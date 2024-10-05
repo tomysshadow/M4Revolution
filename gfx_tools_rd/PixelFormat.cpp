@@ -199,6 +199,8 @@ namespace gfx_tools {
 		return &m_formatDescriptionTable[enumPixelFormat];
 	}
 
+	typedef std::map<EnumPixelFormat, EnumPixelFormat> ENUM_PIXEL_FORMAT_MAP;
+
 	EnumPixelFormat PixelFormat::GetPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat) {
 		const ENUM_PIXEL_FORMAT_MAP ENUM_PIXEL_FORMAT_WITH_ALPHA_MAP = {
 			{PIXELFORMAT_XRGB_8888, PIXELFORMAT_ARGB_8888},
