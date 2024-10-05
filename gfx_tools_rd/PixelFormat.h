@@ -67,8 +67,8 @@ namespace gfx_tools {
 		unsigned char bitsPerPixel = 0;
 		unsigned __int64 maskDepth = 0;
 		unsigned __int64 maskStencil = 0;
-		bool hasColor = 0;
-		bool hasBitsPerPixel = 0;
+		bool hasColor = false;
+		bool hasBitsPerPixel = false;
 		int padding = 0;
 
 		static PixelFormat m_formatDescriptionTable[];
