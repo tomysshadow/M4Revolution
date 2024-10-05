@@ -122,9 +122,9 @@ namespace gfx_tools {
 	maskPalette(maskPalette),
 	bitsPerPixel(bitsPerPixel),
 	maskDepth(maskDepth),
-	maskStencil(maskStencil) {
-		hasColor = maskRed || maskGreen || maskBlue || maskAlpha;
-		hasBitsPerPixel = bitsPerPixel;
+	maskStencil(maskStencil),
+	hasColor(maskRed || maskGreen || maskBlue || maskAlpha),
+	hasBitsPerPixel(bitsPerPixel) {
 	}
 
 	bool PixelFormat::HasRed() {
