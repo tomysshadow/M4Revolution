@@ -196,7 +196,12 @@ namespace gfx_tools {
 	}
 
 	PixelFormat* PixelFormat::GetPixelFormat(EnumPixelFormat enumPixelFormat) {
-		return &m_formatDescriptionTable[enumPixelFormat];
+		PixelFormat &pixelFormat = m_formatDescriptionTable[enumPixelFormat];
+
+		if (pixelFormat.hasBitsPerPixel) {
+			return &pixelFormat;
+		}
+		return 0;
 	}
 
 	typedef std::map<EnumPixelFormat, EnumPixelFormat> ENUM_PIXEL_FORMAT_MAP;
@@ -229,7 +234,7 @@ namespace gfx_tools {
 		return enumPixelFormatMapIterator == ENUM_PIXEL_FORMAT_WITHOUT_ALPHA_MAP.end() ? enumPixelFormat : enumPixelFormatMapIterator->second;
 	}
 
-	char* PixelFormat::GetPixelFormatString(EnumPixelFormat enumPixelFormat) {
-		return ms_formatNames[enumPixelFormat];
+	char** PixelFormat::GetPixelFormatString(EnumPixelFormat enumPixelFormat) {
+		return &ms_formatNames[enumPixelFormat];
 	}
 };

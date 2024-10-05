@@ -106,6 +106,6 @@ namespace gfx_tools {
 		static PixelFormat* GetPixelFormat(EnumPixelFormat enumPixelFormat);
 		static EnumPixelFormat GetPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat);
 		static EnumPixelFormat GetPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat);
-		static char* GetPixelFormatString(EnumPixelFormat enumPixelFormat);
+		static char** GetPixelFormatString(EnumPixelFormat enumPixelFormat);
 	};
 }
