@@ -160,13 +160,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Configuration.cpp" />
-    <ClCompile Include="gfx_tools.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PixelFormat.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Configuration.h" />
-    <ClInclude Include="gfx_tools.h" />
+    <ClInclude Include="main.h" />
     <ClInclude Include="ImageLoader.h" />
     <ClInclude Include="PixelFormat.h" />
     <ClInclude Include="shared.h" />
