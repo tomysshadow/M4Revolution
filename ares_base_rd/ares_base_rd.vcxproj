@@ -143,10 +143,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ares.h" />
+    <ClInclude Include="ares_base_rd.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ares.cpp" />
+    <ClCompile Include="ares_base_rd.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,4 +1,4 @@
-#include "ares.h"
+#include "ares_base_rd.h"
 
 namespace ares {
 	Resource* Resource::Destroy(unsigned char flags) {

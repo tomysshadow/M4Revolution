@@ -143,10 +143,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ubi.h" />
+    <ClInclude Include="base_rd.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ubi.cpp" />
+    <ClCompile Include="base_rd.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
