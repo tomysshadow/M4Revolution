@@ -13,6 +13,14 @@
 #endif
 
 namespace ubi {
+	class BASE_RD_API ErrorManager {
+		public:
+		unsigned long RegisterCategory(unsigned long reserved, char const* name);
+		void SetSystemFlag(unsigned long category, unsigned long mask, bool value);
+
+		static ErrorManager& BASE_RD_CALL GetSingletonInstance();
+	};
+
 	class BASE_RD_API InputStream {
 		public:
 		unsigned long Read(unsigned char* buffer, unsigned long position, unsigned long size);

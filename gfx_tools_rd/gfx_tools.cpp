@@ -1,4 +1,5 @@
 #include "gfx_tools.h"
+#include "ubi.h"
 #include <math.h>
 #include <M4Image/M4Image.h>
 
@@ -148,6 +149,29 @@ namespace gfx_tools {
 			outputPointer = (M4Image::Color32*)((unsigned char*)outputPointer + outputStride);
 		}
 		return outputPointer;
+	}
+
+	static unsigned long refCount = 0;
+	static bool initialized = false;
+
+	void GFX_TOOLS_RD_API Init() {
+		if (refCount++) {
+			return;
+		}
+
+		if (initialized) {
+			return;
+		}
+
+		ubi::ErrorManager &errorManager = ubi::ErrorManager::GetSingletonInstance();
+		errorManager.SetSystemFlag(errorManager.RegisterCategory(0, "Gfx_Tools"), 0x00000040, true);
+		initialized = true;
+	}
+
+	void GFX_TOOLS_RD_API Shutdown() {
+		if (refCount) {
+			refCount--;
+		}
 	}
 
 	unsigned char* ConvertHeightMapIntoDuDvBumpMap(

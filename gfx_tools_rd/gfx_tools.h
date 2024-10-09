@@ -3,10 +3,8 @@
 #include "PixelFormat.h"
 
 namespace gfx_tools {
-	/*
-	void GFX_TOOLS_RD_API Init();
-	void GFX_TOOLS_RD_API Shutdown();
-	*/
+	GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL Init();
+	GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL Shutdown();
 
 	GFX_TOOLS_RD_API unsigned char* GFX_TOOLS_RD_CALL ConvertHeightMapIntoDuDvBumpMap(
 		unsigned long width,
