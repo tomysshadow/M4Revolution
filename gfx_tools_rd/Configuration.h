@@ -17,7 +17,8 @@ namespace gfx_tools {
 		static Configuration ms_currentConfiguration;
 
 		public:
+		static void Set(Configuration const &configuration);
+
 		Configuration();
-		void Set(Configuration const &configuration);
 	};
 }
