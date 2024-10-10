@@ -67,7 +67,7 @@ namespace gfx_tools {
 		unsigned __int64 maskStencil = 0;
 		bool hasColor = false;
 		bool hasBitsPerPixel = false;
-		int padding = 0;
+		unsigned int padding = 0;
 
 		static PixelFormat m_formatDescriptionTable[];
 		static char* ms_formatNames[];
