@@ -18,7 +18,13 @@ namespace ares {
 	};
 
 	class ARES_BASE_RD_API Resource {
+		protected:
+		Resource();
+		virtual ~Resource();
+
 		public:
+		Resource(Resource const &resource);
+		Resource &operator=(Resource const &resource);
 		virtual Resource* Destroy(unsigned char flags);
 		virtual const char* GetClassNameA() const;
 		virtual Resource* Clone(EnumCloneType enumCloneType);
