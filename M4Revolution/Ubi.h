@@ -38,7 +38,7 @@ namespace Ubi {
 
 		/*
 		for water slices, DXT5 is not supported and an uncompressed format must be used instead
-		in order to detect which JPEG/ZAP images are water slices, we need to read the RLE files
+		in order to detect which images are water slices, we need to read the RLE files
 		which are pointed to by the Water files (typically named water.bin)
 		*/
 		namespace RLE {
@@ -261,8 +261,8 @@ namespace Ubi {
 				NONE = 0,
 				BINARY,
 				BIG_FILE,
-				JPEG,
-				ZAP
+				IMAGE_STANDARD,
+				IMAGE_ZAP
 			};
 
 			// the name in the output file (so example.dds, not example.jpg)

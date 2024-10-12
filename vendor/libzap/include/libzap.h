@@ -95,6 +95,13 @@ LIBZAP_API zap_error_t LIBZAP_CALL zap_resize_memory(const unsigned char* pData,
 /// \return 0 on success, non-zero on failure
 LIBZAP_API zap_error_t LIBZAP_CALL zap_free(zap_byte_t* pData);
 
+/// Get info for a ZAP file
+/// \param pData The data to get info for
+/// \param pOutWidth A pointer to the output image width (this argument may be NULL)
+/// \param pOutHeight A pointer to the output image height (this argument may be NULL)
+/// \return 0 on success, non-zero on failure
+LIBZAP_API zap_error_t LIBZAP_CALL zap_get_info(const unsigned char* pData, zap_int_t* pOutWidth, zap_int_t* pOutHeight);
+
 /// Set the allocator used by zap_load, zap_resize, zap_load_memory, or zap_resize_memory
 /// \param mallocProc The malloc procedure
 /// \param freeProc The free procedure

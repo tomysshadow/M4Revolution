@@ -1,6 +1,7 @@
 #pragma once
 #include "M4Image/shared.h"
 #include <string>
+#include <stdint.h>
 
 namespace M4Image {
     typedef void* (*MAllocProc)(size_t size);
@@ -36,24 +37,50 @@ namespace M4Image {
         const char* extension,
         const unsigned char* address,
         size_t size,
-        int &width,
-        int &height,
-        size_t &stride,
+        int width,
+        int height,
+        size_t stride,
         COLOR_FORMAT colorFormat
     );
 
-    M4IMAGE_API unsigned char* M4IMAGE_CALL resize(
+    M4IMAGE_API unsigned char* M4IMAGE_CALL save(
         const char* extension,
-        const unsigned char* address,
-        size_t size,
         int width,
         int height,
-        size_t &stride,
-        COLOR_FORMAT colorFormat
+        size_t stride,
+        COLOR_FORMAT colorFormat,
+        const void* image,
+        size_t &size,
+        float quality = 0.90f
     );
+
+    /*
+    M4IMAGE_API unsigned char* M4IMAGE_CALL blit(
+        const unsigned char* address,
+        size_t size,
+        int inputWidth,
+        int inputHeight,
+        int inputStride,
+        COLOR_FORMAT inputColorFormat,
+        int outputWidth,
+        int outputHeight,
+        size_t &outputStride,
+        COLOR_FORMAT outputColorFormat
+    );
+    */
 
     M4IMAGE_API void* M4IMAGE_CALL malloc(size_t size);
     M4IMAGE_API void M4IMAGE_CALL free(void* block);
+
+    M4IMAGE_API bool M4IMAGE_CALL getInfo(
+        const char* extension,
+        const unsigned char* address,
+        size_t size,
+        int* widthPointer,
+        int* heightPointer,
+        uint32_t* bitsPointer,
+        bool* alphaPointer
+    );
 
     M4IMAGE_API void M4IMAGE_CALL setAllocator(MAllocProc mallocProc, FreeProc freeProc);
 };

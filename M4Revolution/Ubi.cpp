@@ -624,7 +624,7 @@ void Ubi::BigFile::File::rename(const std::optional<File> &layerFileOptional) {
 
 	type = nameTypeExtensionMapIterator->second.type;
 	
-	if (layerFileOptional.has_value() && (type == TYPE::JPEG || type == TYPE::ZAP)) {
+	if (layerFileOptional.has_value() && (type == TYPE::IMAGE_STANDARD || type == TYPE::IMAGE_ZAP)) {
 		const File &LAYER_FILE = layerFileOptional.value();
 
 		if (LAYER_FILE.layerMapIterator->second.isLayerMask) {
@@ -732,8 +732,10 @@ bool Ubi::BigFile::File::isWaterSlice(const std::string &name, const Binary::RLE
 const Ubi::BigFile::File::TYPE_EXTENSION_MAP Ubi::BigFile::File::NAME_TYPE_EXTENSION_MAP = {
 	{"m4b", {TYPE::BIG_FILE, "m4b"}},
 	{"bin", {TYPE::BINARY, "bin"}},
-	{"jpg", {TYPE::JPEG, "dds"}},
-	{"zap", {TYPE::ZAP, "dds"}}
+	{"png", {TYPE::IMAGE_STANDARD, "dds"}},
+	{"jpg", {TYPE::IMAGE_STANDARD, "dds"}},
+	{"jtif", {TYPE::IMAGE_STANDARD, "dds"}},
+	{"zap", {TYPE::IMAGE_ZAP, "dds"}}
 };
 
 const std::string Ubi::BigFile::Directory::NAME_CUBE = "cube";

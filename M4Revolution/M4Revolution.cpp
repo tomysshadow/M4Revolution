@@ -216,11 +216,11 @@ void M4Revolution::convertFile(
 		case Ubi::BigFile::File::TYPE::BIG_FILE:
 		fixLoading(inputStream, bigFileInputPosition, file, log);
 		break;
-		case Ubi::BigFile::File::TYPE::JPEG:
-		convertFile(inputStream, bigFileInputPosition, file, convertJPEGWorkCallback);
+		case Ubi::BigFile::File::TYPE::IMAGE_STANDARD:
+		convertFile(inputStream, bigFileInputPosition, file, convertImageStandardWorkCallback);
 		break;
-		case Ubi::BigFile::File::TYPE::ZAP:
-		convertFile(inputStream, bigFileInputPosition, file, convertZAPWorkCallback);
+		case Ubi::BigFile::File::TYPE::IMAGE_ZAP:
+		convertFile(inputStream, bigFileInputPosition, file, convertImageZAPWorkCallback);
 		break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
@@ -361,7 +361,7 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	fileTask.complete();
 }
 
-void M4Revolution::convertJPEGWorkCallback(Work::Convert* convertPointer) {
+void M4Revolution::convertImageStandardWorkCallback(Work::Convert* convertPointer) {
 	SCOPE_EXIT {
 		delete convertPointer;
 	};
@@ -377,7 +377,7 @@ void M4Revolution::convertJPEGWorkCallback(Work::Convert* convertPointer) {
 	convertSurface(convert, surface);
 }
 
-void M4Revolution::convertZAPWorkCallback(Work::Convert* convertPointer) {
+void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 	SCOPE_EXIT {
 		delete convertPointer;
 	};

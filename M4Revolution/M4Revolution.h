@@ -105,8 +105,8 @@ class M4Revolution {
 	Ubi::BigFile::File createInputFile(std::istream &inputStream);
 
 	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface);
-	static void convertJPEGWorkCallback(Work::Convert* convertPointer);
-	static void convertZAPWorkCallback(Work::Convert* convertPointer);
+	static void convertImageStandardWorkCallback(Work::Convert* convertPointer);
+	static void convertImageZAPWorkCallback(Work::Convert* convertPointer);
 	#ifdef MULTITHREADED
 	static VOID CALLBACK convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
 	#endif
