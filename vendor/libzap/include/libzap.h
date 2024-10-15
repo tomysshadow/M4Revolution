@@ -16,6 +16,7 @@ typedef size_t zap_size_t;
 
 typedef void* (*zap_malloc_proc)(size_t size);
 typedef void (*zap_free_proc)(void* block);
+typedef void* (*zap_realloc_proc)(void* block, size_t size);
 
 enum zap_error
 {
@@ -56,8 +57,9 @@ enum ZAP_COLOR_FORMAT
 /// \param pOutSize A pointer to the output data size
 /// \param pOutWidth A pointer to the output image width
 /// \param pOutHeight A pointer to the output image height
+/// \param pRefStride A pointer to the stride - if zero the stride is chosen automatically and this is set to the result
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_load(const char* filename, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t* pOutWidth, zap_int_t* pOutHeight);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_load(const char* filename, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t* pOutWidth, zap_int_t* pOutHeight, zap_size_t* pRefStride);
 
 
 /// Resize a ZAP file from disk
@@ -67,8 +69,9 @@ LIBZAP_API zap_error_t LIBZAP_CALL zap_load(const char* filename, zap_uint_t col
 /// \param pOutSize A pointer to the output data size
 /// \param width The width of the resized image
 /// \param height The height of the resized image
+/// \param pRefStride A pointer to the stride - if zero the stride is chosen automatically and this is set to the result
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_resize(const char* filename, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_resize(const char* filename, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height, zap_size_t* pRefStride);
 
 /// Load a ZAP file from memory
 /// \param pData The data to load
@@ -77,8 +80,9 @@ LIBZAP_API zap_error_t LIBZAP_CALL zap_resize(const char* filename, zap_uint_t c
 /// \param pOutSize A pointer to the output data size
 /// \param pOutWidth A pointer to the output image width
 /// \param pOutHeight A pointer to the output image height
+/// \param pRefStride A pointer to the stride - if zero the stride is chosen automatically and this is set to the result
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_load_memory(const unsigned char* pData, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t* pOutWidth, zap_int_t* pOutHeight);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_load_memory(const unsigned char* pData, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t* pOutWidth, zap_int_t* pOutHeight, zap_size_t* pRefStride);
 
 /// Resize a ZAP file from memory
 /// \param pData The data to load
@@ -87,8 +91,9 @@ LIBZAP_API zap_error_t LIBZAP_CALL zap_load_memory(const unsigned char* pData, z
 /// \param pOutSize A pointer to the output data size
 /// \param width The width of the resized image
 /// \param height The height of the resized image
+/// \param pRefStride A pointer to the stride - if zero the stride is chosen automatically and this is set to the result
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_resize_memory(const unsigned char* pData, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_resize_memory(const unsigned char* pData, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height, zap_size_t* pRefStride);
 
 /// Free the data loaded by zap_load, zap_resize, zap_load_memory or zap_resize_memory
 /// \param pData The data to free
@@ -106,7 +111,7 @@ LIBZAP_API zap_error_t LIBZAP_CALL zap_get_info(const unsigned char* pData, zap_
 /// \param mallocProc The malloc procedure
 /// \param freeProc The free procedure
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_set_allocator(zap_malloc_proc mallocProc, zap_free_proc freeProc);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_set_allocator(zap_malloc_proc mallocProc, zap_free_proc freeProc, zap_realloc_proc reallocProc);
 
 /// Save a ZAP file to disk
 /// \param filename The path to save the ZAP file to
@@ -114,20 +119,22 @@ LIBZAP_API zap_error_t LIBZAP_CALL zap_set_allocator(zap_malloc_proc mallocProc,
 /// \param dataSize The size of the data to save
 /// \param width The width of the image
 /// \param height The height of the image
+/// \param stride The stride of the image
 /// \param colorFormat The color format of the image
 /// \param format The format of the image
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_save(const char* filename, const zap_byte_t* pData, zap_size_t dataSize, zap_int_t width, zap_int_t height, zap_uint_t colorFormat, zap_uint_t format);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_save(const char* filename, const zap_byte_t* pData, zap_size_t dataSize, zap_int_t width, zap_int_t height, zap_size_t stride, zap_uint_t colorFormat, zap_uint_t format);
 
 /// Save a ZAP file to memory
 /// \param pOut A pointer to the output data
 /// \param pOutSize A pointer to the output data size
 /// \param width The width of the image
 /// \param height The height of the image
+/// \param stride The stride of the image
 /// \param colorFormat The color format of the image
 /// \param format The format of the image
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_save_memory(zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height, zap_uint_t colorFormat, zap_uint_t format);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_save_memory(zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height, zap_size_t stride, zap_uint_t colorFormat, zap_uint_t format);
 
 #ifdef __cplusplus
 }

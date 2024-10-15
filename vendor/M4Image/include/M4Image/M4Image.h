@@ -4,8 +4,9 @@
 #include <stdint.h>
 
 namespace M4Image {
-    typedef void* (*MAllocProc)(size_t size);
+    typedef void* (*MallocProc)(size_t size);
     typedef void (*FreeProc)(void* block);
+    typedef void* (*ReallocProc)(void* block, size_t size);
 
     struct Color16 {
         unsigned char channels[2] = {};
@@ -39,7 +40,7 @@ namespace M4Image {
         size_t size,
         int width,
         int height,
-        size_t stride,
+        size_t &stride,
         COLOR_FORMAT colorFormat
     );
 
@@ -71,6 +72,7 @@ namespace M4Image {
 
     M4IMAGE_API void* M4IMAGE_CALL malloc(size_t size);
     M4IMAGE_API void M4IMAGE_CALL free(void* block);
+    M4IMAGE_API void* M4IMAGE_CALL realloc(void* block, size_t size);
 
     M4IMAGE_API bool M4IMAGE_CALL getInfo(
         const char* extension,
@@ -82,5 +84,5 @@ namespace M4Image {
         bool* alphaPointer
     );
 
-    M4IMAGE_API void M4IMAGE_CALL setAllocator(MAllocProc mallocProc, FreeProc freeProc);
+    M4IMAGE_API void M4IMAGE_CALL setAllocator(MallocProc mallocProc, FreeProc freeProc, ReallocProc reallocProc);
 };
