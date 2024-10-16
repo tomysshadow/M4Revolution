@@ -46,29 +46,26 @@ namespace M4Image {
 
     M4IMAGE_API unsigned char* M4IMAGE_CALL save(
         const char* extension,
+        const void* image,
+        size_t &size,
         int width,
         int height,
         size_t stride,
         COLOR_FORMAT colorFormat,
-        const void* image,
-        size_t &size,
         float quality = 0.90f
     );
 
-    /*
     M4IMAGE_API unsigned char* M4IMAGE_CALL blit(
-        const unsigned char* address,
-        size_t size,
+        const void* image,
         int inputWidth,
         int inputHeight,
-        int inputStride,
+        size_t inputStride,
         COLOR_FORMAT inputColorFormat,
         int outputWidth,
         int outputHeight,
         size_t &outputStride,
         COLOR_FORMAT outputColorFormat
     );
-    */
 
     M4IMAGE_API void* M4IMAGE_CALL malloc(size_t size);
     M4IMAGE_API void M4IMAGE_CALL free(void* block);
