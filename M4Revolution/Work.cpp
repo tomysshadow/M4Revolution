@@ -204,11 +204,13 @@ Work::FileTask::POINTER_QUEUE_LOCK Work::Tasks::fileLock() {
 Work::Convert::Convert(
 	Ubi::BigFile::File &file,
 	nvtt::Context &context,
-	nvtt::CompressionOptions &compressionOptions
+	nvtt::CompressionOptions &compressionOptions,
+	nvtt::CompressionOptions &compressionOptionsAlpha
 )
 	: file(file),
 	context(context),
-	compressionOptions(compressionOptions) {
+	compressionOptions(compressionOptions),
+	compressionOptionsAlpha(compressionOptionsAlpha) {
 }
 
 const char* Work::Output::FILE_NAME = "~data.m4b.tmp";

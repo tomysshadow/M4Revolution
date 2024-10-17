@@ -175,7 +175,10 @@ void M4Revolution::convertFile(
 	Ubi::BigFile::File &file,
 	Work::Convert::FileWorkCallback fileWorkCallback
 ) {
-	Work::Convert* convertPointer = new Work::Convert(file, context, file.rgba ? compressionOptionsRGBA : compressionOptionsDXT5);
+	Work::Convert* convertPointer = file.rgba
+		? new Work::Convert(file, context, compressionOptionsRGBA, compressionOptionsRGBA)
+		: new Work::Convert(file, context, compressionOptionsDXT1, compressionOptionsDXT5);
+
 	Work::Convert &convert = *convertPointer;
 
 	Work::Data::POINTER &dataPointer = convert.dataPointer;
@@ -326,7 +329,7 @@ Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
 	return inputFile;
 }
 
-void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface) {
+void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha) {
 	if (convert.file.greyScale) {
 		const float SCALE = 1.0;
 
@@ -345,7 +348,7 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	outputOptions.setErrorHandler(&errorHandler);
 
 	nvtt::Context &context = convert.context;
-	nvtt::CompressionOptions &compressionOptions = convert.compressionOptions;
+	nvtt::CompressionOptions &compressionOptions = hasAlpha ? convert.compressionOptionsAlpha : convert.compressionOptions;
 
 	if (!context.outputHeader(surface, 1, compressionOptions, outputOptions)) {
 		throw std::runtime_error("Failed to Output Context Header");
@@ -368,13 +371,14 @@ void M4Revolution::convertImageStandardWorkCallback(Work::Convert* convertPointe
 
 	Work::Convert &convert = *convertPointer;
 	nvtt::Surface surface = {};
+	bool hasAlpha = true;
 
-	if (!surface.loadFromMemory(convert.dataPointer.get(), convert.file.size)) {
+	if (!surface.loadFromMemory(convert.dataPointer.get(), convert.file.size, &hasAlpha)) {
 		throw std::runtime_error("Failed to Load Surface From Memory");
 	}
 
 	// when this unlocks one line later, the output thread will begin waiting on data
-	convertSurface(convert, surface);
+	convertSurface(convert, surface, hasAlpha);
 }
 
 void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
@@ -408,7 +412,7 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 	}
 
 	// when this unlocks one line later, the output thread will begin waiting on data
-	convertSurface(convert, surface);
+	convertSurface(convert, surface, true);
 }
 
 #ifdef MULTITHREADED
@@ -645,6 +649,9 @@ M4Revolution::M4Revolution(
 	this->maxFileTasks = maxFileTasks ? maxFileTasks : DEFAULT_MAX_FILE_TASKS;
 
 	context.enableCudaAcceleration(!disableHardwareAcceleration);
+
+	compressionOptionsDXT1.setFormat(nvtt::Format_DXT1);
+	compressionOptionsDXT1.setQuality(nvtt::Quality_Highest);
 
 	compressionOptionsDXT5.setFormat(nvtt::Format_DXT5);
 	compressionOptionsDXT5.setQuality(nvtt::Quality_Highest);

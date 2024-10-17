@@ -56,6 +56,7 @@ class M4Revolution {
 	bool logFileNames = false;
 
 	nvtt::Context context = {};
+	nvtt::CompressionOptions compressionOptionsDXT1 = {};
 	nvtt::CompressionOptions compressionOptionsDXT5 = {};
 	nvtt::CompressionOptions compressionOptionsRGBA = {};
 
@@ -104,7 +105,7 @@ class M4Revolution {
 
 	Ubi::BigFile::File createInputFile(std::istream &inputStream);
 
-	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface);
+	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha);
 	static void convertImageStandardWorkCallback(Work::Convert* convertPointer);
 	static void convertImageZAPWorkCallback(Work::Convert* convertPointer);
 	#ifdef MULTITHREADED
