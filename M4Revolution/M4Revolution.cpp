@@ -95,7 +95,7 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 	}
 
 	try {
-		Work::Data::POINTER pointer = Work::Data::POINTER(new unsigned char[size]);
+		Work::Data::POINTER pointer(new unsigned char[size]);
 
 		if (memcpy_s(pointer.get(), size, data, size)) {
 			return false;
@@ -127,7 +127,7 @@ void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks)
 	}
 
 	// this is just some moderately small amount of time
-	const std::chrono::milliseconds MILLISECONDS = std::chrono::milliseconds(25);
+	const std::chrono::milliseconds MILLISECONDS(25);
 
 	while (tasks.fileLock().get().size() >= maxFileTasks) {
 		std::this_thread::sleep_for(MILLISECONDS);
@@ -330,11 +330,13 @@ Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
 }
 
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha) {
+	/*
 	if (convert.file.greyScale) {
 		const float SCALE = 1.0;
 
 		surface.toGreyScale(SCALE, SCALE, SCALE, SCALE);
 	}
+	*/
 
 	nvtt::OutputOptions outputOptions = {};
 	outputOptions.setContainer(nvtt::Container_DDS);

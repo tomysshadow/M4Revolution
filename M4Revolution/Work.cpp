@@ -138,7 +138,7 @@ void Work::FileTask::copy(std::istream &inputStream, std::streamsize count) {
 		countRead = (std::streamsize)min((size_t)count, (size_t)countRead);
 
 		{
-			Data::POINTER pointer = Data::POINTER(new unsigned char[(size_t)countRead]);
+			Data::POINTER pointer(new unsigned char[(size_t)countRead]);
 
 			readStreamPartial(inputStream, pointer.get(), countRead, gcountRead);
 

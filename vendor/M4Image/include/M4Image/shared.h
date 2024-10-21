@@ -1,6 +1,11 @@
 #pragma once
 #define _WIN32_WINNT 0x0500
-#define NOMINMAX
+
+// mango requires NOMINMAX, but don't pollute the users of this library with this define
+#ifdef M4IMAGE_LIBRARY
+	#define NOMINMAX
+#endif
+
 #include "M4Image/scope_guard.hpp"
 #include <limits.h>
 

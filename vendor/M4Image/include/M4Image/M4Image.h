@@ -34,6 +34,30 @@ namespace M4Image {
 
     // note: extension is a string but we export it as const char* because
     // you're not supposed to export STL classes across DLL boundaries
+    M4IMAGE_API unsigned char* M4IMAGE_CALL blit(
+        const void* image,
+        COLOR_FORMAT inputColorFormat,
+        int inputWidth,
+        int inputHeight,
+        size_t inputStride,
+        COLOR_FORMAT outputColorFormat,
+        int outputWidth,
+        int outputHeight,
+        size_t &outputStride,
+        bool linear = false
+    );
+
+    M4IMAGE_API unsigned char* M4IMAGE_CALL blit(
+        const void* image,
+        COLOR_FORMAT inputColorFormat,
+        int inputWidth,
+        int inputHeight,
+        size_t inputStride,
+        COLOR_FORMAT outputColorFormat,
+        int outputWidth,
+        int outputHeight
+    );
+
     M4IMAGE_API unsigned char* M4IMAGE_CALL load(
         const char* extension,
         const unsigned char* address,
@@ -73,30 +97,6 @@ namespace M4Image {
         int height,
         size_t stride = 0,
         float quality = 0.90f
-    );
-
-    M4IMAGE_API unsigned char* M4IMAGE_CALL blit(
-        const void* image,
-        COLOR_FORMAT inputColorFormat,
-        int inputWidth,
-        int inputHeight,
-        size_t inputStride,
-        COLOR_FORMAT outputColorFormat,
-        int outputWidth,
-        int outputHeight,
-        size_t &outputStride,
-        bool linear = false
-    );
-
-    M4IMAGE_API unsigned char* M4IMAGE_CALL blit(
-        const void* image,
-        COLOR_FORMAT inputColorFormat,
-        int inputWidth,
-        int inputHeight,
-        size_t inputStride,
-        COLOR_FORMAT outputColorFormat,
-        int outputWidth,
-        int outputHeight
     );
 
     M4IMAGE_API void* M4IMAGE_CALL malloc(size_t size);

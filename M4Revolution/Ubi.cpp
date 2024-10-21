@@ -32,7 +32,7 @@ std::optional<std::string> Ubi::String::readOptional(std::istream &inputStream, 
 		return std::nullopt;
 	}
 
-	std::unique_ptr<char> strPointer = std::unique_ptr<char>(new char[(size_t)size + 1]);
+	std::unique_ptr<char> strPointer(new char[(size_t)size + 1]);
 	char* str = strPointer.get();
 	readStreamSafe(inputStream, str, size);
 
