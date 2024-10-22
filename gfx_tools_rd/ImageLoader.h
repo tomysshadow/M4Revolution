@@ -110,7 +110,7 @@ namespace gfx_tools {
 			unsigned int lod,
 			unsigned char* address,
 			size_t size,
-			bool unknown,
+			bool owner,
 			ubi::RefCounted &refCounted
 		);
 	};
