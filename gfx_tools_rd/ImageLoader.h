@@ -2,9 +2,9 @@
 #include "shared.h"
 #include "base_rd.h"
 #include "ares_base_rd.h"
-#include "PixelFormat.h"
 #include "ImageInfo.h"
 #include "ValidatedImageInfo.h"
+#include "PixelFormat.h"
 
 namespace gfx_tools {
 	typedef int FormatHint;
