@@ -191,13 +191,13 @@ bool consoleBool(const char* str, const std::optional<bool> &defaultValueOptiona
 
 void readStreamSafe(std::istream &inputStream, void* buffer, std::streamsize count) {
 	if (!inputStream.read((char*)buffer, count) || count != inputStream.gcount()) {
-		throw std::runtime_error("Failed to Read Input Stream");
+		throw ReadStreamFailed();
 	}
 }
 
 void writeStreamSafe(std::ostream &outputStream, const void* buffer, std::streamsize count) {
 	if (!outputStream.write((const char*)buffer, count)) {
-		throw std::runtime_error("Failed to Write Output Stream");
+		throw WriteStreamFailed();
 	}
 }
 

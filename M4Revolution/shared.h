@@ -337,6 +337,25 @@ float consoleFloat(const char* str = 0, float minValue = -FLT_MAX, float maxValu
 long consoleLong(const char* str = 0, long minValue = -LONG_MAX, long maxValue = LONG_MAX, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
 unsigned long consoleLongUnsigned(const char* str = 0, unsigned long minValue = 0, unsigned long maxValue = ULONG_MAX, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
 bool consoleBool(const char* str = 0, const std::optional<bool> &defaultValueOptional = std::nullopt);
+
+class StreamFailed : public std::runtime_error {
+	public:
+	StreamFailed(const char* message) noexcept : std::runtime_error(message) {
+	}
+};
+
+class ReadStreamFailed : public StreamFailed {
+	public:
+	ReadStreamFailed() noexcept : StreamFailed("Failed to Read Stream") {
+	}
+};
+
+class WriteStreamFailed : public StreamFailed {
+	public:
+	WriteStreamFailed() noexcept : StreamFailed("Failed to Write Stream") {
+	}
+};
+
 void readStreamSafe(std::istream &inputStream, void* buffer, std::streamsize count);
 void writeStreamSafe(std::ostream &outputStream, const void* buffer, std::streamsize count);
 void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize count, std::streamsize &gcount);

@@ -697,7 +697,12 @@ void M4Revolution::editTransitionTime() {
 
 	Log log("Editing Transition Time", fileStream);
 	Work::Edit edit(fileStream);
+
+	//try {
 	AI::editTransitionTime(edit);
+	//} catch (StreamFailed) {
+	// TODO: game is running, or not admin
+	//}
 }
 
 void M4Revolution::editMouseControls() {
@@ -705,7 +710,12 @@ void M4Revolution::editMouseControls() {
 
 	Log log("Editing Mouse Controls", fileStream);
 	Work::Edit edit(fileStream);
+
+	//try {
 	AI::editMouseControls(edit);
+	//} catch (StreamFailed) {
+	// TODO: game is running, or not admin
+	//}
 }
 
 void M4Revolution::fixLoading() {
@@ -740,7 +750,11 @@ void M4Revolution::fixLoading() {
 	}
 
 	// here I use std::filesystem::rename because I do want to overwrite the file if it exists
+	//try {
 	std::filesystem::rename(Work::Output::FILE_NAME, inputFileName);
+	//} catch (std::filesystem::filesystem_error) {
+	// TODO: game is running, or not admin
+	//}
 }
 
 bool M4Revolution::restoreBackup() {
