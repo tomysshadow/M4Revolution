@@ -1,6 +1,23 @@
 #include "base_rd.h"
 
 namespace ubi {
+	RefCounted* RefCounted::Destroy(unsigned char flags) {
+		return 0;
+	}
+
+	unsigned int RefCounted::AddRef() {
+		return ++refCount;
+	}
+
+	unsigned int RefCounted::Release() {
+		if (--refCount) {
+			return refCount;
+		}
+
+		Destroy(1);
+		return 0;
+	}
+
 	unsigned long ErrorManager::RegisterCategory(unsigned long reserved, char const* name) {
 		return 0;
 	}

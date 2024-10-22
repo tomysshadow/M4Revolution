@@ -13,6 +13,16 @@
 #endif
 
 namespace ubi {
+	class RefCounted {
+		private:
+		unsigned int refCount = 0;
+
+		public:
+		virtual RefCounted* Destroy(unsigned char flags);
+		unsigned int AddRef();
+		unsigned int Release();
+	};
+
 	class BASE_RD_API ErrorManager {
 		public:
 		unsigned long RegisterCategory(unsigned long reserved, char const* name);
