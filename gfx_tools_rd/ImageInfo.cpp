@@ -126,9 +126,9 @@ namespace gfx_tools {
 		Configuration &configuration = *Configuration::Get();
 
 		if (configuration.dimensionsMakePowerOfTwo) {
-			MakePowerOfTwo(this->textureWidth, false);
-			MakePowerOfTwo(this->textureHeight, false);
-			MakePowerOfTwo(this->volumeExtent, false);
+			MakePowerOfTwo(this->textureWidth);
+			MakePowerOfTwo(this->textureHeight);
+			MakePowerOfTwo(this->volumeExtent);
 		}
 
 		if (configuration.dimensionsMakeSquare) {

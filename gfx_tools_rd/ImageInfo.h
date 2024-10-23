@@ -38,7 +38,7 @@ namespace gfx_tools {
 		);
 
 		void Clamp(unsigned short &value, unsigned short min, unsigned short max);
-		void MakePowerOfTwo(unsigned short &value, bool reserved);
+		void MakePowerOfTwo(unsigned short &value, bool reserved = false);
 		void MakeSquare(unsigned short &value, unsigned short &value2);
 		void RecomputeLodSize(unsigned char lod);
 		EnumPixelFormat OverwritePixelFormat(EnumPixelFormat enumPixelFormat);
