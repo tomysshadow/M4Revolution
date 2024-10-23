@@ -46,10 +46,6 @@ namespace gfx_tools {
 		SetHint(formatHint);
 	}
 
-	void ValidatedImageInfo::Clamp(unsigned short &number, unsigned short min, unsigned short max) {
-		number = __min(max, __max(number, min));
-	}
-
 	void ValidatedImageInfo::MakePowerOfTwo(unsigned short &value, bool reserved) {
 		unsigned short powerOfTwo = 2;
 
@@ -87,6 +83,10 @@ namespace gfx_tools {
 
 		value = square;
 		value2 = square;
+	}
+
+	void ValidatedImageInfo::Clamp(unsigned short &number, unsigned short min, unsigned short max) {
+		number = __min(max, __max(number, min));
 	}
 
 	void ValidatedImageInfo::RecomputeLodSize(unsigned char lod) {
