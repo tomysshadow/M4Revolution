@@ -21,14 +21,14 @@ namespace gfx_tools {
 			unsigned int lod,
 			unsigned char* address,
 			size_t stride,
-			size_t height
+			size_t rows
 		) = 0;
 
 		virtual unsigned char* ResizeLODBuffer(
 			unsigned int lod,
 			unsigned char* address,
 			size_t stride,
-			size_t height,
+			size_t rows,
 			char requestedQFactor,
 			ImageInfo imageInfo,
 			size_t requestedWidth,
@@ -40,7 +40,7 @@ namespace gfx_tools {
 			unsigned int lod,
 			unsigned char* address,
 			size_t stride,
-			size_t height,
+			size_t rows,
 			char requestedQFactor,
 			ImageInfo &imageInfo,
 			size_t requestedExtent
@@ -72,14 +72,14 @@ namespace gfx_tools {
 			unsigned int lod,
 			unsigned char* address,
 			size_t stride,
-			size_t height
+			size_t rows
 		);
 
 		unsigned char* ResizeLODBuffer(
 			unsigned int lod,
 			unsigned char* address,
 			size_t stride,
-			size_t height,
+			size_t rows,
 			char requestedQFactor,
 			ImageInfo imageInfo,
 			size_t requestedWidth,
@@ -91,7 +91,7 @@ namespace gfx_tools {
 			unsigned int lod,
 			unsigned char* address,
 			size_t stride,
-			size_t height,
+			size_t rows,
 			char requestedQFactor,
 			ImageInfo &imageInfo,
 			size_t requestedExtent
