@@ -83,28 +83,28 @@ namespace gfx_tools {
 			unsigned __int64 maskStencil
 		);
 
-		bool HasRed();
-		bool HasGreen();
-		bool HasBlue();
-		bool HasAlpha();
-		bool HasPalette();
-		bool HasDepth();
-		bool HasStencil();
-		bool HasColor();
-		bool HasBitsPerPixel();
+		bool GFX_TOOLS_RD_CALL HasRed();
+		bool GFX_TOOLS_RD_CALL HasGreen();
+		bool GFX_TOOLS_RD_CALL HasBlue();
+		bool GFX_TOOLS_RD_CALL HasAlpha();
+		bool GFX_TOOLS_RD_CALL HasPalette();
+		bool GFX_TOOLS_RD_CALL HasDepth();
+		bool GFX_TOOLS_RD_CALL HasStencil();
+		bool GFX_TOOLS_RD_CALL HasColor();
+		bool GFX_TOOLS_RD_CALL HasBitsPerPixel();
 
-		unsigned __int64 GetMaskRed();
-		unsigned __int64 GetMaskGreen();
-		unsigned __int64 GetMaskBlue();
-		unsigned __int64 GetMaskAlpha();
-		unsigned __int64 GetMaskPalette();
-		unsigned char GetBitsPerPixel();
-		unsigned __int64 GetMaskDepth();
-		unsigned __int64 GetMaskStencil();
+		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskRed();
+		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskGreen();
+		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskBlue();
+		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskAlpha();
+		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskPalette();
+		unsigned char GFX_TOOLS_RD_CALL GetBitsPerPixel();
+		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskDepth();
+		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskStencil();
 
-		static PixelFormat* GetPixelFormat(EnumPixelFormat enumPixelFormat);
-		static EnumPixelFormat GetPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat);
-		static EnumPixelFormat GetPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat);
-		static char** GetPixelFormatString(EnumPixelFormat enumPixelFormat);
+		static PixelFormat* GFX_TOOLS_RD_CALL GetPixelFormat(EnumPixelFormat enumPixelFormat);
+		static EnumPixelFormat GFX_TOOLS_RD_CALL GetPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat);
+		static EnumPixelFormat GFX_TOOLS_RD_CALL GetPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat);
+		static char** GFX_TOOLS_RD_CALL GetPixelFormatString(EnumPixelFormat enumPixelFormat);
 	};
 }

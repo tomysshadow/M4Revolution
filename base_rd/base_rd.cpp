@@ -25,7 +25,7 @@ namespace ubi {
 	void ErrorManager::SetSystemFlag(unsigned long category, unsigned long mask, bool value) {
 	}
 
-	ErrorManager& BASE_RD_CALL ErrorManager::GetSingletonInstance() {
+	ErrorManager& ErrorManager::GetSingletonInstance() {
 		return *(new ErrorManager());
 	}
 

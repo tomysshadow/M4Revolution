@@ -17,8 +17,8 @@ namespace gfx_tools {
 		bool dimensionsMakePowerOfTwo = false;
 		bool upscale = true;
 
-		static Configuration* Get();
-		static void Set(Configuration const &configuration);
+		static Configuration* GFX_TOOLS_RD_CALL Get();
+		static void GFX_TOOLS_RD_CALL Set(Configuration const &configuration);
 
 		Configuration();
 	};

@@ -15,8 +15,8 @@
 namespace ubi {
 	class BASE_RD_API ErrorManager {
 		public:
-		unsigned long RegisterCategory(unsigned long reserved, char const* name);
-		void SetSystemFlag(unsigned long category, unsigned long mask, bool value);
+		unsigned long BASE_RD_CALL RegisterCategory(unsigned long reserved, char const* name);
+		void BASE_RD_CALL SetSystemFlag(unsigned long category, unsigned long mask, bool value);
 
 		static ErrorManager& BASE_RD_CALL GetSingletonInstance();
 	};
@@ -26,20 +26,20 @@ namespace ubi {
 		unsigned int refCount = 0;
 
 		public:
-		virtual RefCounted* Destroy(unsigned char flags);
-		unsigned int AddRef();
-		unsigned int Release();
+		virtual RefCounted* BASE_RD_CALL Destroy(unsigned char flags);
+		unsigned int BASE_RD_CALL AddRef();
+		unsigned int BASE_RD_CALL Release();
 	};
 
 	class BASE_RD_API InputStream {
 		public:
-		unsigned long Read(unsigned char* buffer, unsigned long position, unsigned long size);
+		unsigned long BASE_RD_CALL Read(unsigned char* buffer, unsigned long position, unsigned long size);
 	};
 
 	class BASE_RD_API InputFileStream {
 		public:
 		InputFileStream(char const* path);
 		virtual ~InputFileStream();
-		unsigned __int64 GetSize();
+		unsigned __int64 BASE_RD_CALL GetSize();
 	};
 }

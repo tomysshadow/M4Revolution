@@ -26,9 +26,9 @@ namespace ares {
 		public:
 		Resource(Resource const &resource);
 		Resource &operator=(Resource const &resource);
-		virtual Resource* Destroy(unsigned char flags);
-		virtual const char* GetClassNameA() const;
-		virtual Resource* Clone(EnumCloneType enumCloneType);
+		virtual Resource* ARES_BASE_RD_CALL Destroy(unsigned char flags);
+		virtual const char* ARES_BASE_RD_CALL GetClassNameA() const;
+		virtual Resource* ARES_BASE_RD_CALL Clone(EnumCloneType enumCloneType);
 	};
 
 	struct ARES_BASE_RD_API RectU32 {
