@@ -37,9 +37,9 @@ namespace gfx_tools {
 			FormatHint formatHint
 		);
 
-		void MakePowerOfTwo(unsigned short &value, bool reserved = false);
-		void MakeSquare(unsigned short &value, unsigned short &value2);
-		void Clamp(unsigned short &value, unsigned short min, unsigned short max);
+		void MakePowerOfTwo(unsigned short &number, bool reserved = false);
+		void MakeSquare(unsigned short &number, unsigned short &number2);
+		void Clamp(unsigned short &number, unsigned short min, unsigned short max);
 		void RecomputeLodSize(unsigned char lod);
 		EnumPixelFormat OverwritePixelFormat(EnumPixelFormat enumPixelFormat);
 		ValidatedImageInfo* Get();

@@ -46,17 +46,17 @@ namespace gfx_tools {
 		SetHint(formatHint);
 	}
 
-	void ValidatedImageInfo::MakePowerOfTwo(unsigned short &value, bool reserved) {
+	void ValidatedImageInfo::MakePowerOfTwo(unsigned short &number, bool reserved) {
 		unsigned short powerOfTwo = 2;
 
-		// if value is one, we want it to just become two
+		// if number is one, we want it to just become two
 		// so don't allow powerOfTwo to be downscaled to one
-		if (value > powerOfTwo) {
+		if (number > powerOfTwo) {
 			do {
 				powerOfTwo *= 2;
-			} while (value > powerOfTwo);
+			} while (number > powerOfTwo);
 
-			if (value == powerOfTwo) {
+			if (number == powerOfTwo) {
 				return;
 			}
 
@@ -65,24 +65,24 @@ namespace gfx_tools {
 			}
 		}
 
-		value = powerOfTwo;
+		number = powerOfTwo;
 	}
 
-	void ValidatedImageInfo::MakeSquare(unsigned short &value, unsigned short &value2) {
-		unsigned short square = value;
+	void ValidatedImageInfo::MakeSquare(unsigned short &number, unsigned short &number2) {
+		unsigned short square = number;
 
 		if (Configuration::Get()->upscale) {
-			if (square < value2) {
-				square = value2;
+			if (square < number2) {
+				square = number2;
 			}
 		} else {
-			if (square > value2) {
-				square = value2;
+			if (square > number2) {
+				square = number2;
 			}
 		}
 
-		value = square;
-		value2 = square;
+		number = square;
+		number2 = square;
 	}
 
 	void ValidatedImageInfo::Clamp(unsigned short &number, unsigned short min, unsigned short max) {
