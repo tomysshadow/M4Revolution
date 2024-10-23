@@ -25,8 +25,8 @@
 	#define M4IMAGE_API
 #endif
 
-inline unsigned char clampUCHAR(int value) {
-	return __min(UCHAR_MAX, __max(0, value));
+inline unsigned char clampUCHAR(int number) {
+	return __min(UCHAR_MAX, __max(0, number));
 }
 
 // forward declared so Pixman doesn't need to be included here

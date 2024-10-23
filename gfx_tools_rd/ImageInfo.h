@@ -5,9 +5,11 @@
 namespace gfx_tools {
 	typedef int FormatHint;
 
-	struct GFX_TOOLS_RD_API ImageInfo {
+	class GFX_TOOLS_RD_API ImageInfo {
+		protected:
 		static const unsigned char NUMBER_OF_LOD_MAX = 15;
 
+		public:
 		size_t lodSizesInBytes[NUMBER_OF_LOD_MAX] = {};
 		unsigned short textureWidth = 0;
 		unsigned short textureHeight = 0;
@@ -25,6 +27,7 @@ namespace gfx_tools {
 	};
 
 	struct GFX_TOOLS_RD_API ValidatedImageInfo : public ImageInfo {
+		public:
 		bool recomputeLodSizes = false;
 
 		ValidatedImageInfo();
