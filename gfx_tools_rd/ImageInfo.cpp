@@ -115,13 +115,13 @@ namespace gfx_tools {
 	}
 
 	void ValidatedImageInfo::SetDimensions(unsigned short textureWidth, unsigned short textureHeight, unsigned short volumeExtent) {
+		const Configuration &CONFIGURATION = *Configuration::Get();
+
 		this->textureWidth = textureWidth;
 		this->requestedTextureWidth = textureWidth;
 		this->textureHeight = textureHeight;
 		this->requestedTextureHeight = textureHeight;
 		this->volumeExtent = volumeExtent;
-
-		const Configuration &CONFIGURATION = *Configuration::Get();
 
 		if (CONFIGURATION.dimensionsMakePowerOfTwo) {
 			MakePowerOfTwo(this->textureWidth);
@@ -137,11 +137,10 @@ namespace gfx_tools {
 		Clamp(this->textureHeight, (unsigned short)CONFIGURATION.minTextureHeight, (unsigned short)CONFIGURATION.maxTextureHeight);
 		Clamp(this->volumeExtent, (unsigned short)CONFIGURATION.minVolumeExtent, (unsigned short)CONFIGURATION.maxVolumeExtent);
 
-		bool requested = this->textureWidth == textureWidth
-			&& this->textureHeight == textureHeight
-			&& this->volumeExtent == volumeExtent;
-
-		recompute = recompute || !requested;
+		recompute = recompute
+			|| this->textureWidth != textureWidth
+			|| this->textureHeight != textureHeight
+			|| this->volumeExtent != volumeExtent;
 
 		if (recompute) {
 			for (unsigned char i = 0; i < NUMBER_OF_LOD_MAX; i++) {
