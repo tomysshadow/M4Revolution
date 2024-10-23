@@ -3,12 +3,9 @@
 #include "base_rd.h"
 #include "ares_base_rd.h"
 #include "ImageInfo.h"
-#include "ValidatedImageInfo.h"
 #include "PixelFormat.h"
 
 namespace gfx_tools {
-	typedef int FormatHint;
-
 	class GFX_TOOLS_RD_API ImageLoader : public ares::Resource {
 		public:
 		size_t GetRawBufferTotalSize();
@@ -84,7 +81,7 @@ namespace gfx_tools {
 			ImageInfo imageInfo,
 			size_t requestedWidth,
 			size_t requestedHeight,
-			size_t requestedExtent
+			ares::RectU32* rectU32Pointer
 		);
 
 		unsigned char* SetLODBuffer(
@@ -94,7 +91,7 @@ namespace gfx_tools {
 			size_t rows,
 			char requestedQFactor,
 			ImageInfo &imageInfo,
-			size_t requestedExtent
+			ares::RectU32* rectU32Pointer
 		);
 
 		unsigned char* CreateLODRawBuffer(unsigned int lod, size_t size);

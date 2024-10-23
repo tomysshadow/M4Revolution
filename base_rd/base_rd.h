@@ -13,7 +13,15 @@
 #endif
 
 namespace ubi {
-	class RefCounted {
+	class BASE_RD_API ErrorManager {
+		public:
+		unsigned long RegisterCategory(unsigned long reserved, char const* name);
+		void SetSystemFlag(unsigned long category, unsigned long mask, bool value);
+
+		static ErrorManager& BASE_RD_CALL GetSingletonInstance();
+	};
+
+	class BASE_RD_API RefCounted {
 		private:
 		unsigned int refCount = 0;
 
@@ -21,14 +29,6 @@ namespace ubi {
 		virtual RefCounted* Destroy(unsigned char flags);
 		unsigned int AddRef();
 		unsigned int Release();
-	};
-
-	class BASE_RD_API ErrorManager {
-		public:
-		unsigned long RegisterCategory(unsigned long reserved, char const* name);
-		void SetSystemFlag(unsigned long category, unsigned long mask, bool value);
-
-		static ErrorManager& BASE_RD_CALL GetSingletonInstance();
 	};
 
 	class BASE_RD_API InputStream {

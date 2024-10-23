@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 #define ARES_BASE_RD_CALL __cdecl
 
@@ -28,5 +29,12 @@ namespace ares {
 		virtual Resource* Destroy(unsigned char flags);
 		virtual const char* GetClassNameA() const;
 		virtual Resource* Clone(EnumCloneType enumCloneType);
+	};
+
+	struct ARES_BASE_RD_API RectU32 {
+		uint32_t left = 0;
+		uint32_t top = 0;
+		uint32_t right = 0;
+		uint32_t bottom = 0;
 	};
 }

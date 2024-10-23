@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Configuration.cpp" />
+    <ClCompile Include="ImageInfo.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PixelFormat.cpp" />
   </ItemGroup>
@@ -170,7 +171,6 @@
     <ClInclude Include="ImageLoader.h" />
     <ClInclude Include="PixelFormat.h" />
     <ClInclude Include="shared.h" />
-    <ClInclude Include="ValidatedImageInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ares_base_rd\ares_base_rd.vcxproj">

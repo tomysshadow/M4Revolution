@@ -6,6 +6,10 @@ namespace gfx_tools {
 	Configuration::Configuration() {
 	}
 
+	Configuration* Configuration::Get() {
+		return &ms_currentConfiguration;
+	}
+
 	void Configuration::Set(Configuration const &configuration) {
 		ms_currentConfiguration = configuration;
 	}
