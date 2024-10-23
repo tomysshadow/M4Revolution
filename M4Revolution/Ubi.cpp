@@ -629,7 +629,7 @@ void Ubi::BigFile::File::rename(const std::optional<File> &layerFileOptional) {
 
 		if (LAYER_FILE.layerMapIterator->second.isLayerMask) {
 			#if defined(GREYSCALE_ENABLED)
-			greyScale = true;
+			//greyScale = true;
 			#else
 			type = TYPE::NONE;
 			return;

@@ -63,6 +63,7 @@ namespace gfx_tools {
 
 	class GFX_TOOLS_RD_API ImageLoaderMultipleBuffer : public ImageLoader {
 		public:
+		virtual GFX_TOOLS_RD_CALL ~ImageLoaderMultipleBuffer();
 		FormatHint GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint);
 
 		unsigned char* GFX_TOOLS_RD_CALL GetLODBuffer(

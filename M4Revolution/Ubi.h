@@ -288,7 +288,7 @@ namespace Ubi {
 
 			// metadata for conversion
 			TYPE type = TYPE::NONE;
-			bool greyScale = false;
+			//bool greyScale = false;
 			bool rgba = false;
 
 			File(std::istream &inputStream, SIZE &fileSystemSize, const std::optional<File> &layerFileOptional);
