@@ -51,10 +51,10 @@ namespace gfx_tools {
 
 		// if value is one, we want it to just become two
 		// so don't allow powerOfTwo to be downscaled to one
-		if (value >= powerOfTwo) {
-			while (value > powerOfTwo) {
+		if (value > powerOfTwo) {
+			do {
 				powerOfTwo *= 2;
-			}
+			} while (value > powerOfTwo);
 
 			if (value == powerOfTwo) {
 				return;
