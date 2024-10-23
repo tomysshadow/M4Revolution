@@ -109,7 +109,7 @@ namespace gfx_tools {
 			unsigned char* address,
 			size_t size,
 			bool owner,
-			ubi::RefCounted &refCounted
+			ubi::RefCounted* refCountedPointer
 		);
 	};
 
