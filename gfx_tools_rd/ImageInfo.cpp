@@ -141,7 +141,7 @@ namespace gfx_tools {
 			&& this->textureHeight == textureHeight
 			&& this->volumeExtent == volumeExtent;
 
-		recompute |= !requested;
+		recompute = recompute || !requested;
 
 		if (recompute) {
 			for (unsigned char i = 0; i < NUMBER_OF_LOD_MAX; i++) {
