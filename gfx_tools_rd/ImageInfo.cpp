@@ -73,11 +73,9 @@ namespace gfx_tools {
 	}
 
 	void ValidatedImageInfo::MakeSquare(unsigned short &value, unsigned short &value2) {
-		Configuration &configuration = *Configuration::Get();
-
 		unsigned short square = value;
 
-		if (configuration.upscale) {
+		if (Configuration::Get()->upscale) {
 			if (square < value2) {
 				square = value2;
 			}
@@ -123,21 +121,21 @@ namespace gfx_tools {
 		this->requestedTextureHeight = textureHeight;
 		this->volumeExtent = volumeExtent;
 
-		Configuration &configuration = *Configuration::Get();
+		const Configuration &CONFIGURATION = *Configuration::Get();
 
-		if (configuration.dimensionsMakePowerOfTwo) {
+		if (CONFIGURATION.dimensionsMakePowerOfTwo) {
 			MakePowerOfTwo(this->textureWidth);
 			MakePowerOfTwo(this->textureHeight);
 			MakePowerOfTwo(this->volumeExtent);
 		}
 
-		if (configuration.dimensionsMakeSquare) {
+		if (CONFIGURATION.dimensionsMakeSquare) {
 			MakeSquare(this->textureWidth, this->textureHeight);
 		}
 
-		Clamp(this->textureWidth, (unsigned short)configuration.minTextureWidth, (unsigned short)configuration.maxTextureWidth);
-		Clamp(this->textureHeight, (unsigned short)configuration.minTextureHeight, (unsigned short)configuration.maxTextureHeight);
-		Clamp(this->volumeExtent, (unsigned short)configuration.minVolumeExtent, (unsigned short)configuration.maxVolumeExtent);
+		Clamp(this->textureWidth, (unsigned short)CONFIGURATION.minTextureWidth, (unsigned short)CONFIGURATION.maxTextureWidth);
+		Clamp(this->textureHeight, (unsigned short)CONFIGURATION.minTextureHeight, (unsigned short)CONFIGURATION.maxTextureHeight);
+		Clamp(this->volumeExtent, (unsigned short)CONFIGURATION.minVolumeExtent, (unsigned short)CONFIGURATION.maxVolumeExtent);
 
 		bool requested = this->textureWidth == textureWidth
 			&& this->textureHeight == textureHeight
