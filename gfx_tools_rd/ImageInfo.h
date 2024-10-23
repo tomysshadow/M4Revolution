@@ -25,7 +25,7 @@ namespace gfx_tools {
 	};
 
 	struct GFX_TOOLS_RD_API ValidatedImageInfo : public ImageInfo {
-		bool recompute = false;
+		bool recomputeLodSizes = false;
 
 		ValidatedImageInfo();
 

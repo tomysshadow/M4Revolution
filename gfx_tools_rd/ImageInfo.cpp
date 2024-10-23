@@ -106,7 +106,7 @@ namespace gfx_tools {
 	}
 
 	void ValidatedImageInfo::SetLodSizeInBytes(unsigned char lod, size_t sizeInBytes) {
-		if (recompute && sizeInBytes) {
+		if (recomputeLodSizes && sizeInBytes) {
 			RecomputeLodSize(lod);
 			return;
 		}
@@ -137,12 +137,12 @@ namespace gfx_tools {
 		Clamp(this->textureHeight, (unsigned short)CONFIGURATION.minTextureHeight, (unsigned short)CONFIGURATION.maxTextureHeight);
 		Clamp(this->volumeExtent, (unsigned short)CONFIGURATION.minVolumeExtent, (unsigned short)CONFIGURATION.maxVolumeExtent);
 
-		recompute = recompute
+		recomputeLodSizes = recomputeLodSizes
 			|| this->textureWidth != textureWidth
 			|| this->textureHeight != textureHeight
 			|| this->volumeExtent != volumeExtent;
 
-		if (recompute) {
+		if (recomputeLodSizes) {
 			for (unsigned char i = 0; i < NUMBER_OF_LOD_MAX; i++) {
 				if (lodSizesInBytes[i]) {
 					RecomputeLodSize(i);
@@ -164,7 +164,7 @@ namespace gfx_tools {
 
 		const EnumPixelFormat DEFAULT_ENUM_PIXEL_FORMAT = PIXELFORMAT_ARGB_8888;
 
-		recompute = true;
+		recomputeLodSizes = true;
 		this->enumPixelFormat = DEFAULT_ENUM_PIXEL_FORMAT;
 		this->requestedEnumPixelFormat = DEFAULT_ENUM_PIXEL_FORMAT;
 		return PIXELFORMAT_UNKNOWN;
