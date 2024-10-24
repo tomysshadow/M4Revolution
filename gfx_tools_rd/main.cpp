@@ -39,20 +39,18 @@ namespace gfx_tools {
 
 		M4Image::Color16* outputColorPointer = 0;
 
-		std::optional<std::function<void()>> outputColorFunctionOptional = std::nullopt;
+		std::function<void()> outputColorFunction;
 
 		if (luminance) {
-			outputColorFunctionOptional = [&]() {
+			outputColorFunction = [&]() {
 				((M4Image::Color32*)outputColorPointer)->channels[OUTPUT_CHANNEL_LUMINANCE] = inputColorPointer->channels[INPUT_CHANNEL_LUMINANCE];
 				outputColorPointer = (M4Image::Color16*)((M4Image::Color32*)outputColorPointer + 1);
 			};
 		} else {
-			outputColorFunctionOptional = [&]() {
+			outputColorFunction = [&]() {
 				outputColorPointer++;
 			};
 		}
-
-		const std::function<void()> &OUTPUT_COLOR_FUNCTION = outputColorFunctionOptional.value();
 
 		while (inputPointer <= endPointer) {
 			rowPointer = inputPointer + width - 1;
@@ -76,7 +74,7 @@ namespace gfx_tools {
 				outputColor.channels[OUTPUT_CHANNEL_DU] = inputColor.channels[INPUT_CHANNEL_UV] - inputUColorPointer->channels[INPUT_CHANNEL_UV];
 				outputColor.channels[OUTPUT_CHANNEL_DV] = inputColor.channels[INPUT_CHANNEL_UV] - inputVColorPointer++->channels[INPUT_CHANNEL_UV];
 
-				OUTPUT_COLOR_FUNCTION();
+				outputColorFunction();
 				inputColorPointer++;
 			}
 
