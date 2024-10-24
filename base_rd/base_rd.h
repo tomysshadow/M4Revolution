@@ -26,10 +26,9 @@ namespace ubi {
 
 	class BASE_RD_API RefCounted {
 		public:
-		typedef unsigned char FLAGS;
 		typedef unsigned int REF_COUNT;
 
-		virtual RefCounted* BASE_RD_CALL Destroy(FLAGS flags);
+		virtual ~RefCounted();
 		
 		inline REF_COUNT BASE_RD_CALL AddRef() {
 			return ++refCount;
@@ -40,7 +39,7 @@ namespace ubi {
 				return refCount;
 			}
 
-			Destroy(1);
+			delete this;
 			return 0;
 		}
 

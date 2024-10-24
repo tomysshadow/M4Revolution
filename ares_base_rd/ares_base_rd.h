@@ -21,14 +21,11 @@ namespace ares {
 	class ARES_BASE_RD_API Resource {
 		protected:
 		Resource();
-		~Resource();
+		virtual ~Resource();
 
 		public:
-		typedef unsigned char FLAGS;
-
 		Resource(Resource const &resource);
 		Resource &operator=(Resource const &resource);
-		virtual Resource* ARES_BASE_RD_CALL Destroy(FLAGS flags);
 		virtual const char* ARES_BASE_RD_CALL GetClassNameA() const;
 		virtual Resource* ARES_BASE_RD_CALL Clone(EnumCloneType enumCloneType);
 	};

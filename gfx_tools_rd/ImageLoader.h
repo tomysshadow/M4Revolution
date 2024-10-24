@@ -19,13 +19,11 @@ namespace gfx_tools {
 		ImageInfo imageInfo;
 		EnumPixelFormat enumPixelFormat = PIXELFORMAT_UNKNOWN;
 
-		GFX_TOOLS_RD_CALL ~ImageLoader();
-
 		BUFFER_SIZE GFX_TOOLS_RD_CALL GetRawBufferTotalSize();
 		bool GFX_TOOLS_RD_CALL GetImageInfo(ImageInfo &imageInfo);
 		EnumPixelFormat GFX_TOOLS_RD_CALL SetPixelFormat(EnumPixelFormat enumPixelFormat);
 
-		virtual Resource* GFX_TOOLS_RD_CALL Destroy(FLAGS flags);
+		virtual GFX_TOOLS_RD_CALL ~ImageLoader();
 		virtual FormatHint GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint) = 0;
 
 		virtual BUFFER GFX_TOOLS_RD_CALL GetLODBuffer(
@@ -79,11 +77,9 @@ namespace gfx_tools {
 		public:
 		unsigned long numberOfRawBuffers = 0;
 
-		GFX_TOOLS_RD_CALL ~ImageLoaderMultipleBuffer();
-
 		unsigned long GetNumberOfRawBuffers();
 
-		Resource* GFX_TOOLS_RD_CALL Destroy(FLAGS flags);
+		virtual GFX_TOOLS_RD_CALL ~ImageLoaderMultipleBuffer();
 		FormatHint GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint);
 
 		BUFFER GFX_TOOLS_RD_CALL GetLODBuffer(

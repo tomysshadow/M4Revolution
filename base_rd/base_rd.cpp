@@ -13,8 +13,7 @@ namespace ubi {
 	}
 
 
-	RefCounted* RefCounted::Destroy(FLAGS flags) {
-		return 0;
+	RefCounted::~RefCounted() {
 	}
 
 	InputStream::SIZE InputStream::Read(unsigned char* buffer, SIZE position, SIZE size) {

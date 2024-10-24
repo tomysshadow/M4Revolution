@@ -14,10 +14,6 @@ namespace ares {
 		return *this;
 	}
 
-	Resource* Resource::Destroy(FLAGS flags) {
-		return 0;
-	}
-
 	const char* Resource::GetClassNameA() const {
 		return 0;
 	}
