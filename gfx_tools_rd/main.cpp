@@ -1,6 +1,5 @@
 #include "main.h"
 #include "base_rd.h"
-#include <optional>
 #include <math.h>
 #include <M4Image/M4Image.h>
 
