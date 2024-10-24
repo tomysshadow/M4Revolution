@@ -15,6 +15,12 @@ namespace gfx_tools {
 		typedef char Q_FACTOR;
 		typedef unsigned long DIMENSION;
 
+		BUFFER_SIZE rawBufferTotalSize = 0;
+		ImageInfo imageInfo;
+		EnumPixelFormat enumPixelFormat = PIXELFORMAT_UNKNOWN;
+
+		virtual GFX_TOOLS_RD_CALL ~ImageLoader();
+
 		BUFFER_SIZE GFX_TOOLS_RD_CALL GetRawBufferTotalSize();
 		bool GFX_TOOLS_RD_CALL GetImageInfo(ImageInfo &imageInfo);
 		EnumPixelFormat GFX_TOOLS_RD_CALL SetPixelFormat(EnumPixelFormat enumPixelFormat);
@@ -70,6 +76,8 @@ namespace gfx_tools {
 
 	class GFX_TOOLS_RD_API ImageLoaderMultipleBuffer : public ImageLoader {
 		public:
+		unsigned long numberOfRawBuffers = 0;
+
 		virtual GFX_TOOLS_RD_CALL ~ImageLoaderMultipleBuffer();
 
 		unsigned long GetNumberOfRawBuffers();
