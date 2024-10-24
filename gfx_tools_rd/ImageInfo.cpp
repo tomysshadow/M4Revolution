@@ -23,11 +23,11 @@ namespace gfx_tools {
 		}
 	}
 
-	size_t ImageInfo::GetBitsPerPixel() const {
+	ImageInfo::BITS_PER_PIXEL ImageInfo::GetBitsPerPixel() const {
 		return PixelFormat::GetPixelFormat(enumPixelFormat)->GetBitsPerPixel();
 	}
 
-	size_t ImageInfo::GetRequestedBitsPerPixel() const {
+	ImageInfo::BITS_PER_PIXEL ImageInfo::GetRequestedBitsPerPixel() const {
 		return PixelFormat::GetPixelFormat(requestedEnumPixelFormat)->GetBitsPerPixel();
 	}
 
@@ -75,7 +75,7 @@ namespace gfx_tools {
 	}
 
 	void ValidatedImageInfo::RecomputeLodSize(LOD lod) {
-		const size_t BYTES = 3;
+		const BITS_PER_PIXEL BYTES = 3;
 
 		ComputeLODDimensions(textureWidth, textureHeight, volumeExtent, lod);
 		lodSizesInBytes[lod] = textureWidth * textureHeight * volumeExtent * (GetBitsPerPixel() >> BYTES);
@@ -118,11 +118,11 @@ namespace gfx_tools {
 		}
 	}
 
-	EnumPixelFormat ValidatedImageInfo::SetPixelFormat(EnumPixelFormat enumPixelFormat) {
+	void ValidatedImageInfo::SetPixelFormat(EnumPixelFormat enumPixelFormat) {
 		if (PixelFormat::GetPixelFormat(enumPixelFormat)) {
 			this->enumPixelFormat = enumPixelFormat;
 			this->requestedEnumPixelFormat = enumPixelFormat;
-			return enumPixelFormat;
+			return;
 		}
 
 		const EnumPixelFormat DEFAULT_ENUM_PIXEL_FORMAT = PIXELFORMAT_ARGB_8888;
@@ -130,7 +130,6 @@ namespace gfx_tools {
 		recomputeLodSizes = true;
 		this->enumPixelFormat = DEFAULT_ENUM_PIXEL_FORMAT;
 		this->requestedEnumPixelFormat = DEFAULT_ENUM_PIXEL_FORMAT;
-		return PIXELFORMAT_UNKNOWN;
 	}
 
 	ValidatedImageInfo::ValidatedImageInfo() {
@@ -156,7 +155,7 @@ namespace gfx_tools {
 		return *this;
 	}
 
-	void ValidatedImageInfo::SetLodSizeInBytes(LOD lod, size_t sizeInBytes) {
+	void ValidatedImageInfo::SetLodSizeInBytes(LOD lod, SIZE_IN_BYTES sizeInBytes) {
 		if (recomputeLodSizes && sizeInBytes) {
 			RecomputeLodSize(lod);
 			return;
@@ -169,8 +168,7 @@ namespace gfx_tools {
 		this->numberOfLOD = numberOfLOD;
 	}
 
-	FormatHint ValidatedImageInfo::SetHint(FormatHint formatHint) {
+	void ValidatedImageInfo::SetHint(FormatHint formatHint) {
 		this->formatHint = formatHint;
-		return formatHint;
 	}
 }

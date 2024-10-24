@@ -5,14 +5,14 @@
 
 namespace gfx_tools {
 	M4Image::Color16* convertHeightMapIntoDuDvBumpMapColor(
-		unsigned long width,
-		unsigned long height,
+		DIMENSION width,
+		DIMENSION height,
 		M4Image::Color32* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
-		size_t inputStride,
+		STRIDE inputStride,
 		M4Image::Color16* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
-		size_t outputStride
+		STRIDE outputStride
 	) {
 		// this function normally returns a pointer to the output's end
 		// if the output pixel format is neither of the supported ones, it returns the same pointer passed in
@@ -77,14 +77,14 @@ namespace gfx_tools {
 	}
 
 	M4Image::Color32* convertHeightMapIntoNormalMapColor(
-		unsigned long width,
-		unsigned long height,
+		DIMENSION width,
+		DIMENSION height,
 		M4Image::Color32* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
-		size_t inputStride,
+		STRIDE inputStride,
 		M4Image::Color32* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
-		size_t outputStride,
+		STRIDE outputStride,
 		double strength
 	) {
 		const size_t INPUT_CHANNEL_XY = 0;
@@ -179,14 +179,14 @@ namespace gfx_tools {
 	}
 
 	void ConvertHeightMapIntoDuDvBumpMap(
-		unsigned long width,
-		unsigned long height,
+		DIMENSION width,
+		DIMENSION height,
 		unsigned char* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
-		size_t inputStride,
+		STRIDE inputStride,
 		unsigned char* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
-		size_t outputStride
+		STRIDE outputStride
 	) {
 		convertHeightMapIntoDuDvBumpMapColor(
 			width,
@@ -201,14 +201,14 @@ namespace gfx_tools {
 	}
 
 	void ConvertHeightMapIntoNormalMap(
-		unsigned long width,
-		unsigned long height,
+		DIMENSION width,
+		DIMENSION height,
 		unsigned char* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
-		size_t inputStride,
+		STRIDE inputStride,
 		unsigned char* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
-		size_t outputStride,
+		STRIDE outputStride,
 		float strength
 	) {
 		convertHeightMapIntoNormalMapColor(

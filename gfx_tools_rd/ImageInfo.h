@@ -18,6 +18,7 @@ namespace gfx_tools {
 	class GFX_TOOLS_RD_API ImageInfo {
 		public:
 		typedef unsigned short DIMENSION;
+		typedef unsigned long BITS_PER_PIXEL;
 
 		size_t lodSizesInBytes[NUMBER_OF_LOD_MAX] = {};
 		DIMENSION textureWidth = 0;
@@ -31,8 +32,8 @@ namespace gfx_tools {
 		FormatHint formatHint = { 0 };
 
 		void GFX_TOOLS_RD_CALL ComputeLODDimensions(DIMENSION &textureWidth, DIMENSION &textureHeight, DIMENSION &volumeExtent, LOD lod) const;
-		size_t GFX_TOOLS_RD_CALL GetBitsPerPixel() const;
-		size_t GFX_TOOLS_RD_CALL GetRequestedBitsPerPixel() const;
+		BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetBitsPerPixel() const;
+		BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetRequestedBitsPerPixel() const;
 	};
 
 	class GFX_TOOLS_RD_API ValidatedImageInfo : public ImageInfo {
@@ -44,9 +45,11 @@ namespace gfx_tools {
 		void GFX_TOOLS_RD_CALL Clamp(DIMENSION &dimension, DIMENSION min, DIMENSION max);
 		void GFX_TOOLS_RD_CALL RecomputeLodSize(LOD lod);
 		void GFX_TOOLS_RD_CALL SetDimensions(DIMENSION textureWidth, DIMENSION textureHeight, DIMENSION volumeExtent);
-		EnumPixelFormat GFX_TOOLS_RD_CALL SetPixelFormat(EnumPixelFormat enumPixelFormat);
+		void GFX_TOOLS_RD_CALL SetPixelFormat(EnumPixelFormat enumPixelFormat);
 
 		public:
+		typedef unsigned long SIZE_IN_BYTES;
+
 		ValidatedImageInfo();
 
 		ValidatedImageInfo(
@@ -59,8 +62,8 @@ namespace gfx_tools {
 
 		void GFX_TOOLS_RD_CALL OverwritePixelFormat(EnumPixelFormat enumPixelFormat);
 		ImageInfo const GFX_TOOLS_RD_CALL &Get();
-		void GFX_TOOLS_RD_CALL SetLodSizeInBytes(LOD lod, size_t sizeInBytes);
+		void GFX_TOOLS_RD_CALL SetLodSizeInBytes(LOD lod, SIZE_IN_BYTES sizeInBytes);
 		void GFX_TOOLS_RD_CALL SetNumberOfLOD(LOD numberOfLOD);
-		FormatHint GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint);
+		void GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint);
 	};
 }
