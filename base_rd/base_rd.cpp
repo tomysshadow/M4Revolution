@@ -1,10 +1,11 @@
 #include "base_rd.h"
 
-namespace ubi {unsigned long ErrorManager::RegisterCategory(unsigned long reserved, char const* name) {
+namespace ubi {
+	unsigned long ErrorManager::RegisterCategory(unsigned long reserved, char const* name) {
 		return 0;
 	}
 
-	void ErrorManager::SetSystemFlag(unsigned long category, unsigned long mask, bool value) {
+	void ErrorManager::SetSystemFlag(CATEGORY category, MASK mask, bool value) {
 	}
 
 	ErrorManager& ErrorManager::GetSingletonInstance() {
@@ -12,24 +13,11 @@ namespace ubi {unsigned long ErrorManager::RegisterCategory(unsigned long reserv
 	}
 
 
-	RefCounted* RefCounted::Destroy(unsigned char flags) {
+	RefCounted* RefCounted::Destroy(FLAGS flags) {
 		return 0;
 	}
 
-	unsigned int RefCounted::AddRef() {
-		return ++refCount;
-	}
-
-	unsigned int RefCounted::Release() {
-		if (--refCount) {
-			return refCount;
-		}
-
-		Destroy(1);
-		return 0;
-	}
-
-	unsigned long InputStream::Read(unsigned char* buffer, unsigned long position, unsigned long size) {
+	size_t InputStream::Read(unsigned char* buffer, size_t position, size_t size) {
 		return 0;
 	}
 

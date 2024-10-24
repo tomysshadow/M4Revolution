@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-#define ARES_BASE_RD_CALL __cdecl
+#define ARES_BASE_RD_CALL
 
 #ifdef _WIN32
 	#ifdef ARES_BASE_RD_LIBRARY
@@ -24,9 +24,11 @@ namespace ares {
 		virtual ~Resource();
 
 		public:
+		typedef unsigned char FLAGS;
+
 		Resource(Resource const &resource);
 		Resource &operator=(Resource const &resource);
-		virtual Resource* ARES_BASE_RD_CALL Destroy(unsigned char flags);
+		virtual Resource* ARES_BASE_RD_CALL Destroy(FLAGS flags);
 		virtual const char* ARES_BASE_RD_CALL GetClassNameA() const;
 		virtual Resource* ARES_BASE_RD_CALL Clone(EnumCloneType enumCloneType);
 	};

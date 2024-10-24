@@ -1,6 +1,6 @@
 #pragma once
 
-#define BASE_RD_CALL __cdecl
+#define BASE_RD_CALL
 
 #ifdef _WIN32
 	#ifdef BASE_RD_LIBRARY
@@ -15,25 +15,42 @@
 namespace ubi {
 	class BASE_RD_API ErrorManager {
 		public:
+		typedef unsigned long CATEGORY;
+		typedef unsigned long MASK;
+
 		unsigned long BASE_RD_CALL RegisterCategory(unsigned long reserved, char const* name);
-		void BASE_RD_CALL SetSystemFlag(unsigned long category, unsigned long mask, bool value);
+		void BASE_RD_CALL SetSystemFlag(CATEGORY category, MASK mask, bool value);
 
 		static ErrorManager& BASE_RD_CALL GetSingletonInstance();
 	};
 
 	class BASE_RD_API RefCounted {
-		private:
-		unsigned int refCount = 0;
-
 		public:
-		virtual RefCounted* BASE_RD_CALL Destroy(unsigned char flags);
-		unsigned int BASE_RD_CALL AddRef();
-		unsigned int BASE_RD_CALL Release();
+		typedef unsigned char FLAGS;
+		typedef unsigned int REF_COUNT;
+
+		virtual RefCounted* BASE_RD_CALL Destroy(FLAGS flags);
+		
+		inline REF_COUNT BASE_RD_CALL AddRef() {
+			return ++refCount;
+		}
+		
+		inline REF_COUNT BASE_RD_CALL Release() {
+			if (--refCount) {
+				return refCount;
+			}
+
+			Destroy(1);
+			return 0;
+		}
+
+		private:
+		REF_COUNT refCount = 0;
 	};
 
 	class BASE_RD_API InputStream {
 		public:
-		unsigned long BASE_RD_CALL Read(unsigned char* buffer, unsigned long position, unsigned long size);
+		size_t BASE_RD_CALL Read(unsigned char* buffer, size_t position, size_t size);
 	};
 
 	class BASE_RD_API InputFileStream {

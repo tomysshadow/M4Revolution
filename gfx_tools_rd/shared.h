@@ -118,7 +118,7 @@ inline bool memoryShift(void* mem, size_t memSize, void* sourceMem, size_t sourc
 	#pragma warning(pop)
 }
 
-#define GFX_TOOLS_RD_CALL __cdecl
+#define GFX_TOOLS_RD_CALL
 
 #ifdef _WIN32
 	#ifdef GFX_TOOLS_RD_LIBRARY
@@ -128,6 +128,14 @@ inline bool memoryShift(void* mem, size_t memSize, void* sourceMem, size_t sourc
 	#endif
 #else
 	#define GFX_TOOLS_RD_API
+#endif
+
+typedef int L_INT;
+
+#ifdef FOR_UNICODE
+	typedef TCHAR L_TCHAR;
+#else
+	typedef char L_TCHAR;
 #endif
 
 inline bool freeZAP(zap_byte_t* &out) {

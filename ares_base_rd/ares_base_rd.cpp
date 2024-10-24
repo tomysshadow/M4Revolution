@@ -14,7 +14,7 @@ namespace ares {
 		return *this;
 	}
 
-	Resource* Resource::Destroy(unsigned char flags) {
+	Resource* Resource::Destroy(FLAGS flags) {
 		return 0;
 	}
 

@@ -6,26 +6,26 @@ namespace gfx_tools {
 	GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL Init();
 	GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL Shutdown();
 
-	GFX_TOOLS_RD_API unsigned char* GFX_TOOLS_RD_CALL ConvertHeightMapIntoDuDvBumpMap(
+	GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL ConvertHeightMapIntoDuDvBumpMap(
 		unsigned long width,
 		unsigned long height,
 		unsigned char* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
-		unsigned long inputStride,
+		size_t inputStride,
 		unsigned char* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
-		unsigned long outputStride
+		size_t outputStride
 	);
 
-	GFX_TOOLS_RD_API unsigned char* GFX_TOOLS_RD_CALL ConvertHeightMapIntoNormalMap(
+	GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL ConvertHeightMapIntoNormalMap(
 		unsigned long width,
 		unsigned long height,
 		unsigned char* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
-		unsigned long inputStride,
+		size_t inputStride,
 		unsigned char* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
-		unsigned long outputStride,
+		size_t outputStride,
 		float strength
 	);
 };

@@ -7,17 +7,19 @@ namespace gfx_tools {
 		static Configuration ms_currentConfiguration;
 
 		public:
-		unsigned long maxTextureWidth = 1024;
-		unsigned long minTextureWidth = 1;
-		unsigned long maxTextureHeight = 1024;
-		unsigned long minTextureHeight = 1;
-		unsigned long maxVolumeExtent = 1024;
-		unsigned long minVolumeExtent = 1;
+		typedef unsigned long DIMENSION;
+
+		DIMENSION maxTextureWidth = 1024;
+		DIMENSION minTextureWidth = 1;
+		DIMENSION maxTextureHeight = 1024;
+		DIMENSION minTextureHeight = 1;
+		DIMENSION maxVolumeExtent = 1024;
+		DIMENSION minVolumeExtent = 1;
 		bool dimensionsMakeSquare = false;
 		bool dimensionsMakePowerOfTwo = false;
 		bool upscale = true;
 
-		static Configuration* GFX_TOOLS_RD_CALL Get();
+		static Configuration const GFX_TOOLS_RD_CALL &Get();
 		static void GFX_TOOLS_RD_CALL Set(Configuration const &configuration);
 
 		Configuration();

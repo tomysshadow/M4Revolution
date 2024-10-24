@@ -56,31 +56,21 @@ namespace gfx_tools {
 	};
 
 	class GFX_TOOLS_RD_API PixelFormat {
-		private:
-		unsigned __int64 maskRed = 0;
-		unsigned __int64 maskGreen = 0;
-		unsigned __int64 maskBlue = 0;
-		unsigned __int64 maskAlpha = 0;
-		unsigned __int64 maskPalette = 0;
-		unsigned char bitsPerPixel = 0;
-		unsigned __int64 maskDepth = 0;
-		unsigned __int64 maskStencil = 0;
-		bool hasColor = false;
-		bool hasBitsPerPixel = false;
-
-		static PixelFormat m_formatDescriptionTable[];
-		static char* ms_formatNames[];
-
 		public:
+		typedef unsigned __int64 MASK;
+		typedef unsigned char BITS_PER_PIXEL;
+
+		PixelFormat();
+
 		PixelFormat(
-			unsigned __int64 maskRed,
-			unsigned __int64 maskGreen,
-			unsigned __int64 maskBlue,
-			unsigned __int64 maskAlpha,
-			unsigned __int64 maskPalette,
-			unsigned char bitsPerPixel,
-			unsigned __int64 maskDepth,
-			unsigned __int64 maskStencil
+			MASK maskRed,
+			MASK maskGreen,
+			MASK maskBlue,
+			MASK maskAlpha,
+			MASK maskPalette,
+			BITS_PER_PIXEL bitsPerPixel,
+			MASK maskDepth,
+			MASK maskStencil
 		);
 
 		bool GFX_TOOLS_RD_CALL HasRed();
@@ -93,18 +83,33 @@ namespace gfx_tools {
 		bool GFX_TOOLS_RD_CALL HasColor();
 		bool GFX_TOOLS_RD_CALL HasBitsPerPixel();
 
-		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskRed();
-		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskGreen();
-		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskBlue();
-		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskAlpha();
-		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskPalette();
-		unsigned char GFX_TOOLS_RD_CALL GetBitsPerPixel();
-		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskDepth();
-		unsigned __int64 GFX_TOOLS_RD_CALL GetMaskStencil();
+		MASK GFX_TOOLS_RD_CALL GetMaskRed();
+		MASK GFX_TOOLS_RD_CALL GetMaskGreen();
+		MASK GFX_TOOLS_RD_CALL GetMaskBlue();
+		MASK GFX_TOOLS_RD_CALL GetMaskAlpha();
+		MASK GFX_TOOLS_RD_CALL GetMaskPalette();
+		BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetBitsPerPixel();
+		MASK GFX_TOOLS_RD_CALL GetMaskDepth();
+		MASK GFX_TOOLS_RD_CALL GetMaskStencil();
 
 		static PixelFormat* GFX_TOOLS_RD_CALL GetPixelFormat(EnumPixelFormat enumPixelFormat);
 		static EnumPixelFormat GFX_TOOLS_RD_CALL GetPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat);
 		static EnumPixelFormat GFX_TOOLS_RD_CALL GetPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat);
-		static char** GFX_TOOLS_RD_CALL GetPixelFormatString(EnumPixelFormat enumPixelFormat);
+		static char* GFX_TOOLS_RD_CALL GetPixelFormatString(EnumPixelFormat enumPixelFormat);
+
+		private:
+		MASK maskRed = 0;
+		MASK maskGreen = 0;
+		MASK maskBlue = 0;
+		MASK maskAlpha = 0;
+		MASK maskPalette = 0;
+		BITS_PER_PIXEL bitsPerPixel = 0;
+		MASK maskDepth = 0;
+		MASK maskStencil = 0;
+		bool hasColor = false;
+		bool hasBitsPerPixel = false;
+
+		static PixelFormat m_formatDescriptionTable[];
+		static char* ms_formatNames[];
 	};
 }

@@ -105,15 +105,18 @@ namespace gfx_tools {
 		"PIXELFORMAT_XBGR_4444"
 	};
 
+	PixelFormat::PixelFormat() {
+	}
+
 	PixelFormat::PixelFormat(
-		unsigned __int64 maskRed,
-		unsigned __int64 maskGreen,
-		unsigned __int64 maskBlue,
-		unsigned __int64 maskAlpha,
-		unsigned __int64 maskPalette,
-		unsigned char bitsPerPixel,
-		unsigned __int64 maskDepth,
-		unsigned __int64 maskStencil
+		MASK maskRed,
+		MASK maskGreen,
+		MASK maskBlue,
+		MASK maskAlpha,
+		MASK maskPalette,
+		BITS_PER_PIXEL bitsPerPixel,
+		MASK maskDepth,
+		MASK maskStencil
 	)
 	: maskRed(maskRed),
 	maskGreen(maskGreen),
@@ -163,35 +166,35 @@ namespace gfx_tools {
 		return hasBitsPerPixel;
 	}
 
-	unsigned __int64 PixelFormat::GetMaskRed() {
+	PixelFormat::MASK PixelFormat::GetMaskRed() {
 		return maskRed;
 	}
 
-	unsigned __int64 PixelFormat::GetMaskGreen() {
+	PixelFormat::MASK PixelFormat::GetMaskGreen() {
 		return maskGreen;
 	}
 
-	unsigned __int64 PixelFormat::GetMaskBlue() {
+	PixelFormat::MASK PixelFormat::GetMaskBlue() {
 		return maskBlue;
 	}
 
-	unsigned __int64 PixelFormat::GetMaskAlpha() {
+	PixelFormat::MASK PixelFormat::GetMaskAlpha() {
 		return maskAlpha;
 	}
 
-	unsigned __int64 PixelFormat::GetMaskPalette() {
+	PixelFormat::MASK PixelFormat::GetMaskPalette() {
 		return maskPalette;
 	}
 
-	unsigned char PixelFormat::GetBitsPerPixel() {
+	PixelFormat::BITS_PER_PIXEL PixelFormat::GetBitsPerPixel() {
 		return bitsPerPixel;
 	}
 
-	unsigned __int64 PixelFormat::GetMaskDepth() {
+	PixelFormat::MASK PixelFormat::GetMaskDepth() {
 		return maskDepth;
 	}
 
-	unsigned __int64 PixelFormat::GetMaskStencil() {
+	PixelFormat::MASK PixelFormat::GetMaskStencil() {
 		return maskStencil;
 	}
 
@@ -234,7 +237,7 @@ namespace gfx_tools {
 		return enumPixelFormatMapIterator == ENUM_PIXEL_FORMAT_WITHOUT_ALPHA_MAP.end() ? enumPixelFormat : enumPixelFormatMapIterator->second;
 	}
 
-	char** PixelFormat::GetPixelFormatString(EnumPixelFormat enumPixelFormat) {
-		return &ms_formatNames[enumPixelFormat];
+	char* PixelFormat::GetPixelFormatString(EnumPixelFormat enumPixelFormat) {
+		return ms_formatNames[enumPixelFormat];
 	}
 };

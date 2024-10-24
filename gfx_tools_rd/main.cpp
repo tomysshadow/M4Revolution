@@ -9,10 +9,10 @@ namespace gfx_tools {
 		unsigned long height,
 		M4Image::Color32* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
-		unsigned long inputStride,
+		size_t inputStride,
 		M4Image::Color16* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
-		unsigned long outputStride
+		size_t outputStride
 	) {
 		// this function normally returns a pointer to the output's end
 		// if the output pixel format is neither of the supported ones, it returns the same pointer passed in
@@ -81,10 +81,10 @@ namespace gfx_tools {
 		unsigned long height,
 		M4Image::Color32* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
-		unsigned long inputStride,
+		size_t inputStride,
 		M4Image::Color32* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
-		unsigned long outputStride,
+		size_t outputStride,
 		double strength
 	) {
 		const size_t INPUT_CHANNEL_XY = 0;
@@ -151,7 +151,9 @@ namespace gfx_tools {
 		return outputPointer;
 	}
 
-	static unsigned long refCount = 0;
+	typedef unsigned long REF_COUNT;
+
+	static REF_COUNT refCount = 0;
 	static bool initialized = false;
 
 	void GFX_TOOLS_RD_API Init() {
@@ -163,8 +165,10 @@ namespace gfx_tools {
 			return;
 		}
 
+		const ubi::ErrorManager::MASK INITIALIZED = 0x00000040;
+
 		ubi::ErrorManager &errorManager = ubi::ErrorManager::GetSingletonInstance();
-		errorManager.SetSystemFlag(errorManager.RegisterCategory(0, "Gfx_Tools"), 0x00000040, true);
+		errorManager.SetSystemFlag(errorManager.RegisterCategory(0, "Gfx_Tools"), INITIALIZED, true);
 		initialized = true;
 	}
 
@@ -174,17 +178,17 @@ namespace gfx_tools {
 		}
 	}
 
-	unsigned char* ConvertHeightMapIntoDuDvBumpMap(
+	void ConvertHeightMapIntoDuDvBumpMap(
 		unsigned long width,
 		unsigned long height,
 		unsigned char* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
-		unsigned long inputStride,
+		size_t inputStride,
 		unsigned char* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
-		unsigned long outputStride
+		size_t outputStride
 	) {
-		return (unsigned char*)convertHeightMapIntoDuDvBumpMapColor(
+		convertHeightMapIntoDuDvBumpMapColor(
 			width,
 			height,
 			(M4Image::Color32*)inputPointer,
@@ -196,18 +200,18 @@ namespace gfx_tools {
 		);
 	}
 
-	unsigned char* ConvertHeightMapIntoNormalMap(
+	void ConvertHeightMapIntoNormalMap(
 		unsigned long width,
 		unsigned long height,
 		unsigned char* inputPointer,
 		EnumPixelFormat inputEnumPixelFormat,
-		unsigned long inputStride,
+		size_t inputStride,
 		unsigned char* outputPointer,
 		EnumPixelFormat outputEnumPixelFormat,
-		unsigned long outputStride,
+		size_t outputStride,
 		float strength
 	) {
-		return (unsigned char*)convertHeightMapIntoNormalMapColor(
+		convertHeightMapIntoNormalMapColor(
 			width,
 			height,
 			(M4Image::Color32*)inputPointer,
