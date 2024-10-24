@@ -21,7 +21,7 @@ namespace ares {
 	class ARES_BASE_RD_API Resource {
 		protected:
 		Resource();
-		virtual ~Resource();
+		~Resource();
 
 		public:
 		typedef unsigned char FLAGS;
