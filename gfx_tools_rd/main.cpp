@@ -5,7 +5,7 @@
 #include <M4Image/M4Image.h>
 
 namespace gfx_tools {
-	M4Image::Color16* convertHeightMapIntoDuDvBumpMapColor(
+	void convertHeightMapIntoDuDvBumpMapColor(
 		DIMENSION width,
 		DIMENSION height,
 		M4Image::Color32* inputPointer,
@@ -20,7 +20,7 @@ namespace gfx_tools {
 		bool luminance = outputEnumPixelFormat == EnumPixelFormat::PIXELFORMAT_XLVU_8888;
 
 		if (!luminance && outputEnumPixelFormat != EnumPixelFormat::PIXELFORMAT_VU_88) {
-			return outputPointer;
+			return;
 		}
 
 		const size_t INPUT_CHANNEL_UV = 0;
@@ -81,10 +81,9 @@ namespace gfx_tools {
 			inputPointer = (M4Image::Color32*)((unsigned char*)inputPointer + inputStride);
 			outputPointer = (M4Image::Color16*)((unsigned char*)outputPointer + outputStride);
 		}
-		return outputPointer;
 	}
 
-	M4Image::Color32* convertHeightMapIntoNormalMapColor(
+	void convertHeightMapIntoNormalMapColor(
 		DIMENSION width,
 		DIMENSION height,
 		M4Image::Color32* inputPointer,
@@ -156,7 +155,6 @@ namespace gfx_tools {
 			inputPointer = (M4Image::Color32*)((unsigned char*)inputPointer + inputStride);
 			outputPointer = (M4Image::Color32*)((unsigned char*)outputPointer + outputStride);
 		}
-		return outputPointer;
 	}
 
 	typedef unsigned long REF_COUNT;
