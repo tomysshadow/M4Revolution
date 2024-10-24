@@ -125,10 +125,10 @@ namespace gfx_tools {
 
 	class GFX_TOOLS_RD_API ImageLoaderMultipleBufferBitmap : public ImageLoaderMultipleBuffer {
 		public:
-		typedef void* BITMAP_HANDLE;
+		typedef void* HANDLE;
 
 		virtual const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension() = 0;
 		virtual L_INT GFX_TOOLS_RD_CALL GetFormat() = 0;
-		virtual L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, BITMAP_HANDLE bitmapHandlePointer);
+		virtual L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE bitmapHandlePointer);
 	};
 }
