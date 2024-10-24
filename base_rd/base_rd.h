@@ -27,8 +27,6 @@ namespace ubi {
 	class BASE_RD_API RefCounted {
 		public:
 		typedef unsigned int REF_COUNT;
-
-		virtual ~RefCounted();
 		
 		inline REF_COUNT BASE_RD_CALL AddRef() {
 			return ++refCount;
@@ -44,7 +42,7 @@ namespace ubi {
 		}
 
 		private:
-		REF_COUNT refCount = 0;
+		REF_COUNT refCount = 1;
 	};
 
 	class BASE_RD_API InputStream {

@@ -12,10 +12,6 @@ namespace ubi {
 		return *(new ErrorManager());
 	}
 
-
-	RefCounted::~RefCounted() {
-	}
-
 	InputStream::SIZE InputStream::Read(unsigned char* buffer, SIZE position, SIZE size) {
 		return 0;
 	}
