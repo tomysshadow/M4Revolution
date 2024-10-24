@@ -50,13 +50,17 @@ namespace ubi {
 
 	class BASE_RD_API InputStream {
 		public:
-		size_t BASE_RD_CALL Read(unsigned char* buffer, size_t position, size_t size);
+		typedef unsigned long SIZE;
+
+		SIZE BASE_RD_CALL Read(unsigned char* buffer, SIZE position, SIZE size);
 	};
 
 	class BASE_RD_API InputFileStream {
 		public:
+		typedef unsigned __int64 SIZE;
+
 		InputFileStream(char const* path);
 		virtual ~InputFileStream();
-		unsigned __int64 BASE_RD_CALL GetSize();
+		SIZE BASE_RD_CALL GetSize();
 	};
 }

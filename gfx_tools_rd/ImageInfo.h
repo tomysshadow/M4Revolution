@@ -17,10 +17,11 @@ namespace gfx_tools {
 
 	class GFX_TOOLS_RD_API ImageInfo {
 		public:
+		typedef unsigned long LOD_SIZE;
 		typedef unsigned short DIMENSION;
 		typedef unsigned long BITS_PER_PIXEL;
 
-		size_t lodSizesInBytes[NUMBER_OF_LOD_MAX] = {};
+		LOD_SIZE lodSizesInBytes[NUMBER_OF_LOD_MAX] = {};
 		DIMENSION textureWidth = 0;
 		DIMENSION textureHeight = 0;
 		DIMENSION requestedTextureWidth = 0;

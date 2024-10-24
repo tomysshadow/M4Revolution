@@ -8,10 +8,12 @@
 namespace gfx_tools {
 	class GFX_TOOLS_RD_API ImageLoader : public ares::Resource {
 		public:
+		typedef unsigned int LOD;
 		typedef unsigned char* BUFFER;
 		typedef unsigned long BUFFER_SIZE;
-		typedef unsigned int LOD;
+		typedef unsigned long SIZE;
 		typedef char Q_FACTOR;
+		typedef unsigned long DIMENSION;
 
 		BUFFER_SIZE GFX_TOOLS_RD_CALL GetRawBufferTotalSize();
 		bool GFX_TOOLS_RD_CALL GetImageInfo(ImageInfo &imageInfo);
@@ -22,30 +24,30 @@ namespace gfx_tools {
 		virtual BUFFER GFX_TOOLS_RD_CALL GetLODBuffer(
 			LOD lod,
 			BUFFER buffer,
-			size_t stride,
-			size_t rows
+			SIZE stride,
+			SIZE rows
 		) = 0;
 
 		virtual BUFFER GFX_TOOLS_RD_CALL ResizeLODBuffer(
 			LOD lod,
 			BUFFER buffer,
-			size_t stride,
-			size_t rows,
+			SIZE stride,
+			SIZE rows,
 			Q_FACTOR requestedQFactor,
 			ImageInfo &imageInfo,
-			size_t requestedWidth,
-			size_t requestedHeight,
-			size_t requestedExtent
+			DIMENSION requestedWidth,
+			DIMENSION requestedHeight,
+			ares::RectU32* rectU32Pointer
 		) = 0;
 
 		virtual BUFFER GFX_TOOLS_RD_CALL SetLODBuffer(
 			LOD lod,
 			BUFFER buffer,
-			size_t stride,
-			size_t rows,
+			SIZE stride,
+			SIZE rows,
 			Q_FACTOR requestedQFactor,
 			ImageInfo &imageInfo,
-			size_t requestedExtent
+			ares::RectU32* rectU32Pointer
 		) = 0;
 
 		virtual BUFFER GFX_TOOLS_RD_CALL CreateLODRawBuffer(LOD lod, BUFFER_SIZE size) = 0;
@@ -77,27 +79,27 @@ namespace gfx_tools {
 		BUFFER GFX_TOOLS_RD_CALL GetLODBuffer(
 			LOD lod,
 			BUFFER buffer,
-			size_t stride,
-			size_t rows
+			SIZE stride,
+			SIZE rows
 		);
 
 		BUFFER GFX_TOOLS_RD_CALL ResizeLODBuffer(
 			LOD lod,
 			BUFFER buffer,
-			size_t stride,
-			size_t rows,
+			SIZE stride,
+			SIZE rows,
 			Q_FACTOR requestedQFactor,
 			ImageInfo &imageInfo,
-			size_t requestedWidth,
-			size_t requestedHeight,
+			DIMENSION requestedWidth,
+			DIMENSION requestedHeight,
 			ares::RectU32* rectU32Pointer
 		);
 
 		BUFFER GFX_TOOLS_RD_CALL SetLODBuffer(
 			LOD lod,
 			BUFFER buffer,
-			size_t stride,
-			size_t rows,
+			SIZE stride,
+			SIZE rows,
 			Q_FACTOR requestedQFactor,
 			ImageInfo &imageInfo,
 			ares::RectU32* rectU32Pointer
@@ -123,8 +125,10 @@ namespace gfx_tools {
 
 	class GFX_TOOLS_RD_API ImageLoaderMultipleBufferBitmap : public ImageLoaderMultipleBuffer {
 		public:
+		typedef void* BITMAP_HANDLE;
+
 		virtual const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension() = 0;
 		virtual L_INT GFX_TOOLS_RD_CALL GetFormat() = 0;
-		virtual L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, void* bitmapHandlePointer);
+		virtual L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, BITMAP_HANDLE bitmapHandlePointer);
 	};
 }

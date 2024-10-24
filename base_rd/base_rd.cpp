@@ -17,7 +17,7 @@ namespace ubi {
 		return 0;
 	}
 
-	size_t InputStream::Read(unsigned char* buffer, size_t position, size_t size) {
+	InputStream::SIZE InputStream::Read(unsigned char* buffer, SIZE position, SIZE size) {
 		return 0;
 	}
 
@@ -27,7 +27,7 @@ namespace ubi {
 	InputFileStream::~InputFileStream() {
 	}
 
-	unsigned __int64 InputFileStream::GetSize() {
+	InputFileStream::SIZE InputFileStream::GetSize() {
 		return 0;
 	}
 }
