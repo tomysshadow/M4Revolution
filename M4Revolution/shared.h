@@ -361,8 +361,9 @@ void writeStreamSafe(std::ostream &outputStream, const void* buffer, std::stream
 void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize count, std::streamsize &gcount);
 void writeStreamPartial(std::ostream &outputStream, const void* buffer, std::streamsize count);
 
-template <typename WriteDestination>
-void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination writeDestination, std::streamsize count = -1) {
+typedef std::function<void(void*, std::streamsize)> WriteDestinationFunction;
+
+void copyStreamToWriteDestination(std::istream &inputStream, const WriteDestinationFunction &writeDestinationFunction, std::streamsize count = -1) {
 	if (!count) {
 		return;
 	}
@@ -382,7 +383,7 @@ void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination wr
 			break;
 		}
 
-		writeDestination(buffer, gcountRead);
+		writeDestinationFunction(buffer, gcountRead);
 
 		if (count != -1) {
 			count -= gcountRead;
