@@ -170,6 +170,7 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="ImageLoader.h" />
     <ClInclude Include="PixelFormat.h" />
+    <ClInclude Include="RawBuffer.h" />
     <ClInclude Include="shared.h" />
   </ItemGroup>
   <ItemGroup>

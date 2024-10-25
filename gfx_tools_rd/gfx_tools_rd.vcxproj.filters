@@ -47,5 +47,8 @@
     <ClInclude Include="ImageInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RawBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

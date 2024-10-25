@@ -2,6 +2,7 @@
 #include "shared.h"
 #include "base_rd.h"
 #include "ares_base_rd.h"
+#include "RawBuffer.h"
 #include "ImageInfo.h"
 #include "PixelFormat.h"
 
@@ -9,32 +10,31 @@ namespace gfx_tools {
 	class GFX_TOOLS_RD_API ImageLoader : public ares::Resource {
 		public:
 		typedef unsigned int LOD;
-		typedef unsigned char* BUFFER;
 		typedef unsigned long SIZE;
 		typedef char Q_FACTOR;
 		typedef unsigned long DIMENSION;
 
-		SIZE rawBufferTotalSize = 0;
+		RawBuffer::SIZE rawBufferTotalSize = 0;
 		ImageInfo imageInfo;
 		EnumPixelFormat enumPixelFormat = PIXELFORMAT_UNKNOWN;
 
-		SIZE GFX_TOOLS_RD_CALL GetRawBufferTotalSize();
+		RawBuffer::SIZE GFX_TOOLS_RD_CALL GetRawBufferTotalSize();
 		bool GFX_TOOLS_RD_CALL GetImageInfo(ImageInfo &imageInfo);
 		EnumPixelFormat GFX_TOOLS_RD_CALL SetPixelFormat(EnumPixelFormat enumPixelFormat);
 
 		virtual GFX_TOOLS_RD_CALL ~ImageLoader();
-		virtual FormatHint GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint) = 0;
+		virtual void GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint) = 0;
 
-		virtual BUFFER GFX_TOOLS_RD_CALL GetLODBuffer(
+		virtual void GFX_TOOLS_RD_CALL GetLOD(
 			LOD lod,
-			BUFFER buffer,
+			Buffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows
 		) = 0;
 
-		virtual BUFFER GFX_TOOLS_RD_CALL ResizeLODBuffer(
+		virtual void GFX_TOOLS_RD_CALL ResizeLOD(
 			LOD lod,
-			BUFFER buffer,
+			Buffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR requestedQFactor,
@@ -44,9 +44,9 @@ namespace gfx_tools {
 			ares::RectU32* rectU32Pointer
 		) = 0;
 
-		virtual BUFFER GFX_TOOLS_RD_CALL SetLODBuffer(
+		virtual void GFX_TOOLS_RD_CALL SetLOD(
 			LOD lod,
-			BUFFER buffer,
+			Buffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR requestedQFactor,
@@ -54,19 +54,19 @@ namespace gfx_tools {
 			ares::RectU32* rectU32Pointer
 		) = 0;
 
-		virtual BUFFER GFX_TOOLS_RD_CALL CreateLODRawBuffer(LOD lod, SIZE size) = 0;
-		virtual BUFFER GFX_TOOLS_RD_CALL SetLODRawBuffer(LOD lod, BUFFER buffer, SIZE size, ubi::RefCounted* refCountedPointer) = 0;
-		virtual void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, BUFFER buffer, SIZE &size) = 0;
-		virtual BUFFER GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod) = 0;
+		virtual RawBuffer::POINTER GFX_TOOLS_RD_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) = 0;
+		virtual void GFX_TOOLS_RD_CALL SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer) = 0;
+		virtual void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) = 0;
+		virtual RawBuffer::POINTER GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod) = 0;
 
 		virtual bool GFX_TOOLS_RD_CALL GetImageInfoImp(
 			ValidatedImageInfo &validatedImageInfo
 		) = 0;
 
-		virtual BUFFER GFX_TOOLS_RD_CALL SetLODRawBufferImp(
+		virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImp(
 			LOD lod,
-			BUFFER buffer,
-			SIZE size,
+			RawBuffer::POINTER pointer,
+			RawBuffer::SIZE size,
 			bool owner,
 			ubi::RefCounted* refCountedPointer
 		) = 0;
@@ -79,18 +79,18 @@ namespace gfx_tools {
 		SIZE GetNumberOfRawBuffers();
 
 		virtual GFX_TOOLS_RD_CALL ~ImageLoaderMultipleBuffer();
-		FormatHint GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint);
+		virtual void GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint);
 
-		BUFFER GFX_TOOLS_RD_CALL GetLODBuffer(
+		virtual void GFX_TOOLS_RD_CALL GetLOD(
 			LOD lod,
-			BUFFER buffer,
+			Buffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows
 		);
 
-		BUFFER GFX_TOOLS_RD_CALL ResizeLODBuffer(
+		virtual void GFX_TOOLS_RD_CALL ResizeLOD(
 			LOD lod,
-			BUFFER buffer,
+			Buffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR requestedQFactor,
@@ -100,9 +100,9 @@ namespace gfx_tools {
 			ares::RectU32* rectU32Pointer
 		);
 
-		BUFFER GFX_TOOLS_RD_CALL SetLODBuffer(
+		virtual void GFX_TOOLS_RD_CALL SetLOD(
 			LOD lod,
-			BUFFER buffer,
+			Buffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR requestedQFactor,
@@ -110,19 +110,19 @@ namespace gfx_tools {
 			ares::RectU32* rectU32Pointer
 		);
 
-		BUFFER GFX_TOOLS_RD_CALL CreateLODRawBuffer(LOD lod, SIZE size);
-		BUFFER GFX_TOOLS_RD_CALL SetLODRawBuffer(LOD lod, BUFFER buffer, SIZE size, ubi::RefCounted* refCountedPointer);
-		void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, BUFFER buffer, SIZE &size);
-		BUFFER GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod);
+		virtual RawBuffer::POINTER GFX_TOOLS_RD_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size);
+		virtual void GFX_TOOLS_RD_CALL SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer);
+		virtual void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size);
+		virtual RawBuffer::POINTER GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod);
 
-		bool GFX_TOOLS_RD_CALL GetImageInfoImp(
+		virtual bool GFX_TOOLS_RD_CALL GetImageInfoImp(
 			ValidatedImageInfo &validatedImageInfo
 		);
 
-		BUFFER GFX_TOOLS_RD_CALL SetLODRawBufferImp(
+		virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImp(
 			LOD lod,
-			BUFFER buffer,
-			SIZE size,
+			RawBuffer::POINTER pointer,
+			RawBuffer::SIZE size,
 			bool owner,
 			ubi::RefCounted* refCountedPointer
 		);
