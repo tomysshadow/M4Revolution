@@ -10,7 +10,7 @@ class M4IMAGE_API M4Image {
         typedef void (*FreeProc)(void* block);
         typedef void* (*ReallocProc)(void* block, size_t size);
 
-        Allocator();
+        constexpr Allocator() = default;
         Allocator(MallocProc mallocProc, FreeProc freeProc, ReallocProc reallocProc);
         void* M4IMAGE_CALL malloc(size_t size) const;
         void M4IMAGE_CALL free(void* block) const;

@@ -827,7 +827,12 @@ M4Revolution::M4Revolution(
 		}
 
 		D3DCAPS9 d3dcaps9 = {};
-		direct3DDevice9InterfacePointer->GetDeviceCaps(&d3dcaps9);
+
+		err = direct3DDevice9InterfacePointer->GetDeviceCaps(&d3dcaps9);
+
+		if (err != D3D_OK) {
+			throw _com_error(err);
+		}
 
 		configuration.maxTextureWidth = d3dcaps9.MaxTextureWidth;
 		configuration.maxTextureHeight = d3dcaps9.MaxTextureHeight;
