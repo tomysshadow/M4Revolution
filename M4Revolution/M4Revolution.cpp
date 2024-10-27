@@ -4,6 +4,14 @@
 #include <iostream>
 #include <filesystem>
 
+#ifdef D3D9
+#include <wrl/client.h>
+#include <comdef.h>
+#include <d3d9.h>
+#include <d3d9types.h>
+#include <d3d9caps.h>
+#endif
+
 void M4Revolution::destroy() {
 	#ifdef MULTITHREADED
 	CloseThreadpool(pool);
@@ -118,6 +126,123 @@ void M4Revolution::ErrorHandler::error(nvtt::Error error) {
 	result = false;
 }
 
+#ifdef D3D9
+void M4Revolution::Window::create() {
+	if (!moduleHandle) {
+		moduleHandle = GetModuleHandle(NULL);
+
+		if (!moduleHandle) {
+			throw std::runtime_error("Failed to Get Module Handle");
+		}
+	}
+
+	const TCHAR className[] = TEXT("M4Revolution");
+
+	if (!registeredClass) {
+		WNDCLASSEX windowClassEx = {};
+		const UINT WINDOW_CLASS_EX_SIZE = sizeof(windowClassEx);
+
+		windowClassEx.cbSize = WINDOW_CLASS_EX_SIZE;
+		windowClassEx.lpfnWndProc = DefWindowProc;
+		windowClassEx.hInstance = moduleHandle;
+		windowClassEx.lpszClassName = className;
+
+		registeredClass = RegisterClassEx(&windowClassEx);
+
+		if (!registeredClass) {
+			throw std::runtime_error("Failed to Register Class");
+		}
+	}
+
+	handle = CreateWindowEx(
+		NULL,
+		className,
+		TEXT("M4Revolution"),
+		WS_OVERLAPPED,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		NULL,
+		NULL,
+		moduleHandle,
+		NULL
+	);
+
+	if (!handle) {
+		throw std::runtime_error("Failed to Create Window Ex");
+	}
+}
+
+void M4Revolution::Window::destroy() {
+	if (!destroyWindow(handle)) {
+		throw std::runtime_error("Failed to Destroy Window");
+	}
+
+	// errors here are ignored in case another instance has a window open
+	if (registeredClass) {
+		if (UnregisterClass((LPCSTR)registeredClass, moduleHandle)) {
+			registeredClass = NULL;
+		}
+	}
+}
+
+void M4Revolution::Window::duplicate(const Window &window) {
+	if (!destroyWindow(handle)) {
+		throw std::runtime_error("Failed to Destroy Window");
+	}
+
+	create();
+}
+
+void M4Revolution::Window::move(Window &window) {
+	handle = window.handle;
+	window.handle = NULL;
+}
+
+HMODULE M4Revolution::Window::moduleHandle = NULL;
+ATOM M4Revolution::Window::registeredClass = NULL;
+
+M4Revolution::Window::Window() {
+	create();
+}
+
+M4Revolution::Window::~Window() {
+	destroy();
+}
+
+M4Revolution::Window::Window(const Window &window) {
+	duplicate(window);
+}
+
+M4Revolution::Window::Window(Window &&window) noexcept {
+	*this = std::move(window);
+}
+
+M4Revolution::Window &M4Revolution::Window::operator=(const Window &window) {
+	if (this == &window) {
+		return *this;
+	}
+
+	duplicate(window);
+	return *this;
+}
+
+M4Revolution::Window &M4Revolution::Window::operator=(Window &&window) noexcept {
+	if (this == &window) {
+		return *this;
+	}
+
+	destroy();
+	move(window);
+	return *this;
+}
+
+HWND M4Revolution::Window::getHandle() {
+	return handle;
+}
+#endif
+
 void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks) {
 	// this function waits for the output thread to catch up
 	// if too many files are queued at once (to prevent running out of memory)
@@ -176,8 +301,8 @@ void M4Revolution::convertFile(
 	Work::Convert::FileWorkCallback fileWorkCallback
 ) {
 	Work::Convert* convertPointer = file.rgba
-		? new Work::Convert(file, context, compressionOptionsRGBA, compressionOptionsRGBA)
-		: new Work::Convert(file, context, compressionOptionsDXT1, compressionOptionsDXT5);
+		? new Work::Convert(file, configuration, context, compressionOptionsRGBA, compressionOptionsRGBA)
+		: new Work::Convert(file, configuration, context, compressionOptionsDXT1, compressionOptionsDXT5);
 
 	Work::Convert &convert = *convertPointer;
 
@@ -337,6 +462,33 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 		surface.toGreyScale(SCALE, SCALE, SCALE, SCALE);
 	}
 	*/
+
+	const Work::Convert::Configuration &CONFIGURATION = convert.configuration;
+
+	#ifdef EXTENTS_MAKE_POWER_OF_TWO
+	#ifdef TO_NEXT_POWER_OF_TWO
+	const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_ToNextPowerOfTwo;
+	#else
+	const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_ToPreviousPowerOfTwo;
+	#endif
+	#else
+	const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_None;
+	#endif
+
+	const nvtt::ResizeFilter RESIZE_FILTER = nvtt::ResizeFilter_Triangle;
+
+	Work::Convert::EXTENT width = clampUINT32(surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
+	Work::Convert::EXTENT height = clampUINT32(surface.height(), CONFIGURATION.minTextureHeight, CONFIGURATION.maxTextureHeight);
+	Work::Convert::EXTENT depth = clampUINT32(surface.depth(), CONFIGURATION.minVolumeExtent, CONFIGURATION.maxVolumeExtent);
+
+	Work::Convert::EXTENT maxExtent = __max(width, height);
+	maxExtent = __max(maxExtent, depth);
+
+	#ifdef EXTENTS_MAKE_SQUARE
+	surface.resize_make_square(maxExtent, ROUND_MODE, RESIZE_FILTER);
+	#else
+	surface.resize(maxExtent, ROUND_MODE, RESIZE_FILTER);
+	#endif
 
 	nvtt::OutputOptions outputOptions = {};
 	outputOptions.setContainer(nvtt::Container_DDS);
@@ -645,10 +797,43 @@ M4Revolution::M4Revolution(
 )
 	: inputFileName(inputFileName),
 	logFileNames(logFileNames) {
-	// the number 216 was chosen for being the standard number of tiles in a cube
-	const Work::FileTask::POINTER_QUEUE::size_type DEFAULT_MAX_FILE_TASKS = 216;
+	#ifdef D3D9
+	{
+		Window window;
 
-	this->maxFileTasks = maxFileTasks ? maxFileTasks : DEFAULT_MAX_FILE_TASKS;
+		Microsoft::WRL::ComPtr<IDirect3D9> direct3D9InterfacePointer = Direct3DCreate9(D3D_SDK_VERSION);
+
+		if (!direct3D9InterfacePointer) {
+			throw std::runtime_error("Failed to Create Direct3D");
+		}
+
+		D3DPRESENT_PARAMETERS presentationParameters = {};
+		presentationParameters.SwapEffect = D3DSWAPEFFECT_COPY;
+		presentationParameters.Windowed = TRUE;
+
+		Microsoft::WRL::ComPtr<IDirect3DDevice9> direct3DDevice9InterfacePointer = NULL;
+
+		HRESULT err = direct3D9InterfacePointer->CreateDevice(
+			D3DADAPTER_DEFAULT,
+			D3DDEVTYPE_HAL,
+			window.getHandle(),
+			D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+			&presentationParameters,
+			direct3DDevice9InterfacePointer.GetAddressOf()
+		);
+
+		if (err != D3D_OK) {
+			throw _com_error(err);
+		}
+
+		D3DCAPS9 d3dcaps9 = {};
+		direct3DDevice9InterfacePointer->GetDeviceCaps(&d3dcaps9);
+
+		configuration.maxTextureWidth = d3dcaps9.MaxTextureWidth;
+		configuration.maxTextureHeight = d3dcaps9.MaxTextureHeight;
+		configuration.maxVolumeExtent = d3dcaps9.MaxVolumeExtent;
+	}
+	#endif
 
 	context.enableCudaAcceleration(!disableHardwareAcceleration);
 
@@ -686,6 +871,11 @@ M4Revolution::M4Revolution(
 		throw std::runtime_error("Failed to Set Threadpool Thread Minimum");
 	}
 	#endif
+
+	// the number 216 was chosen for being the standard number of tiles in a cube
+	const Work::FileTask::POINTER_QUEUE::size_type DEFAULT_MAX_FILE_TASKS = 216;
+
+	this->maxFileTasks = maxFileTasks ? maxFileTasks : DEFAULT_MAX_FILE_TASKS;
 }
 
 M4Revolution::~M4Revolution() {

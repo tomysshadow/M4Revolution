@@ -6,7 +6,7 @@
 	#define NOMINMAX
 #endif
 
-#include "M4Image/scope_guard.hpp"
+#include <stdexcept>
 #include <limits.h>
 
 #ifdef _WIN32

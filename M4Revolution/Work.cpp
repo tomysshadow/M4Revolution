@@ -203,11 +203,13 @@ Work::FileTask::POINTER_QUEUE_LOCK Work::Tasks::fileLock() {
 
 Work::Convert::Convert(
 	Ubi::BigFile::File &file,
+	Configuration &configuration,
 	nvtt::Context &context,
 	nvtt::CompressionOptions &compressionOptions,
 	nvtt::CompressionOptions &compressionOptionsAlpha
 )
 	: file(file),
+	configuration(configuration),
 	context(context),
 	compressionOptions(compressionOptions),
 	compressionOptionsAlpha(compressionOptionsAlpha) {

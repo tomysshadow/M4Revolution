@@ -187,11 +187,23 @@ namespace Work {
 	};
 
 	struct Convert {
+		typedef uint32_t EXTENT;
 		typedef void(*FileWorkCallback)(Work::Convert* convertPointer);
+
+		struct Configuration {
+			EXTENT minTextureWidth = 1;
+			EXTENT maxTextureWidth = 1024;
+			EXTENT minTextureHeight = 1;
+			EXTENT maxTextureHeight = 1024;
+			EXTENT minVolumeExtent = 1;
+			EXTENT maxVolumeExtent = 1024;
+		};
 
 		FileWorkCallback fileWorkCallback = 0;
 
 		Ubi::BigFile::File &file;
+
+		Configuration &configuration;
 
 		nvtt::Context &context;
 		nvtt::CompressionOptions &compressionOptions;
@@ -202,6 +214,7 @@ namespace Work {
 
 		Convert(
 			Ubi::BigFile::File &file,
+			Configuration &configuration,
 			nvtt::Context &context,
 			nvtt::CompressionOptions &compressionOptions,
 			nvtt::CompressionOptions &compressionOptionsAlpha

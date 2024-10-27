@@ -320,6 +320,10 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 	return stringToLongUnsignedWide(str, result, base, locale) ? result : defaultValue;
 }
 
+inline uint32_t clampUINT32(uint32_t extent, uint32_t min, uint32_t max) {
+	return __min(max, __max(extent, min));
+}
+
 inline bool freeZAP(zap_byte_t* &out) {
 	if (out) {
 		if (zap_free(out) != ZAP_ERROR_NONE) {
@@ -330,6 +334,19 @@ inline bool freeZAP(zap_byte_t* &out) {
 	out = 0;
 	return true;
 }
+
+#ifdef _WIN32
+inline bool destroyWindow(HWND &windowHandle) {
+	if (windowHandle) {
+		if (!DestroyWindow(windowHandle)) {
+			return false;
+		}
+	}
+
+	windowHandle = NULL;
+	return true;
+}
+#endif
 
 void consoleLog(const char* str = 0, short newline = true, short tab = false, bool err = false, const char* file = 0, unsigned int line = 0);
 double consoleDouble(const char* str = 0, double minValue = -DBL_MAX, double maxValue = DBL_MAX, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);

@@ -5,6 +5,13 @@
 
 #include <nvtt/nvtt.h>
 
+#ifdef _WIN32
+#define D3D9
+#define EXTENTS_MAKE_SQUARE
+#define EXTENTS_MAKE_POWER_OF_TWO
+#define TO_NEXT_POWER_OF_TWO
+#endif
+
 class M4Revolution {
 	private:
 	void destroy();
@@ -52,8 +59,34 @@ class M4Revolution {
 		bool result = true;
 	};
 
+	#ifdef D3D9
+	class Window {
+		private:
+		void create();
+		void destroy();
+		void duplicate(const Window &window);
+		void move(Window &window);
+
+		HWND handle = NULL;
+
+		static HMODULE moduleHandle;
+		static ATOM registeredClass;
+
+		public:
+		Window();
+		~Window();
+		Window(const Window &window);
+		Window(Window &&window) noexcept;
+		Window &operator=(const Window &window);
+		Window &operator=(Window &&window) noexcept;
+		HWND getHandle();
+	};
+	#endif
+
 	std::string inputFileName = "";
 	bool logFileNames = false;
+
+	Work::Convert::Configuration configuration;
 
 	nvtt::Context context = {};
 	nvtt::CompressionOptions compressionOptionsDXT1 = {};

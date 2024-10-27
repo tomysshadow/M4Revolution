@@ -1,12 +1,26 @@
 #pragma once
 #include "M4Image/shared.h"
-#include <string>
 #include <stdint.h>
 
-namespace M4Image {
-    typedef void* (*MallocProc)(size_t size);
-    typedef void (*FreeProc)(void* block);
-    typedef void* (*ReallocProc)(void* block, size_t size);
+class M4IMAGE_API M4Image {
+    public:
+    class M4IMAGE_API Allocator {
+        public:
+        typedef void* (*MallocProc)(size_t size);
+        typedef void (*FreeProc)(void* block);
+        typedef void* (*ReallocProc)(void* block, size_t size);
+
+        Allocator();
+        Allocator(MallocProc mallocProc, FreeProc freeProc, ReallocProc reallocProc);
+        void* M4IMAGE_CALL malloc(size_t size) const;
+        void M4IMAGE_CALL free(void* block) const;
+        void* M4IMAGE_CALL realloc(void* block, size_t size) const;
+
+        private:
+        MallocProc mallocProc = ::malloc;
+        FreeProc freeProc = ::free;
+        ReallocProc reallocProc = ::realloc;
+    };
 
     struct Color16 {
         unsigned char channels[2] = {};
@@ -32,86 +46,38 @@ namespace M4Image {
         XXLA32
     };
 
-    // note: extension is a string but we export it as const char* because
-    // you're not supposed to export STL classes across DLL boundaries
-    M4IMAGE_API unsigned char* M4IMAGE_CALL blit(
-        const void* image,
-        COLOR_FORMAT inputColorFormat,
-        int inputWidth,
-        int inputHeight,
-        size_t inputStride,
-        COLOR_FORMAT outputColorFormat,
-        int outputWidth,
-        int outputHeight,
-        size_t &outputStride,
-        bool linear = false
-    );
+    static Allocator allocator;
 
-    M4IMAGE_API unsigned char* M4IMAGE_CALL blit(
-        const void* image,
-        COLOR_FORMAT inputColorFormat,
-        int inputWidth,
-        int inputHeight,
-        size_t inputStride,
-        COLOR_FORMAT outputColorFormat,
-        int outputWidth,
-        int outputHeight
-    );
-
-    M4IMAGE_API unsigned char* M4IMAGE_CALL load(
-        const char* extension,
+    static void M4IMAGE_CALL getInfo(
         const unsigned char* address,
         size_t size,
-        COLOR_FORMAT colorFormat,
-        int width,
-        int height,
-        size_t &stride,
-        bool &linear
-    );
-
-    M4IMAGE_API unsigned char* M4IMAGE_CALL load(
         const char* extension,
-        const unsigned char* address,
-        size_t size,
-        COLOR_FORMAT colorFormat,
-        int width,
-        int height,
-        size_t &stride
-    );
-
-    M4IMAGE_API unsigned char* M4IMAGE_CALL load(
-        const char* extension,
-        const unsigned char* address,
-        size_t size,
-        COLOR_FORMAT colorFormat,
-        int width,
-        int height
-    );
-
-    M4IMAGE_API unsigned char* M4IMAGE_CALL save(
-        const char* extension,
-        const void* image,
-        size_t &size,
-        COLOR_FORMAT colorFormat,
-        int width,
-        int height,
-        size_t stride = 0,
-        float quality = 0.90f
-    );
-
-    M4IMAGE_API void* M4IMAGE_CALL malloc(size_t size);
-    M4IMAGE_API void M4IMAGE_CALL free(void* block);
-    M4IMAGE_API void* M4IMAGE_CALL realloc(void* block, size_t size);
-
-    M4IMAGE_API bool M4IMAGE_CALL getInfo(
-        const char* extension,
-        const unsigned char* address,
-        size_t size,
         uint32_t* bitsPointer,
         bool* alphaPointer,
         int* widthPointer,
-        int* heightPointer
+        int* heightPointer,
+        bool* linearPointer,
+        bool* premultipliedPointer
     );
 
-    M4IMAGE_API void M4IMAGE_CALL setAllocator(MallocProc mallocProc, FreeProc freeProc, ReallocProc reallocProc);
+    M4Image(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* image = 0);
+    M4Image(int width, int height);
+    ~M4Image();
+    void M4IMAGE_CALL blit(const M4Image &m4Image, bool linear = false, bool premultiplied = false);
+    void M4IMAGE_CALL load(const unsigned char* address, size_t size, const char* extension, bool &linear, bool &premultiplied);
+    void M4IMAGE_CALL load(const unsigned char* address, size_t size, const char* extension, bool &linear);
+    void M4IMAGE_CALL load(const unsigned char* address, size_t size, const char* extension);
+    unsigned char* M4IMAGE_CALL save(size_t &size, const char* extension, float quality = 0.90f) const;
+    unsigned char* M4IMAGE_CALL acquire();
+
+    private:
+    void create(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* image = 0);
+    void destroy();
+
+    int width = 0;
+    int height = 0;
+    size_t stride = 0;
+    COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32;
+    unsigned char* image = 0;
+    bool owner = false;
 };
