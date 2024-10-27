@@ -482,7 +482,7 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	Work::Convert::EXTENT depth = clampUINT32(surface.depth(), CONFIGURATION.minVolumeExtent, CONFIGURATION.maxVolumeExtent);
 
 	Work::Convert::EXTENT maxExtent = __max(width, height);
-	maxExtent = __max(maxExtent, depth);
+	maxExtent = __max(depth, maxExtent);
 
 	#ifdef EXTENTS_MAKE_SQUARE
 	surface.resize_make_square(maxExtent, ROUND_MODE, RESIZE_FILTER);

@@ -7,8 +7,8 @@
 
 #ifdef _WIN32
 #define D3D9
-#define EXTENTS_MAKE_SQUARE
-#define EXTENTS_MAKE_POWER_OF_TWO
+//#define EXTENTS_MAKE_SQUARE
+//#define EXTENTS_MAKE_POWER_OF_TWO
 #define TO_NEXT_POWER_OF_TWO
 #endif
 
@@ -69,6 +69,8 @@ class M4Revolution {
 
 		HWND handle = NULL;
 
+		// these are fine to store statically
+		// they will not need to outlive the module unloading
 		static HMODULE moduleHandle;
 		static ATOM registeredClass;
 
