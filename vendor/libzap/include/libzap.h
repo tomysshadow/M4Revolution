@@ -53,52 +53,52 @@ enum ZAP_COLOR_FORMAT
 /// Load a ZAP file from disk
 /// \param filename The path to the ZAP file
 /// \param colorFormat The color format of the image
-/// \param pOut A pointer to the output data
-/// \param pOutSize A pointer to the output data size
+/// \param pRefImage A pointer to the output image - if zero the image is allocated and this is set to the result
+/// \param pOutSize A pointer to the output image size
 /// \param pOutWidth A pointer to the output image width
 /// \param pOutHeight A pointer to the output image height
 /// \param pRefStride A pointer to the stride - if zero the stride is chosen automatically and this is set to the result
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_load(const char* filename, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t* pOutWidth, zap_int_t* pOutHeight, zap_size_t* pRefStride);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_load(const char* filename, zap_uint_t colorFormat, zap_byte_t** pRefImage, zap_size_t* pOutSize, zap_int_t* pOutWidth, zap_int_t* pOutHeight, zap_size_t* pRefStride);
 
 
 /// Resize a ZAP file from disk
 /// \param filename The path to the ZAP file
 /// \param colorFormat The color format of the image
-/// \param pOut A pointer to the output data
-/// \param pOutSize A pointer to the output data size
+/// \param pRefImage A pointer to the output image - if zero the image is allocated and this is set to the result
+/// \param pOutSize A pointer to the output image size
 /// \param width The width of the resized image
 /// \param height The height of the resized image
 /// \param pRefStride A pointer to the stride - if zero the stride is chosen automatically and this is set to the result
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_resize(const char* filename, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height, zap_size_t* pRefStride);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_resize(const char* filename, zap_uint_t colorFormat, zap_byte_t** pRefImage, zap_size_t* pOutSize, zap_int_t width, zap_int_t height, zap_size_t* pRefStride);
 
 /// Load a ZAP file from memory
 /// \param pData The data to load
 /// \param colorFormat The color format of the image
-/// \param pOut A pointer to the output data
-/// \param pOutSize A pointer to the output data size
+/// \param pRefImage A pointer to the output image - if zero the image is allocated and this is set to the result
+/// \param pOutSize A pointer to the output image size
 /// \param pOutWidth A pointer to the output image width
 /// \param pOutHeight A pointer to the output image height
 /// \param pRefStride A pointer to the stride - if zero the stride is chosen automatically and this is set to the result
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_load_memory(const unsigned char* pData, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t* pOutWidth, zap_int_t* pOutHeight, zap_size_t* pRefStride);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_load_memory(const unsigned char* pData, zap_uint_t colorFormat, zap_byte_t** pRefImage, zap_size_t* pOutSize, zap_int_t* pOutWidth, zap_int_t* pOutHeight, zap_size_t* pRefStride);
 
 /// Resize a ZAP file from memory
 /// \param pData The data to load
 /// \param colorFormat The color format of the image
-/// \param pOut A pointer to the output data
+/// \param pRefImage A pointer to the output image - if zero the image is allocated and this is set to the result
 /// \param pOutSize A pointer to the output data size
 /// \param width The width of the resized image
 /// \param height The height of the resized image
 /// \param pRefStride A pointer to the stride - if zero the stride is chosen automatically and this is set to the result
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_resize_memory(const unsigned char* pData, zap_uint_t colorFormat, zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height, zap_size_t* pRefStride);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_resize_memory(const unsigned char* pData, zap_uint_t colorFormat, zap_byte_t** pRefImage, zap_size_t* pOutSize, zap_int_t width, zap_int_t height, zap_size_t* pRefStride);
 
-/// Free the data loaded by zap_load, zap_resize, zap_load_memory or zap_resize_memory
-/// \param pData The data to free
+/// Free the image loaded by zap_load, zap_resize, zap_load_memory or zap_resize_memory
+/// \param pImage The image to free
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_free(zap_byte_t* pData);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_free(zap_byte_t* pImage);
 
 /// Get info for a ZAP file
 /// \param pData The data to get info for

@@ -320,7 +320,7 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 	return stringToLongUnsignedWide(str, result, base, locale) ? result : defaultValue;
 }
 
-inline uint32_t clampUINT32(uint32_t extent, uint32_t min, uint32_t max) {
+constexpr inline uint32_t clampUINT32(uint32_t extent, uint32_t min, uint32_t max) {
 	return __min(max, __max(extent, min));
 }
 

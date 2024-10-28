@@ -12,9 +12,28 @@ class M4IMAGE_API M4Image {
 
         constexpr Allocator() = default;
         constexpr Allocator(MallocProc mallocProc, FreeProc freeProc, ReallocProc reallocProc);
-        void* M4IMAGE_CALL malloc(size_t size) const;
-        void M4IMAGE_CALL free(void* block) const;
-        void* M4IMAGE_CALL realloc(void* block, size_t size) const;
+        void* M4IMAGE_CALL mallocSafe(size_t size) const;
+
+        template <typename Block>
+        void M4IMAGE_CALL freeSafe(Block* &block) const {
+            if (block) {
+                freeProc(block);
+                block = 0;
+            }
+        }
+
+        template <typename Block>
+        void M4IMAGE_CALL reallocSafe(Block* &block, size_t size) const {
+            if (!size) {
+                throw std::invalid_argument("size must not be zero");
+            }
+
+            block = (Block*)reallocProc(block, size);
+
+            if (!block) {
+                throw std::bad_alloc();
+            }
+        }
 
         private:
         MallocProc mallocProc = ::malloc;
@@ -22,6 +41,12 @@ class M4IMAGE_API M4Image {
         ReallocProc reallocProc = ::realloc;
     };
 
+    class Invalid : public std::invalid_argument {
+        public:
+        Invalid() noexcept : std::invalid_argument("M4Image invalid") {
+        }
+    };
+    
     struct Color16 {
         unsigned char channels[2] = {};
     };
@@ -49,7 +74,7 @@ class M4IMAGE_API M4Image {
     static Allocator allocator;
 
     static void M4IMAGE_CALL getInfo(
-        const unsigned char* address,
+        const unsigned char* pointer,
         size_t size,
         const char* extension,
         uint32_t* bitsPointer,
@@ -60,24 +85,24 @@ class M4IMAGE_API M4Image {
         bool* premultipliedPointer
     );
 
-    M4Image(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* image = 0);
+    M4Image(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* imagePointer = 0);
     M4Image(int width, int height);
     ~M4Image();
     void M4IMAGE_CALL blit(const M4Image &m4Image, bool linear = false, bool premultiplied = false);
-    void M4IMAGE_CALL load(const unsigned char* address, size_t size, const char* extension, bool &linear, bool &premultiplied);
-    void M4IMAGE_CALL load(const unsigned char* address, size_t size, const char* extension, bool &linear);
-    void M4IMAGE_CALL load(const unsigned char* address, size_t size, const char* extension);
+    void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension, bool &linear, bool &premultiplied);
+    void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension, bool &linear);
+    void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension);
     unsigned char* M4IMAGE_CALL save(size_t &size, const char* extension, float quality = 0.90f) const;
     unsigned char* M4IMAGE_CALL acquire();
 
     private:
-    void create(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* image = 0);
+    void create(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* imagePointer = 0);
     void destroy();
 
     int width = 0;
     int height = 0;
     size_t stride = 0;
     COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32;
-    unsigned char* image = 0;
+    unsigned char* imagePointer = 0;
     bool owner = false;
 };

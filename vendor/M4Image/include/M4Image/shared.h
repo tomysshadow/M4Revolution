@@ -25,7 +25,7 @@
 	#define M4IMAGE_API
 #endif
 
-inline unsigned char clampUCHAR(int number) {
+constexpr inline unsigned char clampUCHAR(int number) {
 	return __min(UCHAR_MAX, __max(0, number));
 }
 
