@@ -98,23 +98,21 @@ int main(int argc, char** argv) {
 		consoleLog("3) Fix Loading");
 		consoleLog("4) Restore Backup");
 		consoleLog("5) Exit", 2);
-	} while (
-		consoleBool(
-			(
-				std::string("The operation has been ")
+	} while (consoleBool(
+		(
+			std::string("The operation has been ")
 
-				+ (
-					performOperation(m4Revolution)
+			+ (
+				performOperation(m4Revolution)
 					
-					? "performed"
-					: "aborted"
-				)
+				? "performed"
+				: "aborted"
+			)
 				
-				+ ". Would you like to return to the menu? If not, the application will exit."
-			).c_str(),
+			+ ". Would you like to return to the menu? If not, the application will exit."
+		).c_str(),
 			
-			true
-		)
-	);
+		true
+	));
 	return 0;
 }

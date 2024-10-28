@@ -59,32 +59,6 @@ class M4Revolution {
 		bool result = true;
 	};
 
-	#ifdef D3D9
-	class Window {
-		private:
-		void create();
-		void destroy();
-		void duplicate(const Window &window);
-		void move(Window &window);
-
-		HWND handle = NULL;
-
-		// these are fine to store statically
-		// they will not need to outlive the module unloading
-		static HMODULE moduleHandle;
-		static ATOM registeredClass;
-
-		public:
-		Window();
-		~Window();
-		Window(const Window &window);
-		Window(Window &&window) noexcept;
-		Window &operator=(const Window &window);
-		Window &operator=(Window &&window) noexcept;
-		HWND getHandle();
-	};
-	#endif
-
 	std::string inputFileName = "";
 	bool logFileNames = false;
 

@@ -126,123 +126,6 @@ void M4Revolution::ErrorHandler::error(nvtt::Error error) {
 	result = false;
 }
 
-#ifdef D3D9
-void M4Revolution::Window::create() {
-	if (!moduleHandle) {
-		moduleHandle = GetModuleHandle(NULL);
-
-		if (!moduleHandle) {
-			throw std::runtime_error("Failed to Get Module Handle");
-		}
-	}
-
-	const TCHAR className[] = TEXT("M4Revolution");
-
-	if (!registeredClass) {
-		WNDCLASSEX windowClassEx = {};
-		const UINT WINDOW_CLASS_EX_SIZE = sizeof(windowClassEx);
-
-		windowClassEx.cbSize = WINDOW_CLASS_EX_SIZE;
-		windowClassEx.lpfnWndProc = DefWindowProc;
-		windowClassEx.hInstance = moduleHandle;
-		windowClassEx.lpszClassName = className;
-
-		registeredClass = RegisterClassEx(&windowClassEx);
-
-		if (!registeredClass) {
-			throw std::runtime_error("Failed to Register Class");
-		}
-	}
-
-	handle = CreateWindowEx(
-		NULL,
-		className,
-		TEXT("M4Revolution"),
-		WS_OVERLAPPED,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		NULL,
-		NULL,
-		moduleHandle,
-		NULL
-	);
-
-	if (!handle) {
-		throw std::runtime_error("Failed to Create Window Ex");
-	}
-}
-
-void M4Revolution::Window::destroy() {
-	if (!destroyWindow(handle)) {
-		throw std::runtime_error("Failed to Destroy Window");
-	}
-
-	// errors here are ignored in case another instance has a window open
-	if (registeredClass) {
-		if (UnregisterClass((LPCSTR)registeredClass, moduleHandle)) {
-			registeredClass = NULL;
-		}
-	}
-}
-
-void M4Revolution::Window::duplicate(const Window &window) {
-	if (!destroyWindow(handle)) {
-		throw std::runtime_error("Failed to Destroy Window");
-	}
-
-	create();
-}
-
-void M4Revolution::Window::move(Window &window) {
-	handle = window.handle;
-	window.handle = NULL;
-}
-
-HMODULE M4Revolution::Window::moduleHandle = NULL;
-ATOM M4Revolution::Window::registeredClass = NULL;
-
-M4Revolution::Window::Window() {
-	create();
-}
-
-M4Revolution::Window::~Window() {
-	destroy();
-}
-
-M4Revolution::Window::Window(const Window &window) {
-	duplicate(window);
-}
-
-M4Revolution::Window::Window(Window &&window) noexcept {
-	*this = std::move(window);
-}
-
-M4Revolution::Window &M4Revolution::Window::operator=(const Window &window) {
-	if (this == &window) {
-		return *this;
-	}
-
-	duplicate(window);
-	return *this;
-}
-
-M4Revolution::Window &M4Revolution::Window::operator=(Window &&window) noexcept {
-	if (this == &window) {
-		return *this;
-	}
-
-	destroy();
-	move(window);
-	return *this;
-}
-
-HWND M4Revolution::Window::getHandle() {
-	return handle;
-}
-#endif
-
 void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks) {
 	// this function waits for the output thread to catch up
 	// if too many files are queued at once (to prevent running out of memory)
@@ -799,36 +682,19 @@ M4Revolution::M4Revolution(
 	logFileNames(logFileNames) {
 	#ifdef D3D9
 	{
-		Window window;
-
 		Microsoft::WRL::ComPtr<IDirect3D9> direct3D9InterfacePointer = Direct3DCreate9(D3D_SDK_VERSION);
 
 		if (!direct3D9InterfacePointer) {
 			throw std::runtime_error("Failed to Create Direct3D");
 		}
 
-		D3DPRESENT_PARAMETERS presentationParameters = {};
-		presentationParameters.SwapEffect = D3DSWAPEFFECT_COPY;
-		presentationParameters.Windowed = TRUE;
-
-		Microsoft::WRL::ComPtr<IDirect3DDevice9> direct3DDevice9InterfacePointer = NULL;
-
-		HRESULT err = direct3D9InterfacePointer->CreateDevice(
-			D3DADAPTER_DEFAULT,
-			D3DDEVTYPE_HAL,
-			window.getHandle(),
-			D3DCREATE_SOFTWARE_VERTEXPROCESSING,
-			&presentationParameters,
-			direct3DDevice9InterfacePointer.GetAddressOf()
-		);
-
-		if (err != D3D_OK) {
-			throw _com_error(err);
-		}
-
 		D3DCAPS9 d3dcaps9 = {};
 
-		err = direct3DDevice9InterfacePointer->GetDeviceCaps(&d3dcaps9);
+		HRESULT err = direct3D9InterfacePointer->GetDeviceCaps(
+			D3DADAPTER_DEFAULT,
+			D3DDEVTYPE_HAL,
+			&d3dcaps9
+		);
 
 		if (err != D3D_OK) {
 			throw _com_error(err);
