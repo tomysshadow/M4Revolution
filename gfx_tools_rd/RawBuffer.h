@@ -6,7 +6,7 @@ namespace gfx_tools {
 		typedef unsigned char* POINTER;
 		typedef unsigned long SIZE;
 
-		POINTER buffer = 0;
+		POINTER pointer = 0;
 		SIZE size = 0;
 		bool owner = true;
 	};
