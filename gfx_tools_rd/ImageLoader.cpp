@@ -7,7 +7,7 @@ namespace gfx_tools {
 	}
 
 	// TODO: this should just call GetImageInfoImp to do the work!
-	bool GFX_TOOLS_RD_CALL ImageLoader::GetImageInfo(ValidatedImageInfo &validatedImageInfo) {
+	bool GFX_TOOLS_RD_CALL ImageLoader::GetImageInfo(ImageInfo &imageInfo) {
 		const RawBufferEx &RAW_BUFFER = rawBuffers[0];
 
 		// the initial LOD is required
@@ -39,7 +39,7 @@ namespace gfx_tools {
 		#define LOD_SIZE_IN_BYTES(bits, width, height) (((bits) >> BYTES) * (width) * (height))
 
 		// TODO: format hint to pixel format conversion
-		validatedImageInfo = ValidatedImageInfo(width, height, 1, GetEnumPixelFormatFromFormatHint(bits, hasAlpha), formatHint);
+		ValidatedImageInfo validatedImageInfo(width, height, 1, GetEnumPixelFormatFromFormatHint(bits, hasAlpha), formatHint);
 		validatedImageInfo.SetNumberOfLOD(numberOfLod);
 		bits = validatedImageInfo.GetBitsPerPixel();
 		validatedImageInfo.SetLodSizeInBytes(0, LOD_SIZE_IN_BYTES(bits, width, height));
@@ -76,6 +76,8 @@ namespace gfx_tools {
 			setLodSizeInBytesScopeExit.dismiss();
 			validatedImageInfo.SetLodSizeInBytes(i++, LOD_SIZE_IN_BYTES(bits, width, height));
 		}
+
+		imageInfo = validatedImageInfo.Get();
 		return result;
 	}
 
