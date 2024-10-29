@@ -18,6 +18,8 @@ namespace gfx_tools {
 		RawBuffer::SIZE rawBufferTotalSize = 0;
 		LOD numberOfLod = 0;
 		RawBufferEx rawBuffers[NUMBER_OF_LOD_MAX] = {};
+		bool validatedImageInfoSet = false;
+		ValidatedImageInfo validatedImageInfo;
 		EnumPixelFormat enumPixelFormat = PIXELFORMAT_UNKNOWN;
 		FormatHint formatHint = { false };
 

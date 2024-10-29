@@ -8,6 +8,36 @@ namespace gfx_tools {
 
 	// TODO: this should just call GetImageInfoImp to do the work!
 	bool GFX_TOOLS_RD_CALL ImageLoader::GetImageInfo(ImageInfo &imageInfo) {
+		MAKE_SCOPE_EXIT(imageInfoScopeExit) {
+			imageInfo = ImageInfo();
+		};
+
+		// because we need to pass an instance of validatedImageInfo for the interface to remain the same
+		// we can't use std::optional without it being a big pain, so we just use a bool instead
+		if (!validatedImageInfoSet) {
+			validatedImageInfoSet = GetImageInfoImp(validatedImageInfo);
+
+			if (!validatedImageInfoSet) {
+				return false;
+			}
+		}
+
+		imageInfo = validatedImageInfo.Get();
+		imageInfoScopeExit.dismiss();
+		return true;
+	}
+
+	void ImageLoader::SetPixelFormat(EnumPixelFormat enumPixelFormat) {
+		this->enumPixelFormat = enumPixelFormat;
+	}
+
+	bool ImageLoader::GetImageInfoImp(
+		ValidatedImageInfo &validatedImageInfo
+	) {
+		MAKE_SCOPE_EXIT(validatedImageInfoScopeExit) {
+			validatedImageInfo = ValidatedImageInfo();
+		};
+
 		const RawBufferEx &RAW_BUFFER = rawBuffers[0];
 
 		// the initial LOD is required
@@ -25,7 +55,6 @@ namespace gfx_tools {
 		int width = 0;
 		int height = 0;
 
-		// TODO: extension will need to come from somewhere (probably also stored on the buffer)
 		try {
 			M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, 0, &bits, &hasAlpha, &width, &height);
 		} catch (...) {
@@ -39,7 +68,7 @@ namespace gfx_tools {
 		#define LOD_SIZE_IN_BYTES(bits, width, height) (((bits) >> BYTES) * (width) * (height))
 
 		// TODO: format hint to pixel format conversion
-		ValidatedImageInfo validatedImageInfo(width, height, 1, GetEnumPixelFormatFromFormatHint(bits, hasAlpha), formatHint);
+		validatedImageInfo = ValidatedImageInfo(width, height, 1, GetEnumPixelFormatFromFormatHint(bits, hasAlpha), formatHint);
 		validatedImageInfo.SetNumberOfLOD(numberOfLod);
 		bits = validatedImageInfo.GetBitsPerPixel();
 		validatedImageInfo.SetLodSizeInBytes(0, LOD_SIZE_IN_BYTES(bits, width, height));
@@ -65,7 +94,6 @@ namespace gfx_tools {
 				continue;
 			}
 
-			// TODO: extension will need to come from somewhere
 			try {
 				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, 0, &bits, 0, &width, &height);
 			} catch (...) {
@@ -77,11 +105,9 @@ namespace gfx_tools {
 			validatedImageInfo.SetLodSizeInBytes(i++, LOD_SIZE_IN_BYTES(bits, width, height));
 		}
 
-		imageInfo = validatedImageInfo.Get();
+		if (result) {
+			validatedImageInfoScopeExit.dismiss();
+		}
 		return result;
-	}
-
-	void GFX_TOOLS_RD_CALL ImageLoader::SetPixelFormat(EnumPixelFormat enumPixelFormat) {
-		this->enumPixelFormat = enumPixelFormat;
 	}
 }
