@@ -6,7 +6,6 @@ namespace gfx_tools {
 		return rawBufferTotalSize;
 	}
 
-	// TODO: this should just call GetImageInfoImp to do the work!
 	bool GFX_TOOLS_RD_CALL ImageLoader::GetImageInfo(ImageInfo &imageInfo) {
 		MAKE_SCOPE_EXIT(imageInfoScopeExit) {
 			imageInfo = ImageInfo();
@@ -14,15 +13,15 @@ namespace gfx_tools {
 
 		// because we need to pass an instance of validatedImageInfo for the interface to remain the same
 		// we can't use std::optional without it being a big pain, so we just use a bool instead
-		if (!validatedImageInfoSet) {
-			validatedImageInfoSet = GetImageInfoImp(validatedImageInfo);
+		if (!validatedImageInfoOptional.has_value()) {
+			GetImageInfoImpEx();
 
-			if (!validatedImageInfoSet) {
+			if (!validatedImageInfoOptional.has_value()) {
 				return false;
 			}
 		}
 
-		imageInfo = validatedImageInfo.Get();
+		imageInfo = validatedImageInfoOptional.value().Get();
 		imageInfoScopeExit.dismiss();
 		return true;
 	}
@@ -31,23 +30,33 @@ namespace gfx_tools {
 		this->enumPixelFormat = enumPixelFormat;
 	}
 
-	bool ImageLoader::GetImageInfoImp(
+	bool ImageLoaderMultipleBuffer::GetImageInfoImp(
 		ValidatedImageInfo &validatedImageInfo
 	) {
-		MAKE_SCOPE_EXIT(validatedImageInfoScopeExit) {
-			validatedImageInfo = ValidatedImageInfo();
-		};
+		GetImageInfoImpEx();
+
+		if (validatedImageInfoOptional.has_value()) {
+			validatedImageInfo = validatedImageInfoOptional.value();
+			return true;
+		}
+
+		validatedImageInfo = ValidatedImageInfo();
+		return false;
+	}
+
+	void ImageLoaderMultipleBuffer::GetImageInfoImpEx(const char* extension = 0) {
+		validatedImageInfoOptional = std::nullopt;
 
 		const RawBufferEx &RAW_BUFFER = rawBuffers[0];
 
 		// the initial LOD is required
 		if (!RAW_BUFFER.pointer) {
-			return false;
+			return;
 		}
 
 		// TODO: getInfo will only work on image formats, so we'll need to store this data on the raw buffer when uncompressed
 		if (!RAW_BUFFER.compressed) {
-			return false;
+			return;
 		}
 
 		uint32_t bits = 0;
@@ -56,9 +65,9 @@ namespace gfx_tools {
 		int height = 0;
 
 		try {
-			M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, 0, &bits, &hasAlpha, &width, &height);
+			M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &bits, &hasAlpha, &width, &height);
 		} catch (...) {
-			return false;
+			return;
 		}
 
 		bool result = true;
@@ -68,7 +77,9 @@ namespace gfx_tools {
 		#define LOD_SIZE_IN_BYTES(bits, width, height) (((bits) >> BYTES) * (width) * (height))
 
 		// TODO: format hint to pixel format conversion
-		validatedImageInfo = ValidatedImageInfo(width, height, 1, GetEnumPixelFormatFromFormatHint(bits, hasAlpha), formatHint);
+		validatedImageInfoOptional.emplace(width, height, 1, GetEnumPixelFormatFromFormatHint(bits, hasAlpha), formatHint);
+		ValidatedImageInfo &validatedImageInfo = validatedImageInfoOptional.value();
+
 		validatedImageInfo.SetNumberOfLOD(numberOfLod);
 		bits = validatedImageInfo.GetBitsPerPixel();
 		validatedImageInfo.SetLodSizeInBytes(0, LOD_SIZE_IN_BYTES(bits, width, height));
@@ -95,19 +106,14 @@ namespace gfx_tools {
 			}
 
 			try {
-				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, 0, &bits, 0, &width, &height);
+				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &bits, 0, &width, &height);
 			} catch (...) {
-				result = false;
-				continue;
+				validatedImageInfoOptional = std::nullopt;
+				return;
 			}
 
 			setLodSizeInBytesScopeExit.dismiss();
 			validatedImageInfo.SetLodSizeInBytes(i++, LOD_SIZE_IN_BYTES(bits, width, height));
 		}
-
-		if (result) {
-			validatedImageInfoScopeExit.dismiss();
-		}
-		return result;
 	}
 }
