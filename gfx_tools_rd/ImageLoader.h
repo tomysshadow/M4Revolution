@@ -5,6 +5,7 @@
 #include "RawBuffer.h"
 #include "ImageInfo.h"
 #include "PixelFormat.h"
+#include <stdint.h>
 
 namespace gfx_tools {
 	class GFX_TOOLS_RD_API ImageLoader : public ares::Resource {
@@ -15,11 +16,13 @@ namespace gfx_tools {
 		typedef unsigned long DIMENSION;
 
 		RawBuffer::SIZE rawBufferTotalSize = 0;
-		ImageInfo imageInfo;
+		LOD numberOfLod = 0;
+		RawBufferEx rawBuffers[NUMBER_OF_LOD_MAX] = {};
 		EnumPixelFormat enumPixelFormat = PIXELFORMAT_UNKNOWN;
+		FormatHint formatHint = { false };
 
 		RawBuffer::SIZE GFX_TOOLS_RD_CALL GetRawBufferTotalSize();
-		bool GFX_TOOLS_RD_CALL GetImageInfo(ImageInfo &imageInfo);
+		bool GFX_TOOLS_RD_CALL GetImageInfo(ValidatedImageInfo &validatedImageInfo);
 		EnumPixelFormat GFX_TOOLS_RD_CALL SetPixelFormat(EnumPixelFormat enumPixelFormat);
 
 		virtual GFX_TOOLS_RD_CALL ~ImageLoader();
@@ -27,14 +30,14 @@ namespace gfx_tools {
 
 		virtual void GFX_TOOLS_RD_CALL GetLOD(
 			LOD lod,
-			Buffer::POINTER pointer,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows
 		) = 0;
 
 		virtual void GFX_TOOLS_RD_CALL ResizeLOD(
 			LOD lod,
-			Buffer::POINTER pointer,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR requestedQFactor,
@@ -46,7 +49,7 @@ namespace gfx_tools {
 
 		virtual void GFX_TOOLS_RD_CALL SetLOD(
 			LOD lod,
-			Buffer::POINTER pointer,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR requestedQFactor,
@@ -70,6 +73,9 @@ namespace gfx_tools {
 			bool owner,
 			ubi::RefCounted* refCountedPointer
 		) = 0;
+
+		private:
+		EnumPixelFormat GetEnumPixelFormatFromFormatHint(uint32_t bits, bool hasAlpha) const;
 	};
 
 	class GFX_TOOLS_RD_API ImageLoaderMultipleBuffer : public ImageLoader {
@@ -83,14 +89,14 @@ namespace gfx_tools {
 
 		virtual void GFX_TOOLS_RD_CALL GetLOD(
 			LOD lod,
-			Buffer::POINTER pointer,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows
 		);
 
 		virtual void GFX_TOOLS_RD_CALL ResizeLOD(
 			LOD lod,
-			Buffer::POINTER pointer,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR requestedQFactor,
@@ -102,7 +108,7 @@ namespace gfx_tools {
 
 		virtual void GFX_TOOLS_RD_CALL SetLOD(
 			LOD lod,
-			Buffer::POINTER pointer,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR requestedQFactor,

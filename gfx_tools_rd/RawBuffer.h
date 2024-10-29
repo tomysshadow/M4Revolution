@@ -2,7 +2,7 @@
 #include "shared.h"
 
 namespace gfx_tools {
-	struct BaseBuffer {
+	struct RawBuffer {
 		typedef unsigned char* POINTER;
 		typedef unsigned long SIZE;
 
@@ -11,9 +11,7 @@ namespace gfx_tools {
 		bool owner = true;
 	};
 
-	struct RawBuffer : public BaseBuffer {
-	};
-
-	struct Buffer : public BaseBuffer {
+	struct RawBufferEx : public RawBuffer {
+		bool compressed = true;
 	};
 }
