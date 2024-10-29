@@ -23,7 +23,7 @@ namespace gfx_tools {
 
 		RawBuffer::SIZE GFX_TOOLS_RD_CALL GetRawBufferTotalSize();
 		bool GFX_TOOLS_RD_CALL GetImageInfo(ValidatedImageInfo &validatedImageInfo);
-		EnumPixelFormat GFX_TOOLS_RD_CALL SetPixelFormat(EnumPixelFormat enumPixelFormat);
+		void GFX_TOOLS_RD_CALL SetPixelFormat(EnumPixelFormat enumPixelFormat);
 
 		virtual GFX_TOOLS_RD_CALL ~ImageLoader();
 		virtual void GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint) = 0;

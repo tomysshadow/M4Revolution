@@ -14,7 +14,7 @@ namespace gfx_tools {
 			return false;
 		}
 
-		// TODO
+		// TODO: getInfo will only work on image formats, so we'll need to store this data on the raw buffer when uncompressed
 		if (!RAW_BUFFER.compressed) {
 			return false;
 		}
@@ -24,7 +24,7 @@ namespace gfx_tools {
 		int width = 0;
 		int height = 0;
 
-		// TODO: extension will need to come from somewhere
+		// TODO: extension will need to come from somewhere (probably also stored on the buffer)
 		try {
 			M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, "", &bits, &hasAlpha, &width, &height, 0, 0);
 		} catch (...) {
@@ -76,5 +76,9 @@ namespace gfx_tools {
 			validatedImageInfo.SetLodSizeInBytes(i++, LOD_SIZE_IN_BYTES(bits, width, height));
 		}
 		return result;
+	}
+
+	void GFX_TOOLS_RD_CALL ImageLoader::SetPixelFormat(EnumPixelFormat enumPixelFormat) {
+		this->enumPixelFormat = enumPixelFormat;
 	}
 }
