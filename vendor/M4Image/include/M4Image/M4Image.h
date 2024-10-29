@@ -76,13 +76,13 @@ class M4IMAGE_API M4Image {
     static void M4IMAGE_CALL getInfo(
         const unsigned char* pointer,
         size_t size,
-        const char* extension,
-        uint32_t* bitsPointer,
-        bool* alphaPointer,
-        int* widthPointer,
-        int* heightPointer,
-        bool* linearPointer,
-        bool* premultipliedPointer
+        const char* extension = 0,
+        uint32_t* bitsPointer = 0,
+        bool* alphaPointer = 0,
+        int* widthPointer = 0,
+        int* heightPointer = 0,
+        bool* linearPointer = 0,
+        bool* premultipliedPointer = 0
     );
 
     M4Image(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* imagePointer = 0);
@@ -91,8 +91,8 @@ class M4IMAGE_API M4Image {
     void M4IMAGE_CALL blit(const M4Image &m4Image, bool linear = false, bool premultiplied = false);
     void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension, bool &linear, bool &premultiplied);
     void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension, bool &linear);
-    void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension);
-    unsigned char* M4IMAGE_CALL save(size_t &size, const char* extension, float quality = 0.90f) const;
+    void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension = 0);
+    unsigned char* M4IMAGE_CALL save(size_t &size, const char* extension = 0, float quality = 0.90f) const;
     unsigned char* M4IMAGE_CALL acquire();
 
     private:

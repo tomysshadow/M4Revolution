@@ -27,7 +27,7 @@ namespace gfx_tools {
 
 		// TODO: extension will need to come from somewhere (probably also stored on the buffer)
 		try {
-			M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, "", &bits, &hasAlpha, &width, &height, 0, 0);
+			M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, 0, &bits, &hasAlpha, &width, &height);
 		} catch (...) {
 			return false;
 		}
@@ -67,7 +67,7 @@ namespace gfx_tools {
 
 			// TODO: extension will need to come from somewhere
 			try {
-				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, "", &bits, 0, &width, &height, 0, 0);
+				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, 0, &bits, 0, &width, &height);
 			} catch (...) {
 				result = false;
 				continue;
