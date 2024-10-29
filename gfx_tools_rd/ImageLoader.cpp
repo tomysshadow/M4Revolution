@@ -6,6 +6,7 @@ namespace gfx_tools {
 		return rawBufferTotalSize;
 	}
 
+	// TODO: this should just call GetImageInfoImp to do the work!
 	bool GFX_TOOLS_RD_CALL ImageLoader::GetImageInfo(ValidatedImageInfo &validatedImageInfo) {
 		const RawBufferEx &RAW_BUFFER = rawBuffers[0];
 
