@@ -2,7 +2,7 @@
 #include "M4Image/shared.h"
 #include <stdint.h>
 
-class M4IMAGE_API M4Image {
+class M4Image {
     public:
     class M4IMAGE_API Allocator {
         public:
@@ -43,7 +43,7 @@ class M4IMAGE_API M4Image {
 
     class Invalid : public std::invalid_argument {
         public:
-        Invalid() noexcept : std::invalid_argument("M4Image invalid") {
+        M4IMAGE_API Invalid() noexcept : std::invalid_argument("M4Image invalid") {
         }
     };
     
@@ -71,9 +71,9 @@ class M4IMAGE_API M4Image {
         XXLA32
     };
 
-    static Allocator allocator;
+    M4IMAGE_API static Allocator allocator;
 
-    static void M4IMAGE_CALL getInfo(
+    M4IMAGE_API static void M4IMAGE_CALL getInfo(
         const unsigned char* pointer,
         size_t size,
         const char* extension = 0,
@@ -85,15 +85,15 @@ class M4IMAGE_API M4Image {
         bool* premultipliedPointer = 0
     );
 
-    M4Image(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* imagePointer = 0);
-    M4Image(int width, int height);
-    ~M4Image();
-    void M4IMAGE_CALL blit(const M4Image &m4Image, bool linear = false, bool premultiplied = false);
-    void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension, bool &linear, bool &premultiplied);
-    void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension, bool &linear);
-    void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension = 0);
-    unsigned char* M4IMAGE_CALL save(size_t &size, const char* extension = 0, float quality = 0.90f) const;
-    unsigned char* M4IMAGE_CALL acquire();
+    M4IMAGE_API M4Image(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* imagePointer = 0);
+    M4IMAGE_API M4Image(int width, int height);
+    M4IMAGE_API ~M4Image();
+    M4IMAGE_API void M4IMAGE_CALL blit(const M4Image &m4Image, bool linear = false, bool premultiplied = false);
+    M4IMAGE_API void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension, bool &linear, bool &premultiplied);
+    M4IMAGE_API void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension, bool &linear);
+    M4IMAGE_API void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension = 0);
+    M4IMAGE_API unsigned char* M4IMAGE_CALL save(size_t &size, const char* extension = 0, float quality = 0.90f) const;
+    M4IMAGE_API unsigned char* M4IMAGE_CALL acquire();
 
     private:
     void create(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* imagePointer = 0);

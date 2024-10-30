@@ -13,15 +13,15 @@
 #endif
 
 namespace ubi {
-	class BASE_RD_API ErrorManager {
+	class ErrorManager {
 		public:
 		typedef unsigned long CATEGORY;
 		typedef unsigned long MASK;
 
-		unsigned long BASE_RD_CALL RegisterCategory(unsigned long reserved, char const* name);
-		void BASE_RD_CALL SetSystemFlag(CATEGORY category, MASK mask, bool value);
+		BASE_RD_API unsigned long BASE_RD_CALL RegisterCategory(unsigned long reserved, char const* name);
+		BASE_RD_API void BASE_RD_CALL SetSystemFlag(CATEGORY category, MASK mask, bool value);
 
-		static ErrorManager& BASE_RD_CALL GetSingletonInstance();
+		BASE_RD_API static ErrorManager& BASE_RD_CALL GetSingletonInstance();
 	};
 
 	class BASE_RD_API RefCounted {
@@ -45,19 +45,19 @@ namespace ubi {
 		REF_COUNT refCount = 1;
 	};
 
-	class BASE_RD_API InputStream {
+	class InputStream {
 		public:
 		typedef unsigned long SIZE;
 
-		SIZE BASE_RD_CALL Read(unsigned char* buffer, SIZE position, SIZE size);
+		BASE_RD_API SIZE BASE_RD_CALL Read(unsigned char* buffer, SIZE position, SIZE size);
 	};
 
-	class BASE_RD_API InputFileStream {
+	class InputFileStream {
 		public:
 		typedef unsigned __int64 SIZE;
 
-		InputFileStream(char const* path);
-		virtual ~InputFileStream();
-		SIZE BASE_RD_CALL GetSize();
+		BASE_RD_API InputFileStream(char const* path);
+		BASE_RD_API virtual ~InputFileStream();
+		BASE_RD_API SIZE BASE_RD_CALL GetSize();
 	};
 }

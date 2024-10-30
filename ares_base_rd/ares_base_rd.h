@@ -18,19 +18,19 @@ namespace ares {
 		CLONETYPE_UNKNOWN = 0
 	};
 
-	class ARES_BASE_RD_API Resource {
+	class Resource {
 		protected:
-		Resource();
-		virtual ~Resource();
+		ARES_BASE_RD_API Resource();
+		ARES_BASE_RD_API virtual ~Resource();
 
 		public:
-		Resource(Resource const &resource);
-		Resource &operator=(Resource const &resource);
-		virtual const char* ARES_BASE_RD_CALL GetClassNameA() const;
-		virtual Resource* ARES_BASE_RD_CALL Clone(EnumCloneType enumCloneType);
+		ARES_BASE_RD_API Resource(Resource const &resource);
+		ARES_BASE_RD_API Resource &operator=(Resource const &resource);
+		ARES_BASE_RD_API virtual const char* ARES_BASE_RD_CALL GetClassNameA() const;
+		ARES_BASE_RD_API virtual Resource* ARES_BASE_RD_CALL Clone(EnumCloneType enumCloneType);
 	};
 
-	struct ARES_BASE_RD_API RectU32 {
+	struct RectU32 {
 		uint32_t left = 0;
 		uint32_t top = 0;
 		uint32_t right = 0;

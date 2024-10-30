@@ -2,7 +2,7 @@
 #include "shared.h"
 
 namespace gfx_tools {
-	class GFX_TOOLS_RD_API Configuration {
+	class Configuration {
 		private:
 		static Configuration ms_currentConfiguration;
 
@@ -19,9 +19,9 @@ namespace gfx_tools {
 		bool dimensionsMakePowerOfTwo = false;
 		bool toNextPowerOfTwo = true;
 
-		static Configuration const GFX_TOOLS_RD_CALL &Get();
-		static void GFX_TOOLS_RD_CALL Set(Configuration const &configuration);
+		GFX_TOOLS_RD_API static Configuration const GFX_TOOLS_RD_CALL &Get();
+		GFX_TOOLS_RD_API static void GFX_TOOLS_RD_CALL Set(Configuration const &configuration);
 
-		Configuration();
+		GFX_TOOLS_RD_API Configuration();
 	};
 }

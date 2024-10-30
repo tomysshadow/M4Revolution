@@ -161,7 +161,7 @@ namespace gfx_tools {
 	static REF_COUNT refCount = 0;
 	static bool initialized = false;
 
-	void GFX_TOOLS_RD_API Init() {
+	void Init() {
 		if (refCount++) {
 			return;
 		}
@@ -177,7 +177,7 @@ namespace gfx_tools {
 		initialized = true;
 	}
 
-	void GFX_TOOLS_RD_API Shutdown() {
+	void Shutdown() {
 		if (refCount) {
 			refCount--;
 		}

@@ -15,7 +15,7 @@ namespace gfx_tools {
 
 	static const LOD NUMBER_OF_LOD_MAX = 15;
 
-	class GFX_TOOLS_RD_API ImageInfo {
+	class ImageInfo {
 		public:
 		typedef unsigned long LOD_SIZE;
 		typedef unsigned short DIMENSION;
@@ -32,12 +32,12 @@ namespace gfx_tools {
 		EnumPixelFormat requestedEnumPixelFormat = EnumPixelFormat::PIXELFORMAT_UNKNOWN;
 		FormatHint formatHint = { false };
 
-		void GFX_TOOLS_RD_CALL ComputeLODDimensions(DIMENSION &textureWidth, DIMENSION &textureHeight, DIMENSION &volumeExtent, LOD lod) const;
-		BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetBitsPerPixel() const;
-		BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetRequestedBitsPerPixel() const;
+		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL ComputeLODDimensions(DIMENSION &textureWidth, DIMENSION &textureHeight, DIMENSION &volumeExtent, LOD lod) const;
+		GFX_TOOLS_RD_API BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetBitsPerPixel() const;
+		GFX_TOOLS_RD_API BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetRequestedBitsPerPixel() const;
 	};
 
-	class GFX_TOOLS_RD_API ValidatedImageInfo : public ImageInfo {
+	class ValidatedImageInfo : public ImageInfo {
 		private:
 		bool recomputeLodSizes = false;
 
@@ -51,9 +51,9 @@ namespace gfx_tools {
 		public:
 		typedef unsigned long SIZE_IN_BYTES;
 
-		ValidatedImageInfo();
+		GFX_TOOLS_RD_API ValidatedImageInfo();
 
-		ValidatedImageInfo(
+		GFX_TOOLS_RD_API ValidatedImageInfo(
 			DIMENSION textureWidth,
 			DIMENSION textureHeight,
 			DIMENSION volumeExtent,
@@ -61,10 +61,10 @@ namespace gfx_tools {
 			FormatHint formatHint
 		);
 
-		void GFX_TOOLS_RD_CALL OverwritePixelFormat(EnumPixelFormat enumPixelFormat);
-		ImageInfo const GFX_TOOLS_RD_CALL &Get();
-		void GFX_TOOLS_RD_CALL SetLodSizeInBytes(LOD lod, SIZE_IN_BYTES sizeInBytes);
-		void GFX_TOOLS_RD_CALL SetNumberOfLOD(LOD numberOfLOD);
-		void GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint);
+		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL OverwritePixelFormat(EnumPixelFormat enumPixelFormat);
+		GFX_TOOLS_RD_API ImageInfo const GFX_TOOLS_RD_CALL &Get();
+		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetLodSizeInBytes(LOD lod, SIZE_IN_BYTES sizeInBytes);
+		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetNumberOfLOD(LOD numberOfLOD);
+		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint);
 	};
 }
