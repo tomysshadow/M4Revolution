@@ -17,7 +17,7 @@ namespace gfx_tools {
 		DIMENSION minVolumeExtent = 1;
 		bool dimensionsMakeSquare = false;
 		bool dimensionsMakePowerOfTwo = false;
-		bool toNextPowerOfTwo = true;
+		bool toNext = true;
 
 		GFX_TOOLS_RD_API static Configuration const GFX_TOOLS_RD_CALL &Get();
 		GFX_TOOLS_RD_API static void GFX_TOOLS_RD_CALL Set(Configuration const &configuration);

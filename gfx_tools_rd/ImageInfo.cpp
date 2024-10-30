@@ -45,7 +45,7 @@ namespace gfx_tools {
 				return;
 			}
 
-			if (!Configuration::Get().toNextPowerOfTwo) {
+			if (!Configuration::Get().toNext) {
 				powerOfTwo /= 2;
 			}
 		}
@@ -56,7 +56,7 @@ namespace gfx_tools {
 	void ValidatedImageInfo::MakeSquare(DIMENSION &width, DIMENSION &height) {
 		DIMENSION square = width;
 
-		if (Configuration::Get().toNextPowerOfTwo) {
+		if (Configuration::Get().toNext) {
 			if (square < height) {
 				square = height;
 			}
