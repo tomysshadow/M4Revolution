@@ -2,17 +2,15 @@
 #include <M4Image/M4Image.h>
 
 namespace gfx_tools {
-	RawBuffer::SIZE GFX_TOOLS_RD_CALL ImageLoader::GetRawBufferTotalSize() {
+	RawBuffer::SIZE ImageLoader::GetRawBufferTotalSize() {
 		return rawBufferTotalSize;
 	}
 
-	bool GFX_TOOLS_RD_CALL ImageLoader::GetImageInfo(ImageInfo &imageInfo) {
+	bool ImageLoader::GetImageInfo(ImageInfo &imageInfo) {
 		MAKE_SCOPE_EXIT(imageInfoScopeExit) {
 			imageInfo = ImageInfo();
 		};
 
-		// because we need to pass an instance of validatedImageInfo for the interface to remain the same
-		// we can't use std::optional without it being a big pain, so we just use a bool instead
 		if (!validatedImageInfoOptional.has_value()) {
 			GetImageInfoImpEx();
 
@@ -30,9 +28,11 @@ namespace gfx_tools {
 		this->enumPixelFormat = enumPixelFormat;
 	}
 
-	bool ImageLoaderMultipleBuffer::GetImageInfoImp(
-		ValidatedImageInfo &validatedImageInfo
-	) {
+	void ImageLoaderMultipleBuffer::SetHint(FormatHint formatHint) {
+		this->formatHint = formatHint;
+	}
+
+	bool ImageLoaderMultipleBuffer::GetImageInfoImp(ValidatedImageInfo &validatedImageInfo) {
 		GetImageInfoImpEx();
 
 		if (validatedImageInfoOptional.has_value()) {
@@ -44,7 +44,7 @@ namespace gfx_tools {
 		return false;
 	}
 
-	void ImageLoaderMultipleBuffer::GetImageInfoImpEx(const char* extension = 0) {
+	void ImageLoaderMultipleBuffer::GetImageInfoImpEx(const char* extension) {
 		validatedImageInfoOptional = std::nullopt;
 
 		const RawBufferEx &RAW_BUFFER = rawBuffers[0];
