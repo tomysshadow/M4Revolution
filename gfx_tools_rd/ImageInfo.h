@@ -37,7 +37,7 @@ namespace gfx_tools {
 		GFX_TOOLS_RD_API BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetRequestedBitsPerPixel() const;
 	};
 
-	class ValidatedImageInfo : public ImageInfo {
+	class ValidatedImageInfo : private ImageInfo {
 		private:
 		bool recomputeLodSizes = false;
 
@@ -63,6 +63,8 @@ namespace gfx_tools {
 
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL OverwritePixelFormat(EnumPixelFormat enumPixelFormat);
 		GFX_TOOLS_RD_API ImageInfo const GFX_TOOLS_RD_CALL &Get();
+		GFX_TOOLS_RD_API BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetBitsPerPixel() const;
+		GFX_TOOLS_RD_API BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetRequestedBitsPerPixel() const;
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetLodSizeInBytes(LOD lod, SIZE_IN_BYTES sizeInBytes);
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetNumberOfLOD(LOD numberOfLOD);
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint);

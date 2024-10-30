@@ -155,6 +155,14 @@ namespace gfx_tools {
 		return *this;
 	}
 
+	ImageInfo::BITS_PER_PIXEL ValidatedImageInfo::GetBitsPerPixel() const {
+		return ImageInfo::GetBitsPerPixel();
+	}
+
+	ImageInfo::BITS_PER_PIXEL ValidatedImageInfo::GetRequestedBitsPerPixel() const {
+		return ImageInfo::GetRequestedBitsPerPixel();
+	}
+
 	void ValidatedImageInfo::SetLodSizeInBytes(LOD lod, SIZE_IN_BYTES sizeInBytes) {
 		if (recomputeLodSizes && sizeInBytes) {
 			RecomputeLodSize(lod);
