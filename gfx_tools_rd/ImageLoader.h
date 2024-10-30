@@ -95,8 +95,6 @@ namespace gfx_tools {
 		public:
 		typedef void* HANDLE;
 
-		SIZE numberOfRawBuffers = 0;
-
 		GFX_TOOLS_RD_API SIZE GetNumberOfRawBuffers();
 
 		GFX_TOOLS_RD_API virtual GFX_TOOLS_RD_CALL ~ImageLoaderMultipleBuffer();
@@ -155,6 +153,8 @@ namespace gfx_tools {
 		protected:
 		// TODO: the Bitmap interfaces will call ImageLoaderMultipleBuffer::GetImageInfoImpEx with the extension from their GetExtension
 		void GFX_TOOLS_RD_CALL GetImageInfoImpEx(const char* extension = 0);
+
+		SIZE numberOfRawBuffers = 0;
 	};
 
 	class ImageLoaderMultipleBufferBitmap : public ImageLoaderMultipleBuffer {
