@@ -36,6 +36,10 @@ namespace gfx_tools {
 		}
 	}
 
+	ImageLoaderMultipleBuffer::SIZE ImageLoaderMultipleBuffer::GetNumberOfRawBuffers() {
+		return numberOfRawBuffers;
+	}
+
 	ImageLoaderMultipleBuffer::~ImageLoaderMultipleBuffer() {
 		for (LOD i = 0; i < numberOfRawBuffers; i++) {
 			RawBufferEx &rawBuffer = rawBuffers[i];
@@ -44,10 +48,6 @@ namespace gfx_tools {
 				M4Image::allocator.freeSafe(rawBuffer.pointer);
 			}
 		}
-	}
-
-	ImageLoaderMultipleBuffer::SIZE ImageLoaderMultipleBuffer::GetNumberOfRawBuffers() {
-		return numberOfRawBuffers;
 	}
 
 	void ImageLoaderMultipleBuffer::SetHint(FormatHint formatHint) {

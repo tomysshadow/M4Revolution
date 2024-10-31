@@ -143,9 +143,9 @@ namespace gfx_tools {
 			ubi::RefCounted* refCountedPointer
 		);
 
-		GFX_TOOLS_RD_API virtual const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension() = 0;
-		GFX_TOOLS_RD_API virtual L_INT GFX_TOOLS_RD_CALL GetFormat() = 0;
-		GFX_TOOLS_RD_API virtual L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE bitmapHandlePointer) = 0;
+		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension() = 0;
+		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat() = 0;
+		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE bitmapHandlePointer) = 0;
 
 		protected:
 		void GFX_TOOLS_RD_CALL GetImageInfoImpEx();
