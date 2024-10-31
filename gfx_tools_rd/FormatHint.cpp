@@ -1,7 +1,7 @@
 #include "FormatHint.h"
 
 namespace gfx_tools {
-	EnumPixelFormat FormatHint::GetEnumPixelFormat(uint32_t bits, bool hasAlpha) const {
+	EnumPixelFormat FormatHint::GetEnumPixelFormat(bool isAlpha, uint32_t bits) const {
 		switch (bits) {
 			case 8:
 			{
@@ -17,7 +17,7 @@ namespace gfx_tools {
 			case 16:
 			return PIXELFORMAT_AL_88;
 			case 32:
-			return hasAlpha ? PIXELFORMAT_ARGB_8888 : PIXELFORMAT_XRGB_8888;
+			return isAlpha ? PIXELFORMAT_ARGB_8888 : PIXELFORMAT_XRGB_8888;
 		}
 		return PIXELFORMAT_UNKNOWN;
 	}

@@ -10,7 +10,7 @@ namespace gfx_tools {
 
 		int hint : 3;
 
-		EnumPixelFormat GetEnumPixelFormat(uint32_t bits, bool hasAlpha) const;
+		EnumPixelFormat GetEnumPixelFormat(bool isAlpha, uint32_t bits) const;
 
 		private:
 		typedef std::map<int, EnumPixelFormat> HINT_PIXELFORMAT_MAP;

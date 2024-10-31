@@ -62,15 +62,15 @@ namespace gfx_tools {
 		if (RAW_BUFFER.uncompressed) {
 			validatedImageInfoOptional.emplace(uncompressedImageInfo);
 		} else {
-			bool hasAlpha = false;
+			bool isAlpha = false;
 
 			try {
-				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &bits, &hasAlpha, &width, &height);
+				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &isAlpha, &bits, &width, &height);
 			} catch (...) {
 				return;
 			}
 
-			validatedImageInfoOptional.emplace(width, height, 1, formatHint.GetEnumPixelFormat(bits, hasAlpha), formatHint);
+			validatedImageInfoOptional.emplace(width, height, 1, formatHint.GetEnumPixelFormat(isAlpha, bits), formatHint);
 		}
 
 		bool result = true;
@@ -103,7 +103,7 @@ namespace gfx_tools {
 				validatedImageInfo.SetLodSizeInBytes(i, uncompressedImageInfo.lodSizesInBytes[i]);
 			} else {
 				try {
-					M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &bits, 0, &width, &height);
+					M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, 0, &bits, &width, &height);
 				} catch (...) {
 					validatedImageInfoOptional = std::nullopt;
 					return;
