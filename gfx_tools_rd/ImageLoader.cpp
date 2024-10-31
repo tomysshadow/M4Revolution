@@ -54,6 +54,8 @@ namespace gfx_tools {
 			return;
 		}
 
+		const int VOLUME_EXTENT = 1;
+
 		const char* extension = GetExtension();
 		uint32_t bits = 0;
 		int width = 0;
@@ -70,8 +72,6 @@ namespace gfx_tools {
 				return;
 			}
 
-			const int VOLUME_EXTENT = 1;
-
 			validatedImageInfoOptional.emplace(width, height, VOLUME_EXTENT, formatHint.GetEnumPixelFormat(isAlpha, bits), formatHint);
 		}
 
@@ -79,12 +79,12 @@ namespace gfx_tools {
 
 		const size_t BYTES = 3;
 
-		#define LOD_SIZE_IN_BYTES(bits, width, height) (((bits) >> BYTES) * (width) * (height))
+		#define LOD_SIZE_IN_BYTES(bits, textureWidth, textureHeight, volumeExtent) (((bits) >> BYTES) * (textureWidth) * (textureHeight) * (volumeExtent))
 
 		ValidatedImageInfo &validatedImageInfo = validatedImageInfoOptional.value();
 		validatedImageInfo.SetNumberOfLOD(numberOfLod);
 		bits = validatedImageInfo.GetBitsPerPixel();
-		validatedImageInfo.SetLodSizeInBytes(0, LOD_SIZE_IN_BYTES(bits, width, height));
+		validatedImageInfo.SetLodSizeInBytes(0, LOD_SIZE_IN_BYTES(bits, width, height, VOLUME_EXTENT));
 
 		// the following should fail only if we fail to get info
 		// we are allowed to have buffers with null pointers, with zero sized images
@@ -112,7 +112,7 @@ namespace gfx_tools {
 				}
 
 				setLodSizeInBytesScopeExit.dismiss();
-				validatedImageInfo.SetLodSizeInBytes(i, LOD_SIZE_IN_BYTES(bits, width, height));
+				validatedImageInfo.SetLodSizeInBytes(i, LOD_SIZE_IN_BYTES(bits, width, height, VOLUME_EXTENT));
 			}
 		}
 	}
