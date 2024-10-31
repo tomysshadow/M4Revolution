@@ -340,9 +340,7 @@ Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha) {
 	/*
 	if (convert.file.greyScale) {
-		const float SCALE = 1.0;
-
-		surface.toGreyScale(SCALE, SCALE, SCALE, SCALE);
+		surface.toGreyScale(0.299f, 0.587f, 0.114f, 1.0f);
 	}
 	*/
 
@@ -359,6 +357,7 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	#endif
 
 	const nvtt::ResizeFilter RESIZE_FILTER = nvtt::ResizeFilter_Triangle;
+	const int MIPMAP_COUNT = 1;
 
 	Work::Convert::EXTENT width = clampUINT32(surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
 	Work::Convert::EXTENT height = clampUINT32(surface.height(), CONFIGURATION.minTextureHeight, CONFIGURATION.maxTextureHeight);
@@ -387,12 +386,14 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	nvtt::Context &context = convert.context;
 	nvtt::CompressionOptions &compressionOptions = hasAlpha ? convert.compressionOptionsAlpha : convert.compressionOptions;
 
-	if (!context.outputHeader(surface, 1, compressionOptions, outputOptions)) {
+	if (!context.outputHeader(surface, MIPMAP_COUNT, compressionOptions, outputOptions)) {
 		throw std::runtime_error("Failed to Output Context Header");
 	}
 
-	if (!context.compress(surface, 0, 0, compressionOptions, outputOptions) || !errorHandler.result) {
-		throw std::runtime_error("Failed to Compress Context");
+	for (int i = 0; i < MIPMAP_COUNT; i++) {
+		if (!context.compress(surface, 0, i, compressionOptions, outputOptions) || !errorHandler.result) {
+			throw std::runtime_error("Failed to Compress Context");
+		}
 	}
 
 	convert.file.size = outputHandler.size;
@@ -427,23 +428,25 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 	nvtt::Surface surface = {};
 
 	{
-		zap_byte_t* out = 0;
-		zap_size_t outSize = 0;
-		zap_int_t outWidth = 0;
-		zap_int_t outHeight = 0;
-		zap_size_t refStride = 0;
+		zap_byte_t* image = 0;
+		zap_size_t size = 0;
+		zap_int_t width = 0;
+		zap_int_t height = 0;
+		zap_size_t stride = 0;
 
-		if (zap_load_memory(convert.dataPointer.get(), ZAP_COLOR_FORMAT_BGRA32, &out, &outSize, &outWidth, &outHeight, &refStride) != ZAP_ERROR_NONE) {
+		if (zap_load_memory(convert.dataPointer.get(), ZAP_COLOR_FORMAT_BGRA32, &image, &size, &width, &height, &stride) != ZAP_ERROR_NONE) {
 			throw std::runtime_error("Failed to Load ZAP From Memory");
 		}
 
 		SCOPE_EXIT {
-			if (!freeZAP(out)) {
+			if (!freeZAP(image)) {
 				throw std::runtime_error("Failed to Free ZAP");
 			}
 		};
 
-		if (!surface.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, outWidth, outHeight, 1, out)) {
+		const int DEPTH = 1;
+
+		if (!surface.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, width, height, DEPTH, image)) {
 			throw std::runtime_error("Failed to Set Surface Image");
 		}
 	}
