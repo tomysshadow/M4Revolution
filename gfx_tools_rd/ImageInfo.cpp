@@ -3,14 +3,6 @@
 #include <stdlib.h>
 
 namespace gfx_tools {
-	typedef std::map<int, EnumPixelFormat> HINT_PIXELFORMAT_MAP;
-
-	static const HINT_PIXELFORMAT_MAP HINT_PIXELFORMAT_8_MAP = {
-		{FormatHint::HINT_NONE, PIXELFORMAT_XRGB_8888},
-		{FormatHint::HINT_ALPHA, PIXELFORMAT_A_8},
-		{FormatHint::HINT_LUMINANCE, PIXELFORMAT_L_8}
-	};
-
 	EnumPixelFormat FormatHint::GetPixelFormat(uint32_t bits, bool hasAlpha) const {
 		switch (bits) {
 			case 8:
@@ -31,6 +23,12 @@ namespace gfx_tools {
 		}
 		return EnumPixelFormat::PIXELFORMAT_UNKNOWN;
 	}
+
+	const FormatHint::HINT_PIXELFORMAT_MAP FormatHint::HINT_PIXELFORMAT_8_MAP = {
+		{HINT_NONE, PIXELFORMAT_XRGB_8888},
+		{HINT_ALPHA, PIXELFORMAT_A_8},
+		{HINT_LUMINANCE, PIXELFORMAT_L_8}
+	};
 
 	void ImageInfo::ComputeLODDimensions(DIMENSION &textureWidth, DIMENSION &textureHeight, DIMENSION &volumeExtent, LOD lod) const {
 		const DIMENSION MIN_DIMENSION = 1;

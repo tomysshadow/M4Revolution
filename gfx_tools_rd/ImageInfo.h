@@ -11,6 +11,11 @@ namespace gfx_tools {
 		int hint : 3;
 
 		EnumPixelFormat GetPixelFormat(uint32_t bits, bool hasAlpha) const;
+
+		private:
+		typedef std::map<int, EnumPixelFormat> HINT_PIXELFORMAT_MAP;
+
+		static const HINT_PIXELFORMAT_MAP HINT_PIXELFORMAT_8_MAP;
 	};
 
 	typedef unsigned char LOD;
