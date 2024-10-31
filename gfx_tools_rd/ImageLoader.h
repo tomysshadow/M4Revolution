@@ -82,18 +82,12 @@ namespace gfx_tools {
 		// which the others are built on top of
 		virtual void GFX_TOOLS_RD_CALL GetImageInfoImpEx() = 0;
 
-		typedef std::map<int, EnumPixelFormat> HINT_PIXELFORMAT_MAP;
-
-		static const HINT_PIXELFORMAT_MAP HINT_PIXELFORMAT_8_MAP;
-
-		EnumPixelFormat GetPixelFormatFromHint(uint32_t bits, bool hasAlpha) const;
-
 		RawBuffer::SIZE rawBufferTotalSize = 0;
 		LOD numberOfLod = 0;
 		RawBufferEx rawBuffers[NUMBER_OF_LOD_MAX] = {};
 		std::optional<ValidatedImageInfo> validatedImageInfoOptional = std::nullopt;
 		EnumPixelFormat enumPixelFormat = PIXELFORMAT_UNKNOWN;
-		FormatHint formatHint = { false };
+		FormatHint formatHint = { FormatHint::HINT_NONE };
 		ImageInfo uncompressedImageInfo;
 	};
 

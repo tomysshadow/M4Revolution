@@ -4,12 +4,14 @@
 
 namespace gfx_tools {
 	union FormatHint {
-		bool hasHint = false;
-		int hint;
-	};
+		static const int HINT_NONE = 0;
+		static const int HINT_ALPHA = 1;
+		static const int HINT_LUMINANCE = 2;
 
-	static const int HINT_ALPHA = 1;
-	static const int HINT_LUMINANCE = 2;
+		int hint : 3;
+
+		EnumPixelFormat GetPixelFormat(uint32_t bits, bool hasAlpha) const;
+	};
 
 	typedef unsigned char LOD;
 
@@ -30,7 +32,7 @@ namespace gfx_tools {
 		LOD numberOfLOD = 0;
 		EnumPixelFormat enumPixelFormat = EnumPixelFormat::PIXELFORMAT_UNKNOWN;
 		EnumPixelFormat requestedEnumPixelFormat = EnumPixelFormat::PIXELFORMAT_UNKNOWN;
-		FormatHint formatHint = { false };
+		FormatHint formatHint = { FormatHint::HINT_NONE };
 
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL ComputeLODDimensions(DIMENSION &textureWidth, DIMENSION &textureHeight, DIMENSION &volumeExtent, LOD lod) const;
 		GFX_TOOLS_RD_API BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetBitsPerPixel() const;

@@ -28,39 +28,6 @@ namespace gfx_tools {
 		this->enumPixelFormat = enumPixelFormat;
 	}
 
-	const ImageLoader::HINT_PIXELFORMAT_MAP ImageLoader::HINT_PIXELFORMAT_8_MAP = {
-		{HINT_ALPHA, PIXELFORMAT_A_8},
-		{HINT_LUMINANCE, PIXELFORMAT_L_8}
-	};
-
-	EnumPixelFormat ImageLoader::GetPixelFormatFromHint(uint32_t bits, bool hasAlpha) const {
-		switch (bits) {
-			case 8:
-			if (!formatHint.hasHint) {
-				return PIXELFORMAT_XRGB_8888;
-			}
-
-			{
-				// try to find the pixel format from the hint
-				// but if we don't recognize the hint it is an unknown format
-				ImageLoader::HINT_PIXELFORMAT_MAP::const_iterator hintPixelFormatMapIterator = HINT_PIXELFORMAT_8_MAP.find(formatHint.hint);
-
-				if (hintPixelFormatMapIterator != HINT_PIXELFORMAT_8_MAP.end()) {
-					return hintPixelFormatMapIterator->second;
-				}
-			}
-			break;
-			case 16:
-			return PIXELFORMAT_AL_88;
-			case 32:
-			if (hasAlpha) {
-				return PIXELFORMAT_ARGB_8888;
-			}
-			return PIXELFORMAT_XRGB_8888;
-		}
-		return EnumPixelFormat::PIXELFORMAT_UNKNOWN;
-	};
-
 	void ImageLoaderMultipleBuffer::SetHint(FormatHint formatHint) {
 		this->formatHint = formatHint;
 	}
@@ -103,8 +70,7 @@ namespace gfx_tools {
 				return;
 			}
 
-			// TODO: format hint to pixel format conversion
-			validatedImageInfoOptional.emplace(width, height, 1, GetPixelFormatFromHint(bits, hasAlpha), formatHint);
+			validatedImageInfoOptional.emplace(width, height, 1, formatHint.GetPixelFormat(bits, hasAlpha), formatHint);
 		}
 
 		bool result = true;
