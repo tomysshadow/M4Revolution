@@ -66,8 +66,8 @@ namespace gfx_tools {
 
 		const char* extension = GetExtension();
 		uint32_t bits = 0;
-		int width = 0;
-		int height = 0;
+		int textureWidth = 0;
+		int textureHeight = 0;
 		ValidatedImageInfo::SIZE_IN_BYTES sizeInBytes = 0;
 
 		if (RAW_BUFFER.uncompressed) {
@@ -77,14 +77,14 @@ namespace gfx_tools {
 			bool isAlpha = false;
 
 			try {
-				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &isAlpha, &bits, &width, &height);
+				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &isAlpha, &bits, &textureWidth, &textureHeight);
 			} catch (...) {
 				return;
 			}
 
-			validatedImageInfoOptional.emplace(width, height, VOLUME_EXTENT, formatHint.GetEnumPixelFormat(isAlpha, bits), formatHint);
+			validatedImageInfoOptional.emplace(textureWidth, textureHeight, VOLUME_EXTENT, formatHint.GetEnumPixelFormat(isAlpha, bits), formatHint);
 			bits = validatedImageInfoOptional.value().GetBitsPerPixel();
-			sizeInBytes = LOD_SIZE_IN_BYTES(bits, width, height, VOLUME_EXTENT);
+			sizeInBytes = LOD_SIZE_IN_BYTES(bits, textureWidth, textureHeight, VOLUME_EXTENT);
 		}
 
 		ValidatedImageInfo &validatedImageInfo = validatedImageInfoOptional.value();
@@ -110,13 +110,13 @@ namespace gfx_tools {
 				validatedImageInfo.SetLodSizeInBytes(i, uncompressedImageInfo.lodSizesInBytes[i]);
 			} else {
 				try {
-					M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, 0, &bits, &width, &height);
+					M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, 0, &bits, &textureWidth, &textureHeight);
 				} catch (...) {
 					return;
 				}
 
 				setLodSizeInBytesScopeExit.dismiss();
-				validatedImageInfo.SetLodSizeInBytes(i, LOD_SIZE_IN_BYTES(bits, width, height, VOLUME_EXTENT));
+				validatedImageInfo.SetLodSizeInBytes(i, LOD_SIZE_IN_BYTES(bits, textureWidth, textureHeight, VOLUME_EXTENT));
 			}
 		}
 
