@@ -1,4 +1,5 @@
 #pragma once
+#include "base_rd.h"
 #include <stdint.h>
 
 #define ARES_BASE_RD_CALL
@@ -18,10 +19,12 @@ namespace ares {
 		CLONETYPE_UNKNOWN = 0
 	};
 
-	class Resource {
+	class Resource : public ubi::RefCounted {
 		protected:
 		ARES_BASE_RD_API Resource();
 		ARES_BASE_RD_API virtual ~Resource();
+
+		char* instanceName = 0;
 
 		public:
 		ARES_BASE_RD_API Resource(Resource const &resource);

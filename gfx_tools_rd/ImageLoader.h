@@ -84,12 +84,8 @@ namespace gfx_tools {
 		virtual void GFX_TOOLS_RD_CALL GetImageInfoImpEx() = 0;
 
 		RawBuffer::SIZE rawBufferTotalSize = 0;
-		LOD numberOfLOD = 0;
-		RawBufferEx rawBuffers[NUMBER_OF_LOD_MAX] = {};
+		ubi::RefCounted* refCountedPointer = 0;
 		std::optional<ValidatedImageInfo> validatedImageInfoOptional = std::nullopt;
-		EnumPixelFormat enumPixelFormat = PIXELFORMAT_UNKNOWN;
-		FormatHint formatHint = { FormatHint::HINT_NONE };
-		ImageInfo uncompressedImageInfo;
 	};
 
 	class ImageLoaderMultipleBuffer : public ImageLoader {
@@ -152,10 +148,12 @@ namespace gfx_tools {
 		GFX_TOOLS_RD_API virtual L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE bitmapHandlePointer) = 0;
 
 		protected:
-		// TODO: the Bitmap interfaces will call ImageLoaderMultipleBuffer::GetImageInfoImpEx with the extension from their GetExtension
 		void GFX_TOOLS_RD_CALL GetImageInfoImpEx();
 
+		FormatHint formatHint = { FormatHint::HINT_NONE };
 		SIZE numberOfRawBuffers = 0;
+		RawBufferEx rawBuffers[NUMBER_OF_LOD_MAX] = {};
+		ImageInfo uncompressedImageInfo;
 	};
 
 	class ImageLoaderMultipleBufferBitmap : public ImageLoaderMultipleBuffer {

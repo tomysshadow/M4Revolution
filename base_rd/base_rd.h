@@ -33,8 +33,8 @@ namespace ubi {
 		}
 		
 		inline REF_COUNT BASE_RD_CALL Release() {
-			if (--refCount) {
-				return refCount;
+			if (refCount > 1) {
+				return --refCount;
 			}
 
 			delete this;
@@ -42,7 +42,9 @@ namespace ubi {
 		}
 
 		private:
-		REF_COUNT refCount = 1;
+		// this actually starts at zero, not one
+		// that is, it defaults to not currently in use
+		REF_COUNT refCount = 0;
 	};
 
 	class InputStream {

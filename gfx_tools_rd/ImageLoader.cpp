@@ -25,7 +25,29 @@ namespace gfx_tools {
 	}
 
 	void ImageLoader::SetPixelFormat(EnumPixelFormat enumPixelFormat) {
-		this->enumPixelFormat = enumPixelFormat;
+		if (validatedImageInfoOptional.has_value()) {
+			validatedImageInfoOptional.value().OverwritePixelFormat(enumPixelFormat);
+		}
+	}
+
+	ImageLoader::~ImageLoader() {
+		if (refCountedPointer) {
+			refCountedPointer->Release();
+		}
+	}
+
+	ImageLoaderMultipleBuffer::~ImageLoaderMultipleBuffer() {
+		for (LOD i = 0; i < numberOfRawBuffers; i++) {
+			RawBufferEx &rawBuffer = rawBuffers[i];
+
+			if (rawBuffer.owner && rawBuffer.pointer) {
+				M4Image::allocator.freeSafe(rawBuffer.pointer);
+			}
+		}
+	}
+
+	ImageLoaderMultipleBuffer::SIZE ImageLoaderMultipleBuffer::GetNumberOfRawBuffers() {
+		return numberOfRawBuffers;
 	}
 
 	void ImageLoaderMultipleBuffer::SetHint(FormatHint formatHint) {
@@ -89,13 +111,13 @@ namespace gfx_tools {
 		}
 
 		ValidatedImageInfo &validatedImageInfo = validatedImageInfoOptional.value();
-		validatedImageInfo.SetNumberOfLOD(numberOfLOD);
+		validatedImageInfo.SetNumberOfLOD((LOD)numberOfRawBuffers);
 		validatedImageInfo.SetLodSizeInBytes(MAIN_LOD, sizeInBytes);
 
 		// the following should fail only if we fail to get info
 		// we are allowed to have buffers with null pointers, with zero sized images
 		// it is only a failure if there is an invalid image
-		for (LOD i = MAIN_LOD + 1; i < numberOfLOD; i++) {
+		for (LOD i = MAIN_LOD + 1; i < numberOfRawBuffers; i++) {
 			MAKE_SCOPE_EXIT(setLodSizeInBytesScopeExit) {
 				validatedImageInfo.SetLodSizeInBytes(i, 0);
 			};
