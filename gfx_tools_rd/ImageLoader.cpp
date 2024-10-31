@@ -48,7 +48,9 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::GetImageInfoImpEx() {
-		validatedImageInfoOptional = std::nullopt;
+		MAKE_SCOPE_EXIT(validatedImageInfoOptionalScopeExit) {
+			validatedImageInfoOptional = std::nullopt;
+		};
 
 		const RawBufferEx &RAW_BUFFER = rawBuffers[0];
 
@@ -110,7 +112,6 @@ namespace gfx_tools {
 				try {
 					M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, 0, &bits, &width, &height);
 				} catch (...) {
-					validatedImageInfoOptional = std::nullopt;
 					return;
 				}
 
@@ -118,5 +119,7 @@ namespace gfx_tools {
 				validatedImageInfo.SetLodSizeInBytes(i, LOD_SIZE_IN_BYTES(bits, width, height, VOLUME_EXTENT));
 			}
 		}
+
+		validatedImageInfoOptionalScopeExit.dismiss();
 	}
 }
