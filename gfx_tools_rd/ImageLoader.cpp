@@ -70,7 +70,7 @@ namespace gfx_tools {
 				return;
 			}
 
-			validatedImageInfoOptional.emplace(width, height, 1, formatHint.GetPixelFormat(bits, hasAlpha), formatHint);
+			validatedImageInfoOptional.emplace(width, height, 1, formatHint.GetEnumPixelFormat(bits, hasAlpha), formatHint);
 		}
 
 		bool result = true;
