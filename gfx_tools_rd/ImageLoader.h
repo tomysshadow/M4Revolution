@@ -5,6 +5,7 @@
 #include "RawBuffer.h"
 #include "ImageInfo.h"
 #include "PixelFormat.h"
+#include "FormatHint.h"
 #include <map>
 #include <optional>
 #include <stdint.h>

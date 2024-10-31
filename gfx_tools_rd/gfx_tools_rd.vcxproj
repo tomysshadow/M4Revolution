@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Configuration.cpp" />
+    <ClCompile Include="FormatHint.cpp" />
     <ClCompile Include="ImageInfo.cpp" />
     <ClCompile Include="ImageLoader.cpp" />
     <ClCompile Include="main.cpp" />
@@ -167,6 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Configuration.h" />
+    <ClInclude Include="FormatHint.h" />
     <ClInclude Include="ImageInfo.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="ImageLoader.h" />
