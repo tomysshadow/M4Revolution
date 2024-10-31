@@ -33,14 +33,17 @@ namespace gfx_tools {
 	}
 
 	bool ImageLoaderMultipleBuffer::GetImageInfoImp(ValidatedImageInfo &validatedImageInfo) {
+		MAKE_SCOPE_EXIT(validatedImageInfoScopeExit) {
+			validatedImageInfo = ValidatedImageInfo();
+		};
+
 		GetImageInfoImpEx();
 
 		if (validatedImageInfoOptional.has_value()) {
 			validatedImageInfo = validatedImageInfoOptional.value();
+			validatedImageInfoScopeExit.dismiss();
 			return true;
 		}
-
-		validatedImageInfo = ValidatedImageInfo();
 		return false;
 	}
 
@@ -54,15 +57,20 @@ namespace gfx_tools {
 			return;
 		}
 
+		const size_t BYTES = 3;
 		const int VOLUME_EXTENT = 1;
+
+		#define LOD_SIZE_IN_BYTES(bits, textureWidth, textureHeight, volumeExtent) (((bits) >> BYTES) * (textureWidth) * (textureHeight) * (volumeExtent))
 
 		const char* extension = GetExtension();
 		uint32_t bits = 0;
 		int width = 0;
 		int height = 0;
+		ValidatedImageInfo::SIZE_IN_BYTES sizeInBytes = 0;
 
 		if (RAW_BUFFER.uncompressed) {
 			validatedImageInfoOptional.emplace(uncompressedImageInfo);
+			sizeInBytes = uncompressedImageInfo.lodSizesInBytes[0];
 		} else {
 			bool isAlpha = false;
 
@@ -73,25 +81,20 @@ namespace gfx_tools {
 			}
 
 			validatedImageInfoOptional.emplace(width, height, VOLUME_EXTENT, formatHint.GetEnumPixelFormat(isAlpha, bits), formatHint);
+			bits = validatedImageInfoOptional.value().GetBitsPerPixel();
+			sizeInBytes = LOD_SIZE_IN_BYTES(bits, width, height, VOLUME_EXTENT);
 		}
 
-		bool result = true;
-
-		const size_t BYTES = 3;
-
-		#define LOD_SIZE_IN_BYTES(bits, textureWidth, textureHeight, volumeExtent) (((bits) >> BYTES) * (textureWidth) * (textureHeight) * (volumeExtent))
-
 		ValidatedImageInfo &validatedImageInfo = validatedImageInfoOptional.value();
-		validatedImageInfo.SetNumberOfLOD(numberOfLod);
-		bits = validatedImageInfo.GetBitsPerPixel();
-		validatedImageInfo.SetLodSizeInBytes(0, LOD_SIZE_IN_BYTES(bits, width, height, VOLUME_EXTENT));
+		validatedImageInfo.SetNumberOfLOD(numberOfLOD);
+		validatedImageInfo.SetLodSizeInBytes(0, sizeInBytes);
 
 		// the following should fail only if we fail to get info
 		// we are allowed to have buffers with null pointers, with zero sized images
 		// it is only a failure if there is an invalid image
-		for (LOD i = 1; i < numberOfLod; i++) {
+		for (LOD i = 1; i < numberOfLOD; i++) {
 			MAKE_SCOPE_EXIT(setLodSizeInBytesScopeExit) {
-				validatedImageInfo.SetLodSizeInBytes(i++, 0);
+				validatedImageInfo.SetLodSizeInBytes(i, 0);
 			};
 
 			const RawBufferEx &RAW_BUFFER = rawBuffers[i];

@@ -169,6 +169,10 @@ namespace gfx_tools {
 		return *this;
 	}
 
+	LOD ValidatedImageInfo::GetNumberOfLOD() const {
+		return numberOfLOD;
+	}
+
 	ImageInfo::BITS_PER_PIXEL ValidatedImageInfo::GetBitsPerPixel() const {
 		return ImageInfo::GetBitsPerPixel();
 	}

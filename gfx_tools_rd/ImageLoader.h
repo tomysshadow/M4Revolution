@@ -84,7 +84,7 @@ namespace gfx_tools {
 		virtual void GFX_TOOLS_RD_CALL GetImageInfoImpEx() = 0;
 
 		RawBuffer::SIZE rawBufferTotalSize = 0;
-		LOD numberOfLod = 0;
+		LOD numberOfLOD = 0;
 		RawBufferEx rawBuffers[NUMBER_OF_LOD_MAX] = {};
 		std::optional<ValidatedImageInfo> validatedImageInfoOptional = std::nullopt;
 		EnumPixelFormat enumPixelFormat = PIXELFORMAT_UNKNOWN;
