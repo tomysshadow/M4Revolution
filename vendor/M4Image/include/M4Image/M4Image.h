@@ -10,12 +10,25 @@ class M4Image {
         typedef void (*FreeProc)(void* block);
         typedef void* (*ReallocProc)(void* block, size_t size);
 
-        M4IMAGE_API constexpr Allocator() = default;
-        M4IMAGE_API constexpr Allocator(MallocProc mallocProc, FreeProc freeProc, ReallocProc reallocProc);
-        M4IMAGE_API void* M4IMAGE_CALL mallocSafe(size_t size) const;
+        constexpr inline Allocator() = default;
+
+        constexpr inline Allocator(MallocProc mallocProc, FreeProc freeProc, ReallocProc reallocProc)
+            : mallocProc(mallocProc),
+            freeProc(freeProc),
+            reallocProc(reallocProc) {
+        }
+
+        inline void* M4IMAGE_CALL mallocSafe(size_t size) const {
+            void* block = mallocProc(size);
+
+            if (!block) {
+                throw std::bad_alloc();
+            }
+            return block;
+        }
 
         template <typename Block>
-        void M4IMAGE_CALL freeSafe(Block* &block) const {
+        inline void M4IMAGE_CALL freeSafe(Block* &block) const {
             if (block) {
                 freeProc(block);
                 block = 0;
@@ -23,7 +36,7 @@ class M4Image {
         }
 
         template <typename Block>
-        void M4IMAGE_CALL reallocSafe(Block* &block, size_t size) const {
+        inline void M4IMAGE_CALL reallocSafe(Block* &block, size_t size) const {
             if (!size) {
                 throw std::invalid_argument("size must not be zero");
             }
