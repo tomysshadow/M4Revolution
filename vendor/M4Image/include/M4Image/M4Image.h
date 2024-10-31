@@ -4,15 +4,15 @@
 
 class M4Image {
     public:
-    class M4IMAGE_API Allocator {
+    class Allocator {
         public:
         typedef void* (*MallocProc)(size_t size);
         typedef void (*FreeProc)(void* block);
         typedef void* (*ReallocProc)(void* block, size_t size);
 
-        constexpr Allocator() = default;
-        constexpr Allocator(MallocProc mallocProc, FreeProc freeProc, ReallocProc reallocProc);
-        void* M4IMAGE_CALL mallocSafe(size_t size) const;
+        M4IMAGE_API constexpr Allocator() = default;
+        M4IMAGE_API constexpr Allocator(MallocProc mallocProc, FreeProc freeProc, ReallocProc reallocProc);
+        M4IMAGE_API void* M4IMAGE_CALL mallocSafe(size_t size) const;
 
         template <typename Block>
         void M4IMAGE_CALL freeSafe(Block* &block) const {

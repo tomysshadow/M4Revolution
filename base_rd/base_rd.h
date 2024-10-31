@@ -24,7 +24,7 @@ namespace ubi {
 		BASE_RD_API static ErrorManager& BASE_RD_CALL GetSingletonInstance();
 	};
 
-	class BASE_RD_API RefCounted {
+	class RefCounted {
 		public:
 		typedef unsigned int REF_COUNT;
 		
