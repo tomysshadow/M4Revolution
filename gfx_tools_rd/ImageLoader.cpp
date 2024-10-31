@@ -95,7 +95,7 @@ namespace gfx_tools {
 		// the following should fail only if we fail to get info
 		// we are allowed to have buffers with null pointers, with zero sized images
 		// it is only a failure if there is an invalid image
-		for (LOD i = 1; i < numberOfLOD; i++) {
+		for (LOD i = MAIN_LOD + 1; i < numberOfLOD; i++) {
 			MAKE_SCOPE_EXIT(setLodSizeInBytesScopeExit) {
 				validatedImageInfo.SetLodSizeInBytes(i, 0);
 			};
