@@ -27,10 +27,7 @@ namespace gfx_tools {
 			case 16:
 			return PIXELFORMAT_AL_88;
 			case 32:
-			if (hasAlpha) {
-				return PIXELFORMAT_ARGB_8888;
-			}
-			return PIXELFORMAT_XRGB_8888;
+			return hasAlpha ? PIXELFORMAT_ARGB_8888 : PIXELFORMAT_XRGB_8888;
 		}
 		return EnumPixelFormat::PIXELFORMAT_UNKNOWN;
 	}
