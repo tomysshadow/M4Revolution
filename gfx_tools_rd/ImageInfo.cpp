@@ -132,10 +132,7 @@ namespace gfx_tools {
 		this->requestedEnumPixelFormat = DEFAULT_ENUM_PIXEL_FORMAT;
 	}
 
-	ValidatedImageInfo::ValidatedImageInfo() {
-	}
-
-	ValidatedImageInfo::ValidatedImageInfo(
+	void ValidatedImageInfo::create(
 		DIMENSION textureWidth,
 		DIMENSION textureHeight,
 		DIMENSION volumeExtent,
@@ -145,6 +142,23 @@ namespace gfx_tools {
 		SetPixelFormat(enumPixelFormat);
 		SetDimensions(textureWidth, textureHeight, volumeExtent);
 		SetHint(formatHint);
+	}
+
+	ValidatedImageInfo::ValidatedImageInfo() {
+	}
+
+	ValidatedImageInfo::ValidatedImageInfo(const ImageInfo &imageInfo) {
+		create(imageInfo.textureWidth, imageInfo.textureHeight, imageInfo.volumeExtent, imageInfo.enumPixelFormat, imageInfo.formatHint);
+	}
+
+	ValidatedImageInfo::ValidatedImageInfo(
+		DIMENSION textureWidth,
+		DIMENSION textureHeight,
+		DIMENSION volumeExtent,
+		EnumPixelFormat enumPixelFormat,
+		FormatHint formatHint
+	) {
+		create(textureWidth, textureHeight, volumeExtent, enumPixelFormat, formatHint);
 	}
 
 	void ValidatedImageInfo::OverwritePixelFormat(EnumPixelFormat enumPixelFormat) {

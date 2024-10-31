@@ -5,6 +5,7 @@
 #include "RawBuffer.h"
 #include "ImageInfo.h"
 #include "PixelFormat.h"
+#include <map>
 #include <optional>
 #include <stdint.h>
 
@@ -76,12 +77,16 @@ namespace gfx_tools {
 		GFX_TOOLS_RD_API virtual L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE bitmapHandlePointer) = 0;
 
 		protected:
+		typedef std::map<int, EnumPixelFormat> HINT_PIXELFORMAT_MAP;
+
+		static const HINT_PIXELFORMAT_MAP HINT_PIXELFORMAT_8_MAP;
+
 		// these methods do not exist on the original ImageLoader
 		// they are my own "how it should've been done" methods
 		// which the others are built on top of
-		virtual void GFX_TOOLS_RD_CALL GetImageInfoImpEx(const char* extension = 0) = 0;
+		virtual void GFX_TOOLS_RD_CALL GetImageInfoImpEx() = 0;
 
-		EnumPixelFormat GetEnumPixelFormatFromFormatHint(uint32_t bits, bool hasAlpha) const;
+		EnumPixelFormat GetPixelFormatFromHint(uint32_t bits, bool hasAlpha) const;
 
 		RawBuffer::SIZE rawBufferTotalSize = 0;
 		LOD numberOfLod = 0;
@@ -89,6 +94,7 @@ namespace gfx_tools {
 		std::optional<ValidatedImageInfo> validatedImageInfoOptional = std::nullopt;
 		EnumPixelFormat enumPixelFormat = PIXELFORMAT_UNKNOWN;
 		FormatHint formatHint = { false };
+		ImageInfo uncompressedImageInfo;
 	};
 
 	class ImageLoaderMultipleBuffer : public ImageLoader {
@@ -152,7 +158,7 @@ namespace gfx_tools {
 
 		protected:
 		// TODO: the Bitmap interfaces will call ImageLoaderMultipleBuffer::GetImageInfoImpEx with the extension from their GetExtension
-		void GFX_TOOLS_RD_CALL GetImageInfoImpEx(const char* extension = 0);
+		void GFX_TOOLS_RD_CALL GetImageInfoImpEx();
 
 		SIZE numberOfRawBuffers = 0;
 	};

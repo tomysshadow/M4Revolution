@@ -12,6 +12,6 @@ namespace gfx_tools {
 	};
 
 	struct RawBufferEx : public RawBuffer {
-		bool compressed = true;
+		bool uncompressed = false;
 	};
 }

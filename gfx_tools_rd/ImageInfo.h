@@ -4,12 +4,12 @@
 
 namespace gfx_tools {
 	union FormatHint {
-		bool set = false;
-		int value;
+		bool hasHint = false;
+		int hint;
 	};
 
-	static const int FORMAT_HINT_VALUE_ALPHA = 1;
-	static const int FORMAT_HINT_VALUE_LUMINANCE = 2;
+	static const int HINT_ALPHA = 1;
+	static const int HINT_LUMINANCE = 2;
 
 	typedef unsigned char LOD;
 
@@ -48,10 +48,19 @@ namespace gfx_tools {
 		void GFX_TOOLS_RD_CALL SetDimensions(DIMENSION textureWidth, DIMENSION textureHeight, DIMENSION volumeExtent);
 		void GFX_TOOLS_RD_CALL SetPixelFormat(EnumPixelFormat enumPixelFormat);
 
+		void create(
+			DIMENSION textureWidth,
+			DIMENSION textureHeight,
+			DIMENSION volumeExtent,
+			EnumPixelFormat enumPixelFormat,
+			FormatHint formatHint
+		);
+
 		public:
 		typedef unsigned long SIZE_IN_BYTES;
 
 		GFX_TOOLS_RD_API ValidatedImageInfo();
+		GFX_TOOLS_RD_API ValidatedImageInfo(const ImageInfo &imageInfo);
 
 		GFX_TOOLS_RD_API ValidatedImageInfo(
 			DIMENSION textureWidth,

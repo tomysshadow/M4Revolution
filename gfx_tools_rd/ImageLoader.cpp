@@ -28,6 +28,39 @@ namespace gfx_tools {
 		this->enumPixelFormat = enumPixelFormat;
 	}
 
+	const ImageLoader::HINT_PIXELFORMAT_MAP ImageLoader::HINT_PIXELFORMAT_8_MAP = {
+		{HINT_ALPHA, PIXELFORMAT_A_8},
+		{HINT_LUMINANCE, PIXELFORMAT_L_8}
+	};
+
+	EnumPixelFormat ImageLoader::GetPixelFormatFromHint(uint32_t bits, bool hasAlpha) const {
+		switch (bits) {
+			case 8:
+			if (!formatHint.hasHint) {
+				return PIXELFORMAT_XRGB_8888;
+			}
+
+			{
+				// try to find the pixel format from the hint
+				// but if we don't recognize the hint it is an unknown format
+				ImageLoader::HINT_PIXELFORMAT_MAP::const_iterator hintPixelFormatMapIterator = HINT_PIXELFORMAT_8_MAP.find(formatHint.hint);
+
+				if (hintPixelFormatMapIterator != HINT_PIXELFORMAT_8_MAP.end()) {
+					return hintPixelFormatMapIterator->second;
+				}
+			}
+			break;
+			case 16:
+			return PIXELFORMAT_AL_88;
+			case 32:
+			if (hasAlpha) {
+				return PIXELFORMAT_ARGB_8888;
+			}
+			return PIXELFORMAT_XRGB_8888;
+		}
+		return EnumPixelFormat::PIXELFORMAT_UNKNOWN;
+	};
+
 	void ImageLoaderMultipleBuffer::SetHint(FormatHint formatHint) {
 		this->formatHint = formatHint;
 	}
@@ -44,7 +77,7 @@ namespace gfx_tools {
 		return false;
 	}
 
-	void ImageLoaderMultipleBuffer::GetImageInfoImpEx(const char* extension) {
+	void ImageLoaderMultipleBuffer::GetImageInfoImpEx() {
 		validatedImageInfoOptional = std::nullopt;
 
 		const RawBufferEx &RAW_BUFFER = rawBuffers[0];
@@ -54,20 +87,24 @@ namespace gfx_tools {
 			return;
 		}
 
-		// TODO: getInfo will only work on image formats, so we'll need to store this data on the raw buffer when uncompressed
-		if (!RAW_BUFFER.compressed) {
-			return;
-		}
-
+		const char* extension = GetExtension();
 		uint32_t bits = 0;
-		bool hasAlpha = false;
 		int width = 0;
 		int height = 0;
 
-		try {
-			M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &bits, &hasAlpha, &width, &height);
-		} catch (...) {
-			return;
+		if (RAW_BUFFER.uncompressed) {
+			validatedImageInfoOptional.emplace(uncompressedImageInfo);
+		} else {
+			bool hasAlpha = false;
+
+			try {
+				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &bits, &hasAlpha, &width, &height);
+			} catch (...) {
+				return;
+			}
+
+			// TODO: format hint to pixel format conversion
+			validatedImageInfoOptional.emplace(width, height, 1, GetPixelFormatFromHint(bits, hasAlpha), formatHint);
 		}
 
 		bool result = true;
@@ -76,10 +113,7 @@ namespace gfx_tools {
 
 		#define LOD_SIZE_IN_BYTES(bits, width, height) (((bits) >> BYTES) * (width) * (height))
 
-		// TODO: format hint to pixel format conversion
-		validatedImageInfoOptional.emplace(width, height, 1, GetEnumPixelFormatFromFormatHint(bits, hasAlpha), formatHint);
 		ValidatedImageInfo &validatedImageInfo = validatedImageInfoOptional.value();
-
 		validatedImageInfo.SetNumberOfLOD(numberOfLod);
 		bits = validatedImageInfo.GetBitsPerPixel();
 		validatedImageInfo.SetLodSizeInBytes(0, LOD_SIZE_IN_BYTES(bits, width, height));
@@ -87,9 +121,7 @@ namespace gfx_tools {
 		// the following should fail only if we fail to get info
 		// we are allowed to have buffers with null pointers, with zero sized images
 		// it is only a failure if there is an invalid image
-		LOD i = 1;
-
-		while (i < numberOfLod) {
+		for (LOD i = 1; i < numberOfLod; i++) {
 			MAKE_SCOPE_EXIT(setLodSizeInBytesScopeExit) {
 				validatedImageInfo.SetLodSizeInBytes(i++, 0);
 			};
@@ -100,20 +132,20 @@ namespace gfx_tools {
 				continue;
 			}
 
-			// TODO
-			if (!RAW_BUFFER.compressed) {
-				continue;
-			}
+			if (RAW_BUFFER.uncompressed) {
+				setLodSizeInBytesScopeExit.dismiss();
+				validatedImageInfo.SetLodSizeInBytes(i, uncompressedImageInfo.lodSizesInBytes[i]);
+			} else {
+				try {
+					M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &bits, 0, &width, &height);
+				} catch (...) {
+					validatedImageInfoOptional = std::nullopt;
+					return;
+				}
 
-			try {
-				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &bits, 0, &width, &height);
-			} catch (...) {
-				validatedImageInfoOptional = std::nullopt;
-				return;
+				setLodSizeInBytesScopeExit.dismiss();
+				validatedImageInfo.SetLodSizeInBytes(i, LOD_SIZE_IN_BYTES(bits, width, height));
 			}
-
-			setLodSizeInBytesScopeExit.dismiss();
-			validatedImageInfo.SetLodSizeInBytes(i++, LOD_SIZE_IN_BYTES(bits, width, height));
 		}
 	}
 }
