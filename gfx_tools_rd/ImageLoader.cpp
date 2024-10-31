@@ -52,10 +52,11 @@ namespace gfx_tools {
 			validatedImageInfoOptional = std::nullopt;
 		};
 
-		const RawBufferEx &RAW_BUFFER = rawBuffers[0];
+		const LOD MAIN_LOD = 0;
+		const RawBufferEx &MAIN_RAW_BUFFER = rawBuffers[MAIN_LOD];
 
-		// the initial LOD is required
-		if (!RAW_BUFFER.pointer) {
+		// the main raw buffer's pointer is required
+		if (!MAIN_RAW_BUFFER.pointer) {
 			return;
 		}
 
@@ -70,14 +71,14 @@ namespace gfx_tools {
 		int textureHeight = 0;
 		ValidatedImageInfo::SIZE_IN_BYTES sizeInBytes = 0;
 
-		if (RAW_BUFFER.uncompressed) {
+		if (MAIN_RAW_BUFFER.uncompressed) {
 			validatedImageInfoOptional.emplace(uncompressedImageInfo);
-			sizeInBytes = uncompressedImageInfo.lodSizesInBytes[0];
+			sizeInBytes = uncompressedImageInfo.lodSizesInBytes[MAIN_LOD];
 		} else {
 			bool isAlpha = false;
 
 			try {
-				M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, &isAlpha, &bits, &textureWidth, &textureHeight);
+				M4Image::getInfo(MAIN_RAW_BUFFER.pointer, MAIN_RAW_BUFFER.size, extension, &isAlpha, &bits, &textureWidth, &textureHeight);
 			} catch (...) {
 				return;
 			}
@@ -89,7 +90,7 @@ namespace gfx_tools {
 
 		ValidatedImageInfo &validatedImageInfo = validatedImageInfoOptional.value();
 		validatedImageInfo.SetNumberOfLOD(numberOfLOD);
-		validatedImageInfo.SetLodSizeInBytes(0, sizeInBytes);
+		validatedImageInfo.SetLodSizeInBytes(MAIN_LOD, sizeInBytes);
 
 		// the following should fail only if we fail to get info
 		// we are allowed to have buffers with null pointers, with zero sized images
@@ -106,8 +107,8 @@ namespace gfx_tools {
 			}
 
 			if (RAW_BUFFER.uncompressed) {
-				setLodSizeInBytesScopeExit.dismiss();
 				validatedImageInfo.SetLodSizeInBytes(i, uncompressedImageInfo.lodSizesInBytes[i]);
+				setLodSizeInBytesScopeExit.dismiss();
 			} else {
 				try {
 					M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, 0, &bits, &textureWidth, &textureHeight);
@@ -115,8 +116,8 @@ namespace gfx_tools {
 					return;
 				}
 
-				setLodSizeInBytesScopeExit.dismiss();
 				validatedImageInfo.SetLodSizeInBytes(i, LOD_SIZE_IN_BYTES(bits, textureWidth, textureHeight, VOLUME_EXTENT));
+				setLodSizeInBytesScopeExit.dismiss();
 			}
 		}
 
