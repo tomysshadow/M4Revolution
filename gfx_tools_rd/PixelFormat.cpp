@@ -1,4 +1,5 @@
 #include "PixelFormat.h"
+#include <map>
 
 namespace gfx_tools {
 	PixelFormat PixelFormat::m_formatDescriptionTable[] = {

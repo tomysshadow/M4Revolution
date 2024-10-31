@@ -1,6 +1,5 @@
 #pragma once
 #include "shared.h"
-#include <map>
 
 namespace gfx_tools {
 	enum EnumPixelFormat {

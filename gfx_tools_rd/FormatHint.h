@@ -1,6 +1,7 @@
 #pragma once
 #include "shared.h"
 #include "PixelFormat.h"
+#include <map>
 
 namespace gfx_tools {
 	union FormatHint {
