@@ -25,7 +25,7 @@ namespace gfx_tools {
 			GFX_TOOLS_RD_API ResizeInfo();
 			GFX_TOOLS_RD_API ResizeInfo(int width, int height, size_t stride, L_INT qFactor);
 
-			inline float getQuality(L_INT qFactor) {
+			static inline float getQuality(L_INT qFactor) {
 				const L_INT Q_FACTOR_HIGHEST_QUALITY = 2;
 				const L_INT Q_FACTOR_MOST_COMPRESSION = 255;
 
