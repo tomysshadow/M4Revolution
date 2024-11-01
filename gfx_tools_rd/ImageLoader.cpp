@@ -101,7 +101,7 @@ namespace gfx_tools {
 			return;
 		}
 
-		LoadLOD(RAW_BUFFER, IMAGE_INFO, pointer, stride);
+		LoadRawBuffer(RAW_BUFFER, IMAGE_INFO, pointer, stride);
 	}
 
 	void ImageLoaderMultipleBuffer::ResizeLOD(
@@ -204,7 +204,7 @@ namespace gfx_tools {
 		size_t m4ImageStride = RAW_BUFFER.stride;
 
 		if (m4ImageStride) {
-			SaveLOD(RAW_BUFFER, pointer, size);
+			SaveRawBuffer(RAW_BUFFER, pointer, size);
 			sizeScopeExit.dismiss();
 			pointerScopeExit.dismiss();
 			return;
@@ -256,7 +256,17 @@ namespace gfx_tools {
 		return SUCCESS;
 	}
 
-	void ImageLoaderMultipleBuffer::LoadLOD(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) {
+	void ImageLoaderMultipleBuffer::GetRawBufferInfo(
+		const RawBufferEx &rawBuffer,
+		bool* isAlphaPointer,
+		uint32_t* bitsPointer,
+		int* textureWidthPointer,
+		int* textureHeightPointer
+	) {
+		M4Image::getInfo(rawBuffer.pointer, rawBuffer.size, GetExtension(), isAlphaPointer, bitsPointer, textureWidthPointer, textureHeightPointer);
+	}
+
+	void ImageLoaderMultipleBuffer::LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) {
 		size_t m4ImageStride = stride;
 
 		M4Image m4Image(
@@ -270,7 +280,7 @@ namespace gfx_tools {
 		m4Image.load(rawBuffer.pointer, rawBuffer.size, GetExtension());
 	}
 
-	void ImageLoaderMultipleBuffer::SaveLOD(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
+	void ImageLoaderMultipleBuffer::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
 		size_t m4ImageStride = rawBuffer.stride;
 
 		const M4Image M4_IMAGE(
@@ -317,7 +327,7 @@ namespace gfx_tools {
 			bool isAlpha = false;
 
 			try {
-				M4Image::getInfo(MAIN_RAW_BUFFER.pointer, MAIN_RAW_BUFFER.size, extension, &isAlpha, &bits, &textureWidth, &textureHeight);
+				GetRawBufferInfo(MAIN_RAW_BUFFER, &isAlpha, &bits, &textureWidth, &textureHeight);
 			} catch (...) {
 				return;
 			}
@@ -350,7 +360,7 @@ namespace gfx_tools {
 				setLodSizeInBytesScopeExit.dismiss();
 			} else {
 				try {
-					M4Image::getInfo(RAW_BUFFER.pointer, RAW_BUFFER.size, extension, 0, &bits, &textureWidth, &textureHeight);
+					GetRawBufferInfo(RAW_BUFFER, 0, &bits, &textureWidth, &textureHeight);
 				} catch (...) {
 					return;
 				}
@@ -398,7 +408,33 @@ namespace gfx_tools {
 		return 0;
 	}
 
-	void ImageLoaderMultipleBufferZAP::LoadLOD(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) {
+	void ImageLoaderMultipleBufferZAP::GetRawBufferInfo(
+		const RawBufferEx &rawBuffer,
+		bool* isAlphaPointer,
+		uint32_t* bitsPointer,
+		int* textureWidthPointer,
+		int* textureHeightPointer
+	) {
+		if (isAlphaPointer) {
+			const bool ZAP_IS_ALPHA = true;
+
+			*isAlphaPointer = ZAP_IS_ALPHA;
+		}
+
+		if (bitsPointer) {
+			const uint32_t ZAP_BITS = 32;
+
+			*bitsPointer = ZAP_BITS;
+		}
+
+		zap_error_t err = zap_get_info(rawBuffer.pointer, textureWidthPointer, textureHeightPointer);
+
+		if (err != ZAP_ERROR_NONE) {
+			throw std::runtime_error("Failed to Get ZAP Info");
+		}
+	}
+
+	void ImageLoaderMultipleBufferZAP::LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) {
 		zap_size_t zapStride = stride;
 		zap_size_t zapSize = 0;
 
@@ -417,7 +453,7 @@ namespace gfx_tools {
 		}
 	}
 
-	void ImageLoaderMultipleBufferZAP::SaveLOD(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
+	void ImageLoaderMultipleBufferZAP::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
 		size_t zapStride = rawBuffer.stride;
 		zap_size_t zapSize = 0;
 

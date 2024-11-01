@@ -77,8 +77,16 @@ namespace gfx_tools {
 		// these methods do not exist on the original ImageLoader
 		// they are my own "how it should've been done" methods
 		// which the others are built on top of
-		virtual void GFX_TOOLS_RD_CALL LoadLOD(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) = 0;
-		virtual void GFX_TOOLS_RD_CALL SaveLOD(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) = 0;
+		virtual void GFX_TOOLS_RD_CALL GetRawBufferInfo(
+			const RawBufferEx &rawBuffer,
+			bool* isAlphaPointer,
+			uint32_t* bitsPointer,
+			int* widthPointer,
+			int* heightPointer
+		) = 0;
+
+		virtual void GFX_TOOLS_RD_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) = 0;
+		virtual void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) = 0;
 		virtual void GFX_TOOLS_RD_CALL GetImageInfoImpEx() = 0;
 
 		virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
@@ -148,8 +156,16 @@ namespace gfx_tools {
 		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer);
 
 		protected:
-		void GFX_TOOLS_RD_CALL LoadLOD(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride);
-		void GFX_TOOLS_RD_CALL SaveLOD(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size);
+		void GFX_TOOLS_RD_CALL GetRawBufferInfo(
+			const RawBufferEx &rawBuffer,
+			bool* isAlphaPointer,
+			uint32_t* bitsPointer,
+			int* textureWidthPointer,
+			int* textureHeightPointer
+		);
+
+		void GFX_TOOLS_RD_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride);
+		void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size);
 		void GFX_TOOLS_RD_CALL GetImageInfoImpEx();
 
 		virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
@@ -170,8 +186,16 @@ namespace gfx_tools {
 		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
 
 		protected:
-		void GFX_TOOLS_RD_CALL LoadLOD(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride);
-		void GFX_TOOLS_RD_CALL SaveLOD(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size);
+		void GFX_TOOLS_RD_CALL GetRawBufferInfo(
+			const RawBufferEx &rawBuffer,
+			bool* isAlphaPointer,
+			uint32_t* bitsPointer,
+			int* textureWidthPointer,
+			int* textureHeightPointer
+		);
+
+		void GFX_TOOLS_RD_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride);
+		void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size);
 	};
 
 	class ImageLoaderMultipleBufferTGA : public ImageLoaderMultipleBuffer {
