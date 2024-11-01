@@ -16,13 +16,13 @@ namespace gfx_tools {
 	};
 
 	struct RawBufferEx : public RawBuffer {
-		struct LoadedInfo {
+		struct ResizeInfo {
 			int width = 0;
 			int height = 0;
 			size_t stride = 0;
 			float quality = 0.90f;
 
-			GFX_TOOLS_RD_API LoadedInfo(int width, int height, size_t stride, L_INT qFactor);
+			GFX_TOOLS_RD_API ResizeInfo(int width, int height, size_t stride, L_INT qFactor);
 
 			inline float getQuality(L_INT qFactor) {
 				if (qFactor < 2) {
@@ -32,10 +32,10 @@ namespace gfx_tools {
 			}
 		};
 
-		std::optional<LoadedInfo> loadedInfoOptional = std::nullopt;
+		std::optional<ResizeInfo> resizeInfoOptional = std::nullopt;
 
 		GFX_TOOLS_RD_API RawBufferEx();
-		GFX_TOOLS_RD_API RawBufferEx(POINTER pointer, SIZE size, bool owner, const std::optional<LoadedInfo> &loadedInfoOptional = std::nullopt);
-		GFX_TOOLS_RD_API RawBufferEx(const RawBuffer &rawBuffer, const std::optional<LoadedInfo> &loadedInfoOptional = std::nullopt);
+		GFX_TOOLS_RD_API RawBufferEx(POINTER pointer, SIZE size, bool owner, const std::optional<ResizeInfo> &resizeInfoOptional = std::nullopt);
+		GFX_TOOLS_RD_API RawBufferEx(const RawBuffer &rawBuffer, const std::optional<ResizeInfo> &resizeInfoOptional = std::nullopt);
 	};
 }

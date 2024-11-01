@@ -76,16 +76,16 @@ namespace gfx_tools {
 			throw std::invalid_argument("rows must not be less than Texture Height");
 		}
 
-		if (RAW_BUFFER.loadedInfoOptional.has_value()) {
-			const RawBufferEx::LoadedInfo &LOADED_INFO = RAW_BUFFER.loadedInfoOptional.value();
+		if (RAW_BUFFER.resizeInfoOptional.has_value()) {
+			const RawBufferEx::ResizeInfo &RESIZE_INFO = RAW_BUFFER.resizeInfoOptional.value();
 
-			size_t m4ImageStride = LOADED_INFO.stride;
+			size_t m4ImageStride = RESIZE_INFO.stride;
 
 			const M4Image RAW_BUFFER_M4_IMAGE(
-				LOADED_INFO.width,
-				LOADED_INFO.height,
+				RESIZE_INFO.width,
+				RESIZE_INFO.height,
 				m4ImageStride,
-				loadedImageInfo.GetRequestedColorFormat(),
+				resizeImageInfo.GetRequestedColorFormat(),
 				RAW_BUFFER.pointer
 			);
 
@@ -137,26 +137,26 @@ namespace gfx_tools {
 
 		m4ImageStride = 0;
 
-		M4Image loadedM4Image(
+		M4Image resizeM4Image(
 			resizeTextureWidth,
 			resizeTextureHeight,
 			m4ImageStride,
 			imageInfo.GetRequestedColorFormat()
 		);
 
-		loadedM4Image.blit(M4IMAGE);
+		resizeM4Image.blit(M4IMAGE);
 
-		RawBufferEx::LoadedInfo loadedInfo(resizeTextureWidth, resizeTextureHeight, m4ImageStride, qFactor);
+		RawBufferEx::ResizeInfo resizeInfo(resizeTextureWidth, resizeTextureHeight, m4ImageStride, qFactor);
 		
 		RawBufferEx rawBuffer(
-			loadedM4Image.acquire(),
+			resizeM4Image.acquire(),
 			(RawBuffer::SIZE)(resizeTextureHeight * m4ImageStride),
 			true,
-			loadedInfo
+			resizeInfo
 		);
 
 		SetLODRawBufferImpEx(lod, rawBuffer, 0);
-		loadedImageInfo = imageInfo;
+		resizeImageInfo = imageInfo;
 	}
 
 	void ImageLoaderMultipleBuffer::SetLOD(
@@ -199,7 +199,7 @@ namespace gfx_tools {
 
 		const RawBufferEx &RAW_BUFFER = rawBuffers[lod];
 
-		if (RAW_BUFFER.loadedInfoOptional.has_value()) {
+		if (RAW_BUFFER.resizeInfoOptional.has_value()) {
 			SaveRawBuffer(RAW_BUFFER, pointer, size);
 			sizeScopeExit.dismiss();
 			pointerScopeExit.dismiss();
@@ -277,20 +277,20 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
-		const RawBufferEx::LoadedInfo &LOADED_INFO = rawBuffer.loadedInfoOptional.value();
+		const RawBufferEx::ResizeInfo &RESIZE_INFO = rawBuffer.resizeInfoOptional.value();
 
-		size_t m4ImageStride = LOADED_INFO.stride;
+		size_t m4ImageStride = RESIZE_INFO.stride;
 
 		const M4Image M4_IMAGE(
-			LOADED_INFO.width,
-			LOADED_INFO.height,
+			RESIZE_INFO.width,
+			RESIZE_INFO.height,
 			m4ImageStride,
-			loadedImageInfo.GetRequestedColorFormat(),
+			resizeImageInfo.GetRequestedColorFormat(),
 			rawBuffer.pointer
 		);
 
 		size_t m4ImageSize = 0;
-		pointer = M4_IMAGE.save(m4ImageSize, GetExtension(), LOADED_INFO.quality);
+		pointer = M4_IMAGE.save(m4ImageSize, GetExtension(), RESIZE_INFO.quality);
 		size = (SIZE)m4ImageSize;
 	}
 
@@ -318,9 +318,9 @@ namespace gfx_tools {
 		int textureHeight = 0;
 		ValidatedImageInfo::SIZE_IN_BYTES sizeInBytes = 0;
 
-		if (MAIN_RAW_BUFFER.loadedInfoOptional.has_value()) {
-			validatedImageInfoOptional.emplace(loadedImageInfo);
-			sizeInBytes = loadedImageInfo.lodSizesInBytes[MAIN_LOD];
+		if (MAIN_RAW_BUFFER.resizeInfoOptional.has_value()) {
+			validatedImageInfoOptional.emplace(resizeImageInfo);
+			sizeInBytes = resizeImageInfo.lodSizesInBytes[MAIN_LOD];
 		} else {
 			bool isAlpha = false;
 
@@ -353,8 +353,8 @@ namespace gfx_tools {
 				continue;
 			}
 
-			if (RAW_BUFFER.loadedInfoOptional.has_value()) {
-				validatedImageInfo.SetLodSizeInBytes(i, loadedImageInfo.lodSizesInBytes[i]);
+			if (RAW_BUFFER.resizeInfoOptional.has_value()) {
+				validatedImageInfo.SetLodSizeInBytes(i, resizeImageInfo.lodSizesInBytes[i]);
 				setLodSizeInBytesScopeExit.dismiss();
 			} else {
 				try {
@@ -452,18 +452,18 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBufferZAP::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
-		const RawBufferEx::LoadedInfo &LOADED_INFO = rawBuffer.loadedInfoOptional.value();
+		const RawBufferEx::ResizeInfo &RESIZE_INFO = rawBuffer.resizeInfoOptional.value();
 
 		zap_size_t zapSize = 0;
-		size_t zapStride = LOADED_INFO.stride;
+		size_t zapStride = RESIZE_INFO.stride;
 
 		zap_error_t err = zap_save_memory(
 			&pointer,
 			&zapSize,
-			LOADED_INFO.width,
-			LOADED_INFO.height,
+			RESIZE_INFO.width,
+			RESIZE_INFO.height,
 			zapStride,
-			(zap_uint_t)loadedImageInfo.GetRequestedColorFormat(),
+			(zap_uint_t)resizeImageInfo.GetRequestedColorFormat(),
 			ZAP_IMAGE_FORMAT_JPG,
 			ZAP_IMAGE_FORMAT_PNG
 		);

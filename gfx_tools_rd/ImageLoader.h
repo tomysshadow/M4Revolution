@@ -177,7 +177,7 @@ namespace gfx_tools {
 		FormatHint formatHint = { FormatHint::HINT_NONE };
 		SIZE numberOfRawBuffers = 0;
 		RawBufferEx rawBuffers[NUMBER_OF_LOD_MAX] = {};
-		ImageInfo loadedImageInfo;
+		ImageInfo resizeImageInfo;
 	};
 
 	class ImageLoaderMultipleBufferZAP : public ImageLoaderMultipleBuffer {

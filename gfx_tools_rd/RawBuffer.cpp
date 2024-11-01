@@ -10,7 +10,7 @@ namespace gfx_tools {
 		owner(owner) {
 	}
 
-	RawBufferEx::LoadedInfo::LoadedInfo(int width, int height, size_t stride, L_INT qFactor)
+	RawBufferEx::ResizeInfo::ResizeInfo(int width, int height, size_t stride, L_INT qFactor)
 		: width(width),
 		height(height),
 		stride(stride),
@@ -20,13 +20,13 @@ namespace gfx_tools {
 	RawBufferEx::RawBufferEx() {
 	}
 
-	RawBufferEx::RawBufferEx(POINTER pointer, SIZE size, bool owner, const std::optional<LoadedInfo> &loadedInfoOptional)
+	RawBufferEx::RawBufferEx(POINTER pointer, SIZE size, bool owner, const std::optional<ResizeInfo> &resizeInfoOptional)
 		: RawBuffer(pointer, size, owner),
-		loadedInfoOptional(loadedInfoOptional) {
+		resizeInfoOptional(resizeInfoOptional) {
 	}
 
-	RawBufferEx::RawBufferEx(const RawBuffer &rawBuffer, const std::optional<LoadedInfo> &loadedInfoOptional)
+	RawBufferEx::RawBufferEx(const RawBuffer &rawBuffer, const std::optional<ResizeInfo> &resizeInfoOptional)
 		: RawBuffer(rawBuffer),
-		loadedInfoOptional(loadedInfoOptional) {
+		resizeInfoOptional(resizeInfoOptional) {
 	}
 }
