@@ -26,10 +26,13 @@ namespace gfx_tools {
 			GFX_TOOLS_RD_API ResizeInfo(int width, int height, size_t stride, L_INT qFactor);
 
 			inline float getQuality(L_INT qFactor) {
-				if (qFactor < 2) {
+				const L_INT Q_FACTOR_HIGHEST_QUALITY = 2;
+				const L_INT Q_FACTOR_MOST_COMPRESSION = 255;
+
+				if (qFactor < Q_FACTOR_HIGHEST_QUALITY) {
 					return 1.0f;
 				}
-				return 1.0f - ((float)(qFactor - 2) / 253.0f);
+				return 1.0f - ((float)(qFactor - Q_FACTOR_HIGHEST_QUALITY) / (Q_FACTOR_MOST_COMPRESSION - Q_FACTOR_HIGHEST_QUALITY));
 			}
 		};
 
