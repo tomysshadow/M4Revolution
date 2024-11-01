@@ -10,18 +10,23 @@ namespace gfx_tools {
 		owner(owner) {
 	}
 
+	RawBufferEx::LoadedInfo::LoadedInfo(int width, int height, size_t stride, L_INT qFactor)
+		: width(width),
+		height(height),
+		stride(stride),
+		quality(getQuality(qFactor)) {
+	}
+
 	RawBufferEx::RawBufferEx() {
 	}
 
-	RawBufferEx::RawBufferEx(POINTER pointer, SIZE size, bool owner, size_t stride, L_INT qFactor)
+	RawBufferEx::RawBufferEx(POINTER pointer, SIZE size, bool owner, const std::optional<LoadedInfo> &loadedInfoOptional)
 		: RawBuffer(pointer, size, owner),
-		stride(stride),
-		quality(getQuality(qFactor)) {
+		loadedInfoOptional(loadedInfoOptional) {
 	}
 
-	RawBufferEx::RawBufferEx(const RawBuffer &rawBuffer, size_t stride, L_INT qFactor)
+	RawBufferEx::RawBufferEx(const RawBuffer &rawBuffer, const std::optional<LoadedInfo> &loadedInfoOptional)
 		: RawBuffer(rawBuffer),
-		stride(stride),
-		quality(getQuality(qFactor)) {
+		loadedInfoOptional(loadedInfoOptional) {
 	}
 }

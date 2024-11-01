@@ -39,8 +39,8 @@ namespace gfx_tools {
 			SIZE rows,
 			Q_FACTOR qFactor,
 			const ImageInfo &imageInfo,
-			DIMENSION textureWidth,
-			DIMENSION textureHeight,
+			DIMENSION resizeTextureWidth,
+			DIMENSION resizeTextureHeight,
 			ares::RectU32* rectU32Pointer
 		) = 0;
 
@@ -121,8 +121,8 @@ namespace gfx_tools {
 			SIZE rows,
 			Q_FACTOR qFactor,
 			const ImageInfo &imageInfo,
-			DIMENSION textureWidth,
-			DIMENSION textureHeight,
+			DIMENSION resizeTextureWidth,
+			DIMENSION resizeTextureHeight,
 			ares::RectU32* rectU32Pointer
 		);
 
@@ -177,7 +177,7 @@ namespace gfx_tools {
 		FormatHint formatHint = { FormatHint::HINT_NONE };
 		SIZE numberOfRawBuffers = 0;
 		RawBufferEx rawBuffers[NUMBER_OF_LOD_MAX] = {};
-		ImageInfo uncompressedImageInfo;
+		ImageInfo loadedImageInfo;
 	};
 
 	class ImageLoaderMultipleBufferZAP : public ImageLoaderMultipleBuffer {

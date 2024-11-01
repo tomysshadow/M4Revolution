@@ -76,14 +76,16 @@ namespace gfx_tools {
 			throw std::invalid_argument("rows must not be less than Texture Height");
 		}
 
-		size_t m4ImageStride = RAW_BUFFER.stride;
+		if (RAW_BUFFER.loadedInfoOptional.has_value()) {
+			const RawBufferEx::LoadedInfo &LOADED_INFO = RAW_BUFFER.loadedInfoOptional.value();
 
-		if (m4ImageStride) {
+			size_t m4ImageStride = LOADED_INFO.stride;
+
 			const M4Image RAW_BUFFER_M4_IMAGE(
-				uncompressedImageInfo.textureWidth,
-				uncompressedImageInfo.textureHeight,
+				LOADED_INFO.width,
+				LOADED_INFO.height,
 				m4ImageStride,
-				uncompressedImageInfo.GetRequestedColorFormat(),
+				loadedImageInfo.GetRequestedColorFormat(),
 				RAW_BUFFER.pointer
 			);
 
@@ -111,8 +113,8 @@ namespace gfx_tools {
 		SIZE rows,
 		Q_FACTOR qFactor,
 		const ImageInfo &imageInfo,
-		DIMENSION textureWidth,
-		DIMENSION textureHeight,
+		DIMENSION resizeTextureWidth,
+		DIMENSION resizeTextureHeight,
 		ares::RectU32* rectU32Pointer
 	) {
 		if (!pointer) {
@@ -122,10 +124,6 @@ namespace gfx_tools {
 		if (rows < imageInfo.textureHeight) {
 			throw std::invalid_argument("rows must not be less than Texture Height");
 		}
-
-		uncompressedImageInfo = imageInfo;
-		uncompressedImageInfo.textureWidth = (ImageInfo::DIMENSION)textureWidth;
-		uncompressedImageInfo.textureHeight = (ImageInfo::DIMENSION)textureHeight;
 
 		size_t m4ImageStride = stride;
 
@@ -137,28 +135,28 @@ namespace gfx_tools {
 			pointer
 		);
 
-		RawBuffer::POINTER rawBufferPointer = 0;
 		m4ImageStride = 0;
 
-		M4Image uncompressedM4Image(
-			uncompressedImageInfo.textureWidth,
-			uncompressedImageInfo.textureHeight,
+		M4Image loadedM4Image(
+			resizeTextureWidth,
+			resizeTextureHeight,
 			m4ImageStride,
-			uncompressedImageInfo.GetRequestedColorFormat(),
-			rawBufferPointer
+			imageInfo.GetRequestedColorFormat()
 		);
 
-		uncompressedM4Image.blit(M4IMAGE);
+		loadedM4Image.blit(M4IMAGE);
+
+		RawBufferEx::LoadedInfo loadedInfo(resizeTextureWidth, resizeTextureHeight, m4ImageStride, qFactor);
 		
 		RawBufferEx rawBuffer(
-			rawBufferPointer,
-			(RawBuffer::SIZE)(m4ImageStride * uncompressedImageInfo.textureHeight),
+			loadedM4Image.acquire(),
+			(RawBuffer::SIZE)(resizeTextureHeight * m4ImageStride),
 			true,
-			m4ImageStride,
-			qFactor
+			loadedInfo
 		);
 
 		SetLODRawBufferImpEx(lod, rawBuffer, 0);
+		loadedImageInfo = imageInfo;
 	}
 
 	void ImageLoaderMultipleBuffer::SetLOD(
@@ -201,9 +199,7 @@ namespace gfx_tools {
 
 		const RawBufferEx &RAW_BUFFER = rawBuffers[lod];
 
-		size_t m4ImageStride = RAW_BUFFER.stride;
-
-		if (m4ImageStride) {
+		if (RAW_BUFFER.loadedInfoOptional.has_value()) {
 			SaveRawBuffer(RAW_BUFFER, pointer, size);
 			sizeScopeExit.dismiss();
 			pointerScopeExit.dismiss();
@@ -281,18 +277,20 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
-		size_t m4ImageStride = rawBuffer.stride;
+		const RawBufferEx::LoadedInfo &LOADED_INFO = rawBuffer.loadedInfoOptional.value();
+
+		size_t m4ImageStride = LOADED_INFO.stride;
 
 		const M4Image M4_IMAGE(
-			uncompressedImageInfo.textureWidth,
-			uncompressedImageInfo.textureHeight,
+			LOADED_INFO.width,
+			LOADED_INFO.height,
 			m4ImageStride,
-			uncompressedImageInfo.GetRequestedColorFormat(),
+			loadedImageInfo.GetRequestedColorFormat(),
 			rawBuffer.pointer
 		);
 
 		size_t m4ImageSize = 0;
-		pointer = M4_IMAGE.save(m4ImageSize, GetExtension(), rawBuffer.quality);
+		pointer = M4_IMAGE.save(m4ImageSize, GetExtension(), LOADED_INFO.quality);
 		size = (SIZE)m4ImageSize;
 	}
 
@@ -320,9 +318,9 @@ namespace gfx_tools {
 		int textureHeight = 0;
 		ValidatedImageInfo::SIZE_IN_BYTES sizeInBytes = 0;
 
-		if (MAIN_RAW_BUFFER.stride) {
-			validatedImageInfoOptional.emplace(uncompressedImageInfo);
-			sizeInBytes = uncompressedImageInfo.lodSizesInBytes[MAIN_LOD];
+		if (MAIN_RAW_BUFFER.loadedInfoOptional.has_value()) {
+			validatedImageInfoOptional.emplace(loadedImageInfo);
+			sizeInBytes = loadedImageInfo.lodSizesInBytes[MAIN_LOD];
 		} else {
 			bool isAlpha = false;
 
@@ -355,8 +353,8 @@ namespace gfx_tools {
 				continue;
 			}
 
-			if (RAW_BUFFER.stride) {
-				validatedImageInfo.SetLodSizeInBytes(i, uncompressedImageInfo.lodSizesInBytes[i]);
+			if (RAW_BUFFER.loadedInfoOptional.has_value()) {
+				validatedImageInfo.SetLodSizeInBytes(i, loadedImageInfo.lodSizesInBytes[i]);
 				setLodSizeInBytesScopeExit.dismiss();
 			} else {
 				try {
@@ -454,16 +452,18 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBufferZAP::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
-		size_t zapStride = rawBuffer.stride;
+		const RawBufferEx::LoadedInfo &LOADED_INFO = rawBuffer.loadedInfoOptional.value();
+
 		zap_size_t zapSize = 0;
+		size_t zapStride = LOADED_INFO.stride;
 
 		zap_error_t err = zap_save_memory(
 			&pointer,
 			&zapSize,
-			uncompressedImageInfo.textureWidth,
-			uncompressedImageInfo.textureHeight,
+			LOADED_INFO.width,
+			LOADED_INFO.height,
 			zapStride,
-			(zap_uint_t)uncompressedImageInfo.GetRequestedColorFormat(),
+			(zap_uint_t)loadedImageInfo.GetRequestedColorFormat(),
 			ZAP_IMAGE_FORMAT_JPG,
 			ZAP_IMAGE_FORMAT_PNG
 		);
