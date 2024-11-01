@@ -56,6 +56,10 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::POINTER pointer, SIZE stride, SIZE rows) {
+		if (!pointer) {
+			throw std::invalid_argument("pointer must not be zero");
+		}
+
 		if (lod > numberOfRawBuffers) {
 			throw std::invalid_argument("lod must not be greater than numberOfRawBuffers");
 		}
@@ -111,6 +115,10 @@ namespace gfx_tools {
 		DIMENSION textureHeight,
 		ares::RectU32* rectU32Pointer
 	) {
+		if (!pointer) {
+			throw std::invalid_argument("pointer must not be zero");
+		}
+
 		if (rows < imageInfo.textureHeight) {
 			throw std::invalid_argument("rows must not be less than Texture Height");
 		}
