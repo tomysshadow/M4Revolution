@@ -121,9 +121,10 @@ LIBZAP_API zap_error_t LIBZAP_CALL zap_set_allocator(zap_malloc_proc mallocProc,
 /// \param height The height of the image
 /// \param stride The stride of the image
 /// \param colorFormat The color format of the image
-/// \param format The format of the image
+/// \param format1 The format of the first image
+/// \param format2 The format of the second image
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_save(const char* filename, const zap_byte_t* pData, zap_size_t dataSize, zap_int_t width, zap_int_t height, zap_size_t stride, zap_uint_t colorFormat, zap_uint_t format);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_save(const char* filename, const zap_byte_t* pData, zap_size_t dataSize, zap_int_t width, zap_int_t height, zap_size_t stride, zap_uint_t colorFormat, zap_uint_t format1, zap_uint_t format2);
 
 /// Save a ZAP file to memory
 /// \param pOut A pointer to the output data
@@ -132,9 +133,10 @@ LIBZAP_API zap_error_t LIBZAP_CALL zap_save(const char* filename, const zap_byte
 /// \param height The height of the image
 /// \param stride The stride of the image
 /// \param colorFormat The color format of the image
-/// \param format The format of the image
+/// \param format1 The format of the first image
+/// \param format2 The format of the second image
 /// \return 0 on success, non-zero on failure
-LIBZAP_API zap_error_t LIBZAP_CALL zap_save_memory(zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height, zap_size_t stride, zap_uint_t colorFormat, zap_uint_t format);
+LIBZAP_API zap_error_t LIBZAP_CALL zap_save_memory(zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height, zap_size_t stride, zap_uint_t colorFormat, zap_uint_t format1, zap_uint_t format2);
 
 #ifdef __cplusplus
 }

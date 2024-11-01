@@ -420,6 +420,7 @@ namespace gfx_tools {
 			uncompressedImageInfo.textureHeight,
 			zapStride,
 			(zap_uint_t)uncompressedImageInfo.GetRequestedColorFormat(),
+			ZAP_IMAGE_FORMAT_JPG,
 			ZAP_IMAGE_FORMAT_PNG
 		);
 
