@@ -38,7 +38,7 @@ namespace gfx_tools {
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR qFactor,
-			ImageInfo &imageInfo,
+			const ImageInfo &imageInfo,
 			DIMENSION textureWidth,
 			DIMENSION textureHeight,
 			ares::RectU32* rectU32Pointer
@@ -50,7 +50,7 @@ namespace gfx_tools {
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR requestedQFactor,
-			ImageInfo &imageInfo,
+			const ImageInfo &imageInfo,
 			ares::RectU32* rectU32Pointer
 		) = 0;
 
@@ -79,9 +79,11 @@ namespace gfx_tools {
 		// these methods do not exist on the original ImageLoader
 		// they are my own "how it should've been done" methods
 		// which the others are built on top of
+		virtual void GFX_TOOLS_RD_CALL LoadLOD(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) = 0;
+		virtual void GFX_TOOLS_RD_CALL SaveLOD(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) = 0;
 		virtual void GFX_TOOLS_RD_CALL GetImageInfoImpEx() = 0;
 
-		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
+		virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
 			LOD lod,
 			const RawBufferEx &value,
 			ubi::RefCounted* refCountedPointer
@@ -112,7 +114,7 @@ namespace gfx_tools {
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR qFactor,
-			ImageInfo &imageInfo,
+			const ImageInfo &imageInfo,
 			DIMENSION textureWidth,
 			DIMENSION textureHeight,
 			ares::RectU32* rectU32Pointer
@@ -124,7 +126,7 @@ namespace gfx_tools {
 			SIZE stride,
 			SIZE rows,
 			Q_FACTOR requestedQFactor,
-			ImageInfo &imageInfo,
+			const ImageInfo &imageInfo,
 			ares::RectU32* rectU32Pointer
 		);
 
@@ -148,9 +150,11 @@ namespace gfx_tools {
 		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer);
 
 		protected:
+		void GFX_TOOLS_RD_CALL LoadLOD(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride);
+		void GFX_TOOLS_RD_CALL SaveLOD(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size);
 		void GFX_TOOLS_RD_CALL GetImageInfoImpEx();
 
-		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
+		virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
 			LOD lod,
 			const RawBufferEx &value,
 			ubi::RefCounted* refCountedPointer
@@ -160,5 +164,47 @@ namespace gfx_tools {
 		SIZE numberOfRawBuffers = 0;
 		RawBufferEx rawBuffers[NUMBER_OF_LOD_MAX] = {};
 		ImageInfo uncompressedImageInfo;
+	};
+
+	class ImageLoaderMultipleBufferZAP : public ImageLoaderMultipleBuffer {
+		public:
+		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
+		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
+
+		protected:
+		void GFX_TOOLS_RD_CALL LoadLOD(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride);
+		void GFX_TOOLS_RD_CALL SaveLOD(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size);
+	};
+
+	class ImageLoaderMultipleBufferTGA : public ImageLoaderMultipleBuffer {
+		public:
+		static const L_INT FILE_TGA = 4;
+
+		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
+		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
+	};
+
+	class ImageLoaderMultipleBufferPNG : public ImageLoaderMultipleBuffer {
+		public:
+		static const L_INT FILE_PNG = 75;
+
+		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
+		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
+	};
+
+	class ImageLoaderMultipleBufferJPEG : public ImageLoaderMultipleBuffer {
+		public:
+		static const L_INT FILE_JPEG = 10;
+
+		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
+		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
+	};
+
+	class ImageLoaderMultipleBufferBMP : public ImageLoaderMultipleBuffer {
+		public:
+		static const L_INT FILE_BMP = 6;
+
+		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
+		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
 	};
 }

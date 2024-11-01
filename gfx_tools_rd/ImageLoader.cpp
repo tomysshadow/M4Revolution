@@ -1,5 +1,6 @@
 #include "ImageLoader.h"
 #include <M4Image/M4Image.h>
+#include <libzap.h>
 
 namespace gfx_tools {
 	RawBuffer::SIZE ImageLoader::GetRawBufferTotalSize() {
@@ -55,6 +56,10 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::POINTER pointer, SIZE stride, SIZE rows) {
+		if (lod > numberOfRawBuffers) {
+			throw std::invalid_argument("lod must not be greater than numberOfRawBuffers");
+		}
+
 		const RawBufferEx &RAW_BUFFER = rawBuffers[lod];
 
 		if (!validatedImageInfoOptional.has_value()) {
@@ -92,17 +97,7 @@ namespace gfx_tools {
 			return;
 		}
 
-		m4ImageStride = stride;
-
-		M4Image m4Image(
-			IMAGE_INFO.textureWidth,
-			IMAGE_INFO.textureHeight,
-			m4ImageStride,
-			IMAGE_INFO.GetRequestedColorFormat(),
-			pointer
-		);
-
-		m4Image.load(RAW_BUFFER.pointer, RAW_BUFFER.size, GetExtension());
+		LoadLOD(RAW_BUFFER, IMAGE_INFO, pointer, stride);
 	}
 
 	void ImageLoaderMultipleBuffer::ResizeLOD(
@@ -111,7 +106,7 @@ namespace gfx_tools {
 		SIZE stride,
 		SIZE rows,
 		Q_FACTOR qFactor,
-		ImageInfo &imageInfo,
+		const ImageInfo &imageInfo,
 		DIMENSION textureWidth,
 		DIMENSION textureHeight,
 		ares::RectU32* rectU32Pointer
@@ -151,7 +146,8 @@ namespace gfx_tools {
 			rawBufferPointer,
 			(RawBuffer::SIZE)(m4ImageStride * uncompressedImageInfo.textureHeight),
 			true,
-			m4ImageStride
+			m4ImageStride,
+			qFactor
 		);
 
 		SetLODRawBufferImpEx(lod, rawBuffer, 0);
@@ -163,7 +159,7 @@ namespace gfx_tools {
 		SIZE stride,
 		SIZE rows,
 		Q_FACTOR qFactor,
-		ImageInfo &imageInfo,
+		const ImageInfo &imageInfo,
 		ares::RectU32* rectU32Pointer
 	) {
 		ResizeLOD(lod, pointer, stride, rows, qFactor, imageInfo, imageInfo.textureWidth, imageInfo.textureHeight, rectU32Pointer);
@@ -181,12 +177,42 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) {
-		// TODO
+		pointer = 0;
+
+		MAKE_SCOPE_EXIT(pointerScopeExit) {
+			M4Image::allocator.freeSafe(pointer);
+		};
+
+		MAKE_SCOPE_EXIT(sizeScopeExit) {
+			size = 0;
+		};
+
+		if (lod > numberOfRawBuffers) {
+			throw std::invalid_argument("lod must not be greater than numberOfRawBuffers");
+		}
+
+		const RawBufferEx &RAW_BUFFER = rawBuffers[lod];
+
+		size_t m4ImageStride = RAW_BUFFER.stride;
+
+		if (m4ImageStride) {
+			SaveLOD(RAW_BUFFER, pointer, size);
+			sizeScopeExit.dismiss();
+			pointerScopeExit.dismiss();
+			return;
+		}
+
+		pointer = RAW_BUFFER.pointer;
+		size = RAW_BUFFER.size;
+		sizeScopeExit.dismiss();
+		pointerScopeExit.dismiss();
 	}
 
 	RawBuffer::POINTER ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod) {
-		// TODO
-		return 0;
+		RawBuffer::POINTER pointer = 0;
+		RawBuffer::SIZE size = 0;
+		GetLODRawBuffer(lod, pointer, size);
+		return pointer;
 	}
 
 	bool ImageLoaderMultipleBuffer::GetImageInfoImp(ValidatedImageInfo &validatedImageInfo) {
@@ -220,6 +246,36 @@ namespace gfx_tools {
 		// in this implementation we have no concept of a bitmap handle
 		bitmapHandlePointer = 0;
 		return SUCCESS;
+	}
+
+	void ImageLoaderMultipleBuffer::LoadLOD(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) {
+		size_t m4ImageStride = stride;
+
+		M4Image m4Image(
+			imageInfo.textureWidth,
+			imageInfo.textureHeight,
+			m4ImageStride,
+			imageInfo.GetRequestedColorFormat(),
+			pointer
+		);
+
+		m4Image.load(rawBuffer.pointer, rawBuffer.size, GetExtension());
+	}
+
+	void ImageLoaderMultipleBuffer::SaveLOD(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
+		size_t m4ImageStride = rawBuffer.stride;
+
+		const M4Image M4_IMAGE(
+			uncompressedImageInfo.textureWidth,
+			uncompressedImageInfo.textureHeight,
+			m4ImageStride,
+			uncompressedImageInfo.GetRequestedColorFormat(),
+			rawBuffer.pointer
+		);
+
+		size_t m4ImageSize = 0;
+		pointer = M4_IMAGE.save(m4ImageSize, GetExtension(), rawBuffer.quality);
+		size = (SIZE)m4ImageSize;
 	}
 
 	void ImageLoaderMultipleBuffer::GetImageInfoImpEx() {
@@ -300,6 +356,10 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::SetLODRawBufferImpEx(LOD lod, const RawBufferEx &value, ubi::RefCounted* refCountedPointer) {
+		if (lod > numberOfRawBuffers) {
+			throw std::invalid_argument("lod must not be greater than numberOfRawBuffers");
+		}
+
 		RawBufferEx &rawBuffer = rawBuffers[lod];
 
 		if (rawBuffer.owner) {
@@ -320,5 +380,85 @@ namespace gfx_tools {
 				this->refCountedPointer->AddRef();
 			}
 		}
+	}
+
+	const L_TCHAR* ImageLoaderMultipleBufferZAP::GetExtension() {
+		return "ZAP";
+	}
+
+	L_INT ImageLoaderMultipleBufferZAP::GetFormat() {
+		return 0;
+	}
+
+	void ImageLoaderMultipleBufferZAP::LoadLOD(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) {
+		zap_size_t zapStride = stride;
+		zap_size_t zapSize = 0;
+
+		zap_error_t err = zap_resize_memory(
+			rawBuffer.pointer,
+			(zap_uint_t)imageInfo.GetRequestedColorFormat(),
+			&pointer,
+			&zapSize,
+			imageInfo.textureWidth,
+			imageInfo.textureHeight,
+			&zapStride
+		);
+
+		if (err != ZAP_ERROR_NONE) {
+			throw std::runtime_error("Failed to Resize ZAP Memory");
+		}
+	}
+
+	void ImageLoaderMultipleBufferZAP::SaveLOD(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
+		size_t zapStride = rawBuffer.stride;
+		zap_size_t zapSize = 0;
+
+		zap_error_t err = zap_save_memory(
+			&pointer,
+			&zapSize,
+			uncompressedImageInfo.textureWidth,
+			uncompressedImageInfo.textureHeight,
+			zapStride,
+			(zap_uint_t)uncompressedImageInfo.GetRequestedColorFormat(),
+			ZAP_IMAGE_FORMAT_PNG
+		);
+
+		if (err != ZAP_ERROR_NONE) {
+			throw std::runtime_error("Failed to Save ZAP Memory");
+		}
+
+		size = (SIZE)zapSize;
+	}
+
+	const L_TCHAR* ImageLoaderMultipleBufferTGA::GetExtension() {
+		return "TGA";
+	}
+
+	L_INT ImageLoaderMultipleBufferTGA::GetFormat() {
+		return FILE_TGA;
+	}
+
+	const L_TCHAR* ImageLoaderMultipleBufferPNG::GetExtension() {
+		return "PNG";
+	}
+
+	L_INT ImageLoaderMultipleBufferPNG::GetFormat() {
+		return FILE_PNG;
+	}
+
+	const L_TCHAR* ImageLoaderMultipleBufferJPEG::GetExtension() {
+		return "JFIF";
+	}
+
+	L_INT ImageLoaderMultipleBufferJPEG::GetFormat() {
+		return FILE_JPEG;
+	}
+
+	const L_TCHAR* ImageLoaderMultipleBufferBMP::GetExtension() {
+		return "BMP";
+	}
+
+	L_INT ImageLoaderMultipleBufferBMP::GetFormat() {
+		return FILE_BMP;
 	}
 }

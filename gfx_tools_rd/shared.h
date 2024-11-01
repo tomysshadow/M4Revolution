@@ -2,6 +2,7 @@
 #define _WIN32_WINNT 0x0500
 #include "scope_guard.hpp"
 #include <functional>
+#include <stdexcept>
 #include <string.h>
 #include <libzap.h>
 
