@@ -69,8 +69,6 @@ namespace gfx_tools {
 			ubi::RefCounted* refCountedPointer
 		) = 0;
 
-		// these methods are normally only on the ImageLoaderMultipleBufferBitmap interface
-		// but have been put here as pure virtual so I can safely add additional virtual methods
 		GFX_TOOLS_RD_API virtual const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension() = 0;
 		GFX_TOOLS_RD_API virtual L_INT GFX_TOOLS_RD_CALL GetFormat() = 0;
 		GFX_TOOLS_RD_API virtual L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer) = 0;
