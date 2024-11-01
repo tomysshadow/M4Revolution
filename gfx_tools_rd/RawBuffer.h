@@ -22,6 +22,7 @@ namespace gfx_tools {
 			size_t stride = 0;
 			float quality = 0.90f;
 
+			GFX_TOOLS_RD_API ResizeInfo();
 			GFX_TOOLS_RD_API ResizeInfo(int width, int height, size_t stride, L_INT qFactor);
 
 			inline float getQuality(L_INT qFactor) {

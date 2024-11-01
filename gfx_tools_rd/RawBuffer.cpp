@@ -10,6 +10,9 @@ namespace gfx_tools {
 		owner(owner) {
 	}
 
+	RawBufferEx::ResizeInfo::ResizeInfo() {
+	}
+
 	RawBufferEx::ResizeInfo::ResizeInfo(int width, int height, size_t stride, L_INT qFactor)
 		: width(width),
 		height(height),
