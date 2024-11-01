@@ -2,6 +2,8 @@
 #include "shared.h"
 #include "PixelFormat.h"
 #include "FormatHint.h"
+#include <map>
+#include <M4Image/M4Image.h>
 
 namespace gfx_tools {
 	typedef unsigned char LOD;
@@ -28,6 +30,13 @@ namespace gfx_tools {
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL ComputeLODDimensions(DIMENSION &textureWidth, DIMENSION &textureHeight, DIMENSION &volumeExtent, LOD lod) const;
 		GFX_TOOLS_RD_API BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetBitsPerPixel() const;
 		GFX_TOOLS_RD_API BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetRequestedBitsPerPixel() const;
+		GFX_TOOLS_RD_API M4Image::COLOR_FORMAT GFX_TOOLS_RD_CALL GetColorFormat() const;
+		GFX_TOOLS_RD_API M4Image::COLOR_FORMAT GFX_TOOLS_RD_CALL GetRequestedColorFormat() const;
+
+		private:
+		typedef std::map<EnumPixelFormat, M4Image::COLOR_FORMAT> COLOR_FORMAT_MAP;
+
+		static const COLOR_FORMAT_MAP PIXELFORMAT_COLOR_FORMAT_MAP;
 	};
 
 	class ValidatedImageInfo : private ImageInfo {

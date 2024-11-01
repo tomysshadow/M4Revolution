@@ -31,6 +31,26 @@ namespace gfx_tools {
 		return PixelFormat::GetPixelFormat(requestedEnumPixelFormat)->GetBitsPerPixel();
 	}
 
+	M4Image::COLOR_FORMAT ImageInfo::GetColorFormat() const {
+		return PIXELFORMAT_COLOR_FORMAT_MAP.at(enumPixelFormat);
+	}
+
+	M4Image::COLOR_FORMAT ImageInfo::GetRequestedColorFormat() const {
+		return PIXELFORMAT_COLOR_FORMAT_MAP.at(requestedEnumPixelFormat);
+	}
+
+	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_MAP = {
+		{PIXELFORMAT_ABGR_8888, M4Image::COLOR_FORMAT::RGBA32},
+		{PIXELFORMAT_XBGR_8888, M4Image::COLOR_FORMAT::RGBX32},
+		{PIXELFORMAT_ARGB_8888, M4Image::COLOR_FORMAT::BGRA32},
+		{PIXELFORMAT_XRGB_8888, M4Image::COLOR_FORMAT::BGRX32},
+		{PIXELFORMAT_BGR_888, M4Image::COLOR_FORMAT::RGB24},
+		{PIXELFORMAT_RGB_888, M4Image::COLOR_FORMAT::BGR24},
+		{PIXELFORMAT_AL_88, M4Image::COLOR_FORMAT::AL16},
+		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::A8},
+		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::L8}
+	};
+
 	void ValidatedImageInfo::MakePowerOfTwo(DIMENSION &dimension, bool reserved) {
 		DIMENSION powerOfTwo = 2;
 

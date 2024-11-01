@@ -44,7 +44,7 @@ namespace gfx_tools {
 		for (LOD i = 0; i < numberOfRawBuffers; i++) {
 			RawBufferEx &rawBuffer = rawBuffers[i];
 
-			if (rawBuffer.owner && rawBuffer.pointer) {
+			if (rawBuffer.owner) {
 				M4Image::allocator.freeSafe(rawBuffer.pointer);
 			}
 		}
@@ -52,6 +52,141 @@ namespace gfx_tools {
 
 	void ImageLoaderMultipleBuffer::SetHint(FormatHint formatHint) {
 		this->formatHint = formatHint;
+	}
+
+	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::POINTER pointer, SIZE stride, SIZE rows) {
+		const RawBufferEx &RAW_BUFFER = rawBuffers[lod];
+
+		if (!validatedImageInfoOptional.has_value()) {
+			GetImageInfoImpEx();
+		}
+
+		const ImageInfo &IMAGE_INFO = validatedImageInfoOptional.value().Get();
+
+		if (rows < IMAGE_INFO.textureHeight) {
+			throw std::invalid_argument("rows must not be less than Texture Height");
+		}
+
+		size_t m4ImageStride = RAW_BUFFER.stride;
+
+		if (m4ImageStride) {
+			const M4Image RAW_BUFFER_M4_IMAGE(
+				uncompressedImageInfo.textureWidth,
+				uncompressedImageInfo.textureHeight,
+				m4ImageStride,
+				uncompressedImageInfo.GetRequestedColorFormat(),
+				RAW_BUFFER.pointer
+			);
+
+			m4ImageStride = stride;
+
+			M4Image m4Image(
+				IMAGE_INFO.textureWidth,
+				IMAGE_INFO.textureHeight,
+				m4ImageStride,
+				IMAGE_INFO.GetRequestedColorFormat(),
+				pointer
+			);
+
+			m4Image.blit(RAW_BUFFER_M4_IMAGE);
+			return;
+		}
+
+		m4ImageStride = stride;
+
+		M4Image m4Image(
+			IMAGE_INFO.textureWidth,
+			IMAGE_INFO.textureHeight,
+			m4ImageStride,
+			IMAGE_INFO.GetRequestedColorFormat(),
+			pointer
+		);
+
+		m4Image.load(RAW_BUFFER.pointer, RAW_BUFFER.size, GetExtension());
+	}
+
+	void ImageLoaderMultipleBuffer::ResizeLOD(
+		LOD lod,
+		RawBuffer::POINTER pointer,
+		SIZE stride,
+		SIZE rows,
+		Q_FACTOR qFactor,
+		ImageInfo &imageInfo,
+		DIMENSION textureWidth,
+		DIMENSION textureHeight,
+		ares::RectU32* rectU32Pointer
+	) {
+		if (rows < imageInfo.textureHeight) {
+			throw std::invalid_argument("rows must not be less than Texture Height");
+		}
+
+		uncompressedImageInfo = imageInfo;
+		uncompressedImageInfo.textureWidth = (ImageInfo::DIMENSION)textureWidth;
+		uncompressedImageInfo.textureHeight = (ImageInfo::DIMENSION)textureHeight;
+
+		size_t m4ImageStride = stride;
+
+		const M4Image M4IMAGE(
+			imageInfo.textureWidth,
+			imageInfo.textureHeight,
+			m4ImageStride,
+			imageInfo.GetColorFormat(),
+			pointer
+		);
+
+		RawBuffer::POINTER rawBufferPointer = 0;
+		m4ImageStride = 0;
+
+		M4Image uncompressedM4Image(
+			uncompressedImageInfo.textureWidth,
+			uncompressedImageInfo.textureHeight,
+			m4ImageStride,
+			uncompressedImageInfo.GetRequestedColorFormat(),
+			rawBufferPointer
+		);
+
+		uncompressedM4Image.blit(M4IMAGE);
+		
+		RawBufferEx rawBuffer(
+			rawBufferPointer,
+			(RawBuffer::SIZE)(m4ImageStride * uncompressedImageInfo.textureHeight),
+			true,
+			m4ImageStride
+		);
+
+		SetLODRawBufferImpEx(lod, rawBuffer, 0);
+	}
+
+	void ImageLoaderMultipleBuffer::SetLOD(
+		LOD lod,
+		RawBuffer::POINTER pointer,
+		SIZE stride,
+		SIZE rows,
+		Q_FACTOR qFactor,
+		ImageInfo &imageInfo,
+		ares::RectU32* rectU32Pointer
+	) {
+		ResizeLOD(lod, pointer, stride, rows, qFactor, imageInfo, imageInfo.textureWidth, imageInfo.textureHeight, rectU32Pointer);
+	}
+
+	RawBuffer::POINTER ImageLoaderMultipleBuffer::CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) {
+		RawBuffer rawBuffer((RawBuffer::POINTER)M4Image::allocator.mallocSafe(size), size, true);
+		SetLODRawBufferImp(lod, rawBuffer, 0);
+		return rawBuffer.pointer;
+	}
+
+	void ImageLoaderMultipleBuffer::SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer) {
+		RawBuffer rawBuffer(pointer, size, false);
+		SetLODRawBufferImp(lod, rawBuffer, refCountedPointer);
+	}
+
+	void ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) {
+		// TODO
+	}
+
+	RawBuffer::POINTER ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod) {
+		// TODO
+		return 0;
 	}
 
 	bool ImageLoaderMultipleBuffer::GetImageInfoImp(ValidatedImageInfo &validatedImageInfo) {
@@ -67,6 +202,24 @@ namespace gfx_tools {
 			return true;
 		}
 		return false;
+	}
+
+	void ImageLoaderMultipleBuffer::SetLODRawBufferImp(LOD lod, RawBuffer value, ubi::RefCounted* refCountedPointer) {
+		SetLODRawBufferImpEx(lod, value, refCountedPointer);
+	}
+
+	const L_TCHAR* ImageLoaderMultipleBuffer::GetExtension() {
+		return 0;
+	}
+
+	L_INT ImageLoaderMultipleBuffer::GetFormat() {
+		return 0;
+	}
+
+	L_INT ImageLoaderMultipleBuffer::CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer) {
+		// in this implementation we have no concept of a bitmap handle
+		bitmapHandlePointer = 0;
+		return SUCCESS;
 	}
 
 	void ImageLoaderMultipleBuffer::GetImageInfoImpEx() {
@@ -93,7 +246,7 @@ namespace gfx_tools {
 		int textureHeight = 0;
 		ValidatedImageInfo::SIZE_IN_BYTES sizeInBytes = 0;
 
-		if (MAIN_RAW_BUFFER.uncompressed) {
+		if (MAIN_RAW_BUFFER.stride) {
 			validatedImageInfoOptional.emplace(uncompressedImageInfo);
 			sizeInBytes = uncompressedImageInfo.lodSizesInBytes[MAIN_LOD];
 		} else {
@@ -128,7 +281,7 @@ namespace gfx_tools {
 				continue;
 			}
 
-			if (RAW_BUFFER.uncompressed) {
+			if (RAW_BUFFER.stride) {
 				validatedImageInfo.SetLodSizeInBytes(i, uncompressedImageInfo.lodSizesInBytes[i]);
 				setLodSizeInBytesScopeExit.dismiss();
 			} else {
@@ -144,5 +297,28 @@ namespace gfx_tools {
 		}
 
 		validatedImageInfoOptionalScopeExit.dismiss();
+	}
+
+	void ImageLoaderMultipleBuffer::SetLODRawBufferImpEx(LOD lod, const RawBufferEx &value, ubi::RefCounted* refCountedPointer) {
+		RawBufferEx &rawBuffer = rawBuffers[lod];
+
+		if (rawBuffer.owner) {
+			M4Image::allocator.freeSafe(rawBuffer.pointer);
+		}
+
+		rawBufferTotalSize += value.size - rawBuffer.size;
+		rawBuffer = value;
+
+		if (this->refCountedPointer != refCountedPointer) {
+			if (this->refCountedPointer) {
+				this->refCountedPointer->Release();
+			}
+
+			this->refCountedPointer = refCountedPointer;
+
+			if (this->refCountedPointer) {
+				this->refCountedPointer->AddRef();
+			}
+		}
 	}
 }
