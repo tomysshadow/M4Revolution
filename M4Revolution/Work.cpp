@@ -215,7 +215,7 @@ Work::Convert::Convert(
 	compressionOptionsAlpha(compressionOptionsAlpha) {
 }
 
-const char* Work::Output::FILE_NAME = "~data.m4b.tmp";
+const char* Work::Output::FILE_NAME = "~data.tmp";
 
 Work::Output::Output() {
 	// without this remove first it may crash trying to open a hidden file
