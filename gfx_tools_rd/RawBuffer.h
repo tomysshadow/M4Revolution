@@ -22,18 +22,10 @@ namespace gfx_tools {
 			size_t stride = 0;
 			float quality = 0.90f;
 
+			GFX_TOOLS_RD_API static float getQuality(L_INT qFactor);
+
 			GFX_TOOLS_RD_API ResizeInfo();
 			GFX_TOOLS_RD_API ResizeInfo(int width, int height, size_t stride, L_INT qFactor);
-
-			static inline float getQuality(L_INT qFactor) {
-				const L_INT Q_FACTOR_HIGHEST_QUALITY = 2;
-				const L_INT Q_FACTOR_MOST_COMPRESSION = 255;
-
-				if (qFactor < Q_FACTOR_HIGHEST_QUALITY) {
-					return 1.0f;
-				}
-				return 1.0f - ((float)(qFactor - Q_FACTOR_HIGHEST_QUALITY) / (Q_FACTOR_MOST_COMPRESSION - Q_FACTOR_HIGHEST_QUALITY));
-			}
 		};
 
 		std::optional<ResizeInfo> resizeInfoOptional = std::nullopt;

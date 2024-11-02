@@ -9,6 +9,16 @@ namespace gfx_tools {
 		size(size),
 		owner(owner) {
 	}
+	
+	float RawBufferEx::ResizeInfo::getQuality(L_INT qFactor) {
+		const L_INT Q_FACTOR_HIGHEST_QUALITY = 2;
+		const L_INT Q_FACTOR_MOST_COMPRESSION = 255;
+
+		if (qFactor < Q_FACTOR_HIGHEST_QUALITY) {
+			return 1.0f;
+		}
+		return 1.0f - ((float)(qFactor - Q_FACTOR_HIGHEST_QUALITY) / (Q_FACTOR_MOST_COMPRESSION - Q_FACTOR_HIGHEST_QUALITY));
+	}
 
 	RawBufferEx::ResizeInfo::ResizeInfo() {
 	}

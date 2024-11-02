@@ -237,7 +237,7 @@ namespace Work {
 	};
 
 	namespace Backup {
-		static const char* FILE_NAME = "data.m4b.bak";
+		static const char* FILE_NAME = "data.bak";
 
 		bool create(const char* fileName);
 		void restore(const std::filesystem::path &path);
