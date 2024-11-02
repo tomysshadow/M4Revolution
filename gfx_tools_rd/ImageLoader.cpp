@@ -37,6 +37,10 @@ namespace gfx_tools {
 		}
 	}
 
+	void ImageLoader::SetHint(FormatHint formatHint) {
+		this->formatHint = formatHint;
+	}
+
 	ImageLoaderMultipleBuffer::SIZE ImageLoaderMultipleBuffer::GetNumberOfRawBuffers() {
 		return numberOfRawBuffers;
 	}
@@ -49,10 +53,6 @@ namespace gfx_tools {
 				M4Image::allocator.freeSafe(rawBuffer.pointer);
 			}
 		}
-	}
-
-	void ImageLoader::SetHint(FormatHint formatHint) {
-		this->formatHint = formatHint;
 	}
 
 	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::POINTER pointer, SIZE stride, SIZE rows) {

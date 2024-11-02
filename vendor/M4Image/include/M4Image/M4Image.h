@@ -109,8 +109,8 @@ class M4Image {
     M4IMAGE_API unsigned char* M4IMAGE_CALL acquire();
 
     private:
-    void create(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* imagePointer = 0);
-    void destroy();
+    void M4IMAGE_CALL create(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* imagePointer = 0);
+    void M4IMAGE_CALL destroy();
 
     int width = 0;
     int height = 0;
