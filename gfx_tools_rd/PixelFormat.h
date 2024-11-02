@@ -92,8 +92,8 @@ namespace gfx_tools {
 		GFX_TOOLS_RD_API MASK GFX_TOOLS_RD_CALL GetMaskStencil();
 
 		GFX_TOOLS_RD_API static PixelFormat* GFX_TOOLS_RD_CALL GetPixelFormat(EnumPixelFormat enumPixelFormat);
-		GFX_TOOLS_RD_API static EnumPixelFormat GFX_TOOLS_RD_CALL GetPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat);
-		GFX_TOOLS_RD_API static EnumPixelFormat GFX_TOOLS_RD_CALL GetPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat);
+		GFX_TOOLS_RD_API static EnumPixelFormat GFX_TOOLS_RD_CALL GetEnumPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat);
+		GFX_TOOLS_RD_API static EnumPixelFormat GFX_TOOLS_RD_CALL GetEnumPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat);
 		GFX_TOOLS_RD_API static char* GFX_TOOLS_RD_CALL GetPixelFormatString(EnumPixelFormat enumPixelFormat);
 
 		private:

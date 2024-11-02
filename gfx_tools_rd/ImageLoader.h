@@ -12,7 +12,6 @@
 namespace gfx_tools {
 	class ImageLoader : public ares::Resource {
 		public:
-		typedef unsigned int LOD;
 		typedef unsigned long SIZE;
 		typedef char Q_FACTOR;
 		typedef unsigned long DIMENSION;
@@ -23,7 +22,7 @@ namespace gfx_tools {
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetPixelFormat(EnumPixelFormat enumPixelFormat);
 
 		GFX_TOOLS_RD_API virtual GFX_TOOLS_RD_CALL ~ImageLoader();
-		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint) = 0;
+		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint);
 
 		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL GetLOD(
 			LOD lod,
@@ -63,17 +62,19 @@ namespace gfx_tools {
 			ValidatedImageInfo &validatedImageInfo
 		) = 0;
 
-		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImp(
+		protected:
+		virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImp(
 			LOD lod,
-			RawBuffer value,
+			RawBuffer::POINTER pointer,
+			RawBuffer::SIZE size,
+			bool owner,
 			ubi::RefCounted* refCountedPointer
 		) = 0;
 
-		GFX_TOOLS_RD_API virtual const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension() = 0;
-		GFX_TOOLS_RD_API virtual L_INT GFX_TOOLS_RD_CALL GetFormat() = 0;
-		GFX_TOOLS_RD_API virtual L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer) = 0;
+		virtual const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension() = 0;
+		virtual L_INT GFX_TOOLS_RD_CALL GetFormat() = 0;
+		virtual L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer) = 0;
 
-		protected:
 		// these methods do not exist on the original ImageLoader
 		// they are my own "how it should've been done" methods
 		// which the others are built on top of
@@ -98,6 +99,7 @@ namespace gfx_tools {
 		RawBuffer::SIZE rawBufferTotalSize = 0;
 		ubi::RefCounted* refCountedPointer = 0;
 		std::optional<ValidatedImageInfo> validatedImageInfoOptional = std::nullopt;
+		FormatHint formatHint = { FormatHint::HINT_NONE };
 	};
 
 	class ImageLoaderMultipleBuffer : public ImageLoader {
@@ -105,7 +107,6 @@ namespace gfx_tools {
 		GFX_TOOLS_RD_API SIZE GetNumberOfRawBuffers();
 
 		GFX_TOOLS_RD_API virtual GFX_TOOLS_RD_CALL ~ImageLoaderMultipleBuffer();
-		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetHint(FormatHint formatHint);
 
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL GetLOD(
 			LOD lod,
@@ -145,17 +146,19 @@ namespace gfx_tools {
 			ValidatedImageInfo &validatedImageInfo
 		);
 
-		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetLODRawBufferImp(
+		protected:
+		void GFX_TOOLS_RD_CALL SetLODRawBufferImp(
 			LOD lod,
-			RawBuffer value,
+			RawBuffer::POINTER pointer,
+			RawBuffer::SIZE size,
+			bool owner,
 			ubi::RefCounted* refCountedPointer
 		);
 
-		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
-		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
-		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer);
+		const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
+		L_INT GFX_TOOLS_RD_CALL GetFormat();
+		L_INT GFX_TOOLS_RD_CALL CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer);
 
-		protected:
 		void GFX_TOOLS_RD_CALL GetRawBufferInfo(
 			const RawBufferEx &rawBuffer,
 			bool* isAlphaPointer,
@@ -168,24 +171,22 @@ namespace gfx_tools {
 		void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size);
 		void GFX_TOOLS_RD_CALL GetImageInfoImpEx();
 
-		virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
+		void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
 			LOD lod,
 			const RawBufferEx &value,
 			ubi::RefCounted* refCountedPointer
 		);
 
-		FormatHint formatHint = { FormatHint::HINT_NONE };
 		SIZE numberOfRawBuffers = 0;
 		RawBufferEx rawBuffers[NUMBER_OF_LOD_MAX] = {};
 		ImageInfo resizeImageInfo;
 	};
 
 	class ImageLoaderMultipleBufferZAP : public ImageLoaderMultipleBuffer {
-		public:
-		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
-		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
-
 		protected:
+		const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
+		L_INT GFX_TOOLS_RD_CALL GetFormat();
+
 		void GFX_TOOLS_RD_CALL GetRawBufferInfo(
 			const RawBufferEx &rawBuffer,
 			bool* isAlphaPointer,
@@ -199,34 +200,34 @@ namespace gfx_tools {
 	};
 
 	class ImageLoaderMultipleBufferTGA : public ImageLoaderMultipleBuffer {
-		public:
+		protected:
 		static const L_INT FILE_TGA = 4;
 
-		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
-		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
+		const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
+		L_INT GFX_TOOLS_RD_CALL GetFormat();
 	};
 
 	class ImageLoaderMultipleBufferPNG : public ImageLoaderMultipleBuffer {
-		public:
+		protected:
 		static const L_INT FILE_PNG = 75;
 
-		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
-		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
+		const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
+		L_INT GFX_TOOLS_RD_CALL GetFormat();
 	};
 
 	class ImageLoaderMultipleBufferJPEG : public ImageLoaderMultipleBuffer {
-		public:
+		protected:
 		static const L_INT FILE_JPEG = 10;
 
-		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
-		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
+		const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
+		L_INT GFX_TOOLS_RD_CALL GetFormat();
 	};
 
 	class ImageLoaderMultipleBufferBMP : public ImageLoaderMultipleBuffer {
-		public:
+		protected:
 		static const L_INT FILE_BMP = 6;
 
-		GFX_TOOLS_RD_API const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
-		GFX_TOOLS_RD_API L_INT GFX_TOOLS_RD_CALL GetFormat();
+		const L_TCHAR* GFX_TOOLS_RD_CALL GetExtension();
+		L_INT GFX_TOOLS_RD_CALL GetFormat();
 	};
 }

@@ -51,7 +51,7 @@ namespace gfx_tools {
 		}
 	}
 
-	void ImageLoaderMultipleBuffer::SetHint(FormatHint formatHint) {
+	void ImageLoader::SetHint(FormatHint formatHint) {
 		this->formatHint = formatHint;
 	}
 
@@ -172,14 +172,13 @@ namespace gfx_tools {
 	}
 
 	RawBuffer::POINTER ImageLoaderMultipleBuffer::CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) {
-		RawBuffer rawBuffer((RawBuffer::POINTER)M4Image::allocator.mallocSafe(size), size, true);
-		SetLODRawBufferImp(lod, rawBuffer, 0);
-		return rawBuffer.pointer;
+		RawBuffer::POINTER pointer = (RawBuffer::POINTER)M4Image::allocator.mallocSafe(size);
+		SetLODRawBufferImp(lod, pointer, size, true, 0);
+		return pointer;
 	}
 
 	void ImageLoaderMultipleBuffer::SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer) {
-		RawBuffer rawBuffer(pointer, size, false);
-		SetLODRawBufferImp(lod, rawBuffer, refCountedPointer);
+		SetLODRawBufferImp(lod, pointer, size, false, refCountedPointer);
 	}
 
 	void ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) {
@@ -234,8 +233,15 @@ namespace gfx_tools {
 		return false;
 	}
 
-	void ImageLoaderMultipleBuffer::SetLODRawBufferImp(LOD lod, RawBuffer value, ubi::RefCounted* refCountedPointer) {
-		SetLODRawBufferImpEx(lod, value, refCountedPointer);
+	void ImageLoaderMultipleBuffer::SetLODRawBufferImp(
+		LOD lod,
+		RawBuffer::POINTER pointer,
+		RawBuffer::SIZE size,
+		bool owner,
+		ubi::RefCounted* refCountedPointer
+	) {
+		RawBuffer rawBuffer(pointer, size, owner);
+		SetLODRawBufferImpEx(lod, rawBuffer, refCountedPointer);
 	}
 
 	const L_TCHAR* ImageLoaderMultipleBuffer::GetExtension() {

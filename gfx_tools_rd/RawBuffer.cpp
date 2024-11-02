@@ -10,7 +10,7 @@ namespace gfx_tools {
 		owner(owner) {
 	}
 	
-	float RawBufferEx::ResizeInfo::getQuality(L_INT qFactor) {
+	float RawBufferEx::ResizeInfo::GetQuality(L_INT qFactor) {
 		const L_INT Q_FACTOR_HIGHEST_QUALITY = 2;
 		const L_INT Q_FACTOR_MOST_COMPRESSION = 255;
 
@@ -27,7 +27,7 @@ namespace gfx_tools {
 		: width(width),
 		height(height),
 		stride(stride),
-		quality(getQuality(qFactor)) {
+		quality(GetQuality(qFactor)) {
 	}
 
 	RawBufferEx::RawBufferEx() {

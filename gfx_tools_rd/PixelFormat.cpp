@@ -219,7 +219,7 @@ namespace gfx_tools {
 		{PIXELFORMAT_XBGR_4444, PIXELFORMAT_ABGR_4444}
 	};
 
-	EnumPixelFormat PixelFormat::GetPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat) {
+	EnumPixelFormat PixelFormat::GetEnumPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat) {
 		ENUM_PIXEL_FORMAT_MAP::const_iterator enumPixelFormatMapIterator = ENUM_PIXEL_FORMAT_WITH_ALPHA_MAP.find(enumPixelFormat);
 		return enumPixelFormatMapIterator == ENUM_PIXEL_FORMAT_WITH_ALPHA_MAP.end() ? enumPixelFormat : enumPixelFormatMapIterator->second;
 	}
@@ -233,7 +233,7 @@ namespace gfx_tools {
 		{PIXELFORMAT_ABGR_4444, PIXELFORMAT_XBGR_4444}
 	};
 
-	EnumPixelFormat PixelFormat::GetPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat) {
+	EnumPixelFormat PixelFormat::GetEnumPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat) {
 		ENUM_PIXEL_FORMAT_MAP::const_iterator enumPixelFormatMapIterator = ENUM_PIXEL_FORMAT_WITHOUT_ALPHA_MAP.find(enumPixelFormat);
 		return enumPixelFormatMapIterator == ENUM_PIXEL_FORMAT_WITHOUT_ALPHA_MAP.end() ? enumPixelFormat : enumPixelFormatMapIterator->second;
 	}
