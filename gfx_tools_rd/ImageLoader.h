@@ -28,14 +28,14 @@ namespace gfx_tools {
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE rows
+			SIZE size
 		) = 0;
 
 		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL ResizeLOD(
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE rows,
+			SIZE size,
 			Q_FACTOR qFactor,
 			const ImageInfo &imageInfo,
 			DIMENSION resizeTextureWidth,
@@ -47,7 +47,7 @@ namespace gfx_tools {
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE rows,
+			SIZE size,
 			Q_FACTOR requestedQFactor,
 			const ImageInfo &imageInfo,
 			ares::RectU32* rectU32Pointer
@@ -112,14 +112,14 @@ namespace gfx_tools {
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE rows
+			SIZE size
 		);
 
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL ResizeLOD(
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE rows,
+			SIZE size,
 			Q_FACTOR qFactor,
 			const ImageInfo &imageInfo,
 			DIMENSION resizeTextureWidth,
@@ -131,7 +131,7 @@ namespace gfx_tools {
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE rows,
+			SIZE size,
 			Q_FACTOR requestedQFactor,
 			const ImageInfo &imageInfo,
 			ares::RectU32* rectU32Pointer

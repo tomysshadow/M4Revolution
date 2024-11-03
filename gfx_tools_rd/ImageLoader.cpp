@@ -55,7 +55,7 @@ namespace gfx_tools {
 		}
 	}
 
-	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::POINTER pointer, SIZE stride, SIZE rows) {
+	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::POINTER pointer, SIZE stride, SIZE size) {
 		if (!pointer) {
 			throw std::invalid_argument("pointer must not be zero");
 		}
@@ -72,8 +72,8 @@ namespace gfx_tools {
 
 		const ImageInfo &IMAGE_INFO = validatedImageInfoOptional.value().Get();
 
-		if (rows < IMAGE_INFO.textureHeight) {
-			throw std::invalid_argument("rows must not be less than Texture Height");
+		if (size < IMAGE_INFO.textureHeight * stride) {
+			throw std::invalid_argument("size is too small");
 		}
 
 		if (RAW_BUFFER.resizeInfoOptional.has_value()) {
@@ -110,7 +110,7 @@ namespace gfx_tools {
 		LOD lod,
 		RawBuffer::POINTER pointer,
 		SIZE stride,
-		SIZE rows,
+		SIZE size,
 		Q_FACTOR qFactor,
 		const ImageInfo &imageInfo,
 		DIMENSION resizeTextureWidth,
@@ -121,8 +121,8 @@ namespace gfx_tools {
 			throw std::invalid_argument("pointer must not be zero");
 		}
 
-		if (rows < imageInfo.textureHeight) {
-			throw std::invalid_argument("rows must not be less than Texture Height");
+		if (size < imageInfo.textureHeight * stride) {
+			throw std::invalid_argument("size is too small");
 		}
 
 		size_t m4ImageStride = stride;
@@ -163,12 +163,12 @@ namespace gfx_tools {
 		LOD lod,
 		RawBuffer::POINTER pointer,
 		SIZE stride,
-		SIZE rows,
+		SIZE size,
 		Q_FACTOR qFactor,
 		const ImageInfo &imageInfo,
 		ares::RectU32* rectU32Pointer
 	) {
-		ResizeLOD(lod, pointer, stride, rows, qFactor, imageInfo, imageInfo.textureWidth, imageInfo.textureHeight, rectU32Pointer);
+		ResizeLOD(lod, pointer, stride, size, qFactor, imageInfo, imageInfo.textureWidth, imageInfo.textureHeight, rectU32Pointer);
 	}
 
 	RawBuffer::POINTER ImageLoaderMultipleBuffer::CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) {
@@ -378,11 +378,15 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::SetLODRawBufferImpEx(LOD lod, const RawBufferEx &value, ubi::RefCounted* refCountedPointer) {
-		if (lod > numberOfRawBuffers) {
-			throw std::invalid_argument("lod must not be greater than numberOfRawBuffers");
+		if (lod >= NUMBER_OF_LOD_MAX) {
+			throw std::invalid_argument("lod must not be greater than or equal to NUMBER_OF_LOD_MAX");
 		}
 
 		RawBufferEx &rawBuffer = rawBuffers[lod];
+
+		if (numberOfRawBuffers <= lod) {
+			numberOfRawBuffers = lod + 1;
+		}
 
 		if (rawBuffer.owner) {
 			M4Image::allocator.freeSafe(rawBuffer.pointer);

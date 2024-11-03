@@ -9,7 +9,7 @@ namespace gfx_tools {
 
 		POINTER pointer = 0;
 		SIZE size = 0;
-		bool owner = true;
+		bool owner = false;
 
 		GFX_TOOLS_RD_API RawBuffer();
 		GFX_TOOLS_RD_API RawBuffer(POINTER pointer, SIZE size, bool owner);
