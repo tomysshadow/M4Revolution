@@ -27,6 +27,7 @@ namespace gfx_tools {
 		EnumPixelFormat requestedEnumPixelFormat = EnumPixelFormat::PIXELFORMAT_UNKNOWN;
 		FormatHint formatHint = { FormatHint::HINT_NONE };
 
+		GFX_TOOLS_RD_API ImageInfo();
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL ComputeLODDimensions(DIMENSION &textureWidth, DIMENSION &textureHeight, DIMENSION &volumeExtent, LOD lod) const;
 		GFX_TOOLS_RD_API BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetBitsPerPixel() const;
 		GFX_TOOLS_RD_API BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetRequestedBitsPerPixel() const;

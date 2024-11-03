@@ -3,6 +3,9 @@
 #include <stdlib.h>
 
 namespace gfx_tools {
+	ImageInfo::ImageInfo() {
+	}
+
 	void ImageInfo::ComputeLODDimensions(DIMENSION &textureWidth, DIMENSION &textureHeight, DIMENSION &volumeExtent, LOD lod) const {
 		const DIMENSION MIN_DIMENSION = 1;
 
