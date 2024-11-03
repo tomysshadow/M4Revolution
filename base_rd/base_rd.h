@@ -13,19 +13,15 @@
 #endif
 
 namespace ubi {
+	/*
 	class SystemBase {
 		private:
 		static unsigned char ms_UpperCase[];
 
 		public:
-		inline void BASE_RD_CALL ToUpperCase(char* str) {
-			while (*str) {
-				char &chr = *str;
-				chr = ms_UpperCase[chr];
-				str++;
-			}
-		}
+		BASE_RD_API static void BASE_RD_CALL ToUpperCase(char* str);
 	};
+	*/
 
 	class RefCounted {
 		public:
@@ -89,7 +85,7 @@ namespace ubi {
 	};
 	*/
 
-	class InputFileStream {
+	class InputFileStream : public InputStream {
 		public:
 		typedef unsigned __int64 SIZE;
 
@@ -137,6 +133,7 @@ namespace ubi {
 	};
 
 	class Mem {
+		public:
 		BASE_RD_API static Allocator* BASE_RD_CALL GetGeneralAlloc();
 	};
 }

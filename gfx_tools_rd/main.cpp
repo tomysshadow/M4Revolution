@@ -230,10 +230,44 @@ namespace gfx_tools {
 	}
 };
 
+_NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size) _VCRT_ALLOCATOR
+void* __CRTDECL operator new(
+	size_t _Size
+	) {
+	ubi::Allocator &generalAlloc = *ubi::Mem::GetGeneralAlloc();
+	return generalAlloc.Malloc(_Size);
+}
+
+void __CRTDECL operator delete(
+	void* _Block
+	) {
+	ubi::Allocator &allocator = *ubi::Allocator::GetOwner(_Block);
+	allocator.Free(_Block);
+}
+
+void* mallocProc(size_t size) {
+	ubi::Allocator &generalAlloc = *ubi::Mem::GetGeneralAlloc();
+	return generalAlloc.MallocNoThrow(size);
+}
+
+void freeProc(void* block) {
+	ubi::Allocator &allocator = *ubi::Allocator::GetOwner(block);
+	allocator.Free(block);
+}
+
+void* reAllocProc(void* block, size_t size) {
+	ubi::Allocator &generalAlloc = *ubi::Mem::GetGeneralAlloc();
+	return generalAlloc.ReAllocNoThrow(block, size);
+}
+
+constexpr static M4Image::Allocator ubiAllocator = M4Image::Allocator(mallocProc, freeProc, reAllocProc);
+
 #ifdef _WIN32
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved) {
 	if (reason == DLL_PROCESS_ATTACH) {
 		DisableThreadLibraryCalls(instance);
+
+		M4Image::allocator = ubiAllocator;
 	}
 	return TRUE;
 }

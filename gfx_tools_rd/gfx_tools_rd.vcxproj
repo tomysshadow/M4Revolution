@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="FormatHint.cpp" />
+    <ClCompile Include="ImageCreator.cpp" />
     <ClCompile Include="ImageInfo.cpp" />
     <ClCompile Include="ImageLoader.cpp" />
     <ClCompile Include="main.cpp" />
@@ -170,6 +171,7 @@
   <ItemGroup>
     <ClInclude Include="Configuration.h" />
     <ClInclude Include="FormatHint.h" />
+    <ClInclude Include="IgnoreCaseComparer.h" />
     <ClInclude Include="ImageCreator.h" />
     <ClInclude Include="ImageInfo.h" />
     <ClInclude Include="main.h" />
