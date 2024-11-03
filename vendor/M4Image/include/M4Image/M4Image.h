@@ -10,9 +10,9 @@ class M4Image {
         typedef void (*FreeProc)(void* block);
         typedef void* (*ReAllocProc)(void* block, size_t size);
 
-        constexpr inline Allocator() = default;
+        inline constexpr Allocator() = default;
 
-        constexpr inline Allocator(MallocProc mallocProc, FreeProc freeProc, ReAllocProc reAllocProc)
+        inline constexpr Allocator(MallocProc mallocProc, FreeProc freeProc, ReAllocProc reAllocProc)
             : mallocProc(mallocProc),
             freeProc(freeProc),
             reAllocProc(reAllocProc) {

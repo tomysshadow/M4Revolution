@@ -260,7 +260,7 @@ void* reAllocProc(void* block, size_t size) {
 	return generalAlloc.ReAllocNoThrow(block, size);
 }
 
-constexpr static M4Image::Allocator ubiAllocator = M4Image::Allocator(mallocProc, freeProc, reAllocProc);
+static constexpr M4Image::Allocator ubiAllocator = M4Image::Allocator(mallocProc, freeProc, reAllocProc);
 
 #ifdef _WIN32
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved) {
