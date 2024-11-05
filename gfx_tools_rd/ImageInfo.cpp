@@ -34,6 +34,17 @@ namespace gfx_tools {
 		return PixelFormat::GetPixelFormat(requestedEnumPixelFormat)->GetBitsPerPixel();
 	}
 
+	// if the two pixel formats are equivalent
+	// then we allow BGRA/BGRX, BGR, LA, or L (no conversion happens)
+	// if the pixel format must be 16-bit, we convert it to LA
+	// if the requested pixel format is 8-bit, we only convert to BGRA or XXXL
+	// remember that the "requested" pixel format refers to the
+	// pixel format before it was corrected, that is, of the original image
+	// (similar to requestedTextureWidth/Height)
+	// so enumPixelFormat determines the actual output format
+	// but we only support these specific conversions
+	// frankly, it doesn't make sense, but it's what the game does
+	// so I try to rationalize it
 	M4Image::COLOR_FORMAT ImageInfo::GetColorFormat() const {
 		// equivalent
 		if (enumPixelFormat == requestedEnumPixelFormat) {
