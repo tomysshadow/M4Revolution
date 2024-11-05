@@ -37,7 +37,7 @@ namespace gfx_tools {
 	M4Image::COLOR_FORMAT ImageInfo::GetColorFormat() const {
 		// equivalent
 		if (enumPixelFormat == requestedEnumPixelFormat) {
-			return PIXELFORMAT_COLOR_FORMAT_MAP.at(enumPixelFormat);
+			return PIXELFORMAT_COLOR_FORMAT_MAP.at(requestedEnumPixelFormat);
 		}
 
 		// 16-bit
