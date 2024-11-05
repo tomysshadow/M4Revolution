@@ -66,8 +66,58 @@ Work::Data::Data(size_t size, POINTER pointer)
 	pointer(pointer) {
 }
 
+void Work::Edit::copyThread(Work::Edit &edit) {
+	std::fstream &fileStream = edit.fileStream;
+	bool backup = false;
+
+	if (!edit.copied) {
+		// check if the file exists, if it doesn't create a backup
+		std::fstream backupFileStream(Backup::FILE_NAME, std::ios::binary | std::ios::in, _SH_DENYWR);
+
+		if (!backupFileStream.is_open()) {
+			// always delete the temporary file when done
+			SCOPE_EXIT {
+				std::filesystem::remove(Output::FILE_NAME);
+			};
+
+			{
+				Output output = {};
+
+				fileStream.seekg(0, std::ios::beg);
+				copyStream(fileStream, output.fileStream);
+			}
+
+			backup = Backup::create(Output::FILE_NAME);
+		}
+
+		edit.copied = true;
+	}
+
+	edit.event.wait(true);
+
+	if (backup) {
+		Backup::log();
+	}
+
+	fileStream.seekp(edit.position);
+	writeStreamSafe(fileStream, edit.str.c_str(), edit.str.length());
+}
+
 Work::Edit::Edit(std::fstream &fileStream)
 	: fileStream(fileStream) {
+}
+
+void Work::Edit::join(std::thread &copyThread, std::streampos position, const std::string &str) {
+	this->position = position;
+	this->str = str;
+
+	if (!copied) {
+		consoleLog("Please wait...", 2);
+	}
+
+	event.set();
+
+	copyThread.join();
 }
 
 Work::BigFileTask::BigFileTask(

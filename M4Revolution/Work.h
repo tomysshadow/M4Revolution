@@ -78,16 +78,21 @@ namespace Work {
 		Data(size_t size, POINTER pointer);
 	};
 
-	struct Edit {
-		std::fstream &fileStream;
-
+	class Edit {
+		private:
 		std::streampos position = 0;
 		std::string str = "";
 
 		Event event;
 		bool copied = false;
 
+		public:
+		static void copyThread(Work::Edit &edit);
+
+		std::fstream &fileStream;
+
 		Edit(std::fstream &fileStream);
+		void join(std::thread &copyThread, std::streampos position, const std::string &str);
 	};
 
 	// BigFileTask (must seek over them, then come back later)

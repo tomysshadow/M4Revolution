@@ -67,9 +67,57 @@ void Ubi::String::writeOptionalEncrypted(std::ostream &outputStream, std::option
 	writeOptional(outputStream, swizzle(strOptional));
 }
 
+Ubi::Binary::BinarizerLoader::RESOURCE_OPTIONAL_VECTOR Ubi::Binary::BinarizerLoader::getResourceOptionalVector(std::istream &inputStream, std::streamsize size) {
+	std::optional<HeaderReader> headerReaderOptional = std::nullopt;
+	readFileHeader(inputStream, headerReaderOptional, size);
+
+	uint32_t resources = 0;
+
+	const size_t RESOURCES_SIZE = sizeof(resources);
+
+	readStreamSafe(inputStream, &resources, RESOURCES_SIZE);
+
+	RESOURCE_OPTIONAL_VECTOR resourceOptionalVector = {};
+	resourceOptionalVector.reserve(resources - 1);
+
+	bool nullTerminator = false;
+
+	for (uint32_t i = 0; i < resources; i++) {
+		const std::optional<std::string> &RESOURCE_OPTIONAL = resourceOptionalVector.emplace_back(String::readOptional(inputStream, nullTerminator));
+
+		if (nullTerminator) {
+			throw std::logic_error("resourceOptional must not have null terminator");
+		}
+
+		if (RESOURCE_OPTIONAL == AI_SND_TRANSITION_RESOURCE) {
+			resourceOptionalVector.pop_back();
+		}
+	}
+	return resourceOptionalVector;
+}
+
+void Ubi::Binary::BinarizerLoader::setResourceOptionalVector(std::ostream &outputStream, std::streamsize size, const RESOURCE_OPTIONAL_VECTOR &resourceOptionalVector) {
+	std::optional<HeaderWriter> headerWriterOptional = std::nullopt;
+	writeFileHeader(outputStream, headerWriterOptional, size);
+
+	uint32_t resources = (uint32_t)resourceOptionalVector.size();
+
+	const size_t RESOURCES_SIZE = sizeof(resources);
+
+	writeStreamSafe(outputStream, &resources, RESOURCES_SIZE);
+
+	for (
+		RESOURCE_OPTIONAL_VECTOR::const_iterator resourceOptionalVectorIterator = resourceOptionalVector.begin();
+		resourceOptionalVectorIterator != resourceOptionalVector.end();
+		resourceOptionalVectorIterator++
+	) {
+		String::writeOptional(outputStream, *resourceOptionalVectorIterator, false);
+	}
+}
+
 Ubi::Binary::RLE::SLICE_MAP Ubi::Binary::RLE::createSliceMap(std::istream &inputStream, std::streamsize size) {
-	std::optional<Header> headerOptional = std::nullopt;
-	readFileHeader(inputStream, headerOptional, size);
+	std::optional<HeaderReader> headerReaderOptional = std::nullopt;
+	readFileHeader(inputStream, headerReaderOptional, size);
 
 	uint32_t waterSlices = 0;
 
@@ -364,16 +412,20 @@ Ubi::Binary::Water::Water(Loader::POINTER loaderPointer, std::istream &inputStre
 	create(inputStream, textureBoxMap);
 }
 
-void Ubi::Binary::Header::throwReadPastEnd() {
+Ubi::Binary::HeaderCopier::HeaderCopier(std::streamsize fileSize, std::streampos filePosition)
+	: fileSize(fileSize),
+	filePosition(filePosition) {
+}
+
+void Ubi::Binary::HeaderReader::throwReadPastEnd() {
 	if (fileSize < inputStream.tellg() - filePosition) {
 		throw ReadPastEnd();
 	}
 }
 
-Ubi::Binary::Header::Header(std::istream &inputStream, std::streamsize fileSize)
-	: inputStream(inputStream),
-	fileSize(fileSize),
-	filePosition(inputStream.tellg()) {
+Ubi::Binary::HeaderReader::HeaderReader(std::istream &inputStream, std::streamsize fileSize)
+	: HeaderCopier(fileSize, inputStream.tellg()),
+	inputStream(inputStream) {
 	ID id = 0;
 	const size_t ID_SIZE = sizeof(id);
 
@@ -389,29 +441,59 @@ Ubi::Binary::Header::Header(std::istream &inputStream, std::streamsize fileSize)
 	}
 }
 
-Ubi::Binary::Header::~Header() {
-	throwReadPastEnd();
+Ubi::Binary::HeaderWriter::~HeaderWriter() {
+	throwWrotePastEnd();
 }
 
-void Ubi::Binary::readFileHeader(std::istream &inputStream, std::optional<Binary::Header> &headerOptional, std::streamsize size) {
-	MAKE_SCOPE_EXIT(headerOptionalScopeExit) {
-		headerOptional = std::nullopt;
-	};
-
-	if (size != -1) {
-		headerOptional.emplace(inputStream, size);
-		headerOptionalScopeExit.dismiss();
+void Ubi::Binary::HeaderWriter::throwWrotePastEnd() {
+	if (fileSize < outputStream.tellp() - filePosition) {
+		throw WrotePastEnd();
 	}
 }
 
-Ubi::Binary::Resource::Loader::POINTER Ubi::Binary::readFileLoader(std::istream &inputStream, std::optional<Binary::Header> &headerOptional, std::streamsize size) {
-	readFileHeader(inputStream, headerOptional, size);
+Ubi::Binary::HeaderWriter::HeaderWriter(std::ostream &outputStream, std::streamsize fileSize)
+	: HeaderCopier(fileSize, outputStream.tellp()),
+	outputStream(outputStream) {
+	const size_t UBI_B0_L_SIZE = sizeof(UBI_B0_L);
+
+	writeStreamSafe(outputStream, &UBI_B0_L, UBI_B0_L_SIZE);
+	throwWrotePastEnd();
+}
+
+Ubi::Binary::HeaderReader::~HeaderReader() {
+	throwReadPastEnd();
+}
+
+void Ubi::Binary::readFileHeader(std::istream &inputStream, std::optional<Binary::HeaderReader> &headerReaderOptional, std::streamsize size) {
+	MAKE_SCOPE_EXIT(headerReaderOptionalScopeExit) {
+		headerReaderOptional = std::nullopt;
+	};
+
+	if (size != -1) {
+		headerReaderOptional.emplace(inputStream, size);
+		headerReaderOptionalScopeExit.dismiss();
+	}
+}
+
+void Ubi::Binary::writeFileHeader(std::ostream &outputStream, std::optional<Ubi::Binary::HeaderWriter> &headerWriterOptional, std::streamsize size) {
+	MAKE_SCOPE_EXIT(headerWriterOptionalScopeExit) {
+		headerWriterOptional = std::nullopt;
+	};
+
+	if (size != -1) {
+		headerWriterOptional.emplace(outputStream, size);
+		headerWriterOptionalScopeExit.dismiss();
+	}
+}
+
+Ubi::Binary::Resource::Loader::POINTER Ubi::Binary::readFileLoader(std::istream &inputStream, std::optional<Binary::HeaderReader> &headerReaderOptional, std::streamsize size) {
+	readFileHeader(inputStream, headerReaderOptional, size);
 	return std::make_shared<Resource::Loader>(inputStream);
 }
 
 Ubi::Binary::Resource::POINTER Ubi::Binary::createResourcePointer(std::istream &inputStream, std::streamsize size) {
-	std::optional<Header> headerOptional = std::nullopt;
-	Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerOptional, size);
+	std::optional<HeaderReader> headerReaderOptional = std::nullopt;
+	Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
 
 	switch (loaderPointer->id) {
 		case TextureBox::ID:
@@ -433,8 +515,8 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createLayerMap(std::istream &inputSt
 		layerMap = {};
 	};
 
-	std::optional<Header> headerOptional = std::nullopt;
-	Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerOptional, size);
+	std::optional<HeaderReader> headerReaderOptional = std::nullopt;
+	Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
 	Resource::POINTER resourcePointer = 0;
 
 	switch (loaderPointer->id) {
@@ -453,8 +535,8 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createMaskPathSet(std::istream &inpu
 		maskPathSet = {};
 	};
 
-	std::optional<Header> headerOptional = std::nullopt;
-	Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerOptional, size);
+	std::optional<HeaderReader> headerReaderOptional = std::nullopt;
+	Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
 	Resource::POINTER resourcePointer = 0;
 
 	switch (loaderPointer->id) {
@@ -473,8 +555,8 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createTextureBoxMap(std::istream &in
 		textureBoxMap = {};
 	};
 
-	std::optional<Header> headerOptional = std::nullopt;
-	Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerOptional, size);
+	std::optional<HeaderReader> headerReaderOptional = std::nullopt;
+	Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
 	Resource::POINTER resourcePointer = 0;
 
 	switch (loaderPointer->id) {
@@ -1167,6 +1249,29 @@ void Ubi::BigFile::Header::read(std::istream &inputStream) {
 }
 
 const std::string Ubi::BigFile::Header::SIGNATURE = "UBI_BF_SIG";
+
+Ubi::BigFile::File::POINTER Ubi::BigFile::findFile(std::istream &stream, const Path::VECTOR &pathVector) {
+	stream.seekg(0, std::ios::beg);
+
+	File::POINTER filePointer = 0;
+	std::streampos position = 0;
+
+	for (
+		Path::VECTOR::const_iterator pathVectorIterator = pathVector.begin();
+		pathVectorIterator != pathVector.end();
+		pathVectorIterator++
+	) {
+		BigFile bigFile(stream, *pathVectorIterator, filePointer);
+
+		if (!filePointer) {
+			throw std::runtime_error("filePointer must not be zero");
+		}
+
+		stream.seekg(position + (std::streampos)filePointer->position);
+		position = stream.tellg();
+	}
+	return filePointer;
+}
 
 Ubi::BigFile::BigFile(std::istream &inputStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, File &file)
 	: header(inputStream, fileSystemSize, fileSystemPosition),

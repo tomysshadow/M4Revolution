@@ -4,43 +4,6 @@
 #include <iomanip>
 #include <filesystem>
 
-void AI::copyThread(Work::Edit &edit) {
-	std::fstream &fileStream = edit.fileStream;
-	bool backup = false;
-
-	if (!edit.copied) {
-		// check if the file exists, if it doesn't create a backup
-		std::fstream backupFileStream(Work::Backup::FILE_NAME, std::ios::binary | std::ios::in, _SH_DENYWR);
-
-		if (!backupFileStream.is_open()) {
-			// always delete the temporary file when done
-			SCOPE_EXIT {
-				std::filesystem::remove(Work::Output::FILE_NAME);
-			};
-
-			{
-				Work::Output output = {};
-
-				fileStream.seekg(0, std::ios::beg);
-				copyStream(fileStream, output.fileStream);
-			}
-
-			backup = Work::Backup::create(Work::Output::FILE_NAME);
-		}
-
-		edit.copied = true;
-	}
-
-	edit.event.wait(true);
-
-	if (backup) {
-		Work::Backup::log();
-	}
-
-	fileStream.seekp(edit.position);
-	writeStreamSafe(fileStream, edit.str.c_str(), edit.str.length());
-}
-
 void AI::editF32(
 	Work::Edit &edit,
 	const std::string &name,
@@ -51,28 +14,11 @@ void AI::editF32(
 ) {
 	// find the AI file
 	std::fstream &fileStream = edit.fileStream;
-	fileStream.seekg(0, std::ios::beg);
-
-	Ubi::BigFile::File::POINTER filePointer = 0;
-	std::streampos position = 0;
-
-	for (
-		Ubi::BigFile::Path::VECTOR::const_iterator pathVectorIterator = pathVector.begin();
-		pathVectorIterator != pathVector.end();
-		pathVectorIterator++
-	) {
-		Ubi::BigFile bigFile(fileStream, *pathVectorIterator, filePointer);
-
-		if (!filePointer) {
-			throw std::runtime_error("filePointer must not be zero");
-		}
-
-		fileStream.seekg(position + (std::streampos)filePointer->position);
-		position = fileStream.tellg();
-	}
+	Ubi::BigFile::File::SIZE size = Ubi::BigFile::findFile(fileStream, pathVector)->size;
+	std::streampos position = fileStream.tellg();
 
 	std::string ai = "";
-	copyStreamToString(fileStream, ai, filePointer->size);
+	copyStreamToString(fileStream, ai, size);
 
 	// find the line that the value is on
 	const std::regex AI_LINE("^(\\s*([^\\s\\(]+)\\s*\\(\\s*([^\\s,]+)\\s*,\\s?)(.*)\\)[^\\S\\n]*(?:\\n|$)");
@@ -88,7 +34,7 @@ void AI::editF32(
 		MAKE_SCOPE_EXIT(aiScopeExit) {
 			const std::string &LINE = matches[0];
 
-			position += matches.prefix().length() + LINE.length();
+			position += (std::streampos)matches.prefix().length() + (std::streampos)LINE.length();
 			ai = matches.suffix();
 		};
 
@@ -128,7 +74,7 @@ void AI::editF32(
 	// we've now found the position of the number to replace
 	// create a new thread to begin copying the file in the background
 	// while we ask the user to input the edited value
-	std::thread copyThread(AI::copyThread, std::ref(edit));
+	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 
 	const std::string &VALUE_STR = matches[4];
 
@@ -157,17 +103,7 @@ void AI::editF32(
 	// tell the edit to the copy thread
 	const std::string &VALUE_STR_PREFIX = matches[1];
 
-	edit.position = position + (std::streamsize)VALUE_STR_PREFIX.length();
-	edit.str = outputStringStream.str();
-
-	// must be before the event is set so we don't have two threads both logging stuff
-	if (!edit.copied) {
-		consoleLog("Please wait...", 2);
-	}
-
-	edit.event.set();
-
-	copyThread.join();
+	edit.join(copyThread, position + (std::streamsize)VALUE_STR_PREFIX.length(), outputStringStream.str());
 }
 
 void AI::editTransitionTime(Work::Edit &edit) {

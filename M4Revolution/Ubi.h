@@ -36,6 +36,21 @@ namespace Ubi {
 			}
 		};
 
+		class WrotePastEnd : public std::runtime_error {
+			public:
+			WrotePastEnd() noexcept : std::runtime_error("Binary wrote past end") {
+			}
+		};
+
+		namespace BinarizerLoader {
+			typedef std::vector<std::optional<std::string>> RESOURCE_OPTIONAL_VECTOR;
+
+			static const std::string AI_SND_TRANSITION_RESOURCE = "/common/ai/aisndtransition/ai_snd_transition.ai";
+
+			RESOURCE_OPTIONAL_VECTOR getResourceOptionalVector(std::istream &inputStream, std::streamsize size);
+			void setResourceOptionalVector(std::ostream &outputStream, std::streamsize size, const RESOURCE_OPTIONAL_VECTOR &resourceOptionalVector);
+		};
+
 		/*
 		for water slices, DXT5 is not supported and an uncompressed format must be used instead
 		in order to detect which images are water slices, we need to read the RLE files
@@ -103,7 +118,7 @@ namespace Ubi {
 			typedef std::map<std::string, Layer> LAYER_MAP;
 			typedef std::shared_ptr<LAYER_MAP> LAYER_MAP_POINTER;
 
-			static SLICE_MAP createSliceMap(std::istream &inputStream, std::streamsize size);
+			SLICE_MAP createSliceMap(std::istream &inputStream, std::streamsize size);
 		};
 
 		// this is the abstract class on which all resources are based
@@ -198,31 +213,51 @@ namespace Ubi {
 				StateData(const StateData &stateData) = delete;
 				StateData &operator=(const StateData &stateData) = delete;
 			};
-
-			class Header {
-				private:
-				void throwReadPastEnd();
-
+			
+			class HeaderCopier {
+				protected:
 				typedef uint64_t ID;
 
 				// "ubi/b0-l"
 				static const ID UBI_B0_L = 0x6C2D30622F696275;
 
-				std::istream &inputStream;
 				std::streamsize fileSize = 0;
 				std::streampos filePosition = 0;
 
+				HeaderCopier(std::streamsize fileSize, std::streampos filePosition);
+			};
+
+			class HeaderReader : private HeaderCopier {
+				private:
+				void throwReadPastEnd();
+
+				std::istream &inputStream;
+
 				public:
-				Header(std::istream &inputStream, std::streamsize fileSize);
-				~Header();
-				Header(const Header &header) = delete;
-				Header &operator=(const Header &header) = delete;
+				HeaderReader(std::istream &inputStream, std::streamsize fileSize);
+				~HeaderReader();
+				HeaderReader(const HeaderReader &headerReader) = delete;
+				HeaderReader &operator=(const HeaderReader &headerReader) = delete;
+			};
+
+			class HeaderWriter : private HeaderCopier {
+				private:
+				void throwWrotePastEnd();
+
+				std::ostream &outputStream;
+
+				public:
+				HeaderWriter(std::ostream &outputStream, std::streamsize fileSize);
+				~HeaderWriter();
+				HeaderWriter(const HeaderReader &headerWriter) = delete;
+				HeaderWriter &operator=(const HeaderWriter &headerWriter) = delete;
 			};
 		};
 
 		// a basic factory pattern going on here for the creation of resources
-		void readFileHeader(std::istream &inputStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size = -1);
-		Resource::Loader::POINTER readFileLoader(std::istream &inputStream, std::optional<Ubi::Binary::Header> &headerOptional, std::streamsize size = -1);
+		void readFileHeader(std::istream &inputStream, std::optional<Ubi::Binary::HeaderReader> &headerReaderOptional, std::streamsize size = -1);
+		void writeFileHeader(std::ostream &outputStream, std::optional<Ubi::Binary::HeaderWriter> &headerWriterOptional, std::streamsize size = -1);
+		Resource::Loader::POINTER readFileLoader(std::istream &inputStream, std::optional<Ubi::Binary::HeaderReader> &headerReaderOptional, std::streamsize size = -1);
 		Resource::POINTER createResourcePointer(std::istream &inputStream, std::streamsize size = -1);
 		Resource::POINTER createLayerMap(std::istream &inputStream, Binary::RLE::LAYER_MAP &layerMap, std::streamsize size = -1);
 		Resource::POINTER createMaskPathSet(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size = -1);
@@ -367,7 +402,8 @@ namespace Ubi {
 
 			void createLayerMap(
 				std::istream &inputStream,
-				File::SIZE fileSystemPosition, Binary::RLE::LAYER_MAP &layerMap
+				File::SIZE fileSystemPosition,
+				Binary::RLE::LAYER_MAP &layerMap
 			) const;
 
 			void appendToTextureBoxMap(
@@ -433,6 +469,8 @@ namespace Ubi {
 		File::SIZE fileSystemPosition = 0;
 
 		public:
+		static File::POINTER findFile(std::istream &stream, const BigFile::Path::VECTOR &pathVector);
+
 		Header header;
 		Directory directory;
 

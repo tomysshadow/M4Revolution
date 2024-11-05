@@ -16,8 +16,6 @@ namespace AI {
 
 	static const Locale LOCALE("English", LC_NUMERIC);
 
-	void copyThread(Work::Edit &edit);
-
 	void editF32(
 		Work::Edit &edit,
 		const std::string &name,
