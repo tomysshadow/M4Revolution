@@ -35,7 +35,16 @@ namespace gfx_tools {
 	}
 
 	M4Image::COLOR_FORMAT ImageInfo::GetColorFormat() const {
-		return PIXELFORMAT_COLOR_FORMAT_MAP.at(enumPixelFormat);
+		// equivalent
+		if (enumPixelFormat == requestedEnumPixelFormat) {
+			return PIXELFORMAT_COLOR_FORMAT_MAP.at(enumPixelFormat);
+		}
+
+		// 16-bit
+		if (enumPixelFormat == PIXELFORMAT_AL_88) {
+			return M4Image::COLOR_FORMAT::LA16;
+		}
+		return PIXELFORMAT_COLOR_FORMAT_MAP_8_TO_32.at(requestedEnumPixelFormat); // 8-bit
 	}
 
 	M4Image::COLOR_FORMAT ImageInfo::GetRequestedColorFormat() const {
@@ -43,15 +52,17 @@ namespace gfx_tools {
 	}
 
 	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_MAP = {
-		{PIXELFORMAT_ABGR_8888, M4Image::COLOR_FORMAT::RGBA32},
-		{PIXELFORMAT_XBGR_8888, M4Image::COLOR_FORMAT::RGBX32},
 		{PIXELFORMAT_ARGB_8888, M4Image::COLOR_FORMAT::BGRA32},
 		{PIXELFORMAT_XRGB_8888, M4Image::COLOR_FORMAT::BGRX32},
-		{PIXELFORMAT_BGR_888, M4Image::COLOR_FORMAT::RGB24},
 		{PIXELFORMAT_RGB_888, M4Image::COLOR_FORMAT::BGR24},
 		{PIXELFORMAT_AL_88, M4Image::COLOR_FORMAT::LA16},
 		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::L8},
 		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::L8}
+	};
+
+	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_MAP_8_TO_32 = {
+		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::BGRA32},
+		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::XXXL32}
 	};
 
 	void ValidatedImageInfo::MakePowerOfTwo(DIMENSION &dimension, bool reserved) {

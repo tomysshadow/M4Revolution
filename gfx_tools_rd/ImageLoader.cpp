@@ -95,7 +95,7 @@ namespace gfx_tools {
 				IMAGE_INFO.textureWidth,
 				IMAGE_INFO.textureHeight,
 				m4ImageStride,
-				IMAGE_INFO.GetRequestedColorFormat(),
+				IMAGE_INFO.GetColorFormat(),
 				pointer
 			);
 
@@ -131,7 +131,7 @@ namespace gfx_tools {
 			imageInfo.textureWidth,
 			imageInfo.textureHeight,
 			m4ImageStride,
-			imageInfo.GetColorFormat(),
+			imageInfo.GetRequestedColorFormat(),
 			pointer
 		);
 
@@ -275,7 +275,7 @@ namespace gfx_tools {
 			imageInfo.textureWidth,
 			imageInfo.textureHeight,
 			m4ImageStride,
-			imageInfo.GetRequestedColorFormat(),
+			imageInfo.GetColorFormat(),
 			pointer
 		);
 
