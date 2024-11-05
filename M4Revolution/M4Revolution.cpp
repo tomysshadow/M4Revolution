@@ -2,6 +2,7 @@
 #include "AI.h"
 #include <chrono>
 #include <iostream>
+#include <sstream>
 #include <filesystem>
 
 #ifdef D3D9
@@ -754,6 +755,19 @@ M4Revolution::M4Revolution(
 
 M4Revolution::~M4Revolution() {
 	destroy();
+}
+
+void M4Revolution::toggleSoundFading() {
+	std::fstream fileStream(inputFileName, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+
+	Log log("Toggling Sound Fading", fileStream);
+	Work::Edit edit(fileStream);
+
+	//try {
+	AI::toggleSoundFading(edit);
+	//} catch (StreamFailed) {
+	// TODO: game is running, or not admin
+	//}
 }
 
 void M4Revolution::editTransitionTime() {

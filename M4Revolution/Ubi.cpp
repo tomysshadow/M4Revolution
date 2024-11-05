@@ -67,9 +67,18 @@ void Ubi::String::writeOptionalEncrypted(std::ostream &outputStream, std::option
 	writeOptional(outputStream, swizzle(strOptional));
 }
 
-Ubi::Binary::BinarizerLoader::RESOURCE_OPTIONAL_VECTOR Ubi::Binary::BinarizerLoader::getResourceOptionalVector(std::istream &inputStream, std::streamsize size) {
+std::ostringstream Ubi::Binary::BinarizerLoader::toggleSoundFading(std::istream &inputStream, std::streamsize size, bool &enabled) {
+	enabled = true;
+
+	std::streampos position = inputStream.tellg();
+
 	std::optional<HeaderReader> headerReaderOptional = std::nullopt;
 	readFileHeader(inputStream, headerReaderOptional, size);
+
+	std::ostringstream outputStringStream = {};
+
+	std::optional<HeaderWriter> headerWriterOptional = std::nullopt;
+	writeFileHeader(outputStringStream, headerWriterOptional, size);
 
 	uint32_t resources = 0;
 
@@ -77,42 +86,33 @@ Ubi::Binary::BinarizerLoader::RESOURCE_OPTIONAL_VECTOR Ubi::Binary::BinarizerLoa
 
 	readStreamSafe(inputStream, &resources, RESOURCES_SIZE);
 
-	RESOURCE_OPTIONAL_VECTOR resourceOptionalVector = {};
-	resourceOptionalVector.reserve(resources - 1);
+	std::streampos resourcesPosition = outputStringStream.tellp();
+	writeStreamSafe(outputStringStream, &resources, RESOURCES_SIZE);
 
 	bool nullTerminator = false;
 
 	for (uint32_t i = 0; i < resources; i++) {
-		const std::optional<std::string> &RESOURCE_OPTIONAL = resourceOptionalVector.emplace_back(String::readOptional(inputStream, nullTerminator));
+		const std::optional<std::string> &PATH = String::readOptional(inputStream, nullTerminator);
 
-		if (nullTerminator) {
-			throw std::logic_error("resourceOptional must not have null terminator");
+		if (PATH == AI_SND_TRANSITION_PATH) {
+			copyStream(inputStream, outputStringStream, position + size - inputStream.tellg());
+			resources--;
+
+			enabled = false;
+			break;
 		}
 
-		if (RESOURCE_OPTIONAL == AI_SND_TRANSITION_RESOURCE) {
-			resourceOptionalVector.pop_back();
-		}
+		String::writeOptional(outputStringStream, PATH, nullTerminator);
 	}
-	return resourceOptionalVector;
-}
 
-void Ubi::Binary::BinarizerLoader::setResourceOptionalVector(std::ostream &outputStream, std::streamsize size, const RESOURCE_OPTIONAL_VECTOR &resourceOptionalVector) {
-	std::optional<HeaderWriter> headerWriterOptional = std::nullopt;
-	writeFileHeader(outputStream, headerWriterOptional, size);
-
-	uint32_t resources = (uint32_t)resourceOptionalVector.size();
-
-	const size_t RESOURCES_SIZE = sizeof(resources);
-
-	writeStreamSafe(outputStream, &resources, RESOURCES_SIZE);
-
-	for (
-		RESOURCE_OPTIONAL_VECTOR::const_iterator resourceOptionalVectorIterator = resourceOptionalVector.begin();
-		resourceOptionalVectorIterator != resourceOptionalVector.end();
-		resourceOptionalVectorIterator++
-	) {
-		String::writeOptional(outputStream, *resourceOptionalVectorIterator, false);
+	if (enabled) {
+		String::writeOptional(outputStringStream, AI_SND_TRANSITION_PATH, false);
+		resources++;
 	}
+
+	outputStringStream.seekp(resourcesPosition);
+	writeStreamSafe(outputStringStream, &resources, RESOURCES_SIZE);
+	return outputStringStream;
 }
 
 Ubi::Binary::RLE::SLICE_MAP Ubi::Binary::RLE::createSliceMap(std::istream &inputStream, std::streamsize size) {
@@ -1176,14 +1176,12 @@ void Ubi::BigFile::Directory::createLayerMap(
 	Binary::RLE::LAYER_MAP &layerMap,
 	const File::POINTER_VECTOR &binaryFilePointerVector
 ) const {
-	Binary::Resource::POINTER resourcePointer = 0;
-
 	for (
 		File::POINTER_VECTOR::const_iterator binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
 		binaryFilePointerVectorIterator != binaryFilePointerVector.end();
 		binaryFilePointerVectorIterator++
 	) {
-		resourcePointer = (*binaryFilePointerVectorIterator)->createLayerMap(inputStream, fileSystemPosition, layerMap);
+		(*binaryFilePointerVectorIterator)->createLayerMap(inputStream, fileSystemPosition, layerMap);
 	}
 }
 
@@ -1251,7 +1249,7 @@ void Ubi::BigFile::Header::read(std::istream &inputStream) {
 const std::string Ubi::BigFile::Header::SIGNATURE = "UBI_BF_SIG";
 
 Ubi::BigFile::File::POINTER Ubi::BigFile::findFile(std::istream &stream, const Path::VECTOR &pathVector) {
-	stream.seekg(0, std::ios::beg);
+	stream.seekg(0);
 
 	File::POINTER filePointer = 0;
 	std::streampos position = 0;

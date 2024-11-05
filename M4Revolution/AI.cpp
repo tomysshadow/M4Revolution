@@ -2,9 +2,26 @@
 #include <regex>
 #include <sstream>
 #include <iomanip>
-#include <filesystem>
+#include <string>
 
-void AI::editF32(
+static const Ubi::BigFile::Path::VECTOR BINARIZER_LOADER_PATH_VECTOR = {
+	{{"gamedata", "common"}, "common.m4b"},
+	{{"common"}, "binarizer_loader.log"}
+};
+
+static const Ubi::BigFile::Path::VECTOR TRANSITION_FADE_PATH_VECTOR = {
+	{{"gamedata", "common"}, "common.m4b"},
+	{{"common", "ai", "aitransitionfade"}, "ai_transition_fade.ai"}
+};
+
+static const Ubi::BigFile::Path::VECTOR USER_CONTROLS_PATH_VECTOR = {
+	{{"gamedata", "common"}, "common.m4b"},
+	{{"common", "ai", "aiusercontrols"}, "user_controls.ai"}
+};
+
+static const Locale LOCALE("English", LC_NUMERIC);
+
+void editF32(
 	Work::Edit &edit,
 	const std::string &name,
 	const Ubi::BigFile::Path::VECTOR &pathVector,
@@ -104,6 +121,20 @@ void AI::editF32(
 	const std::string &VALUE_STR_PREFIX = matches[1];
 
 	edit.join(copyThread, position + (std::streamsize)VALUE_STR_PREFIX.length(), outputStringStream.str());
+}
+
+void AI::toggleSoundFading(Work::Edit &edit) {
+	std::fstream &fileStream = edit.fileStream;
+	Ubi::BigFile::File::SIZE size = Ubi::BigFile::findFile(fileStream, BINARIZER_LOADER_PATH_VECTOR)->size;
+	std::streampos position = fileStream.tellg();
+
+	bool enabled = false;
+	const std::string &STR = Ubi::Binary::BinarizerLoader::toggleSoundFading(edit.fileStream, size, enabled).str();
+
+	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
+	edit.join(copyThread, position, STR);
+
+	consoleLog((std::string("Sound Fading is now ") + (enabled ? "enabled" : "disabled") + ".").c_str());
 }
 
 void AI::editTransitionTime(Work::Edit &edit) {

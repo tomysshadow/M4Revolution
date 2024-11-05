@@ -3,21 +3,23 @@
 #include <stdlib.h>
 
 bool performOperation(M4Revolution &m4Revolution) {
-	const long OPERATION_EDIT_TRANSITION_TIME = 1;
-	const long OPERATION_EDIT_MOUSE_CONTROLS = 2;
-	const long OPERATION_FIX_LOADING = 3;
-	const long OPERATION_RESTORE_BACKUP = 4;
-	const long OPERATION_EXIT = 5;
-	const long OPERATION_MIN = OPERATION_EDIT_TRANSITION_TIME;
+	const long OPERATION_TOGGLE_SOUND_FADING = 1;
+	const long OPERATION_EDIT_TRANSITION_TIME = 2;
+	const long OPERATION_EDIT_MOUSE_CONTROLS = 3;
+	const long OPERATION_FIX_LOADING = 4;
+	const long OPERATION_RESTORE_BACKUP = 5;
+	const long OPERATION_EXIT = 6;
+	const long OPERATION_MIN = OPERATION_TOGGLE_SOUND_FADING;
 	const long OPERATION_MAX = OPERATION_EXIT;
 
-	switch (
-			consoleLong(
-				"Please enter the number corresponding to the operation you would like to perform.",
-				OPERATION_MIN,
-				OPERATION_MAX
-			)
-		) {
+	switch (consoleLong(
+			"Please enter the number corresponding to the operation you would like to perform.",
+			OPERATION_MIN,
+			OPERATION_MAX
+		)) {
+		case OPERATION_TOGGLE_SOUND_FADING:
+		m4Revolution.toggleSoundFading();
+		break;
 		case OPERATION_EDIT_TRANSITION_TIME:
 		m4Revolution.editTransitionTime();
 		break;
@@ -93,11 +95,12 @@ int main(int argc, char** argv) {
 	do {
 		consoleLog("This menu may be used to perform the following operations.", 2);
 
-		consoleLog("1) Edit Transition Time");
-		consoleLog("2) Edit Mouse Controls");
-		consoleLog("3) Fix Loading");
-		consoleLog("4) Restore Backup");
-		consoleLog("5) Exit", 2);
+		consoleLog("1) Toggle Sound Fading");
+		consoleLog("2) Edit Transition Time");
+		consoleLog("3) Edit Mouse Controls");
+		consoleLog("4) Fix Loading");
+		consoleLog("5) Restore Backup");
+		consoleLog("6) Exit", 2);
 	} while (consoleBool(
 		(
 			std::string("The operation has been ")

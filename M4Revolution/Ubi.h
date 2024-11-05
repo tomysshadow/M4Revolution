@@ -1,6 +1,7 @@
 #pragma once
 #include "shared.h"
 #include "IgnoreCaseComparer.h"
+#include <sstream>
 #include <unordered_set>
 #include <map>
 #include <vector>
@@ -43,12 +44,9 @@ namespace Ubi {
 		};
 
 		namespace BinarizerLoader {
-			typedef std::vector<std::optional<std::string>> RESOURCE_OPTIONAL_VECTOR;
+			static const std::string AI_SND_TRANSITION_PATH = "/common/ai/aisndtransition/ai_snd_transition.ai";
 
-			static const std::string AI_SND_TRANSITION_RESOURCE = "/common/ai/aisndtransition/ai_snd_transition.ai";
-
-			RESOURCE_OPTIONAL_VECTOR getResourceOptionalVector(std::istream &inputStream, std::streamsize size);
-			void setResourceOptionalVector(std::ostream &outputStream, std::streamsize size, const RESOURCE_OPTIONAL_VECTOR &resourceOptionalVector);
+			std::ostringstream toggleSoundFading(std::istream &inputStream, std::streamsize size, bool &enabled);
 		};
 
 		/*

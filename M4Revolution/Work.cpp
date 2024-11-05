@@ -83,7 +83,7 @@ void Work::Edit::copyThread(Work::Edit &edit) {
 			{
 				Output output = {};
 
-				fileStream.seekg(0, std::ios::beg);
+				fileStream.seekg(0);
 				copyStream(fileStream, output.fileStream);
 			}
 
