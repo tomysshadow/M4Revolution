@@ -34,12 +34,8 @@ namespace gfx_tools {
 		return PixelFormat::GetPixelFormat(requestedEnumPixelFormat)->GetBitsPerPixel();
 	}
 
-	// if the two pixel formats are equivalent
-	// then we allow BGRA/BGRX, BGR, LA, or L (no conversion happens)
-	// if the pixel format must be 16-bit, we convert it to LA or AL
-	// if the requested pixel format is 8-bit, we only convert to BGRA or XXXL
 	// remember that the "requested" pixel format refers to the
-	// pixel format before it was corrected, that is, of the original image
+	// pixel format before it was corrected, that is, of the input image
 	// (similar to requestedTextureWidth/Height)
 	// so enumPixelFormat determines the actual output format
 	// but we only support these specific conversions
@@ -71,14 +67,15 @@ namespace gfx_tools {
 		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::L8}
 	};
 
+	// input is assumed to be luminance for these conversions
 	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_8_TO_16_MAP = {
-		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::AL16},
-		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::LA16}
+		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::AL16}, // L -> L(A)
+		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::LA16} // L -> (L)A
 	};
 
 	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_8_TO_32_MAP = {
-		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::XXXL32},
-		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::BGRA32}
+		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::XXXL32}, // L -> BGR(A)
+		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::BGRA32} // L -> (BGR)A
 	};
 
 	void ValidatedImageInfo::MakePowerOfTwo(DIMENSION &dimension, bool reserved) {
