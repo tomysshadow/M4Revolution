@@ -53,7 +53,7 @@ namespace gfx_tools {
 
 		// 16-bit
 		if (enumPixelFormat == PIXELFORMAT_AL_88) {
-			return PIXELFORMAT_COLOR_FORMAT_16_MAP.at(requestedEnumPixelFormat);
+			return PIXELFORMAT_COLOR_FORMAT_8_TO_16_MAP.at(requestedEnumPixelFormat);
 		}
 		return PIXELFORMAT_COLOR_FORMAT_8_TO_32_MAP.at(requestedEnumPixelFormat); // 8-bit
 	}
@@ -71,7 +71,7 @@ namespace gfx_tools {
 		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::L8}
 	};
 
-	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_16_MAP = {
+	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_8_TO_16_MAP = {
 		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::AL16},
 		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::LA16}
 	};
