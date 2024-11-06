@@ -131,7 +131,7 @@ void AI::toggleSoundFading(Work::Edit &edit) {
 
 	consoleLog(
 		(
-			std::string("Sound Fading is now ")
+			std::string("Sound Fading has now been toggled ")
 		
 			+ (
 				Ubi::Binary::BinarizerLoader::toggleSoundFading(
@@ -140,8 +140,8 @@ void AI::toggleSoundFading(Work::Edit &edit) {
 					size
 				)
 			
-				? "enabled"
-				: "disabled"
+				? "on"
+				: "off"
 			)
 		
 			+ "."

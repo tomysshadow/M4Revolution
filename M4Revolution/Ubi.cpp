@@ -86,7 +86,7 @@ bool Ubi::Binary::BinarizerLoader::toggleSoundFading(std::istream &inputStream, 
 	writeStreamSafe(outputStream, &resources, RESOURCES_SIZE);
 
 	bool nullTerminator = false;
-	bool enabled = true;
+	bool on = true;
 
 	for (uint32_t i = 0; i < resources; i++) {
 		const std::optional<std::string> &PATH = String::readOptional(inputStream, nullTerminator);
@@ -95,21 +95,21 @@ bool Ubi::Binary::BinarizerLoader::toggleSoundFading(std::istream &inputStream, 
 			copyStream(inputStream, outputStream, position + size - inputStream.tellg());
 			resources--;
 
-			enabled = false;
+			on = false;
 			break;
 		}
 
 		String::writeOptional(outputStream, PATH, nullTerminator);
 	}
 
-	if (enabled) {
+	if (on) {
 		String::writeOptional(outputStream, AI_SND_TRANSITION_PATH, false);
 		resources++;
 	}
 
 	outputStream.seekp(resourcesPosition);
 	writeStreamSafe(outputStream, &resources, RESOURCES_SIZE);
-	return enabled;
+	return on;
 }
 
 Ubi::Binary::RLE::SLICE_MAP Ubi::Binary::RLE::createSliceMap(std::istream &inputStream, std::streamsize size) {
