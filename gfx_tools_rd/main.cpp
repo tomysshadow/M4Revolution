@@ -29,7 +29,7 @@ namespace gfx_tools {
 		const size_t OUTPUT_CHANNEL_DV = 1;
 		const size_t OUTPUT_CHANNEL_LUMINANCE = 2;
 
-		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + (height * inputStride) - inputStride);
+		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + ((size_t)height * (size_t)inputStride) - inputStride);
 		M4Image::Color32* rowPointer = 0;
 
 		M4Image::Color32* inputColorPointer = 0;
@@ -104,7 +104,7 @@ namespace gfx_tools {
 		const unsigned char BGR_GRAY = 128;
 		const unsigned char ALPHA_OPAQUE = 255;
 
-		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + (height * inputStride) - inputStride);
+		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + ((size_t)height * (size_t)inputStride) - inputStride);
 		M4Image::Color32* rowPointer = 0;
 
 		M4Image::Color32* inputColorPointer = 0;
