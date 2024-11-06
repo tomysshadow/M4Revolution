@@ -8,6 +8,7 @@
 #include <string>
 #include <optional>
 #include <fstream>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <libzap.h>

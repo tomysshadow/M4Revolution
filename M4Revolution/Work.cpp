@@ -66,7 +66,7 @@ Work::Data::Data(size_t size, POINTER pointer)
 	pointer(pointer) {
 }
 
-void Work::Edit::copyThread(Work::Edit &edit) {
+void Work::Edit::copyThread(Edit &edit) {
 	std::fstream &fileStream = edit.fileStream;
 	bool backup = false;
 

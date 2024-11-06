@@ -87,7 +87,7 @@ namespace Work {
 		bool copied = false;
 
 		public:
-		static void copyThread(Work::Edit &edit);
+		static void copyThread(Edit &edit);
 
 		std::fstream &fileStream;
 

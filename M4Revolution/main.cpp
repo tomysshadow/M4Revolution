@@ -1,6 +1,5 @@
 #include "shared.h"
 #include "M4Revolution.h"
-#include <stdlib.h>
 
 bool performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_TOGGLE_SOUND_FADING = 1;

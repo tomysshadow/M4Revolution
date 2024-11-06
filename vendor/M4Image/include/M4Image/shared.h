@@ -3,6 +3,7 @@
 #define NOMINMAX
 
 #include <stdexcept>
+#include <stdlib.h>
 #include <limits.h>
 
 #ifdef _WIN32

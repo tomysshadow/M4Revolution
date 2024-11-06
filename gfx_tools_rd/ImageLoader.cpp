@@ -1,6 +1,5 @@
 #include "ImageLoader.h"
 #include <M4Image/M4Image.h>
-#include <libzap.h>
 
 namespace gfx_tools {
 	RawBuffer::SIZE ImageLoader::GetRawBufferTotalSize() {

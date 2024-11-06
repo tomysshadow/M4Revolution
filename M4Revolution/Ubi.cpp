@@ -203,8 +203,8 @@ Ubi::Binary::Resource::Resource(Loader::POINTER loaderPointer, VERSION version)
 	}
 }
 
-void Ubi::Binary::TextureBox::create(std::istream &inputStream, Binary::RLE::LAYER_MAP &layerMap) {
-	Binary::RLE::LAYER_MAP::iterator layerMapIterator = {};
+void Ubi::Binary::TextureBox::create(std::istream &inputStream, RLE::LAYER_MAP &layerMap) {
+	RLE::LAYER_MAP::iterator layerMapIterator = {};
 
 	std::optional<std::string> layerFileOptional = String::readOptionalEncrypted(inputStream);
 
@@ -217,7 +217,7 @@ void Ubi::Binary::TextureBox::create(std::istream &inputStream, Binary::RLE::LAY
 			layerMapIterator = layerMap.insert({ LAYER_FILE, {} }).first;
 		}
 
-		Binary::RLE::Layer &layer = layerMapIterator->second;
+		RLE::Layer &layer = layerMapIterator->second;
 		layer.textureBoxNameOptional = LOADER_POINTER->nameOptional;
 
 		const size_t FIELDS_SIZE = 17;
@@ -277,69 +277,15 @@ Ubi::Binary::TextureBox::TextureBox(Loader::POINTER loaderPointer, std::istream 
 
 Ubi::Binary::TextureBox::TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream)
 	: Resource(loaderPointer, VERSION) {
-	Binary::RLE::LAYER_MAP layerMap = {};
+	RLE::LAYER_MAP layerMap = {};
 	create(inputStream, layerMap);
-}
-
-Ubi::Binary::InteractiveOffsetProvider::InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream)
-	: Resource(loaderPointer, VERSION) {
-	const size_t FIELDS_SIZE = 33;
-	inputStream.seekg(FIELDS_SIZE, std::ios::cur);
-}
-
-Ubi::Binary::TextureAlignedOffsetProvider::TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream)
-	: Resource(loaderPointer, VERSION) {
-	const size_t FIELDS_SIZE = 65;
-	inputStream.seekg(FIELDS_SIZE, std::ios::cur);
-}
-
-void Ubi::Binary::StateData::create(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet) {
-	uint32_t nbrAliases = 0;
-	const size_t NBR_ALIASES_SIZE = sizeof(nbrAliases);
-
-	readStreamSafe(inputStream, &nbrAliases, NBR_ALIASES_SIZE);
-
-	for (uint32_t i = 0; i < nbrAliases; i++) {
-		String::readOptional(inputStream);
-	}
-
-	const size_t REFRESH_RATE_SIZE = 4;
-	inputStream.seekg(REFRESH_RATE_SIZE, std::ios::cur);
-
-	std::optional<std::string> maskPathOptional = String::readOptionalEncrypted(inputStream);
-
-	if (maskPathOptional.has_value()) {
-		maskPathSet.insert(maskPathOptional.value());
-	}
-
-	uint32_t resources = 0;
-	const size_t RESOURCES_SIZE = sizeof(resources);
-
-	readStreamSafe(inputStream, &resources, RESOURCES_SIZE);
-
-	for (uint32_t i = 0; i < resources; i++) {
-		createResourcePointer(inputStream);
-	}
-
-	const size_t WATER_FACE_BILERP_FIELDS_SIZE = 6;
-	inputStream.seekg(WATER_FACE_BILERP_FIELDS_SIZE, std::ios::cur);
-}
-
-Ubi::Binary::StateData::StateData(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet)
-	: Resource(loaderPointer, VERSION) {
-	create(inputStream, maskPathSet);
-}
-
-Ubi::Binary::StateData::StateData(Loader::POINTER loaderPointer, std::istream &inputStream)
-	: Resource(loaderPointer, VERSION) {
-	RLE::MASK_PATH_SET maskPathSet = {};
-	create(inputStream, maskPathSet);
 }
 
 void Ubi::Binary::Water::create(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap) {
 	std::optional<std::string> resourceNameOptional = String::readOptionalEncrypted(inputStream);
 
 	const size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
+
 	inputStream.seekg(WATER_FIELDS_SIZE, std::ios::cur);
 
 	uint32_t resources = 0;
@@ -409,6 +355,61 @@ Ubi::Binary::Water::Water(Loader::POINTER loaderPointer, std::istream &inputStre
 	create(inputStream, textureBoxMap);
 }
 
+Ubi::Binary::InteractiveOffsetProvider::InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream)
+	: Resource(loaderPointer, VERSION) {
+	const size_t FIELDS_SIZE = 33;
+	inputStream.seekg(FIELDS_SIZE, std::ios::cur);
+}
+
+Ubi::Binary::TextureAlignedOffsetProvider::TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream)
+	: Resource(loaderPointer, VERSION) {
+	const size_t FIELDS_SIZE = 65;
+	inputStream.seekg(FIELDS_SIZE, std::ios::cur);
+}
+
+void Ubi::Binary::StateData::create(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet) {
+	uint32_t nbrAliases = 0;
+	const size_t NBR_ALIASES_SIZE = sizeof(nbrAliases);
+
+	readStreamSafe(inputStream, &nbrAliases, NBR_ALIASES_SIZE);
+
+	for (uint32_t i = 0; i < nbrAliases; i++) {
+		String::readOptional(inputStream);
+	}
+
+	const size_t REFRESH_RATE_SIZE = 4;
+	inputStream.seekg(REFRESH_RATE_SIZE, std::ios::cur);
+
+	std::optional<std::string> maskPathOptional = String::readOptionalEncrypted(inputStream);
+
+	if (maskPathOptional.has_value()) {
+		maskPathSet.insert(maskPathOptional.value());
+	}
+
+	uint32_t resources = 0;
+	const size_t RESOURCES_SIZE = sizeof(resources);
+
+	readStreamSafe(inputStream, &resources, RESOURCES_SIZE);
+
+	for (uint32_t i = 0; i < resources; i++) {
+		createResourcePointer(inputStream);
+	}
+
+	const size_t WATER_FACE_BILERP_FIELDS_SIZE = 6;
+	inputStream.seekg(WATER_FACE_BILERP_FIELDS_SIZE, std::ios::cur);
+}
+
+Ubi::Binary::StateData::StateData(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet)
+	: Resource(loaderPointer, VERSION) {
+	create(inputStream, maskPathSet);
+}
+
+Ubi::Binary::StateData::StateData(Loader::POINTER loaderPointer, std::istream &inputStream)
+	: Resource(loaderPointer, VERSION) {
+	RLE::MASK_PATH_SET maskPathSet = {};
+	create(inputStream, maskPathSet);
+}
+
 Ubi::Binary::HeaderCopier::HeaderCopier(std::streamsize fileSize, std::streampos filePosition)
 	: fileSize(fileSize),
 	filePosition(filePosition) {
@@ -461,7 +462,7 @@ Ubi::Binary::HeaderReader::~HeaderReader() {
 	throwReadPastEnd();
 }
 
-void Ubi::Binary::readFileHeader(std::istream &inputStream, std::optional<Binary::HeaderReader> &headerReaderOptional, std::streamsize size) {
+void Ubi::Binary::readFileHeader(std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size) {
 	MAKE_SCOPE_EXIT(headerReaderOptionalScopeExit) {
 		headerReaderOptional = std::nullopt;
 	};
@@ -472,7 +473,7 @@ void Ubi::Binary::readFileHeader(std::istream &inputStream, std::optional<Binary
 	}
 }
 
-void Ubi::Binary::writeFileHeader(std::ostream &outputStream, std::optional<Ubi::Binary::HeaderWriter> &headerWriterOptional, std::streamsize size) {
+void Ubi::Binary::writeFileHeader(std::ostream &outputStream, std::optional<HeaderWriter> &headerWriterOptional, std::streamsize size) {
 	MAKE_SCOPE_EXIT(headerWriterOptionalScopeExit) {
 		headerWriterOptional = std::nullopt;
 	};
@@ -483,7 +484,7 @@ void Ubi::Binary::writeFileHeader(std::ostream &outputStream, std::optional<Ubi:
 	}
 }
 
-Ubi::Binary::Resource::Loader::POINTER Ubi::Binary::readFileLoader(std::istream &inputStream, std::optional<Binary::HeaderReader> &headerReaderOptional, std::streamsize size) {
+Ubi::Binary::Resource::Loader::POINTER Ubi::Binary::readFileLoader(std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size) {
 	readFileHeader(inputStream, headerReaderOptional, size);
 	return std::make_shared<Resource::Loader>(inputStream);
 }
@@ -497,17 +498,17 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createResourcePointer(std::istream &
 		return std::make_shared<TextureBox>(loaderPointer, inputStream);
 		case Water::ID:
 		return std::make_shared<Water>(loaderPointer, inputStream);
-		case StateData::ID:
-		return std::make_shared<StateData>(loaderPointer, inputStream);
 		case InteractiveOffsetProvider::ID:
 		return std::make_shared<InteractiveOffsetProvider>(loaderPointer, inputStream);
 		case TextureAlignedOffsetProvider::ID:
 		return std::make_shared<TextureAlignedOffsetProvider>(loaderPointer, inputStream);
+		case StateData::ID:
+		return std::make_shared<StateData>(loaderPointer, inputStream);
 	}
 	return 0;
 }
 
-Ubi::Binary::Resource::POINTER Ubi::Binary::createLayerMap(std::istream &inputStream, Binary::RLE::LAYER_MAP &layerMap, std::streamsize size) {
+Ubi::Binary::Resource::POINTER Ubi::Binary::createLayerMap(std::istream &inputStream, RLE::LAYER_MAP &layerMap, std::streamsize size) {
 	MAKE_SCOPE_EXIT(layerFileOptionalScopeExit) {
 		layerMap = {};
 	};
@@ -523,26 +524,6 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createLayerMap(std::istream &inputSt
 
 	if (resourcePointer) {
 		layerFileOptionalScopeExit.dismiss();
-	}
-	return resourcePointer;
-}
-
-Ubi::Binary::Resource::POINTER Ubi::Binary::createMaskPathSet(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size) {
-	MAKE_SCOPE_EXIT(maskPathSetScopeExit) {
-		maskPathSet = {};
-	};
-
-	std::optional<HeaderReader> headerReaderOptional = std::nullopt;
-	Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
-	Resource::POINTER resourcePointer = 0;
-
-	switch (loaderPointer->id) {
-		case StateData::ID:
-		resourcePointer = std::make_shared<StateData>(loaderPointer, inputStream, maskPathSet);
-	}
-
-	if (resourcePointer) {
-		maskPathSetScopeExit.dismiss();
 	}
 	return resourcePointer;
 }
@@ -563,6 +544,26 @@ Ubi::Binary::Resource::POINTER Ubi::Binary::createTextureBoxMap(std::istream &in
 
 	if (resourcePointer) {
 		textureBoxMapScopeExit.dismiss();
+	}
+	return resourcePointer;
+}
+
+Ubi::Binary::Resource::POINTER Ubi::Binary::createMaskPathSet(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size) {
+	MAKE_SCOPE_EXIT(maskPathSetScopeExit) {
+		maskPathSet = {};
+	};
+
+	std::optional<HeaderReader> headerReaderOptional = std::nullopt;
+	Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
+	Resource::POINTER resourcePointer = 0;
+
+	switch (loaderPointer->id) {
+		case StateData::ID:
+		resourcePointer = std::make_shared<StateData>(loaderPointer, inputStream, maskPathSet);
+	}
+
+	if (resourcePointer) {
+		maskPathSetScopeExit.dismiss();
 	}
 	return resourcePointer;
 }
@@ -642,7 +643,7 @@ void Ubi::BigFile::File::write(std::ostream &outputStream) const {
 
 Ubi::Binary::Resource::POINTER Ubi::BigFile::File::createLayerMap(
 	std::istream &inputStream,
-	File::SIZE fileSystemPosition,
+	SIZE fileSystemPosition,
 	Binary::RLE::LAYER_MAP &layerMap
 ) const {
 	std::streampos position = inputStream.tellg();
@@ -661,7 +662,7 @@ Ubi::Binary::Resource::POINTER Ubi::BigFile::File::createLayerMap(
 
 Ubi::Binary::Resource::POINTER Ubi::BigFile::File::appendToTextureBoxMap(
 	std::istream &inputStream,
-	File::SIZE fileSystemPosition,
+	SIZE fileSystemPosition,
 	Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap
 ) const {
 	std::streampos position = inputStream.tellg();
@@ -1065,7 +1066,7 @@ void Ubi::BigFile::Directory::find(std::istream &inputStream, const Path &path, 
 			// is this the file we are looking for?
 			const std::optional<std::string> &NAME_OPTIONAL = filePointer->nameOptional;
 
-			if (NAME_OPTIONAL.has_value() && NAME_OPTIONAL.value() == path.fileName) {
+			if (path.fileName == NAME_OPTIONAL) {
 				// erase all but the last element
 				// (there should always be at least one element in the vector at this point)
 				filePointerVector.erase(filePointerVector.begin(), filePointerVector.end() - 1);
@@ -1119,7 +1120,7 @@ Ubi::BigFile::File::POINTER Ubi::BigFile::Directory::find(const Path &path, Path
 		if (filePointer) {
 			const std::optional<std::string> &NAME_OPTIONAL = filePointer->nameOptional;
 
-			if (NAME_OPTIONAL.has_value() && NAME_OPTIONAL.value() == path.fileName) {
+			if (path.fileName == NAME_OPTIONAL) {
 				return filePointer;
 			}
 		}
@@ -1231,7 +1232,7 @@ void Ubi::BigFile::Header::read(std::istream &inputStream) {
 	std::optional<std::string> signatureOptional = String::readOptional(inputStream);
 
 	// must exactly match, case sensitively
-	if (!signatureOptional.has_value() || signatureOptional.value() != SIGNATURE) {
+	if (signatureOptional != SIGNATURE) {
 		throw Invalid();
 	}
 

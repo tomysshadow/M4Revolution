@@ -67,21 +67,21 @@ namespace Ubi {
 			typedef std::map<std::string, FACE> FACE_STR_MAP;
 
 			static const FACE_STR_MAP WATER_SLICE_FACE_STR_MAP = {
-				{"back", Ubi::Binary::RLE::FACE::BACK},
-				{"front", Ubi::Binary::RLE::FACE::FRONT},
-				{"left", Ubi::Binary::RLE::FACE::LEFT},
-				{"right", Ubi::Binary::RLE::FACE::RIGHT},
-				{"top", Ubi::Binary::RLE::FACE::TOP},
-				{"bottom", Ubi::Binary::RLE::FACE::BOTTOM}
+				{"back", FACE::BACK},
+				{"front", FACE::FRONT},
+				{"left", FACE::LEFT},
+				{"right", FACE::RIGHT},
+				{"top", FACE::TOP},
+				{"bottom", FACE::BOTTOM}
 			};
 
 			static const FACE_STR_MAP FILE_FACE_STR_MAP = {
-				{"back.rle", Ubi::Binary::RLE::FACE::BACK},
-				{"front.rle", Ubi::Binary::RLE::FACE::FRONT},
-				{"left.rle", Ubi::Binary::RLE::FACE::LEFT},
-				{"right.rle", Ubi::Binary::RLE::FACE::RIGHT},
-				{"top.rle", Ubi::Binary::RLE::FACE::TOP},
-				{"bottom.rle", Ubi::Binary::RLE::FACE::BOTTOM}
+				{"back.rle", FACE::BACK},
+				{"front.rle", FACE::FRONT},
+				{"left.rle", FACE::LEFT},
+				{"right.rle", FACE::RIGHT},
+				{"top.rle", FACE::TOP},
+				{"bottom.rle", FACE::BOTTOM}
 			};
 
 			// the Water file specifies what resources it is intended to affect
@@ -149,13 +149,13 @@ namespace Ubi {
 		namespace {
 			class TextureBox : public virtual Resource {
 				private:
-				void create(std::istream &inputStream, Binary::RLE::LAYER_MAP &layerMap);
+				void create(std::istream &inputStream, RLE::LAYER_MAP &layerMap);
 
 				public:
 				static const Resource::ID ID = 15;
 				static const Resource::VERSION VERSION = 5;
 
-				TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream, Binary::RLE::LAYER_MAP &layerMap);
+				TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::LAYER_MAP &layerMap);
 				TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream);
 				TextureBox(const TextureBox &textureBox) = delete;
 				TextureBox &operator=(const TextureBox &textureBox) = delete;
@@ -252,13 +252,13 @@ namespace Ubi {
 		};
 
 		// a basic factory pattern going on here for the creation of resources
-		void readFileHeader(std::istream &inputStream, std::optional<Ubi::Binary::HeaderReader> &headerReaderOptional, std::streamsize size = -1);
-		void writeFileHeader(std::ostream &outputStream, std::optional<Ubi::Binary::HeaderWriter> &headerWriterOptional, std::streamsize size = -1);
-		Resource::Loader::POINTER readFileLoader(std::istream &inputStream, std::optional<Ubi::Binary::HeaderReader> &headerReaderOptional, std::streamsize size = -1);
+		void readFileHeader(std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size = -1);
+		void writeFileHeader(std::ostream &outputStream, std::optional<HeaderWriter> &headerWriterOptional, std::streamsize size = -1);
+		Resource::Loader::POINTER readFileLoader(std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size = -1);
 		Resource::POINTER createResourcePointer(std::istream &inputStream, std::streamsize size = -1);
-		Resource::POINTER createLayerMap(std::istream &inputStream, Binary::RLE::LAYER_MAP &layerMap, std::streamsize size = -1);
-		Resource::POINTER createMaskPathSet(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size = -1);
+		Resource::POINTER createLayerMap(std::istream &inputStream, RLE::LAYER_MAP &layerMap, std::streamsize size = -1);
 		Resource::POINTER createTextureBoxMap(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap, std::streamsize size = -1);
+		Resource::POINTER createMaskPathSet(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size = -1);
 	};
 
 	struct BigFile {
@@ -329,13 +329,14 @@ namespace Ubi {
 			void write(std::ostream &outputStream) const;
 
 			Binary::Resource::POINTER createLayerMap(
-				std::istream &inputStream, File::SIZE fileSystemPosition,
+				std::istream &inputStream,
+				SIZE fileSystemPosition,
 				Binary::RLE::LAYER_MAP &layerMap
 			) const;
 
 			Binary::Resource::POINTER appendToTextureBoxMap(
 				std::istream &inputStream,
-				File::SIZE fileSystemPosition,
+				SIZE fileSystemPosition,
 				Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap
 			) const;
 
@@ -466,7 +467,7 @@ namespace Ubi {
 		File::SIZE fileSystemPosition = 0;
 
 		public:
-		static File::POINTER findFile(std::istream &stream, const BigFile::Path::VECTOR &pathVector);
+		static File::POINTER findFile(std::istream &stream, const Path::VECTOR &pathVector);
 
 		Header header;
 		Directory directory;

@@ -2,7 +2,6 @@
 #include "AI.h"
 #include <chrono>
 #include <iostream>
-#include <sstream>
 #include <filesystem>
 
 #ifdef D3D9
@@ -17,7 +16,7 @@ void M4Revolution::destroy() {
 	#ifdef MULTITHREADED
 	CloseThreadpool(pool);
 	#endif
-};
+}
 
 M4Revolution::Log::Log(const char* title, std::istream &inputStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
 	: inputStream(inputStream),
@@ -264,7 +263,19 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
 	std::streampos bigFileInputPosition = inputStream.tellg();
-	tasks.bigFileLock().get().insert({bigFileInputPosition, std::make_shared<Work::BigFileTask>(inputStream, ownerBigFileInputPosition, file, filePointerSetMap)});
+
+	tasks.bigFileLock().get().insert(
+		{
+			bigFileInputPosition,
+
+			std::make_shared<Work::BigFileTask>(
+				inputStream,
+				ownerBigFileInputPosition,
+				file,
+				filePointerSetMap
+			)
+		}
+	);
 
 	// inputCopyPosition is the position of the files to copy
 	// inputFilePosition is the position of a specific input file (for file.size calculation)
@@ -341,6 +352,7 @@ Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha) {
 	/*
 	if (convert.file.greyScale) {
+		// NTSC Luminance Weights
 		surface.toGreyScale(0.299f, 0.587f, 0.114f, 1.0f);
 	}
 	*/
@@ -650,7 +662,7 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 				}
 
 				// this would mean we made it to the end, but didn't write all the filesystems somehow
-				throw std::logic_error("fileTaskPointerQueue must not be empty if yield is false");
+				throw std::logic_error("queue must not be empty if yield is false");
 			}
 
 			fileTaskPointerQueue = queue;

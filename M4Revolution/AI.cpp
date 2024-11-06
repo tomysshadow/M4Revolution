@@ -2,7 +2,6 @@
 #include <regex>
 #include <sstream>
 #include <iomanip>
-#include <string>
 
 static const Ubi::BigFile::Path::VECTOR BINARIZER_LOADER_PATH_VECTOR = {
 	{{"gamedata", "common"}, "common.m4b"},
@@ -129,12 +128,28 @@ void AI::toggleSoundFading(Work::Edit &edit) {
 	std::streampos position = fileStream.tellg();
 
 	std::ostringstream outputStringStream = {};
-	bool enabled = Ubi::Binary::BinarizerLoader::toggleSoundFading(edit.fileStream, outputStringStream, size);
+
+	consoleLog(
+		(
+			std::string("Sound Fading is now ")
+		
+			+ (
+				Ubi::Binary::BinarizerLoader::toggleSoundFading(
+					edit.fileStream,
+					outputStringStream,
+					size
+				)
+			
+				? "enabled"
+				: "disabled"
+			)
+		
+			+ "."
+		).c_str()
+	);
 
 	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 	edit.join(copyThread, position, outputStringStream.str());
-
-	consoleLog((std::string("Sound Fading is now ") + (enabled ? "enabled" : "disabled") + ".").c_str());
 }
 
 void AI::editTransitionTime(Work::Edit &edit) {
