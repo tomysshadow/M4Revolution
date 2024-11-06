@@ -72,23 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\vendor\M4Image\lib\x86\Debug;$(SolutionDir)\vendor\libzap\lib\x86\Debug;$(SolutionDir)\vendor\nvtt\lib\x86-v142;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x86\Debug;$(SolutionDir)\vendor\pixman\lib\x86\Debug;$(SolutionDir)\vendor\M4Image\lib\x86\Debug;$(SolutionDir)\vendor\libzap\lib\x86\Debug;$(SolutionDir)\vendor\nvtt\lib\x86-v142;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\vendor\M4Image\lib\x86\Release;$(SolutionDir)\vendor\libzap\lib\x86\Release;$(SolutionDir)\vendor\nvtt\lib\x86-v142;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x86\Release;$(SolutionDir)\vendor\pixman\lib\x86\Release;$(SolutionDir)\vendor\M4Image\lib\x86\Release;$(SolutionDir)\vendor\libzap\lib\x86\Release;$(SolutionDir)\vendor\nvtt\lib\x86-v142;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\vendor\M4Image\lib\x64\Debug;$(SolutionDir)\vendor\libzap\lib\x64\Debug;$(SolutionDir)\vendor\nvtt\lib\x64-v142;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x64\Debug;$(SolutionDir)\vendor\pixman\lib\x64\Debug;$(SolutionDir)\vendor\M4Image\lib\x64\Debug;$(SolutionDir)\vendor\libzap\lib\x64\Debug;$(SolutionDir)\vendor\nvtt\lib\x64-v142;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\vendor\M4Image\lib\x64\Release;$(SolutionDir)\vendor\libzap\lib\x64\Release;$(SolutionDir)\vendor\nvtt\lib\x64-v142;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x64\Release;$(SolutionDir)\vendor\pixman\lib\x64\Release;$(SolutionDir)\vendor\M4Image\lib\x64\Release;$(SolutionDir)\vendor\libzap\lib\x64\Release;$(SolutionDir)\vendor\nvtt\lib\x64-v142;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -102,7 +102,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>M4Image.lib;libzap.lib;nvtt30205.lib;comsuppwd.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mango.lib;libpixman-1.a;libpixman-mmx.a;libpixman-sse2.a;libpixman-ssse3.a;M4Image.lib;libzap.lib;nvtt30205.lib;comsuppwd.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -121,7 +121,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>M4Image.lib;libzap.lib;nvtt30205.lib;comsuppw.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mango.lib;libpixman-1.a;libpixman-mmx.a;libpixman-sse2.a;libpixman-ssse3.a;M4Image.lib;libzap.lib;nvtt30205.lib;comsuppw.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -136,7 +136,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>M4Image.lib;libzap.lib;nvtt30205.lib;comsuppwd.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mango.lib;libpixman-1.a;libpixman-mmx.a;libpixman-sse2.a;libpixman-ssse3.a;M4Image.lib;libzap.lib;nvtt30205.lib;comsuppwd.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -155,7 +155,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>M4Image.lib;libzap.lib;nvtt30205.lib;comsuppw.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mango.lib;libpixman-1.a;libpixman-mmx.a;libpixman-sse2.a;libpixman-ssse3.a;M4Image.lib;libzap.lib;nvtt30205.lib;comsuppw.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

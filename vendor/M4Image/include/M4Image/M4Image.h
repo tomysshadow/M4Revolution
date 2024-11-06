@@ -76,6 +76,7 @@ class M4Image {
         RGB24,
         BGR24,
         LA16,
+        AL16,
         A8,
         L8,
 

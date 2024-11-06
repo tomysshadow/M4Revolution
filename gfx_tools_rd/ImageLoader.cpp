@@ -85,7 +85,7 @@ namespace gfx_tools {
 				RESIZE_INFO.width,
 				RESIZE_INFO.height,
 				m4ImageStride,
-				resizeImageInfo.GetRequestedColorFormat(),
+				resizeImageInfo.GetColorFormat(),
 				RAW_BUFFER.pointer
 			);
 
@@ -141,7 +141,7 @@ namespace gfx_tools {
 			resizeTextureWidth,
 			resizeTextureHeight,
 			m4ImageStride,
-			imageInfo.GetRequestedColorFormat()
+			imageInfo.GetColorFormat()
 		);
 
 		resizeM4Image.blit(M4IMAGE);
@@ -291,7 +291,7 @@ namespace gfx_tools {
 			RESIZE_INFO.width,
 			RESIZE_INFO.height,
 			m4ImageStride,
-			resizeImageInfo.GetRequestedColorFormat(),
+			resizeImageInfo.GetColorFormat(),
 			rawBuffer.pointer
 		);
 
@@ -448,7 +448,7 @@ namespace gfx_tools {
 
 		zap_error_t err = zap_resize_memory(
 			rawBuffer.pointer,
-			(zap_uint_t)imageInfo.GetRequestedColorFormat(),
+			(zap_uint_t)imageInfo.GetColorFormat(),
 			&pointer,
 			&zapSize,
 			imageInfo.textureWidth,
@@ -473,7 +473,7 @@ namespace gfx_tools {
 			RESIZE_INFO.width,
 			RESIZE_INFO.height,
 			zapStride,
-			(zap_uint_t)resizeImageInfo.GetRequestedColorFormat(),
+			(zap_uint_t)resizeImageInfo.GetColorFormat(),
 			ZAP_IMAGE_FORMAT_JPG,
 			ZAP_IMAGE_FORMAT_PNG
 		);
