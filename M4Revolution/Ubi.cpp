@@ -67,18 +67,14 @@ void Ubi::String::writeOptionalEncrypted(std::ostream &outputStream, std::option
 	writeOptional(outputStream, swizzle(strOptional));
 }
 
-std::ostringstream Ubi::Binary::BinarizerLoader::toggleSoundFading(std::istream &inputStream, std::streamsize size, bool &enabled) {
-	enabled = true;
-
+bool Ubi::Binary::BinarizerLoader::toggleSoundFading(std::istream &inputStream, std::ostream &outputStream, std::streamsize size) {
 	std::streampos position = inputStream.tellg();
 
 	std::optional<HeaderReader> headerReaderOptional = std::nullopt;
 	readFileHeader(inputStream, headerReaderOptional, size);
 
-	std::ostringstream outputStringStream = {};
-
 	std::optional<HeaderWriter> headerWriterOptional = std::nullopt;
-	writeFileHeader(outputStringStream, headerWriterOptional, size);
+	writeFileHeader(outputStream, headerWriterOptional, size);
 
 	uint32_t resources = 0;
 
@@ -86,33 +82,34 @@ std::ostringstream Ubi::Binary::BinarizerLoader::toggleSoundFading(std::istream 
 
 	readStreamSafe(inputStream, &resources, RESOURCES_SIZE);
 
-	std::streampos resourcesPosition = outputStringStream.tellp();
-	writeStreamSafe(outputStringStream, &resources, RESOURCES_SIZE);
+	std::streampos resourcesPosition = outputStream.tellp();
+	writeStreamSafe(outputStream, &resources, RESOURCES_SIZE);
 
 	bool nullTerminator = false;
+	bool enabled = true;
 
 	for (uint32_t i = 0; i < resources; i++) {
 		const std::optional<std::string> &PATH = String::readOptional(inputStream, nullTerminator);
 
 		if (PATH == AI_SND_TRANSITION_PATH) {
-			copyStream(inputStream, outputStringStream, position + size - inputStream.tellg());
+			copyStream(inputStream, outputStream, position + size - inputStream.tellg());
 			resources--;
 
 			enabled = false;
 			break;
 		}
 
-		String::writeOptional(outputStringStream, PATH, nullTerminator);
+		String::writeOptional(outputStream, PATH, nullTerminator);
 	}
 
 	if (enabled) {
-		String::writeOptional(outputStringStream, AI_SND_TRANSITION_PATH, false);
+		String::writeOptional(outputStream, AI_SND_TRANSITION_PATH, false);
 		resources++;
 	}
 
-	outputStringStream.seekp(resourcesPosition);
-	writeStreamSafe(outputStringStream, &resources, RESOURCES_SIZE);
-	return outputStringStream;
+	outputStream.seekp(resourcesPosition);
+	writeStreamSafe(outputStream, &resources, RESOURCES_SIZE);
+	return enabled;
 }
 
 Ubi::Binary::RLE::SLICE_MAP Ubi::Binary::RLE::createSliceMap(std::istream &inputStream, std::streamsize size) {

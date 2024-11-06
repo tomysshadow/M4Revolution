@@ -128,11 +128,11 @@ void AI::toggleSoundFading(Work::Edit &edit) {
 	Ubi::BigFile::File::SIZE size = Ubi::BigFile::findFile(fileStream, BINARIZER_LOADER_PATH_VECTOR)->size;
 	std::streampos position = fileStream.tellg();
 
-	bool enabled = false;
-	const std::string &STR = Ubi::Binary::BinarizerLoader::toggleSoundFading(edit.fileStream, size, enabled).str();
+	std::ostringstream outputStringStream = {};
+	bool enabled = Ubi::Binary::BinarizerLoader::toggleSoundFading(edit.fileStream, outputStringStream, size);
 
 	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
-	edit.join(copyThread, position, STR);
+	edit.join(copyThread, position, outputStringStream.str());
 
 	consoleLog((std::string("Sound Fading is now ") + (enabled ? "enabled" : "disabled") + ".").c_str());
 }

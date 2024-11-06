@@ -1,7 +1,6 @@
 #pragma once
 #include "shared.h"
 #include "IgnoreCaseComparer.h"
-#include <sstream>
 #include <unordered_set>
 #include <map>
 #include <vector>
@@ -46,7 +45,7 @@ namespace Ubi {
 		namespace BinarizerLoader {
 			static const std::string AI_SND_TRANSITION_PATH = "/common/ai/aisndtransition/ai_snd_transition.ai";
 
-			std::ostringstream toggleSoundFading(std::istream &inputStream, std::streamsize size, bool &enabled);
+			bool toggleSoundFading(std::istream &inputStream, std::ostream &outputStream, std::streamsize size);
 		};
 
 		/*
