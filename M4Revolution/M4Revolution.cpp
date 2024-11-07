@@ -137,7 +137,7 @@ void M4Revolution::replaceGfxTools() {
 		throw std::runtime_error("Failed to Find Resource");
 	}
 
-	GlobalHandleLock<char*> resourceGlobalHandleLock(NULL, resourceHandle);
+	GlobalHandleLock<> resourceGlobalHandleLock(NULL, resourceHandle);
 
 	{
 		Work::Output output = {};
