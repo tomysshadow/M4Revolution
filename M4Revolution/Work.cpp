@@ -217,13 +217,11 @@ namespace Work {
 	const std::filesystem::path Output::GFX_TOOLS_PATH("bin/gfx_tools_rd.dll");
 
 	void Output::validatePath(const std::filesystem::path &path) {
-		std::filesystem::path lexicallyNormalPath = path.lexically_normal();
-
-		bool valid = setPath(lexicallyNormalPath);
+		bool valid = setPath(path);
 
 		if (valid) {
 			consoleLog("Myst IV: Revelation was found installed at the following path:");
-			consoleLog(lexicallyNormalPath.string().c_str(), 2);
+			consoleLog(path.string().c_str(), 2);
 
 			if (!consoleBool("Is this the path to the install you would like to modify?", true)) {
 				valid = false;
