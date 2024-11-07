@@ -6,13 +6,14 @@
 #include <vector>
 #include <queue>
 #include <atomic>
+#include <filesystem>
 
 #include <nvtt/nvtt.h>
 
-#if defined(_WIN32)
-#define MULTITHREADED
+#ifdef WINDOWS
+	#define MULTITHREADED
 #else
-#define SINGLETHREADED
+	#define SINGLETHREADED
 #endif
 
 namespace Work {
@@ -225,11 +226,10 @@ namespace Work {
 	};
 
 	namespace Backup {
-		static const char* FILE_NAME = "data.bak";
-
 		bool create(const char* fileName);
 		void restore(const std::filesystem::path &path);
 		void log();
+		std::filesystem::path getPath(std::filesystem::path path);
 	}
 
 	class Edit {

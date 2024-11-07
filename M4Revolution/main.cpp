@@ -54,7 +54,8 @@ int main(int argc, char** argv) {
 	std::string arg = "";
 	int argc2 = argc - 1;
 
-	std::string path = "data.m4b"; // TODO: find install location automatically
+	std::string path = "data/data.m4b"; // TODO: find install location automatically
+	std::string gfxToolsPath = "bin/gfx_tools_rd.dll";
 	bool logFileNames = false;
 	bool disableHardwareAcceleration = false;
 	unsigned long maxThreads = 0;
@@ -89,7 +90,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	M4Revolution m4Revolution(path.c_str(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
+	M4Revolution m4Revolution(path.c_str(), gfxToolsPath.c_str(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
 
 	do {
 		consoleLog("This menu may be used to perform the following operations.", 2);

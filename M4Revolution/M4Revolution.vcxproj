@@ -160,10 +160,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AI.h" />
+    <ClInclude Include="GlobalHandle.h" />
     <ClInclude Include="IgnoreCaseComparer.h" />
     <ClInclude Include="Locale.h" />
     <ClInclude Include="M4Revolution.h" />
     <ClInclude Include="nvconfig.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="scope_guard.hpp" />
     <ClInclude Include="shared.h" />
     <ClInclude Include="Ubi.h" />
@@ -177,6 +179,16 @@
     <ClCompile Include="shared.cpp" />
     <ClCompile Include="Ubi.cpp" />
     <ClCompile Include="Work.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\gfx_tools_rd\gfx_tools_rd.vcxproj">
+      <Project>{2c80b387-1e04-4213-b52d-513069f5c5db}</Project>
+      <Private>false</Private>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="M4Revolution.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

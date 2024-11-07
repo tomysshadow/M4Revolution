@@ -1,5 +1,4 @@
 #include "Work.h"
-#include <filesystem>
 #include <stdio.h>
 
 namespace Work {
@@ -212,7 +211,7 @@ namespace Work {
 		compressionOptionsAlpha(compressionOptionsAlpha) {
 	}
 
-	const char* Output::FILE_NAME = "~data.tmp";
+	const char* Output::FILE_NAME = "~M4R.tmp";
 
 	Output::Output() {
 		// without this remove first it may crash trying to open a hidden file
@@ -222,13 +221,13 @@ namespace Work {
 
 		fileStream.open(FILE_NAME, std::ios::binary | std::ios::trunc, _SH_DENYRW);
 
-		#ifdef _WIN32
+		#ifdef WINDOWS
 		setFileAttributeHidden(true, FILE_NAME);
 		#endif
 	}
 
 	Output::~Output() {
-		#ifdef _WIN32
+		#ifdef WINDOWS
 		setFileAttributeHidden(false, FILE_NAME);
 		#endif
 	}
@@ -237,16 +236,20 @@ namespace Work {
 		bool create(const char* fileName) {
 			// here I'm using CRT rename because I don't want to be able
 			// to overwrite the backup file (which std::filesystem::rename has no option to disallow)
-			return !rename(fileName, FILE_NAME);
+			return !rename(fileName, getPath(fileName).string().c_str());
 		}
 
 		void restore(const std::filesystem::path &path) {
 			// here I use std::filesystem::rename because I do want to overwrite the file if it exists
-			std::filesystem::rename(FILE_NAME, path);
+			std::filesystem::rename(getPath(path), path);
 		}
 
 		void log() {
 			consoleLog("A backup has been created.", 2);
+		}
+
+		std::filesystem::path getPath(std::filesystem::path path) {
+			return path.replace_extension("bak");
 		}
 	}
 
@@ -256,7 +259,7 @@ namespace Work {
 
 		if (!edit.copied) {
 			// check if the file exists, if it doesn't create a backup
-			std::fstream backupFileStream(Backup::FILE_NAME, std::ios::binary | std::ios::in, _SH_DENYWR);
+			std::fstream backupFileStream(Backup::getPath(Output::FILE_NAME), std::ios::binary | std::ios::in, _SH_DENYWR);
 
 			if (!backupFileStream.is_open()) {
 				// always delete the temporary file when done

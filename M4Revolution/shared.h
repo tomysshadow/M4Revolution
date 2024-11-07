@@ -14,8 +14,21 @@
 #include <libzap.h>
 
 #ifdef _WIN32
-#include <windows.h>
+	#define WINDOWS
+#else
+	#ifdef _WIN16
+		#define WINDOWS
+	#endif
 #endif
+#ifndef WINDOWS
+	#define MACINTOSH
+#endif
+
+#ifdef WINDOWS
+	#include <windows.h>
+#endif
+
+#include "resource.h"
 
 inline char charWhitespaceTrim(const char* str) {
 	unsigned char space = *str;
@@ -336,7 +349,7 @@ inline bool freeZAP(zap_byte_t* &out) {
 	return true;
 }
 
-#ifdef _WIN32
+#ifdef WINDOWS
 inline bool destroyWindow(HWND &windowHandle) {
 	if (windowHandle) {
 		if (!DestroyWindow(windowHandle)) {
@@ -421,6 +434,6 @@ void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination wr
 void copyStream(std::istream &inputStream, std::ostream &outputStream, std::streamsize count = -1);
 void copyStreamToString(std::istream &inputStream, std::string &outputString, std::streamsize count = -1);
 
-#ifdef _WIN32
+#ifdef WINDOWS
 void setFileAttributeHidden(bool hidden, LPCSTR pathStringPointer);
 #endif

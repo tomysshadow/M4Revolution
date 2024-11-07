@@ -241,7 +241,7 @@ void copyStreamToString(std::istream &inputStream, std::string &outputString, st
 	);
 }
 
-#ifdef _WIN32
+#ifdef WINDOWS
 void setFileAttributeHidden(bool hidden, LPCSTR pathStringPointer) {
 	if (!pathStringPointer) {
 		throw std::invalid_argument("pathStringPointer must not be NULL");

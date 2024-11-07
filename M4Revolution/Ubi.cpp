@@ -723,7 +723,7 @@ namespace Ubi {
 			const File &LAYER_FILE = layerFileOptional.value();
 
 			if (LAYER_FILE.layerMapIterator->second.isLayerMask) {
-				#if defined(GREYSCALE_ENABLED)
+				#ifdef GREYSCALE_ENABLED
 				//greyScale = true;
 				#else
 				type = TYPE::NONE;

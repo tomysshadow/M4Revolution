@@ -5,11 +5,11 @@
 
 #include <nvtt/nvtt.h>
 
-#ifdef _WIN32
-#define D3D9
-//#define EXTENTS_MAKE_SQUARE
-//#define EXTENTS_MAKE_POWER_OF_TWO
-#define TO_NEXT_POWER_OF_TWO
+#ifdef WINDOWS
+	#define D3D9
+	//#define EXTENTS_MAKE_SQUARE
+	//#define EXTENTS_MAKE_POWER_OF_TWO
+	#define TO_NEXT_POWER_OF_TWO
 #endif
 
 class M4Revolution {
@@ -60,6 +60,7 @@ class M4Revolution {
 	};
 
 	std::string inputFileName = "";
+	std::string gfxToolsFileName = "";
 	bool logFileNames = false;
 
 	Work::Convert::Configuration configuration;
@@ -76,6 +77,10 @@ class M4Revolution {
 	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0;
 
 	Work::Tasks tasks = {};
+
+	#ifdef WINDOWS
+	void replaceGfxTools();
+	#endif
 
 	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks);
 
@@ -128,6 +133,7 @@ class M4Revolution {
 	public:
 	M4Revolution(
 		const std::string &inputFileName,
+		const std::string &gfxToolsFileName,
 		bool logFileNames = false,
 		bool disableHardwareAcceleration = false,
 		uint32_t maxThreads = 0,

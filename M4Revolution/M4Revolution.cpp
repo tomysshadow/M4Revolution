@@ -1,5 +1,6 @@
 #include "M4Revolution.h"
 #include "AI.h"
+#include "GlobalHandle.h"
 #include <chrono>
 #include <iostream>
 #include <filesystem>
@@ -125,6 +126,33 @@ void M4Revolution::ErrorHandler::error(nvtt::Error error) {
 	consoleLog(nvtt::errorString(error), true, false, true);
 	result = false;
 }
+
+#ifdef WINDOWS
+void M4Revolution::replaceGfxTools() {
+	consoleLog("Replacing Gfx Tools");
+
+	HRSRC resourceHandle = FindResource(NULL, MAKEINTRESOURCE(IDR_BIN_GFX_TOOLS), TEXT("BIN"));
+
+	if (!resourceHandle) {
+		throw std::runtime_error("Failed to Find Resource");
+	}
+
+	GlobalHandleLock<char*> resourceGlobalHandleLock(NULL, resourceHandle);
+
+	{
+		Work::Output output = {};
+		writeStreamSafe(output.fileStream, resourceGlobalHandleLock.get(), resourceGlobalHandleLock.size());
+	}
+
+	Work::Backup::create(gfxToolsFileName.c_str());
+
+	//try {
+	std::filesystem::rename(Work::Output::FILE_NAME, gfxToolsFileName);
+	//} catch (std::filesystem::filesystem_error) {
+	// TODO: game is running, or not admin
+	//}
+}
+#endif
 
 void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks) {
 	// this function waits for the output thread to catch up
@@ -689,12 +717,14 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 
 M4Revolution::M4Revolution(
 	const std::string &inputFileName,
+	const std::string &gfxToolsFileName,
 	bool logFileNames,
 	bool disableHardwareAcceleration,
 	uint32_t maxThreads,
 	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks
 )
 	: inputFileName(inputFileName),
+	gfxToolsFileName(gfxToolsFileName),
 	logFileNames(logFileNames) {
 	#ifdef D3D9
 	{
@@ -819,10 +849,15 @@ void M4Revolution::fixLoading() {
 
 		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
+		Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames, true);
+
+		#ifdef WINDOWS
+		replaceGfxTools();
+		#endif
+
 		bool yield = true;
 		std::thread outputThread(M4Revolution::outputThread, std::ref(tasks), std::ref(yield));
 
-		Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames, true);
 		fixLoading(inputFileStream, 0, inputFile, log);
 		log.finishing();
 
@@ -849,7 +884,7 @@ void M4Revolution::fixLoading() {
 
 bool M4Revolution::restoreBackup() {
 	{
-		std::ifstream inputFileStream(Work::Backup::FILE_NAME, std::ios::binary, _SH_DENYWR);
+		std::ifstream inputFileStream(Work::Backup::getPath(inputFileName), std::ios::binary, _SH_DENYWR);
 
 		Log log("Restoring Backup", inputFileStream);
 
