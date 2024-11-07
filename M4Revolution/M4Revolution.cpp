@@ -880,21 +880,35 @@ void M4Revolution::fixLoading() {
 }
 
 bool M4Revolution::restoreBackup() {
+	bool data = false;
+	bool gfxTools = false;
+
 	{
 		std::ifstream inputFileStream(Work::Backup::getPath(Work::Output::DATA_PATH), std::ios::binary, _SH_DENYWR);
+		data = inputFileStream.is_open();
+
+		inputFileStream.close();
+		inputFileStream.open(Work::Backup::getPath(Work::Output::GFX_TOOLS_PATH), std::ios::binary, _SH_DENYWR);
+		gfxTools = inputFileStream.is_open();
 
 		Log log("Restoring Backup", inputFileStream);
+	}
 
-		if (!inputFileStream.is_open()) {
-			consoleLog("No backup was found. A backup will be automatically created when any other operation is performed.", 2);
-			return false;
-		}
+	if (!data && !gfxTools) {
+		consoleLog("No backup was found. A backup will be automatically created when any other operation is performed.", 2);
+		return false;
 	}
 
 	if (!consoleBool("Restoring the backup will revert any changes made by this tool. Would you like to restore the backup?", false)) {
 		return false;
 	}
 
-	Work::Backup::restore(Work::Output::DATA_PATH);
+	if (data) {
+		Work::Backup::restore(Work::Output::DATA_PATH);
+	}
+
+	if (gfxTools) {
+		Work::Backup::restore(Work::Output::GFX_TOOLS_PATH);
+	}
 	return true;
 }
