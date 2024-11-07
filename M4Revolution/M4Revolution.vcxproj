@@ -72,22 +72,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(SolutionDir)\vendor\sapp\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\vendor\mango\lib\x86\Debug;$(SolutionDir)\vendor\pixman\lib\x86\Debug;$(SolutionDir)\vendor\M4Image\lib\x86\Debug;$(SolutionDir)\vendor\libzap\lib\x86\Debug;$(SolutionDir)\vendor\nvtt\lib\x86-v142;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(SolutionDir)\vendor\sapp\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\vendor\mango\lib\x86\Release;$(SolutionDir)\vendor\pixman\lib\x86\Release;$(SolutionDir)\vendor\M4Image\lib\x86\Release;$(SolutionDir)\vendor\libzap\lib\x86\Release;$(SolutionDir)\vendor\nvtt\lib\x86-v142;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(SolutionDir)\vendor\sapp\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\vendor\mango\lib\x64\Debug;$(SolutionDir)\vendor\pixman\lib\x64\Debug;$(SolutionDir)\vendor\M4Image\lib\x64\Debug;$(SolutionDir)\vendor\libzap\lib\x64\Debug;$(SolutionDir)\vendor\nvtt\lib\x64-v142;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(SolutionDir)\vendor\sapp\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\vendor\mango\lib\x64\Release;$(SolutionDir)\vendor\pixman\lib\x64\Release;$(SolutionDir)\vendor\M4Image\lib\x64\Release;$(SolutionDir)\vendor\libzap\lib\x64\Release;$(SolutionDir)\vendor\nvtt\lib\x64-v142;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -96,7 +96,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -114,7 +114,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,7 +131,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,7 +148,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -189,9 +189,6 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="M4Revolution.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Release\gfx_tools_rd.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

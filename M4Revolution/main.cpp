@@ -1,6 +1,7 @@
 #include "shared.h"
 #include "M4Revolution.h"
 #include <filesystem>
+#include "sapp/SteamAppPathProvider.h"
 
 bool performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_TOGGLE_SOUND_FADING = 1;
@@ -52,14 +53,22 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
+	const AppId_t MYST_IV_REVELATION_APP_ID = 925940;
+
 	std::string arg = "";
 	int argc2 = argc - 1;
 
-	std::filesystem::path path = std::filesystem::current_path(); // TODO: find install location automatically here!
+	std::string pathString = "";
 	bool logFileNames = false;
 	bool disableHardwareAcceleration = false;
 	unsigned long maxThreads = 0;
 	unsigned long maxFileTasks = 0;
+
+	SteamAppPathProvider steamAppPathProvider;
+	
+	if (!steamAppPathProvider.GetAppInstallDir(MYST_IV_REVELATION_APP_ID, pathString)) {
+		pathString = std::filesystem::current_path().string();
+	}
 
 	for (int i = MIN_ARGC; i < argc; i++) {
 		arg = std::string(argv[i]);
@@ -73,7 +82,7 @@ int main(int argc, char** argv) {
 			disableHardwareAcceleration = true;
 		} else if (i < argc2) {
 			if (arg == "-p" || arg == "-path") {
-				path = argv[++i];
+				pathString = argv[++i];
 			} else if (arg == "-mt" || arg == "--max-threads") {
 				if (!stringToLongUnsigned(argv[++i], maxThreads)) {
 					consoleLog("Max Threads must be a valid number", 2);
@@ -92,7 +101,7 @@ int main(int argc, char** argv) {
 
 	for (;;) {
 		try {
-			M4Revolution m4Revolution(path, logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
+			M4Revolution m4Revolution(pathString, logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
 
 			do {
 				consoleLog("This menu may be used to perform the following operations.", 2);
@@ -121,7 +130,7 @@ int main(int argc, char** argv) {
 			));
 			return 0;
 		} catch (M4Revolution::PathNotFound) {
-			path = consoleString("The path was not found. Please enter the path to Myst IV: Revelation.");
+			pathString = consoleString("The path was not found. Please enter the path to Myst IV: Revelation.");
 		}
 	}
 	return 1;
