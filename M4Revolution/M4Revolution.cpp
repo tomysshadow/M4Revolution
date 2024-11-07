@@ -724,13 +724,7 @@ M4Revolution::M4Revolution(
 	: logFileNames(logFileNames) {
 	#ifdef D3D9
 	{
-		std::filesystem::current_path(path);
-
-		// this check is just to prevent the user from being dumb
-		// we need proper checks upon actually opening these as well of course
-		if (!std::filesystem::exists(Work::Output::DATA_PATH) || !std::filesystem::exists(Work::Output::GFX_TOOLS_PATH)) {
-			throw PathNotFound();
-		}
+		Work::Output::validatePath(path);
 
 		Microsoft::WRL::ComPtr<IDirect3D9> direct3D9InterfacePointer = Direct3DCreate9(D3D_SDK_VERSION);
 

@@ -99,39 +99,32 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	for (;;) {
-		try {
-			M4Revolution m4Revolution(pathString, logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
+	M4Revolution m4Revolution(pathString, logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
 
-			do {
-				consoleLog("This menu may be used to perform the following operations.", 2);
+	do {
+		consoleLog("This menu may be used to perform the following operations.", 2);
 
-				consoleLog("1) Toggle Sound Fading");
-				consoleLog("2) Edit Transition Time");
-				consoleLog("3) Edit Mouse Controls");
-				consoleLog("4) Fix Loading");
-				consoleLog("5) Restore Backup");
-				consoleLog("6) Exit", 2);
-			} while (consoleBool(
-				(
-					std::string("The operation has been ")
+		consoleLog("1) Toggle Sound Fading");
+		consoleLog("2) Edit Transition Time");
+		consoleLog("3) Edit Mouse Controls");
+		consoleLog("4) Fix Loading");
+		consoleLog("5) Restore Backup");
+		consoleLog("6) Exit", 2);
+	} while (consoleBool(
+		(
+			std::string("The operation has been ")
 
-					+ (
-						performOperation(m4Revolution)
+			+ (
+				performOperation(m4Revolution)
 					
-						? "performed"
-						: "aborted"
-					)
+				? "performed"
+				: "aborted"
+			)
 				
-					+ ". Would you like to return to the menu? If not, the application will exit."
-				).c_str(),
+			+ ". Would you like to return to the menu? If not, the application will exit."
+		).c_str(),
 			
-				true
-			));
-			return 0;
-		} catch (M4Revolution::PathNotFound) {
-			pathString = consoleString("The path was not found. Please enter the path to Myst IV: Revelation.");
-		}
-	}
-	return 1;
+		true
+	));
+	return 0;
 }

@@ -130,12 +130,6 @@ class M4Revolution {
 	static void outputThread(Work::Tasks &tasks, bool &yield);
 
 	public:
-	class PathNotFound : public std::invalid_argument {
-		public:
-		PathNotFound() noexcept : std::invalid_argument("M4Revolution path not found") {
-		}
-	};
-
 	M4Revolution(
 		const std::filesystem::path &path,
 		bool logFileNames = false,

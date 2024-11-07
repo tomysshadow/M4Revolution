@@ -211,11 +211,6 @@ namespace Work {
 	};
 
 	struct Output {
-		static const char* FILE_NAME;
-
-		static const std::filesystem::path DATA_PATH;
-		static const std::filesystem::path GFX_TOOLS_PATH;
-
 		std::ofstream fileStream = {};
 
 		std::streampos currentBigFileInputPosition = -1;
@@ -223,6 +218,14 @@ namespace Work {
 
 		Ubi::BigFile::File::SIZE filePosition = 0;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
+
+		static const char* FILE_NAME;
+
+		static const std::filesystem::path DATA_PATH;
+		static const std::filesystem::path GFX_TOOLS_PATH;
+
+		static void validatePath(const std::filesystem::path &path);
+		static bool setPath(const std::filesystem::path &path);
 
 		Output();
 		~Output();

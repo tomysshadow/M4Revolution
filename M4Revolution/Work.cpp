@@ -216,6 +216,38 @@ namespace Work {
 	const std::filesystem::path Output::DATA_PATH("data/data.m4b");
 	const std::filesystem::path Output::GFX_TOOLS_PATH("bin/gfx_tools_rd.dll");
 
+	void Output::validatePath(const std::filesystem::path &path) {
+		bool valid = setPath(path);
+
+		if (valid) {
+			consoleLog("Myst IV: Revelation was found installed at the following path:");
+			consoleLog(path.string().c_str(), 2);
+
+			if (!consoleBool("Is this the path to the install you would like to modify?", true)) {
+				valid = false;
+			}
+		} else {
+			consoleLog("No install of Myst IV: Relevation was found.");
+		}
+
+		if (!valid) {
+			while (!setPath(consoleString("Please enter the path to Myst IV: Relevation."))) {
+				consoleLog("No install of Myst IV: Relevation was found at this path.");
+			}
+		}
+	}
+
+	bool Output::setPath(const std::filesystem::path &path) {
+		// this check is just to prevent the user from being dumb
+		// we need proper checks upon actually opening these as well of course
+		try {
+			std::filesystem::current_path(path);
+		} catch (std::filesystem::filesystem_error) {
+			return false;
+		}
+		return std::filesystem::exists(DATA_PATH) && std::filesystem::exists(GFX_TOOLS_PATH);
+	}
+
 	Output::Output() {
 		// without this remove first it may crash trying to open a hidden file
 		// (I mean, this isn't atomic so that can happen anyway but at least it's not our fault then)
