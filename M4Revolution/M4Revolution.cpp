@@ -38,6 +38,10 @@ M4Revolution::Log::~Log() {
 	}
 }
 
+void M4Revolution::Log::replacedGfxTools() {
+	std::cout << "Replaced Gfx Tools" << std::endl;
+}
+
 void M4Revolution::Log::step() {
 	files++;
 }
@@ -128,9 +132,7 @@ void M4Revolution::ErrorHandler::error(nvtt::Error error) {
 }
 
 #ifdef WINDOWS
-void M4Revolution::replaceGfxTools() {
-	consoleLog("Replacing Gfx Tools");
-
+void M4Revolution::replaceGfxTools(Log &log) {
 	// scope so that we let go of the output before renaming it and free the resource when no longer needed
 	{
 		HRSRC resourceHandle = FindResource(NULL, MAKEINTRESOURCE(IDR_BIN_GFX_TOOLS), TEXT("BIN"));
@@ -145,13 +147,9 @@ void M4Revolution::replaceGfxTools() {
 		writeStreamSafe(output.fileStream, resourceGlobalHandleLock.get(), resourceGlobalHandleLock.size());
 	}
 
-	Work::Backup::create(GFX_TOOLS_PATH.string().c_str());
+	Work::Backup::create(Work::Output::GFX_TOOLS_PATH.string().c_str());
 
-	//try {
-	std::filesystem::rename(Work::Output::FILE_NAME, GFX_TOOLS_PATH);
-	//} catch (std::filesystem::filesystem_error) {
-	// TODO: game is running, or not admin
-	//}
+	log.replacedGfxTools();
 }
 #endif
 
@@ -716,9 +714,6 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 	}
 }
 
-const std::filesystem::path M4Revolution::DATA_PATH("data/data.m4b");
-const std::filesystem::path M4Revolution::GFX_TOOLS_PATH("bin/gfx_tools_rd.dll");
-
 M4Revolution::M4Revolution(
 	const std::filesystem::path &path,
 	bool logFileNames,
@@ -733,7 +728,7 @@ M4Revolution::M4Revolution(
 
 		// this check is just to prevent the user from being dumb
 		// we need proper checks upon actually opening these as well of course
-		if (!std::filesystem::exists(DATA_PATH) || !std::filesystem::exists(GFX_TOOLS_PATH)) {
+		if (!std::filesystem::exists(Work::Output::DATA_PATH) || !std::filesystem::exists(Work::Output::GFX_TOOLS_PATH)) {
 			throw PathNotFound();
 		}
 
@@ -809,7 +804,7 @@ M4Revolution::~M4Revolution() {
 }
 
 void M4Revolution::toggleSoundFading() {
-	std::fstream fileStream(DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+	std::fstream fileStream(Work::Output::DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 
 	Log log("Toggling Sound Fading", fileStream);
 	Work::Edit edit(fileStream);
@@ -822,7 +817,7 @@ void M4Revolution::toggleSoundFading() {
 }
 
 void M4Revolution::editTransitionTime() {
-	std::fstream fileStream(DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+	std::fstream fileStream(Work::Output::DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 
 	Log log("Editing Transition Time", fileStream);
 	Work::Edit edit(fileStream);
@@ -835,7 +830,7 @@ void M4Revolution::editTransitionTime() {
 }
 
 void M4Revolution::editMouseControls() {
-	std::fstream fileStream(DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+	std::fstream fileStream(Work::Output::DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 
 	Log log("Editing Mouse Controls", fileStream);
 	Work::Edit edit(fileStream);
@@ -854,14 +849,14 @@ void M4Revolution::fixLoading() {
 	};
 
 	{
-		std::ifstream inputFileStream(DATA_PATH, std::ios::binary, _SH_DENYWR);
+		std::ifstream inputFileStream(Work::Output::DATA_PATH, std::ios::binary, _SH_DENYWR);
 
 		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
 		Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames, true);
 
 		#ifdef WINDOWS
-		replaceGfxTools();
+		replaceGfxTools(log);
 		#endif
 
 		bool yield = true;
@@ -879,21 +874,14 @@ void M4Revolution::fixLoading() {
 		outputThread.join();
 	}
 
-	if (Work::Backup::create(DATA_PATH.string().c_str())) {
+	if (Work::Backup::create(Work::Output::DATA_PATH.string().c_str())) {
 		Work::Backup::log();
 	}
-
-	// here I use std::filesystem::rename because I do want to overwrite the file if it exists
-	//try {
-	std::filesystem::rename(Work::Output::FILE_NAME, DATA_PATH);
-	//} catch (std::filesystem::filesystem_error) {
-	// TODO: game is running, or not admin
-	//}
 }
 
 bool M4Revolution::restoreBackup() {
 	{
-		std::ifstream inputFileStream(Work::Backup::getPath(DATA_PATH), std::ios::binary, _SH_DENYWR);
+		std::ifstream inputFileStream(Work::Backup::getPath(Work::Output::DATA_PATH), std::ios::binary, _SH_DENYWR);
 
 		Log log("Restoring Backup", inputFileStream);
 
@@ -907,6 +895,6 @@ bool M4Revolution::restoreBackup() {
 		return false;
 	}
 
-	Work::Backup::restore(DATA_PATH);
+	Work::Backup::restore(Work::Output::DATA_PATH);
 	return true;
 }

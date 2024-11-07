@@ -213,6 +213,9 @@ namespace Work {
 	struct Output {
 		static const char* FILE_NAME;
 
+		static const std::filesystem::path DATA_PATH;
+		static const std::filesystem::path GFX_TOOLS_PATH;
+
 		std::ofstream fileStream = {};
 
 		std::streampos currentBigFileInputPosition = -1;
@@ -227,6 +230,7 @@ namespace Work {
 
 	namespace Backup {
 		bool create(const char* fileName);
+		bool createFromOutput(const char* fileName);
 		void restore(const std::filesystem::path &path);
 		void log();
 		std::filesystem::path getPath(std::filesystem::path path);

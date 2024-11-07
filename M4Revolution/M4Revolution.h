@@ -34,6 +34,7 @@ class M4Revolution {
 		~Log();
 		Log(const Log &log) = delete;
 		Log &operator=(const Log &log) = delete;
+		void replacedGfxTools();
 		void step();
 		void copying();
 		void converting(const Ubi::BigFile::File &file);
@@ -77,7 +78,7 @@ class M4Revolution {
 	Work::Tasks tasks = {};
 
 	#ifdef WINDOWS
-	void replaceGfxTools();
+	void replaceGfxTools(Log &log);
 	#endif
 
 	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks);
@@ -134,9 +135,6 @@ class M4Revolution {
 		PathNotFound() noexcept : std::invalid_argument("M4Revolution path not found") {
 		}
 	};
-
-	static const std::filesystem::path DATA_PATH;
-	static const std::filesystem::path GFX_TOOLS_PATH;
 
 	M4Revolution(
 		const std::filesystem::path &path,

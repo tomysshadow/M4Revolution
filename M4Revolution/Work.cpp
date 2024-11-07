@@ -213,6 +213,9 @@ namespace Work {
 
 	const char* Output::FILE_NAME = "~M4R.tmp";
 
+	const std::filesystem::path Output::DATA_PATH("data/data.m4b");
+	const std::filesystem::path Output::GFX_TOOLS_PATH("bin/gfx_tools_rd.dll");
+
 	Output::Output() {
 		// without this remove first it may crash trying to open a hidden file
 		// (I mean, this isn't atomic so that can happen anyway but at least it's not our fault then)
@@ -236,11 +239,22 @@ namespace Work {
 		bool create(const char* fileName) {
 			// here I'm using CRT rename because I don't want to be able
 			// to overwrite the backup file (which std::filesystem::rename has no option to disallow)
-			return !rename(fileName, getPath(fileName).string().c_str());
+			bool result = !rename(fileName, getPath(fileName).string().c_str());
+
+			// here I use std::filesystem::rename because I do want to overwrite the file if it exists
+			//try {
+			std::filesystem::rename(Output::FILE_NAME, fileName);
+			//} catch (std::filesystem::filesystem_error) {
+			// TODO: game is running, or not admin
+			//}
+			return result;
+		}
+
+		bool createFromOutput(const char* fileName) {
+			return !rename(Output::FILE_NAME, getPath(fileName).string().c_str());
 		}
 
 		void restore(const std::filesystem::path &path) {
-			// here I use std::filesystem::rename because I do want to overwrite the file if it exists
 			std::filesystem::rename(getPath(path), path);
 		}
 
@@ -259,7 +273,7 @@ namespace Work {
 
 		if (!edit.copied) {
 			// check if the file exists, if it doesn't create a backup
-			std::fstream backupFileStream(Backup::getPath(Output::FILE_NAME), std::ios::binary | std::ios::in, _SH_DENYWR);
+			std::fstream backupFileStream(Backup::getPath(Output::DATA_PATH), std::ios::binary | std::ios::in, _SH_DENYWR);
 
 			if (!backupFileStream.is_open()) {
 				// always delete the temporary file when done
@@ -274,7 +288,7 @@ namespace Work {
 					copyStream(fileStream, output.fileStream);
 				}
 
-				backup = Backup::create(Output::FILE_NAME);
+				backup = Backup::createFromOutput(Output::DATA_PATH.string().c_str());
 			}
 
 			edit.copied = true;
