@@ -220,17 +220,17 @@ namespace Work {
 		bool foundInstalled = setPath(path);
 
 		if (foundInstalled) {
-			consoleLog("Myst IV: Revelation was found installed at the following path:");
+			consoleLog("Myst IV: Revelation was found installed at this path:");
 			consoleLog(path.string().c_str(), 2);
 
 			foundInstalled = consoleBool("Is this the path to the install you would like to modify?", true);
 		} else {
-			consoleLog("No install of Myst IV: Relevation was found.");
+			consoleLog("No install of Myst IV: Relevation was found. ", false);
 		}
 
 		if (!foundInstalled) {
 			while (!setPath(consoleString("Please enter the path to Myst IV: Relevation."))) {
-				consoleLog("No install of Myst IV: Relevation was found at this path.");
+				consoleLog("No install of Myst IV: Relevation was found at this path. ", false);
 			}
 		}
 	}
