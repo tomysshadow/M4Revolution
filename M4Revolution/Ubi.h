@@ -43,9 +43,7 @@ namespace Ubi {
 		};
 
 		namespace BinarizerLoader {
-			static const std::string AI_SND_TRANSITION_PATH = "/common/ai/aisndtransition/ai_snd_transition.ai";
-
-			bool toggleSoundFading(std::istream &inputStream, std::ostream &outputStream, std::streamsize size);
+			bool toggleResource(std::istream &inputStream, std::streamsize size, const std::string &name, const std::string &path, std::ostream &outputStream);
 		};
 
 		/*

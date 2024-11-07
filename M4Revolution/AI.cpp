@@ -122,41 +122,32 @@ void editF32(
 	edit.join(copyThread, position + (std::streamsize)VALUE_STR_PREFIX.length(), outputStringStream.str());
 }
 
-void AI::toggleSoundFading(Work::Edit &edit) {
-	std::fstream &fileStream = edit.fileStream;
-	Ubi::BigFile::File::SIZE size = Ubi::BigFile::findFile(fileStream, BINARIZER_LOADER_PATH_VECTOR)->size;
-	std::streampos position = fileStream.tellg();
+namespace AI {
+	void toggleSoundFading(Work::Edit &edit) {
+		std::fstream &fileStream = edit.fileStream;
+		Ubi::BigFile::File::SIZE size = Ubi::BigFile::findFile(fileStream, BINARIZER_LOADER_PATH_VECTOR)->size;
+		std::streampos position = fileStream.tellg();
 
-	std::ostringstream outputStringStream = {};
+		std::ostringstream outputStringStream = {};
 
-	consoleLog(
-		(
-			std::string("Sound Fading has now been toggled ")
-		
-			+ (
-				Ubi::Binary::BinarizerLoader::toggleSoundFading(
-					edit.fileStream,
-					outputStringStream,
-					size
-				)
-			
-				? "on"
-				: "off"
-			)
-		
-			+ "."
-		).c_str()
-	);
+		Ubi::Binary::BinarizerLoader::toggleResource(
+			edit.fileStream,
+			size,
+			"Sound Fading",
+			"/common/ai/aisndtransition/ai_snd_transition.ai",
+			outputStringStream
+		);
 
-	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
-	edit.join(copyThread, position, outputStringStream.str());
-}
+		std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
+		edit.join(copyThread, position, outputStringStream.str());
+	}
 
-void AI::editTransitionTime(Work::Edit &edit) {
-	editF32(edit, "Transition Time", TRANSITION_FADE_PATH_VECTOR, "m_fadingTime", 0.0f, 500.0f);
-}
+	void editTransitionTime(Work::Edit &edit) {
+		editF32(edit, "Transition Time", TRANSITION_FADE_PATH_VECTOR, "m_fadingTime", 0.0f, 500.0f);
+	}
 
-void AI::editMouseControls(Work::Edit &edit) {
-	editF32(edit, "Free Look Inertia Level", USER_CONTROLS_PATH_VECTOR, "m_freeLookInertiaLevel", 1.0f, 100.0f);
-	editF32(edit, "Screen Mode Inertia Level", USER_CONTROLS_PATH_VECTOR, "m_screenModeInertiaLevel", 1.0f, 100.0f);
+	void editMouseControls(Work::Edit &edit) {
+		editF32(edit, "Free Look Inertia Level", USER_CONTROLS_PATH_VECTOR, "m_freeLookInertiaLevel", 1.0f, 100.0f);
+		editF32(edit, "Screen Mode Inertia Level", USER_CONTROLS_PATH_VECTOR, "m_screenModeInertiaLevel", 1.0f, 100.0f);
+	}
 }

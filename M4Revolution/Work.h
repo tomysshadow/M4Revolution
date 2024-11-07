@@ -78,23 +78,6 @@ namespace Work {
 		Data(size_t size, POINTER pointer);
 	};
 
-	class Edit {
-		private:
-		std::streampos position = 0;
-		std::string str = "";
-
-		Event event;
-		bool copied = false;
-
-		public:
-		static void copyThread(Edit &edit);
-
-		std::fstream &fileStream;
-
-		Edit(std::fstream &fileStream);
-		void join(std::thread &copyThread, std::streampos position, const std::string &str);
-	};
-
 	// BigFileTask (must seek over them, then come back later)
 	class BigFileTask {
 		private:
@@ -248,4 +231,21 @@ namespace Work {
 		void restore(const std::filesystem::path &path);
 		void log();
 	}
+
+	class Edit {
+		private:
+		std::streampos position = 0;
+		std::string str = "";
+
+		Event event;
+		bool copied = false;
+
+		public:
+		static void copyThread(Edit &edit);
+
+		std::fstream &fileStream;
+
+		Edit(std::fstream &fileStream);
+		void join(std::thread &copyThread, std::streampos position, const std::string &str);
+	};
 };
