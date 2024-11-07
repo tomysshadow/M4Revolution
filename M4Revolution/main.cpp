@@ -1,7 +1,7 @@
 #include "shared.h"
 #include "M4Revolution.h"
 #include <filesystem>
-#include "sapp/SteamAppPathProvider.h"
+#include <sapp/SteamAppPathProvider.h>
 
 bool performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_TOGGLE_SOUND_FADING = 1;
