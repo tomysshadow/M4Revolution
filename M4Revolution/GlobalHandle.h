@@ -40,15 +40,16 @@ template <typename T = void*> class GlobalHandleLock {
 					throw std::runtime_error("Failed to Free Resource Handle");
 				}
 			}
-		} else {
-			if (!GlobalUnlock(globalHandle)) {
-				if (GetLastError() != NO_ERROR) {
-					throw std::runtime_error("Failed to Unlock Global Handle");
-				}
+			return;
+		}
 
-				if (GlobalFree(globalHandle) != NULL) {
-					throw std::runtime_error("Failed to Free Global Handle");
-				}
+		if (!GlobalUnlock(globalHandle)) {
+			if (GetLastError() != NO_ERROR) {
+				throw std::runtime_error("Failed to Unlock Global Handle");
+			}
+
+			if (GlobalFree(globalHandle) != NULL) {
+				throw std::runtime_error("Failed to Free Global Handle");
 			}
 		}
 		#endif
@@ -160,10 +161,7 @@ template <typename T = void*> class GlobalHandleLock {
 		return GetHandleSize(globalHandle);
 		#endif
 		#ifdef WINDOWS
-		if (resource) {
-			return resourceSize;
-		}
-		return GlobalSize(globalHandle);
+		return resource ? resourceSize : GlobalSize(globalHandle);
 		#endif
 	}
 
