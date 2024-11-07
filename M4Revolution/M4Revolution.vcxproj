@@ -190,6 +190,9 @@
   <ItemGroup>
     <ResourceCompile Include="M4Revolution.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Release\gfx_tools_rd.dll" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

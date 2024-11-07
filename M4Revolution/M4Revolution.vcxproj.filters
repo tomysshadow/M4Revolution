@@ -77,4 +77,7 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Release\gfx_tools_rd.dll" />
+  </ItemGroup>
 </Project>
