@@ -224,7 +224,7 @@ namespace Work {
 		static const std::filesystem::path DATA_PATH;
 		static const std::filesystem::path GFX_TOOLS_PATH;
 
-		static void validatePath(const std::filesystem::path &path);
+		static void findInstallPath(const std::filesystem::path &path);
 		static bool setPath(const std::filesystem::path &path);
 
 		Output();

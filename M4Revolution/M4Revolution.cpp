@@ -724,7 +724,7 @@ M4Revolution::M4Revolution(
 	: logFileNames(logFileNames) {
 	#ifdef D3D9
 	{
-		Work::Output::validatePath(path.lexically_normal());
+		Work::Output::findInstallPath(path.lexically_normal());
 
 		Microsoft::WRL::ComPtr<IDirect3D9> direct3D9InterfacePointer = Direct3DCreate9(D3D_SDK_VERSION);
 

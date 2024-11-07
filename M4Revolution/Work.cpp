@@ -216,19 +216,19 @@ namespace Work {
 	const std::filesystem::path Output::DATA_PATH("data/data.m4b");
 	const std::filesystem::path Output::GFX_TOOLS_PATH("bin/gfx_tools_rd.dll");
 
-	void Output::validatePath(const std::filesystem::path &path) {
-		bool valid = setPath(path);
+	void Output::findInstallPath(const std::filesystem::path &path) {
+		bool foundInstalled = setPath(path);
 
-		if (valid) {
+		if (foundInstalled) {
 			consoleLog("Myst IV: Revelation was found installed at the following path:");
 			consoleLog(path.string().c_str(), 2);
 
-			valid = consoleBool("Is this the path to the install you would like to modify?", true);
+			foundInstalled = consoleBool("Is this the path to the install you would like to modify?", true);
 		} else {
 			consoleLog("No install of Myst IV: Relevation was found.");
 		}
 
-		if (!valid) {
+		if (!foundInstalled) {
 			while (!setPath(consoleString("Please enter the path to Myst IV: Relevation."))) {
 				consoleLog("No install of Myst IV: Relevation was found at this path.");
 			}
