@@ -131,15 +131,16 @@ void M4Revolution::ErrorHandler::error(nvtt::Error error) {
 void M4Revolution::replaceGfxTools() {
 	consoleLog("Replacing Gfx Tools");
 
-	HRSRC resourceHandle = FindResource(NULL, MAKEINTRESOURCE(IDR_BIN_GFX_TOOLS), TEXT("BIN"));
-
-	if (!resourceHandle) {
-		throw std::runtime_error("Failed to Find Resource");
-	}
-
-	GlobalHandleLock<> resourceGlobalHandleLock(NULL, resourceHandle);
-
+	// scope so that we let go of the output before renaming it and free the resource when no longer needed
 	{
+		HRSRC resourceHandle = FindResource(NULL, MAKEINTRESOURCE(IDR_BIN_GFX_TOOLS), TEXT("BIN"));
+
+		if (!resourceHandle) {
+			throw std::runtime_error("Failed to Find Resource");
+		}
+
+		GlobalHandleLock<> resourceGlobalHandleLock(NULL, resourceHandle);
+
 		Work::Output output = {};
 		writeStreamSafe(output.fileStream, resourceGlobalHandleLock.get(), resourceGlobalHandleLock.size());
 	}
