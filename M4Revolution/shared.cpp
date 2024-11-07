@@ -189,6 +189,17 @@ bool consoleBool(const char* str, const std::optional<bool> &defaultValueOptiona
 	return result == YES;
 }
 
+std::string consoleString(const char* str) {
+	if (str) {
+		std::cout << str << std::endl;
+	}
+
+	std::string result = "";
+	std::getline(std::cin, result);
+	std::cout << std::endl;
+	return result;
+}
+
 void readStreamSafe(std::istream &inputStream, void* buffer, std::streamsize count) {
 	if (!inputStream.read((char*)buffer, count) || count != inputStream.gcount()) {
 		throw ReadStreamFailed();

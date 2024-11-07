@@ -59,8 +59,6 @@ class M4Revolution {
 		bool result = true;
 	};
 
-	std::string inputFileName = "";
-	std::string gfxToolsFileName = "";
 	bool logFileNames = false;
 
 	Work::Convert::Configuration configuration;
@@ -131,9 +129,17 @@ class M4Revolution {
 	static void outputThread(Work::Tasks &tasks, bool &yield);
 
 	public:
+	class PathNotFound : public std::invalid_argument {
+		public:
+		PathNotFound() noexcept : std::invalid_argument("M4Revolution path not found") {
+		}
+	};
+
+	static const std::filesystem::path DATA_PATH;
+	static const std::filesystem::path GFX_TOOLS_PATH;
+
 	M4Revolution(
-		const std::string &inputFileName,
-		const std::string &gfxToolsFileName,
+		const std::filesystem::path &path,
 		bool logFileNames = false,
 		bool disableHardwareAcceleration = false,
 		uint32_t maxThreads = 0,

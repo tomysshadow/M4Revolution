@@ -145,10 +145,10 @@ void M4Revolution::replaceGfxTools() {
 		writeStreamSafe(output.fileStream, resourceGlobalHandleLock.get(), resourceGlobalHandleLock.size());
 	}
 
-	Work::Backup::create(gfxToolsFileName.c_str());
+	Work::Backup::create(GFX_TOOLS_PATH.string().c_str());
 
 	//try {
-	std::filesystem::rename(Work::Output::FILE_NAME, gfxToolsFileName);
+	std::filesystem::rename(Work::Output::FILE_NAME, GFX_TOOLS_PATH);
 	//} catch (std::filesystem::filesystem_error) {
 	// TODO: game is running, or not admin
 	//}
@@ -716,19 +716,27 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 	}
 }
 
+const std::filesystem::path M4Revolution::DATA_PATH("data/data.m4b");
+const std::filesystem::path M4Revolution::GFX_TOOLS_PATH("bin/gfx_tools_rd.dll");
+
 M4Revolution::M4Revolution(
-	const std::string &inputFileName,
-	const std::string &gfxToolsFileName,
+	const std::filesystem::path &path,
 	bool logFileNames,
 	bool disableHardwareAcceleration,
 	uint32_t maxThreads,
 	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks
 )
-	: inputFileName(inputFileName),
-	gfxToolsFileName(gfxToolsFileName),
-	logFileNames(logFileNames) {
+	: logFileNames(logFileNames) {
 	#ifdef D3D9
 	{
+		std::filesystem::current_path(path);
+
+		// this check is just to prevent the user from being dumb
+		// we need proper checks upon actually opening these as well of course
+		if (!std::filesystem::exists(DATA_PATH) || !std::filesystem::exists(GFX_TOOLS_PATH)) {
+			throw PathNotFound();
+		}
+
 		Microsoft::WRL::ComPtr<IDirect3D9> direct3D9InterfacePointer = Direct3DCreate9(D3D_SDK_VERSION);
 
 		if (!direct3D9InterfacePointer) {
@@ -801,7 +809,7 @@ M4Revolution::~M4Revolution() {
 }
 
 void M4Revolution::toggleSoundFading() {
-	std::fstream fileStream(inputFileName, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+	std::fstream fileStream(DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 
 	Log log("Toggling Sound Fading", fileStream);
 	Work::Edit edit(fileStream);
@@ -814,7 +822,7 @@ void M4Revolution::toggleSoundFading() {
 }
 
 void M4Revolution::editTransitionTime() {
-	std::fstream fileStream(inputFileName, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+	std::fstream fileStream(DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 
 	Log log("Editing Transition Time", fileStream);
 	Work::Edit edit(fileStream);
@@ -827,7 +835,7 @@ void M4Revolution::editTransitionTime() {
 }
 
 void M4Revolution::editMouseControls() {
-	std::fstream fileStream(inputFileName, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+	std::fstream fileStream(DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 
 	Log log("Editing Mouse Controls", fileStream);
 	Work::Edit edit(fileStream);
@@ -846,7 +854,7 @@ void M4Revolution::fixLoading() {
 	};
 
 	{
-		std::ifstream inputFileStream(inputFileName, std::ios::binary, _SH_DENYWR);
+		std::ifstream inputFileStream(DATA_PATH, std::ios::binary, _SH_DENYWR);
 
 		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
@@ -871,13 +879,13 @@ void M4Revolution::fixLoading() {
 		outputThread.join();
 	}
 
-	if (Work::Backup::create(inputFileName.c_str())) {
+	if (Work::Backup::create(DATA_PATH.string().c_str())) {
 		Work::Backup::log();
 	}
 
 	// here I use std::filesystem::rename because I do want to overwrite the file if it exists
 	//try {
-	std::filesystem::rename(Work::Output::FILE_NAME, inputFileName);
+	std::filesystem::rename(Work::Output::FILE_NAME, DATA_PATH);
 	//} catch (std::filesystem::filesystem_error) {
 	// TODO: game is running, or not admin
 	//}
@@ -885,7 +893,7 @@ void M4Revolution::fixLoading() {
 
 bool M4Revolution::restoreBackup() {
 	{
-		std::ifstream inputFileStream(Work::Backup::getPath(inputFileName), std::ios::binary, _SH_DENYWR);
+		std::ifstream inputFileStream(Work::Backup::getPath(DATA_PATH), std::ios::binary, _SH_DENYWR);
 
 		Log log("Restoring Backup", inputFileStream);
 
@@ -899,6 +907,6 @@ bool M4Revolution::restoreBackup() {
 		return false;
 	}
 
-	Work::Backup::restore(inputFileName);
+	Work::Backup::restore(DATA_PATH);
 	return true;
 }

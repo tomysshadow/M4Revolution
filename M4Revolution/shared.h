@@ -368,6 +368,7 @@ float consoleFloat(const char* str = 0, float minValue = -FLT_MAX, float maxValu
 long consoleLong(const char* str = 0, long minValue = -LONG_MAX, long maxValue = LONG_MAX, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
 unsigned long consoleLongUnsigned(const char* str = 0, unsigned long minValue = 0, unsigned long maxValue = ULONG_MAX, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
 bool consoleBool(const char* str = 0, const std::optional<bool> &defaultValueOptional = std::nullopt);
+std::string consoleString(const char* str = 0);
 
 class StreamFailed : public std::runtime_error {
 	public:
