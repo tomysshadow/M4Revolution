@@ -276,11 +276,7 @@ namespace Work {
 			}
 
 			// here I use std::filesystem::rename because I do want to overwrite the file if it exists
-			//try {
-			std::filesystem::rename(Output::FILE_NAME, fileName);
-			//} catch (std::filesystem::filesystem_error) {
-			// TODO: game is running, or not admin
-			//}
+			HANDLE_FILE_OPERATION_EXCEPTION(std::filesystem::rename(Output::FILE_NAME, fileName), std::filesystem::filesystem_error);
 			return result;
 		}
 

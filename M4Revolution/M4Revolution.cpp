@@ -803,11 +803,7 @@ void M4Revolution::toggleSoundFading() {
 	Log log("Toggling Sound Fading", fileStream);
 	Work::Edit edit(fileStream);
 
-	//try {
-	AI::toggleSoundFading(edit);
-	//} catch (StreamFailed) {
-	// TODO: game is running, or not admin
-	//}
+	HANDLE_FILE_OPERATION_EXCEPTION(AI::toggleSoundFading(edit), StreamFailed);
 }
 
 void M4Revolution::editTransitionTime() {
@@ -816,11 +812,7 @@ void M4Revolution::editTransitionTime() {
 	Log log("Editing Transition Time", fileStream);
 	Work::Edit edit(fileStream);
 
-	//try {
-	AI::editTransitionTime(edit);
-	//} catch (StreamFailed) {
-	// TODO: game is running, or not admin
-	//}
+	HANDLE_FILE_OPERATION_EXCEPTION(AI::editTransitionTime(edit), StreamFailed);
 }
 
 void M4Revolution::editMouseControls() {
@@ -829,11 +821,7 @@ void M4Revolution::editMouseControls() {
 	Log log("Editing Mouse Controls", fileStream);
 	Work::Edit edit(fileStream);
 
-	//try {
-	AI::editMouseControls(edit);
-	//} catch (StreamFailed) {
-	// TODO: game is running, or not admin
-	//}
+	HANDLE_FILE_OPERATION_EXCEPTION(AI::editMouseControls(edit), StreamFailed);
 }
 
 void M4Revolution::fixLoading() {

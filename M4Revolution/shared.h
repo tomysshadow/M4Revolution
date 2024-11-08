@@ -334,6 +334,18 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 	return stringToLongUnsignedWide(str, result, base, locale) ? result : defaultValue;
 }
 
+#define HANDLE_FILE_OPERATION_EXCEPTION(operation, exception) do {\
+	try {\
+		(operation);\
+	} catch (exception) {\
+		consoleLog("The game files could not be accessed. Please ensure the game is not open while using this tool. If this error is occuring and the game is not open, you may need to run this tool as admin.");\
+		consoleWait();\
+		continue;\
+	}\
+	\
+	break;\
+} while (1)
+
 constexpr inline uint32_t clampUINT32(uint32_t extent, uint32_t min, uint32_t max) {
 	return __min(max, __max(extent, min));
 }
@@ -363,6 +375,7 @@ inline bool destroyWindow(HWND &windowHandle) {
 #endif
 
 void consoleLog(const char* str = 0, short newline = true, short tab = false, bool err = false, const char* file = 0, unsigned int line = 0);
+void consoleWait();
 double consoleDouble(const char* str = 0, double minValue = -DBL_MAX, double maxValue = DBL_MAX, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
 float consoleFloat(const char* str = 0, float minValue = -FLT_MAX, float maxValue = FLT_MAX, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
 long consoleLong(const char* str = 0, long minValue = -LONG_MAX, long maxValue = LONG_MAX, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);

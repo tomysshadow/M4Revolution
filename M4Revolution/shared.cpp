@@ -48,6 +48,15 @@ void consoleLog(const char* str, short newline, short tab, bool err, const char*
 	}
 }
 
+void consoleWait() {
+	#ifdef MACINTOSH
+	system("read");
+	#endif
+	#ifdef WINDOWS
+	system("pause");
+	#endif
+}
+
 #define CONSOLE_NUMBER_LOCALE(locale) do {\
 	std::locale coutLocale = std::cout.imbue(locale);\
 	\
