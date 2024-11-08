@@ -34,8 +34,14 @@ template <typename T = void*> class GlobalHandleLock {
 		}
 		#endif
 		#ifdef WINDOWS
+		SetLastError(NO_ERROR);
+
 		if (resource) {
 			if (!UnlockResource(globalHandle)) {
+				if (GetLastError() != NO_ERROR) {
+					throw std::runtime_error("Failed to Unlock Resource Handle");
+				}
+
 				if (FreeResource(globalHandle)) {
 					throw std::runtime_error("Failed to Free Resource Handle");
 				}
