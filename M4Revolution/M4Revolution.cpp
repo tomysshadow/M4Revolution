@@ -474,7 +474,9 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 		zap_int_t height = 0;
 		zap_size_t stride = 0;
 
-		if (zap_load_memory(convert.dataPointer.get(), ZAP_COLOR_FORMAT_BGRA32, &image, &size, &width, &height, &stride) != ZAP_ERROR_NONE) {
+		zap_error_t err = zap_load_memory(convert.dataPointer.get(), ZAP_COLOR_FORMAT_BGRA32, &image, &size, &width, &height, &stride);
+
+		if (err != ZAP_ERROR_NONE) {
 			throw std::runtime_error("Failed to Load ZAP From Memory");
 		}
 
@@ -722,10 +724,15 @@ M4Revolution::M4Revolution(
 	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks
 )
 	: logFileNames(logFileNames) {
+	// here we make the path lexically normal just so that it displays nice
+	Work::Output::findInstallPath(path.lexically_normal());
+
 	#ifdef D3D9
 	{
-		Work::Output::findInstallPath(path.lexically_normal());
-
+		// we need to get the max texture size supported by this graphics card
+		// and ensure that all textures we convert are resized to less than this size
+		// ares uses Direct3D 9 to do this - so I do also
+		// it is assumed this tool will be run on the same GPU as the game itself will
 		Microsoft::WRL::ComPtr<IDirect3D9> direct3D9InterfacePointer = Direct3DCreate9(D3D_SDK_VERSION);
 
 		if (!direct3D9InterfacePointer) {
@@ -828,14 +835,26 @@ void M4Revolution::fixLoading() {
 	};
 
 	{
-		std::ifstream inputFileStream(Work::Output::DATA_PATH, std::ios::binary, _SH_DENYWR);
+		std::ifstream inputFileStream;
+
+		for (;;) {
+			inputFileStream.open(Work::Output::DATA_PATH, std::ios::binary, _SH_DENYWR);
+
+			if (inputFileStream.is_open()) {
+				break;
+			}
+
+			RETRY_ERR(Work::Output::FILE_RETRY);
+		}
 
 		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
 		Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames, true);
 
+		// to avoid a sharing violation this must happen first before creating the output thread
+		// as they will both write to the same temporary file
 		#ifdef WINDOWS
-		replaceGfxTools(log);
+		OPERATION_EXCEPTION_RETRY_ERR(replaceGfxTools(log), StreamFailed, Work::Output::FILE_RETRY);
 		#endif
 
 		bool yield = true;

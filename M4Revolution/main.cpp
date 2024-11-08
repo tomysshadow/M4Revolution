@@ -139,4 +139,4 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-// And God said, "Let there be light," and there was light. - Genesis 1:3
+// "And God said, 'Let there be light,' and there was light." - Genesis 1:3

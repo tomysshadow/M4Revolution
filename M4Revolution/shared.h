@@ -334,12 +334,16 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 	return stringToLongUnsignedWide(str, result, base, locale) ? result : defaultValue;
 }
 
+#define RETRY_ERR(retry) do {\
+	consoleLog(retry, true, false, true);\
+	consoleWait();\
+} while (0)
+
 #define OPERATION_EXCEPTION_RETRY_ERR(operation, exception, retry) do {\
 	try {\
 		(operation);\
 	} catch (exception) {\
-		consoleLog(retry, true, false, true);\
-		consoleWait();\
+		RETRY_ERR(retry);\
 		continue;\
 	}\
 	\

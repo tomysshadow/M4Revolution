@@ -23,11 +23,20 @@ namespace Work {
 		setPredicate(set);
 	}
 
-	// prevent spurious wakeup
+	// the point of this method is to make it so that
+	// one thread will wait until another is doing work
+	// then, continue waiting while it does that work
+	// and then, finally, immediately wake up only once it is done that work
+	// that way we do not have to sleep in a loop
+	// however, in order to prevent busy waiting
+	// the waiting thread must "yield" to other threads
+	// meaning, it won't wake up more than once in a row
+	// if no work is currently happening
 	void Event::wait(bool &yield, bool reset) {
 		std::unique_lock<std::mutex> lock(mutex);
 
 		conditionVariable.wait(lock, [&] {
+			// prevent spurious wakeup
 			// if we are yielding, we don't allow waking up until some other thread than us is the one that has set the event
 			// otherwise, all that matters is that the event was in fact set (i.e., the owning lock isn't currently in use by anyone)
 			if (threadIDOptional.has_value() && (!yield || threadIDOptional != std::this_thread::get_id())) {
@@ -211,7 +220,7 @@ namespace Work {
 		compressionOptionsAlpha(compressionOptionsAlpha) {
 	}
 
-	const char* Output::FILE_NAME = "~M4R.tmp";
+	const char* Output::FILE_NAME = "~M4R.tmp"; // must be an 8.3 filename
 	const char* Output::FILE_RETRY = "The game files could not be accessed. Please ensure the game is not open while using this tool. If this error is occuring and the game is not open, you may need to run this tool as admin.";
 
 	const std::filesystem::path Output::DATA_PATH("data/data.m4b");
@@ -291,7 +300,7 @@ namespace Work {
 		}
 
 		void restore(const std::filesystem::path &path) {
-			std::filesystem::rename(getPath(path), path);
+			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(getPath(path), path), std::filesystem::filesystem_error, Output::FILE_RETRY);
 		}
 
 		void log() {

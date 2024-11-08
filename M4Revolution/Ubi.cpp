@@ -73,6 +73,7 @@ namespace Ubi {
 	namespace Binary {
 		namespace BinarizerLoader {
 			bool toggleResource(std::istream &inputStream, std::streamsize size, const std::string &name, const std::string &path, std::ostream &outputStream) {
+				// toggle a resource on or off by adding it to or removing it from a binarizer_loader.log file
 				std::streampos position = inputStream.tellg();
 
 				std::optional<HeaderReader> headerReaderOptional = std::nullopt;
@@ -87,6 +88,7 @@ namespace Ubi {
 
 				readStreamSafe(inputStream, &resources, RESOURCES_SIZE);
 
+				// save this position for when we modify this value later
 				std::streampos resourcesPosition = outputStream.tellp();
 				writeStreamSafe(outputStream, &resources, RESOURCES_SIZE);
 
@@ -97,6 +99,8 @@ namespace Ubi {
 					const std::optional<std::string> &RESOURCE_PATH = String::readOptional(inputStream, nullTerminator);
 
 					if (RESOURCE_PATH == path) {
+						// if we find the resource path it is currently on
+						// so we shift everything else up, overwriting it
 						copyStream(inputStream, outputStream, position + size - inputStream.tellg());
 						resources--;
 
@@ -112,14 +116,22 @@ namespace Ubi {
 				if (on) {
 					consoleLog("on.");
 
+					// to turn the resource back on we simply write it again at the end
+					// we assume it was on originally and turned off
+					// so there is some padding space at the end of the file
 					String::writeOptional(outputStream, path, false);
 					resources++;
 				} else {
 					consoleLog("off.");
 				}
 
+				std::streampos endPosition = outputStream.tellp();
+
 				outputStream.seekp(resourcesPosition);
 				writeStreamSafe(outputStream, &resources, RESOURCES_SIZE);
+
+				// seek back to the end for the benefit of the caller
+				outputStream.seekp(endPosition);
 				return on;
 			}
 		}
@@ -343,6 +355,8 @@ namespace Ubi {
 				return std::nullopt;
 			}
 
+			// modifying these contexts would be hard, but seems unnecessary
+			// so this is not implemented
 			const std::string CONTEXT_GLOBAL = "global";
 			const std::string CONTEXT_SHARED = "shared";
 
@@ -1288,6 +1302,8 @@ namespace Ubi {
 		: header(inputStream, fileSystemSize, fileSystemPosition),
 		directory(0, inputStream, fileSystemSize, files, filePointerSetMap, file) {
 		// do all the steps necessary to prevent water causing a crash
+		// note: the Binarizer seems hardcoded to put cubes and water in a cube and water directory
+		// so we use that fact instead of loading every file in binarizer_loader.log like the game does
 		#ifdef LAYERS_ENABLED
 		const Directory::VECTOR &DIRECTORY_VECTOR = directory.directoryVector;
 
