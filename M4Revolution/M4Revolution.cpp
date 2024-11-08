@@ -803,7 +803,7 @@ void M4Revolution::toggleSoundFading() {
 	Log log("Toggling Sound Fading", fileStream);
 	Work::Edit edit(fileStream);
 
-	HANDLE_FILE_OPERATION_EXCEPTION(AI::toggleSoundFading(edit), StreamFailed);
+	OPERATION_EXCEPTION_RETRY_ERR(AI::toggleSoundFading(edit), StreamFailed, FILE_OPERATION_EXCEPTION_RETRY);
 }
 
 void M4Revolution::editTransitionTime() {
@@ -812,7 +812,7 @@ void M4Revolution::editTransitionTime() {
 	Log log("Editing Transition Time", fileStream);
 	Work::Edit edit(fileStream);
 
-	HANDLE_FILE_OPERATION_EXCEPTION(AI::editTransitionTime(edit), StreamFailed);
+	OPERATION_EXCEPTION_RETRY_ERR(AI::editTransitionTime(edit), StreamFailed, FILE_OPERATION_EXCEPTION_RETRY);
 }
 
 void M4Revolution::editMouseControls() {
@@ -821,7 +821,7 @@ void M4Revolution::editMouseControls() {
 	Log log("Editing Mouse Controls", fileStream);
 	Work::Edit edit(fileStream);
 
-	HANDLE_FILE_OPERATION_EXCEPTION(AI::editMouseControls(edit), StreamFailed);
+	OPERATION_EXCEPTION_RETRY_ERR(AI::editMouseControls(edit), StreamFailed, FILE_OPERATION_EXCEPTION_RETRY);
 }
 
 void M4Revolution::fixLoading() {

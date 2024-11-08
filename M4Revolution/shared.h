@@ -334,11 +334,13 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 	return stringToLongUnsignedWide(str, result, base, locale) ? result : defaultValue;
 }
 
-#define HANDLE_FILE_OPERATION_EXCEPTION(operation, exception) do {\
+static const char* FILE_OPERATION_EXCEPTION_RETRY = "The game files could not be accessed. Please ensure the game is not open while using this tool. If this error is occuring and the game is not open, you may need to run this tool as admin.";
+
+#define OPERATION_EXCEPTION_RETRY_ERR(operation, exception, retry) do {\
 	try {\
 		(operation);\
 	} catch (exception) {\
-		consoleLog("The game files could not be accessed. Please ensure the game is not open while using this tool. If this error is occuring and the game is not open, you may need to run this tool as admin.");\
+		consoleLog(retry, true, false, true);\
 		consoleWait();\
 		continue;\
 	}\
