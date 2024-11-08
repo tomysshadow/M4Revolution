@@ -6,17 +6,25 @@
 #pragma warning(push)
 #pragma warning(disable : 4267)
 #pragma warning(disable : 4018)
+#pragma warning(disable : 4244)
 #include <sapp/SteamAppPathProvider.h>
 #pragma warning(pop)
 
+void help() {
+	//consoleLog("Usage: M4Revolution [-p path -lfn -nohw -mt maxThreads]");
+
+	openFile("https://github.com/tomysshadow/M4Revolution/blob/master/README.md");
+}
+
 bool performOperation(M4Revolution &m4Revolution) {
-	const long OPERATION_TOGGLE_SOUND_FADING = 1;
-	const long OPERATION_EDIT_TRANSITION_TIME = 2;
-	const long OPERATION_EDIT_MOUSE_CONTROLS = 3;
-	const long OPERATION_FIX_LOADING = 4;
-	const long OPERATION_RESTORE_BACKUP = 5;
-	const long OPERATION_EXIT = 6;
-	const long OPERATION_MIN = OPERATION_TOGGLE_SOUND_FADING;
+	const long OPERATION_OPEN_ONLINE_HELP = 1;
+	const long OPERATION_TOGGLE_SOUND_FADING = 2;
+	const long OPERATION_EDIT_TRANSITION_TIME = 3;
+	const long OPERATION_EDIT_MOUSE_CONTROLS = 4;
+	const long OPERATION_FIX_LOADING = 5;
+	const long OPERATION_RESTORE_BACKUP = 6;
+	const long OPERATION_EXIT = 7;
+	const long OPERATION_MIN = OPERATION_OPEN_ONLINE_HELP;
 	const long OPERATION_MAX = OPERATION_EXIT;
 
 	switch (consoleLong(
@@ -24,6 +32,9 @@ bool performOperation(M4Revolution &m4Revolution) {
 		OPERATION_MIN,
 		OPERATION_MAX
 	)) {
+		case OPERATION_OPEN_ONLINE_HELP:
+		help();
+		break;
 		case OPERATION_TOGGLE_SOUND_FADING:
 		m4Revolution.toggleSoundFading();
 		break;
@@ -42,10 +53,6 @@ bool performOperation(M4Revolution &m4Revolution) {
 		exit(0);
 	}
 	return true;
-}
-
-void help() {
-	consoleLog("Usage: M4Revolution [-p path -lfn -nohw -mt maxThreads]");
 }
 
 int main(int argc, char** argv) {
@@ -120,12 +127,13 @@ int main(int argc, char** argv) {
 	do {
 		consoleLog("This menu may be used to perform the following operations.", 2);
 
-		consoleLog("1) Toggle Sound Fading");
-		consoleLog("2) Edit Transition Time");
-		consoleLog("3) Edit Mouse Controls");
-		consoleLog("4) Fix Loading");
-		consoleLog("5) Restore Backup");
-		consoleLog("6) Exit", 2);
+		consoleLog("1) Open Online Help");
+		consoleLog("2) Toggle Sound Fading");
+		consoleLog("3) Edit Transition Time");
+		consoleLog("4) Edit Mouse Controls");
+		consoleLog("5) Fix Loading");
+		consoleLog("6) Restore Backup");
+		consoleLog("7) Exit", 2);
 	} while (consoleBool(
 		(
 			std::string("The operation has been ")

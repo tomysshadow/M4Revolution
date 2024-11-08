@@ -261,6 +261,50 @@ void copyStreamToString(std::istream &inputStream, std::string &outputString, st
 	);
 }
 
+// https://learn.microsoft.com/en-us/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way
+std::string escapeArgument(const std::string &argument, bool force) {
+	if (!force && !argument.empty() && argument.find_first_of(" \t\n\v\"") == argument.npos) {
+		return argument;
+	}
+
+	std::string::size_type backslashes = 0;
+	std::string escape = "\"";
+
+	for (std::string::const_iterator argumentIterator = argument.begin(); argumentIterator != argument.end(); argumentIterator++) {
+		backslashes = 0;
+
+		while (argumentIterator != argument.end() && *argumentIterator == '\\') {
+			backslashes++;
+			argumentIterator++;
+		}
+
+		if (argumentIterator != argument.end()) {
+			if (*argumentIterator == '"') {
+				escape.append(backslashes + backslashes + 1, '\\');
+			} else {
+				escape.append(backslashes, '\\');
+			}
+
+			escape += *argumentIterator;
+		}
+	}
+
+	escape.append(backslashes + backslashes, '\\');
+	escape += "\"";
+	return escape;
+}
+
+void openFile(const std::string &path) {
+	#ifdef MACINTOSH
+	const std::string COMMAND = "open";
+	#endif
+	#ifdef WINDOWS
+	const std::string COMMAND = "start \"\" ";
+	#endif
+
+	system((COMMAND + " " + escapeArgument(path)).c_str());
+}
+
 #ifdef WINDOWS
 void setFileAttributeHidden(bool hidden, LPCSTR pathStringPointer) {
 	if (!pathStringPointer) {

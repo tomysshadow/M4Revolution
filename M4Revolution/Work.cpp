@@ -221,7 +221,7 @@ namespace Work {
 	}
 
 	const char* Output::FILE_NAME = "~M4R.tmp"; // must be an 8.3 filename
-	const char* Output::FILE_RETRY = "The game files could not be accessed. Please ensure the game is not open while using this tool. If this error is occuring and the game is not open, you may need to run this tool as admin.";
+	const char* Output::FILE_RETRY = "The game files could not be accessed. Please ensure the game is not open while using this tool. If this error is occuring and the game is not open, you may be out of disk space, or you may need to run this tool as admin.";
 
 	const std::filesystem::path Output::DATA_PATH("data/data.m4b");
 	const std::filesystem::path Output::GFX_TOOLS_PATH("bin/gfx_tools_rd.dll");
