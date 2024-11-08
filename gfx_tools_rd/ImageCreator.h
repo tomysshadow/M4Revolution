@@ -11,7 +11,7 @@ namespace gfx_tools {
 		typedef ImageLoader* (GFX_TOOLS_RD_CALL *ImageSerializerProc)();
 
 		GFX_TOOLS_RD_API static ImageLoader* GFX_TOOLS_RD_CALL CreateLoader(char* extension);
-		GFX_TOOLS_RD_API static ImageLoader* GFX_TOOLS_RD_CALL CreateLoaderFromFileName(char const* fileName);
+		GFX_TOOLS_RD_API static ImageLoader* GFX_TOOLS_RD_CALL CreateLoaderFromFileName(const char* fileName);
 		GFX_TOOLS_RD_API static ImageLoader* GFX_TOOLS_RD_CALL CreateAndFillLoaderForFile(char* fileName);
 		GFX_TOOLS_RD_API static void GFX_TOOLS_RD_CALL RegisterImageSerializer(char* extension, ImageSerializerProc imageSerializerProc);
 		GFX_TOOLS_RD_API static ImageCreator* GFX_TOOLS_RD_CALL CreateSingletonInstance();
@@ -33,8 +33,8 @@ namespace gfx_tools {
 
 		static void DestroySingletonInstance();
 
-		GFX_TOOLS_RD_API ImageLoader* GFX_TOOLS_RD_CALL CreateLoaderImp(char const* extension);
-		GFX_TOOLS_RD_API ImageLoader* GFX_TOOLS_RD_CALL CreateLoaderFromFileNameImp(char const* fileName);
+		GFX_TOOLS_RD_API ImageLoader* GFX_TOOLS_RD_CALL CreateLoaderImp(const char* extension);
+		GFX_TOOLS_RD_API ImageLoader* GFX_TOOLS_RD_CALL CreateLoaderFromFileNameImp(const char* fileName);
 		GFX_TOOLS_RD_API ImageLoader* GFX_TOOLS_RD_CALL CreateAndFillLoaderForFileImp(char* fileName);
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL RegisterImageSerializerImp(char* fileName, ImageSerializerProc imageSerializerProc);
 	};

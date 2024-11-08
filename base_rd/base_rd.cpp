@@ -46,7 +46,7 @@ namespace ubi {
 		return *(new CriticalSection());
 	}
 	
-	unsigned long ErrorManager::RegisterCategory(unsigned long reserved, char const* name) {
+	unsigned long ErrorManager::RegisterCategory(unsigned long reserved, const char* name) {
 		return 0;
 	}
 
@@ -61,7 +61,7 @@ namespace ubi {
 		return 0;
 	}
 
-	InputFileStream::InputFileStream(char const* path) {
+	InputFileStream::InputFileStream(const char* path) {
 	}
 
 	InputFileStream::~InputFileStream() {

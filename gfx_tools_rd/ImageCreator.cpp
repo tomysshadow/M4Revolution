@@ -8,7 +8,7 @@ namespace gfx_tools {
 		return GetSingletonInstance().CreateLoaderImp(extension);
 	}
 
-	ImageLoader* ImageCreator::CreateLoaderFromFileName(char const* fileName) {
+	ImageLoader* ImageCreator::CreateLoaderFromFileName(const char* fileName) {
 		return GetSingletonInstance().CreateLoaderFromFileNameImp(fileName);
 	}
 
@@ -91,7 +91,7 @@ namespace gfx_tools {
 		delete ms_SingletonInstance;
 	}
 
-	ImageLoader* ImageCreator::CreateLoaderImp(char const* extension) {
+	ImageLoader* ImageCreator::CreateLoaderImp(const char* extension) {
 		IMAGE_SERIALIZER_PROC_MAP::iterator imageSerializerProcMapIterator = EXTENSION_IMAGE_SERIALIZER_PROC_MAP.find(extension);
 
 		if (imageSerializerProcMapIterator == EXTENSION_IMAGE_SERIALIZER_PROC_MAP.end()) {
@@ -100,7 +100,7 @@ namespace gfx_tools {
 		return imageSerializerProcMapIterator->second();
 	}
 
-	ImageLoader* ImageCreator::CreateLoaderFromFileNameImp(char const* fileName) {
+	ImageLoader* ImageCreator::CreateLoaderFromFileNameImp(const char* fileName) {
 		return CreateLoaderImp(std::filesystem::path(fileName).extension().string().c_str());
 	}
 

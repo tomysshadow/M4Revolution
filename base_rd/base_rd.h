@@ -64,7 +64,7 @@ namespace ubi {
 		typedef unsigned long CATEGORY;
 		typedef unsigned long MASK;
 
-		BASE_RD_API unsigned long BASE_RD_CALL RegisterCategory(unsigned long reserved, char const* name);
+		BASE_RD_API unsigned long BASE_RD_CALL RegisterCategory(unsigned long reserved, const char* name);
 		BASE_RD_API void BASE_RD_CALL SetSystemFlag(CATEGORY category, MASK mask, bool value);
 
 		BASE_RD_API static ErrorManager& BASE_RD_CALL GetSingletonInstance();
@@ -89,7 +89,7 @@ namespace ubi {
 		public:
 		typedef unsigned __int64 SIZE;
 
-		BASE_RD_API InputFileStream(char const* path);
+		BASE_RD_API InputFileStream(const char* path);
 		BASE_RD_API virtual ~InputFileStream();
 		BASE_RD_API SIZE BASE_RD_CALL GetSize();
 	};
@@ -121,12 +121,12 @@ namespace ubi {
 		BASE_RD_API virtual bool BASE_RD_CALL IsValidPointer(void const* pointer) = 0;
 		BASE_RD_API virtual size_t BASE_RD_CALL GetMaxSupportedAllocSize() const = 0;
 		BASE_RD_API virtual ErrorManager::CATEGORY BASE_RD_CALL GetErrorCategory() const = 0;
-		BASE_RD_API virtual void* BASE_RD_CALL MallocDebugNoThrow(size_t size, char const*, char const*, ErrorManager::CATEGORY category) = 0;
-		BASE_RD_API virtual void* BASE_RD_CALL ReAllocDebugNoThrow(void* pointer, size_t size, char const*, char const*, ErrorManager::CATEGORY category) = 0;
-		BASE_RD_API virtual void BASE_RD_CALL FreeDebug(void const* pointer, char const*, ErrorManager::CATEGORY category) = 0;
+		BASE_RD_API virtual void* BASE_RD_CALL MallocDebugNoThrow(size_t size, const char*, const char*, ErrorManager::CATEGORY category) = 0;
+		BASE_RD_API virtual void* BASE_RD_CALL ReAllocDebugNoThrow(void* pointer, size_t size, const char*, const char*, ErrorManager::CATEGORY category) = 0;
+		BASE_RD_API virtual void BASE_RD_CALL FreeDebug(void const* pointer, const char*, ErrorManager::CATEGORY category) = 0;
 		BASE_RD_API virtual void* BASE_RD_CALL Transfert(Allocator* allocatorPointer, void* pointer, size_t size) = 0;
-		BASE_RD_API virtual void* BASE_RD_CALL TransfertDebug(Allocator* allocatorPointer, void* pointer, size_t size, char const*, char const*, ErrorManager::CATEGORY category) = 0;
-		BASE_RD_API virtual void BASE_RD_CALL AddContext(char const*) = 0;
+		BASE_RD_API virtual void* BASE_RD_CALL TransfertDebug(Allocator* allocatorPointer, void* pointer, size_t size, const char*, const char*, ErrorManager::CATEGORY category) = 0;
+		BASE_RD_API virtual void BASE_RD_CALL AddContext(const char*) = 0;
 		BASE_RD_API virtual void BASE_RD_CALL RemoveContext() = 0;
 		BASE_RD_API virtual void BASE_RD_CALL FillTagManagerForHTMLStatistics(MemoryTagsManager &memoryTagsManager, char*) = 0;
 		*/
