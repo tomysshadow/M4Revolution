@@ -212,6 +212,7 @@ namespace Work {
 	}
 
 	const char* Output::FILE_NAME = "~M4R.tmp";
+	const char* Output::FILE_RETRY = "The game files could not be accessed. Please ensure the game is not open while using this tool. If this error is occuring and the game is not open, you may need to run this tool as admin.";
 
 	const std::filesystem::path Output::DATA_PATH("data/data.m4b");
 	const std::filesystem::path Output::GFX_TOOLS_PATH("bin/gfx_tools_rd.dll");
@@ -276,7 +277,7 @@ namespace Work {
 			}
 
 			// here I use std::filesystem::rename because I do want to overwrite the file if it exists
-			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(Output::FILE_NAME, fileName), std::filesystem::filesystem_error, FILE_RETRY);
+			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(Output::FILE_NAME, fileName), std::filesystem::filesystem_error, Output::FILE_RETRY);
 			return result;
 		}
 

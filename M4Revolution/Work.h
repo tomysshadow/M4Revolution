@@ -220,6 +220,7 @@ namespace Work {
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
 		static const char* FILE_NAME;
+		static const char* FILE_RETRY;
 
 		static const std::filesystem::path DATA_PATH;
 		static const std::filesystem::path GFX_TOOLS_PATH;
