@@ -271,6 +271,10 @@ namespace Work {
 			// to overwrite the backup file (which std::filesystem::rename has no option to disallow)
 			bool result = !rename(fileName, getPath(fileName).string().c_str());
 
+			if (!result && errno != EEXIST) {
+				throw std::runtime_error("Failed to Rename");
+			}
+
 			// here I use std::filesystem::rename because I do want to overwrite the file if it exists
 			//try {
 			std::filesystem::rename(Output::FILE_NAME, fileName);
@@ -281,7 +285,12 @@ namespace Work {
 		}
 
 		bool createFromOutput(const char* fileName) {
-			return !rename(Output::FILE_NAME, getPath(fileName).string().c_str());
+			bool result = !rename(Output::FILE_NAME, getPath(fileName).string().c_str());
+
+			if (!result && errno != EEXIST) {
+				throw std::runtime_error("Failed to Rename");
+			}
+			return result;
 		}
 
 		void restore(const std::filesystem::path &path) {

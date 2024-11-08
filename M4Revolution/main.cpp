@@ -64,11 +64,16 @@ int main(int argc, char** argv) {
 	unsigned long maxThreads = 0;
 	unsigned long maxFileTasks = 0;
 
+	// for now, due to a crash in SteamAppPathProvider this doesn't work in debug builds
+	#ifndef DEBUG
 	SteamAppPathProvider steamAppPathProvider;
 	
 	if (!steamAppPathProvider.GetAppInstallDir(MYST_IV_REVELATION_APP_ID, pathString)) {
+		#endif
 		pathString = std::filesystem::current_path().string();
+		#ifndef DEBUG
 	}
+	#endif
 
 	for (int i = MIN_ARGC; i < argc; i++) {
 		arg = std::string(argv[i]);
