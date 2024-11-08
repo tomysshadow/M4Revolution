@@ -1,5 +1,6 @@
 #include "shared.h"
 #include "M4Revolution.h"
+#include <optional>
 #include <filesystem>
 
 #pragma warning(push)
@@ -19,10 +20,10 @@ bool performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_MAX = OPERATION_EXIT;
 
 	switch (consoleLong(
-			"Please enter the number corresponding to the operation you would like to perform.",
-			OPERATION_MIN,
-			OPERATION_MAX
-		)) {
+		"Please enter the number corresponding to the operation you would like to perform.",
+		OPERATION_MIN,
+		OPERATION_MAX
+	)) {
 		case OPERATION_TOGGLE_SOUND_FADING:
 		m4Revolution.toggleSoundFading();
 		break;
@@ -63,22 +64,11 @@ int main(int argc, char** argv) {
 	std::string arg = "";
 	int argc2 = argc - 1;
 
-	std::string pathString = "";
+	std::optional<std::string> pathStringOptional = std::nullopt;
 	bool logFileNames = false;
 	bool disableHardwareAcceleration = false;
 	unsigned long maxThreads = 0;
 	unsigned long maxFileTasks = 0;
-
-	// for now, due to a crash in SteamAppPathProvider this doesn't work in debug builds
-	#ifndef DEBUG
-	SteamAppPathProvider steamAppPathProvider;
-	
-	if (!steamAppPathProvider.GetAppInstallDir(MYST_IV_REVELATION_APP_ID, pathString)) {
-		#endif
-		pathString = std::filesystem::current_path().string();
-		#ifndef DEBUG
-	}
-	#endif
 
 	for (int i = MIN_ARGC; i < argc; i++) {
 		arg = std::string(argv[i]);
@@ -92,7 +82,7 @@ int main(int argc, char** argv) {
 			disableHardwareAcceleration = true;
 		} else if (i < argc2) {
 			if (arg == "-p" || arg == "--path") {
-				pathString = argv[++i];
+				pathStringOptional = argv[++i];
 			} else if (arg == "-mt" || arg == "--max-threads") {
 				if (!stringToLongUnsigned(argv[++i], maxThreads)) {
 					consoleLog("Max Threads must be a valid number", 2);
@@ -109,7 +99,23 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	M4Revolution m4Revolution(pathString, logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
+	if (!pathStringOptional.has_value()) {
+		pathStringOptional.emplace("");
+
+		// for now, due to a crash in SteamAppPathProvider this doesn't work in debug builds
+		// https://github.com/Trico-Everfire/SteamAppPathProvider/issues/12
+		#ifndef DEBUG
+		SteamAppPathProvider steamAppPathProvider;
+
+		if (!steamAppPathProvider.GetAppInstallDir(MYST_IV_REVELATION_APP_ID, pathStringOptional.value())) {
+			#endif
+			pathStringOptional.emplace(std::filesystem::current_path().string());
+			#ifndef DEBUG
+		}
+		#endif
+	}
+
+	M4Revolution m4Revolution(pathStringOptional.value(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
 
 	do {
 		consoleLog("This menu may be used to perform the following operations.", 2);
