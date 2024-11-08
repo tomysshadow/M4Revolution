@@ -798,30 +798,27 @@ M4Revolution::~M4Revolution() {
 }
 
 void M4Revolution::toggleSoundFading() {
-	std::fstream fileStream(Work::Output::DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+	std::fstream fileStream;
 
 	Log log("Toggling Sound Fading", fileStream);
-	Work::Edit edit(fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(AI::toggleSoundFading(edit), StreamFailed, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(AI::toggleSoundFading(fileStream), StreamFailed, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::editTransitionTime() {
-	std::fstream fileStream(Work::Output::DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+	std::fstream fileStream;
 
 	Log log("Editing Transition Time", fileStream);
-	Work::Edit edit(fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(AI::editTransitionTime(edit), StreamFailed, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(AI::editTransitionTime(fileStream), StreamFailed, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::editMouseControls() {
-	std::fstream fileStream(Work::Output::DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+	std::fstream fileStream;
 
 	Log log("Editing Mouse Controls", fileStream);
-	Work::Edit edit(fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(AI::editMouseControls(edit), StreamFailed, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(AI::editMouseControls(fileStream), StreamFailed, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::fixLoading() {

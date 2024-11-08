@@ -1,7 +1,12 @@
 #include "shared.h"
 #include "M4Revolution.h"
 #include <filesystem>
+
+#pragma warning(push)
+#pragma warning(disable : 4267)
+#pragma warning(disable : 4018)
 #include <sapp/SteamAppPathProvider.h>
+#pragma warning(pop)
 
 bool performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_TOGGLE_SOUND_FADING = 1;
@@ -86,7 +91,7 @@ int main(int argc, char** argv) {
 		} else if (arg == "-nohw" || arg == "--disable-hardware-acceleration") {
 			disableHardwareAcceleration = true;
 		} else if (i < argc2) {
-			if (arg == "-p" || arg == "-path") {
+			if (arg == "-p" || arg == "--path") {
 				pathString = argv[++i];
 			} else if (arg == "-mt" || arg == "--max-threads") {
 				if (!stringToLongUnsigned(argv[++i], maxThreads)) {
@@ -133,3 +138,5 @@ int main(int argc, char** argv) {
 	));
 	return 0;
 }
+
+// And God said, "Let there be light," and there was light. - Genesis 1:3

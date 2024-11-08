@@ -123,8 +123,9 @@ namespace AI {
 		edit.join(copyThread, position + (std::streamsize)VALUE_STR_PREFIX.length(), outputStringStream.str());
 	}
 
-	void toggleSoundFading(Work::Edit &edit) {
-		std::fstream &fileStream = edit.fileStream;
+	void toggleSoundFading(std::fstream &fileStream) {
+		Work::Edit edit(fileStream);
+
 		Ubi::BigFile::File::SIZE size = Ubi::BigFile::findFile(fileStream, BINARIZER_LOADER_PATH_VECTOR)->size;
 		std::streampos position = fileStream.tellg();
 
@@ -142,11 +143,15 @@ namespace AI {
 		edit.join(copyThread, position, outputStringStream.str());
 	}
 
-	void editTransitionTime(Work::Edit &edit) {
+	void editTransitionTime(std::fstream &fileStream) {
+		Work::Edit edit(fileStream);
+
 		editF32(edit, "Transition Time", TRANSITION_FADE_PATH_VECTOR, "m_fadingTime", 0.0f, 500.0f);
 	}
 
-	void editMouseControls(Work::Edit &edit) {
+	void editMouseControls(std::fstream &fileStream) {
+		Work::Edit edit(fileStream);
+
 		editF32(edit, "Free Look Inertia Level", USER_CONTROLS_PATH_VECTOR, "m_freeLookInertiaLevel", 1.0f, 100.0f);
 		editF32(edit, "Screen Mode Inertia Level", USER_CONTROLS_PATH_VECTOR, "m_screenModeInertiaLevel", 1.0f, 100.0f);
 	}

@@ -221,7 +221,7 @@ namespace Work {
 		bool foundInstalled = setPath(path);
 
 		if (foundInstalled) {
-			consoleLog("Myst IV: Revelation was found installed at this path:");
+			consoleLog("An install of Myst IV: Revelation was found at this path:");
 			consoleLog(path.string().c_str(), 2);
 
 			foundInstalled = consoleBool("Is this the path to the install you would like to modify?", true);
@@ -244,7 +244,7 @@ namespace Work {
 		} catch (std::filesystem::filesystem_error) {
 			return false;
 		}
-		return std::filesystem::exists(DATA_PATH) && std::filesystem::exists(GFX_TOOLS_PATH);
+		return std::filesystem::is_regular_file(DATA_PATH) && std::filesystem::is_regular_file(GFX_TOOLS_PATH);
 	}
 
 	Output::Output() {
@@ -342,6 +342,9 @@ namespace Work {
 
 	Edit::Edit(std::fstream &fileStream)
 		: fileStream(fileStream) {
+		if (!fileStream.is_open()) {
+			fileStream.open(Output::DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+		}
 	}
 
 	void Edit::join(std::thread &copyThread, std::streampos position, const std::string &str) {
