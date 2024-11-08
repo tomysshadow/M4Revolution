@@ -276,7 +276,7 @@ namespace Work {
 			}
 
 			// here I use std::filesystem::rename because I do want to overwrite the file if it exists
-			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(Output::FILE_NAME, fileName), std::filesystem::filesystem_error, FILE_OPERATION_EXCEPTION_RETRY);
+			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(Output::FILE_NAME, fileName), std::filesystem::filesystem_error, FILE_RETRY);
 			return result;
 		}
 
