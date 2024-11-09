@@ -50,11 +50,15 @@ void consoleLog(const char* str, short newline, short tab, bool err, const char*
 
 void consoleWait() {
 	#ifdef MACINTOSH
-	system("read");
+	const char* command = "read";
 	#endif
 	#ifdef WINDOWS
-	system("pause");
+	const char* command = "pause";
 	#endif
+
+	if (system(command)) {
+		throw std::runtime_error("Failed to Process Command");
+	}
 }
 
 #define CONSOLE_NUMBER_LOCALE(locale) do {\
@@ -302,7 +306,9 @@ void openFile(const std::string &path) {
 	const std::string COMMAND = "start \"\" ";
 	#endif
 
-	system((COMMAND + " " + escapeArgument(path)).c_str());
+	if (system((COMMAND + " " + escapeArgument(path)).c_str())) {
+		throw std::runtime_error("Failed to Process Command");
+	}
 }
 
 #ifdef WINDOWS
