@@ -130,7 +130,7 @@ namespace gfx_tools {
 			imageInfo.textureWidth,
 			imageInfo.textureHeight,
 			m4ImageStride,
-			imageInfo.GetRequestedColorFormat(),
+			imageInfo.GetColorFormat(),
 			pointer
 		);
 
@@ -180,6 +180,13 @@ namespace gfx_tools {
 		SetLODRawBufferImp(lod, pointer, size, false, refCountedPointer);
 	}
 
+	RawBuffer::POINTER ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod) {
+		RawBuffer::POINTER pointer = 0;
+		RawBuffer::SIZE size = 0;
+		GetLODRawBuffer(lod, pointer, size);
+		return pointer;
+	}
+
 	void ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) {
 		pointer = 0;
 
@@ -208,13 +215,6 @@ namespace gfx_tools {
 		size = RAW_BUFFER.size;
 		sizeScopeExit.dismiss();
 		pointerScopeExit.dismiss();
-	}
-
-	RawBuffer::POINTER ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod) {
-		RawBuffer::POINTER pointer = 0;
-		RawBuffer::SIZE size = 0;
-		GetLODRawBuffer(lod, pointer, size);
-		return pointer;
 	}
 
 	bool ImageLoaderMultipleBuffer::GetImageInfoImp(ValidatedImageInfo &validatedImageInfo) {
@@ -501,7 +501,7 @@ namespace gfx_tools {
 	}
 
 	const L_TCHAR* ImageLoaderMultipleBufferJPEG::GetExtension() {
-		return "JFIF";
+		return "JPEG"; // normally "JFIF" but must be "JPEG" for M4Image to recognize it
 	}
 
 	L_INT ImageLoaderMultipleBufferJPEG::GetFormat() {

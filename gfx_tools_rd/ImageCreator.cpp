@@ -101,7 +101,14 @@ namespace gfx_tools {
 	}
 
 	ImageLoader* ImageCreator::CreateLoaderFromFileNameImp(const char* fileName) {
-		return CreateLoaderImp(std::filesystem::path(fileName).extension().string().c_str());
+		if (!fileName) {
+			return 0;
+		}
+
+		const char PERIOD = '.';
+
+		const char* extension = strrchr(fileName, PERIOD);
+		return CreateLoaderImp(extension ? extension + 1 : fileName);
 	}
 
 	ImageLoader* ImageCreator::CreateAndFillLoaderForFileImp(char* fileName) {

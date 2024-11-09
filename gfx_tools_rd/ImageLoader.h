@@ -55,8 +55,8 @@ namespace gfx_tools {
 
 		GFX_TOOLS_RD_API virtual RawBuffer::POINTER GFX_TOOLS_RD_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) = 0;
 		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer) = 0;
-		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) = 0;
 		GFX_TOOLS_RD_API virtual RawBuffer::POINTER GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod) = 0;
+		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) = 0;
 
 		GFX_TOOLS_RD_API virtual bool GFX_TOOLS_RD_CALL GetImageInfoImp(
 			ValidatedImageInfo &validatedImageInfo
@@ -139,8 +139,8 @@ namespace gfx_tools {
 
 		GFX_TOOLS_RD_API RawBuffer::POINTER GFX_TOOLS_RD_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size);
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer);
-		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size);
 		GFX_TOOLS_RD_API RawBuffer::POINTER GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod);
+		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size);
 
 		GFX_TOOLS_RD_API bool GFX_TOOLS_RD_CALL GetImageInfoImp(
 			ValidatedImageInfo &validatedImageInfo
