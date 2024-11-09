@@ -140,7 +140,7 @@ namespace Work {
 		std::streamsize gcountRead = 0;
 
 		do {
-			countRead = (std::streamsize)min((size_t)count, (size_t)countRead);
+			countRead = (std::streamsize)__min((size_t)count, (size_t)countRead);
 
 			{
 				Data::POINTER pointer(new unsigned char[(size_t)countRead]);

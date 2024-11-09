@@ -4,10 +4,8 @@
 #include <filesystem>
 
 #pragma warning(push)
-#pragma warning(disable : 4267)
-#pragma warning(disable : 4018)
 #pragma warning(disable : 4244)
-#include <sapp/SteamAppPathProvider.h>
+#include <steampp/steampp.h>
 #pragma warning(pop)
 
 void help() {
@@ -66,8 +64,6 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	const AppId_t MYST_IV_REVELATION_APP_ID = 925940;
-
 	std::string arg = "";
 	int argc2 = argc - 1;
 
@@ -107,19 +103,14 @@ int main(int argc, char** argv) {
 	}
 
 	if (!pathStringOptional.has_value()) {
-		pathStringOptional.emplace("");
+		const steampp::AppID MYST_IV_REVELATION_APP_ID = 925940;
 
-		// for now, due to a crash in SteamAppPathProvider this doesn't work in debug builds
-		// https://github.com/Trico-Everfire/SteamAppPathProvider/issues/12
-		#ifndef DEBUG
-		SteamAppPathProvider steamAppPathProvider;
+		steampp::Steam steam;
+		pathStringOptional.emplace(steam.getAppInstallDir(MYST_IV_REVELATION_APP_ID));
 
-		if (!steamAppPathProvider.GetAppInstallDir(MYST_IV_REVELATION_APP_ID, pathStringOptional.value())) {
-			#endif
+		if (pathStringOptional.value().empty()) {
 			pathStringOptional.emplace(std::filesystem::current_path().string());
-			#ifndef DEBUG
 		}
-		#endif
 	}
 
 	M4Revolution m4Revolution(pathStringOptional.value(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);

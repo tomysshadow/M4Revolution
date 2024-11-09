@@ -1,5 +1,6 @@
 #pragma once
 #define _WIN32_WINNT 0x0600
+#define NOMINMAX
 #include "scope_guard.hpp"
 #include "Locale.h"
 #include <memory>
@@ -423,7 +424,7 @@ void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination wr
 	std::streamsize gcountRead = 0;
 
 	do {
-		countRead = (std::streamsize)min((size_t)count, (size_t)countRead);
+		countRead = (std::streamsize)__min((size_t)count, (size_t)countRead);
 
 		readStreamPartial(inputStream, buffer, countRead, gcountRead);
 
