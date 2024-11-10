@@ -253,6 +253,8 @@ namespace Work {
 
 	class Edit {
 		private:
+		std::filesystem::path path = {};
+
 		std::streampos position = 0;
 		std::string str = "";
 
@@ -264,7 +266,7 @@ namespace Work {
 
 		std::fstream &fileStream;
 
-		Edit(std::fstream &fileStream);
+		Edit(std::fstream &fileStream, const std::filesystem::path &path);
 		void join(std::thread &copyThread, std::streampos position, const std::string &str);
 	};
 };

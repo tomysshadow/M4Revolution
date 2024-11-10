@@ -331,7 +331,7 @@ namespace Work {
 
 		if (!edit.copied) {
 			// check if the file exists, if it doesn't create a backup
-			std::fstream backupFileStream(Backup::getPath(Output::DATA_PATH), std::ios::binary | std::ios::in, _SH_DENYWR);
+			std::fstream backupFileStream(Backup::getPath(edit.path), std::ios::binary | std::ios::in, _SH_DENYWR);
 
 			if (!backupFileStream.is_open()) {
 				// always delete the temporary file when done
@@ -346,7 +346,7 @@ namespace Work {
 					copyStream(fileStream, output.fileStream);
 				}
 
-				backup = Backup::createFromOutput(Output::DATA_PATH.string().c_str());
+				backup = Backup::createFromOutput(edit.path.string().c_str());
 			}
 
 			edit.copied = true;
@@ -362,10 +362,11 @@ namespace Work {
 		writeStreamSafe(fileStream, edit.str.c_str(), edit.str.length());
 	}
 
-	Edit::Edit(std::fstream &fileStream)
-		: fileStream(fileStream) {
+	Edit::Edit(std::fstream &fileStream, const std::filesystem::path &path)
+		: fileStream(fileStream),
+		path(path) {
 		if (!fileStream.is_open()) {
-			fileStream.open(Output::DATA_PATH, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+			fileStream.open(path, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 		}
 	}
 

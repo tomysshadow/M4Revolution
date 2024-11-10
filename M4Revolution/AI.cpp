@@ -124,7 +124,7 @@ namespace AI {
 	}
 
 	void toggleSoundFading(std::fstream &fileStream) {
-		Work::Edit edit(fileStream);
+		Work::Edit edit(fileStream, Work::Output::DATA_PATH);
 
 		Ubi::BigFile::File::SIZE size = Ubi::BigFile::findFile(fileStream, BINARIZER_LOADER_PATH_VECTOR)->size;
 		std::streampos position = fileStream.tellg();
@@ -144,7 +144,7 @@ namespace AI {
 	}
 
 	void editTransitionTime(std::fstream &fileStream) {
-		Work::Edit edit(fileStream);
+		Work::Edit edit(fileStream, Work::Output::DATA_PATH);
 
 		editF32(edit, "Transition Time", TRANSITION_FADE_PATH_VECTOR, "m_fadingTime", 0.0f, 500.0f);
 	}

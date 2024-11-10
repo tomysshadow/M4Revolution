@@ -351,6 +351,10 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 	break;\
 } while (1)
 
+const std::string TOGGLE_IS = " has now been toggled ";
+const std::string TOGGLE_ON = "on.";
+const std::string TOGGLE_OFF = "off.";
+
 constexpr inline uint32_t clampUINT32(uint32_t extent, uint32_t min, uint32_t max) {
 	return __min(max, __max(extent, min));
 }
@@ -367,6 +371,32 @@ inline bool freeZAP(zap_byte_t* &out) {
 }
 
 #ifdef WINDOWS
+inline bool closeHandle(HANDLE &handle) {
+	if (handle && handle != INVALID_HANDLE_VALUE) {
+		if (!CloseHandle(handle)) {
+			return false;
+		}
+	}
+
+	handle = NULL;
+	return true;
+}
+
+inline bool closeProcess(HANDLE &process) {
+	if (process) {
+		if (!CloseHandle(process)) {
+			return false;
+		}
+	}
+
+	process = NULL;
+	return true;
+}
+
+inline bool closeThread(HANDLE &thread) {
+	return closeProcess(thread);
+}
+
 inline bool destroyWindow(HWND &windowHandle) {
 	if (windowHandle) {
 		if (!DestroyWindow(windowHandle)) {

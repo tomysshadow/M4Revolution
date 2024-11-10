@@ -34,6 +34,7 @@ class M4Revolution {
 		~Log();
 		Log(const Log &log) = delete;
 		Log &operator=(const Log &log) = delete;
+		void replacedM4Thor(const std::string &name, bool on);
 		void replacedGfxTools();
 		void step();
 		void copying();
@@ -76,6 +77,8 @@ class M4Revolution {
 	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0;
 
 	Work::Tasks tasks = {};
+
+	void replaceM4Thor(std::fstream &fileStream, std::streampos position, const std::string &name, Log &log);
 
 	#ifdef WINDOWS
 	void replaceGfxTools(Log &log);
