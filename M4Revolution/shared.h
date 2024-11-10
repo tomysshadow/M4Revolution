@@ -487,5 +487,6 @@ std::string escapeArgument(const std::string &argument, bool force = false);
 void openFile(const std::string &path);
 
 #ifdef WINDOWS
+void readPipePartial(HANDLE pipe, LPVOID buffer, DWORD numberOfBytesToRead, DWORD &numberOfBytesRead);
 void setFileAttributeHidden(bool hidden, LPCSTR pathStringPointer);
 #endif

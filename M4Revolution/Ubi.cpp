@@ -841,9 +841,7 @@ namespace Ubi {
 	const BigFile::File::TYPE_EXTENSION_MAP BigFile::File::NAME_TYPE_EXTENSION_MAP = {
 		{"m4b", {TYPE::BIG_FILE, "m4b"}},
 		{"bin", {TYPE::BINARY, "bin"}},
-		//{"png", {TYPE::IMAGE_STANDARD, "dds"}},
 		{"jpg", {TYPE::IMAGE_STANDARD, "dds"}},
-		//{"jtif", {TYPE::IMAGE_STANDARD, "dds"}},
 		{"zap", {TYPE::IMAGE_ZAP, "dds"}}
 	};
 

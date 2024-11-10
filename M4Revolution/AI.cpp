@@ -14,11 +14,6 @@ namespace AI {
 		{{"common", "ai", "aitransitionfade"}, "ai_transition_fade.ai"}
 	};
 
-	static const Ubi::BigFile::Path::VECTOR USER_CONTROLS_PATH_VECTOR = {
-		{{"gamedata", "common"}, "common.m4b"},
-		{{"common", "ai", "aiusercontrols"}, "user_controls.ai"}
-	};
-
 	static const Locale LOCALE("English", LC_NUMERIC);
 
 	void editF32(

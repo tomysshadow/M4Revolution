@@ -312,6 +312,27 @@ void openFile(const std::string &path) {
 }
 
 #ifdef WINDOWS
+void readPipePartial(HANDLE pipe, LPVOID buffer, DWORD numberOfBytesToRead, DWORD &numberOfBytesRead) {
+	numberOfBytesRead = 0;
+
+	DWORD numberOfBytesToCopy = numberOfBytesToRead;
+	DWORD numberOfBytesCopied = 0;
+
+	while (ReadFile(pipe, (LPSTR)buffer + numberOfBytesRead, numberOfBytesToCopy, &numberOfBytesCopied, NULL)) {
+		numberOfBytesToCopy -= numberOfBytesCopied;
+
+		if (!numberOfBytesToCopy) {
+			return;
+		}
+
+		numberOfBytesRead += numberOfBytesCopied;
+	}
+
+	if (GetLastError() != ERROR_BROKEN_PIPE) {
+		throw ReadStreamFailed();
+	}
+}
+
 void setFileAttributeHidden(bool hidden, LPCSTR pathStringPointer) {
 	if (!pathStringPointer) {
 		throw std::invalid_argument("pathStringPointer must not be NULL");

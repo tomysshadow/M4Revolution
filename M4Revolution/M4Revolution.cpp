@@ -373,10 +373,13 @@ void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &na
 	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 
 	bool on = memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_ON, COMPUTE_MOVE_VECTOR_SIZE);
-	bool off = memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_OFF, COMPUTE_MOVE_VECTOR_SIZE);
 
-	if (!on && !off) {
-		throw std::logic_error("Compute Move Vector untoggleable");
+	if (!on) {
+		on = !memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_OFF, COMPUTE_MOVE_VECTOR_SIZE);
+
+		if (on) {
+			throw std::logic_error("Compute Move Vector untoggleable");
+		}
 	}
 
 	// toggle happens here
@@ -540,88 +543,93 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 
 bool M4Revolution::getComputeMoveVectorPosition(long &computeMoveVectorPosition) {
 	// default value is the position as of the latest Steam version
-	MAKE_SCOPE_EXIT(resultScopeExit) {
+	MAKE_SCOPE_EXIT(computeMoveVectorPositionScopeExit) {
 		computeMoveVectorPosition = 0x000109C0;
 	};
 
 	#ifdef WINDOWS
+	TCHAR commandLine[] = TEXT("GetDLLExportRVA m4_thor_rd.dll ?ComputeMoveVector@COrientationUpdateManager@thor@@AAE?AVVector3@ubi@@M@Z");
+
+	PROCESS_INFORMATION processInformation = {};
+	HANDLE &process = processInformation.hProcess;
+	HANDLE &thread = processInformation.hThread;
+
+	SCOPE_EXIT {
+		closeProcess(process);
+	};
+
+	SCOPE_EXIT {
+		closeThread(thread);
+	};
+
+	const DWORD BUFFER_SIZE = sizeof("0x00000000");
+	CHAR buffer[BUFFER_SIZE] = "";
+
 	{
-		const DWORD BUFFER_SIZE = sizeof("0x00000000\r\n");
-
-		HANDLE stdoutRead = NULL;
-
-		MAKE_SCOPE_EXIT(stdoutReadScopeExit) {
-			closeHandle(stdoutRead);
-		};
-
-		HANDLE stdoutWrite = NULL;
-
-		MAKE_SCOPE_EXIT(stdoutWriteScopeExit) {
-			closeHandle(stdoutWrite);
-		};
-
-		SECURITY_ATTRIBUTES securityAttributes = {};
-		securityAttributes.nLength = sizeof(securityAttributes);
-		securityAttributes.bInheritHandle = TRUE;
-
-		if (!CreatePipe(&stdoutRead, &stdoutWrite, &securityAttributes, BUFFER_SIZE)) {
-			throw std::runtime_error("Failed to Create Pipe");
-		}
-
-		if (!SetHandleInformation(stdoutRead, HANDLE_FLAG_INHERIT, 0)) {
-			throw std::runtime_error("Failed to Set Handle Information");
-		}
-
-		TCHAR commandLine[] = TEXT("CallGetProcAddress m4_thor_rd.dll ?ComputeMoveVector@COrientationUpdateManager@thor@@AAE?AVVector3@ubi@@M@Z");
-
-		STARTUPINFO startupInfo = {};
-		startupInfo.cb = sizeof(startupInfo);
-		startupInfo.dwFlags = STARTF_USESTDHANDLES;
-		startupInfo.hStdOutput = stdoutWrite;
-
-		PROCESS_INFORMATION processInformation = {};
+		HANDLE stdoutReadPipe = NULL;
 
 		SCOPE_EXIT {
-			closeProcess(processInformation.hProcess);
+			closeHandle(stdoutReadPipe);
 		};
 
-		SCOPE_EXIT {
-			closeThread(processInformation.hThread);
-		};
+		{
+			HANDLE stdoutWritePipe = NULL;
 
-		if (!CreateProcess(NULL, commandLine, NULL, NULL, TRUE, 0, NULL, TEXT("bin"), &startupInfo, &processInformation)
-			|| !processInformation.hProcess
-			|| !processInformation.hThread) {
-			throw std::runtime_error("Failed to Create Process");
+			SCOPE_EXIT {
+				closeHandle(stdoutWritePipe);
+			};
+
+			SECURITY_ATTRIBUTES securityAttributes = {};
+			securityAttributes.nLength = sizeof(securityAttributes);
+			securityAttributes.bInheritHandle = TRUE;
+
+			if (!CreatePipe(&stdoutReadPipe, &stdoutWritePipe, &securityAttributes, BUFFER_SIZE)) {
+				throw std::runtime_error("Failed to Create Pipe");
+			}
+
+			if (!SetHandleInformation(stdoutReadPipe, HANDLE_FLAG_INHERIT, 0)) {
+				throw std::runtime_error("Failed to Set Handle Information");
+			}
+
+			STARTUPINFO startupInfo = {};
+			startupInfo.cb = sizeof(startupInfo);
+			startupInfo.dwFlags = STARTF_USESTDHANDLES;
+			startupInfo.hStdOutput = stdoutWritePipe;
+
+			if (!CreateProcess(NULL, commandLine, NULL, NULL, TRUE, 0, NULL, TEXT("bin"), &startupInfo, &processInformation)
+				|| !process
+				|| !thread) {
+				throw std::runtime_error("Failed to Create Process");
+			}
 		}
 
-		closeHandle(stdoutWrite);
-		stdoutWriteScopeExit.dismiss();
-
-		CHAR buffer[BUFFER_SIZE] = "";
-
-		// TODO: what if the child process hasn't written it yet
-		if (!ReadFile(stdoutRead, buffer, BUFFER_SIZE - 1, NULL, NULL) && GetLastError() != ERROR_BROKEN_PIPE) {
-			throw std::runtime_error("Failed to Read File");
-		}
-
-		closeHandle(stdoutRead);
-		stdoutReadScopeExit.dismiss();
-
-		// max so we don't hang forever in the worst case
-		const DWORD MILLISECONDS = 10000;
-
-		DWORD wait = WaitForSingleObject(processInformation.hProcess, MILLISECONDS);
-
-		if (wait != WAIT_OBJECT_0 && wait != WAIT_ABANDONED) {
-			throw std::runtime_error("Failed to Wait For Single Object");
-		}
-
-		size_t size = stringToLong(buffer, computeMoveVectorPosition);
-
-		resultScopeExit.dismiss();
-		return size;
+		DWORD numberOfBytesRead = 0;
+		readPipePartial(stdoutReadPipe, buffer, BUFFER_SIZE - 1, numberOfBytesRead);
 	}
+
+	// max so we don't hang forever in the worst case
+	const DWORD MILLISECONDS = 10000;
+
+	DWORD wait = WaitForSingleObject(process, MILLISECONDS);
+
+	if (wait != WAIT_OBJECT_0 && wait != WAIT_ABANDONED) {
+		throw std::runtime_error("Failed to Wait For Single Object");
+	}
+
+	size_t size = stringToLong(buffer, computeMoveVectorPosition);
+
+	if (!size) {
+		DWORD exitCode = 0;
+
+		if (!GetExitCodeProcess(process, &exitCode)) {
+			throw std::runtime_error("Failed to Get Process Exit Code");
+		}
+
+		SetLastError(exitCode);
+	}
+
+	computeMoveVectorPositionScopeExit.dismiss();
+	return size;
 	#endif
 	return true;
 }
