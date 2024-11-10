@@ -78,7 +78,7 @@ class M4Revolution {
 
 	Work::Tasks tasks = {};
 
-	void replaceM4Thor(std::fstream &fileStream, std::streampos position, const std::string &name, Log &log);
+	void replaceM4Thor(std::fstream &fileStream, const std::string &name, Log &log);
 
 	#ifdef WINDOWS
 	void replaceGfxTools(Log &log);
@@ -120,6 +120,7 @@ class M4Revolution {
 	void fixLoading(std::istream &inputStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
 	Ubi::BigFile::File createInputFile(std::istream &inputStream);
+	bool getComputeMoveVectorPosition(long &result);
 
 	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha);
 	static void convertImageStandardWorkCallback(Work::Convert* convertPointer);

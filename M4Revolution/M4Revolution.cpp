@@ -136,16 +136,22 @@ void M4Revolution::ErrorHandler::error(nvtt::Error error) {
 	result = false;
 }
 
-void M4Revolution::replaceM4Thor(std::fstream &fileStream, std::streampos position, const std::string &name, Log &log) {
+void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &name, Log &log) {
 	const size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
 	const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50, 0x00 };
 	const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xC6, 0x44, 0x24, 0x0B, 0x48, 0x90, 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0x00 };
+
+	long computeMoveVectorPosition = 0;
+
+	while (!getComputeMoveVectorPosition(computeMoveVectorPosition)) {
+		RETRY_ERR(Work::Output::FILE_RETRY);
+	}
 
 	unsigned char computeMoveVector[COMPUTE_MOVE_VECTOR_SIZE] = "";
 
 	Work::Edit edit(fileStream, Work::Output::M4_THOR_PATH);
 
-	fileStream.seekg(position);
+	fileStream.seekg(computeMoveVectorPosition);
 	readStreamSafe(fileStream, computeMoveVector, COMPUTE_MOVE_VECTOR_SIZE);
 
 	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
@@ -159,7 +165,7 @@ void M4Revolution::replaceM4Thor(std::fstream &fileStream, std::streampos positi
 
 	// toggle happens here
 	on = !on;
-	edit.join(copyThread, position, (const char*)(on ? COMPUTE_MOVE_VECTOR_ON : COMPUTE_MOVE_VECTOR_OFF));
+	edit.join(copyThread, computeMoveVectorPosition, (const char*)(on ? COMPUTE_MOVE_VECTOR_ON : COMPUTE_MOVE_VECTOR_OFF));
 
 	log.replacedM4Thor(name, on);
 }
@@ -409,6 +415,94 @@ Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
 	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputStream.tellg());
 	inputStream.seekg(0, std::ios::beg);
 	return inputFile;
+}
+
+bool M4Revolution::getComputeMoveVectorPosition(long &computeMoveVectorPosition) {
+	// default value is the position as of the latest Steam version
+	MAKE_SCOPE_EXIT(resultScopeExit) {
+		computeMoveVectorPosition = 0x000109C0;
+	};
+
+	#ifdef WINDOWS
+	{
+		const DWORD BUFFER_SIZE = sizeof("0x00000000\r\n");
+
+		HANDLE stdoutRead = NULL;
+
+		MAKE_SCOPE_EXIT(stdoutReadScopeExit) {
+			closeHandle(stdoutRead);
+		};
+
+		HANDLE stdoutWrite = NULL;
+
+		MAKE_SCOPE_EXIT(stdoutWriteScopeExit) {
+			closeHandle(stdoutWrite);
+		};
+
+		SECURITY_ATTRIBUTES securityAttributes = {};
+		securityAttributes.nLength = sizeof(securityAttributes);
+		securityAttributes.bInheritHandle = TRUE;
+
+		if (!CreatePipe(&stdoutRead, &stdoutWrite, &securityAttributes, BUFFER_SIZE)) {
+			throw std::runtime_error("Failed to Create Pipe");
+		}
+
+		if (!SetHandleInformation(stdoutRead, HANDLE_FLAG_INHERIT, 0)) {
+			throw std::runtime_error("Failed to Set Handle Information");
+		}
+
+		TCHAR commandLine[] = TEXT("CallGetProcAddress m4_thor_rd.dll ?ComputeMoveVector@COrientationUpdateManager@thor@@AAE?AVVector3@ubi@@M@Z");
+
+		STARTUPINFO startupInfo = {};
+		startupInfo.cb = sizeof(startupInfo);
+		startupInfo.dwFlags = STARTF_USESTDHANDLES;
+		startupInfo.hStdOutput = stdoutWrite;
+
+		PROCESS_INFORMATION processInformation = {};
+
+		SCOPE_EXIT {
+			closeProcess(processInformation.hProcess);
+		};
+
+		SCOPE_EXIT {
+			closeThread(processInformation.hThread);
+		};
+
+		if (!CreateProcess(NULL, commandLine, NULL, NULL, TRUE, 0, NULL, TEXT("bin"), &startupInfo, &processInformation)
+			|| !processInformation.hProcess
+			|| !processInformation.hThread) {
+			throw std::runtime_error("Failed to Create Process");
+		}
+
+		closeHandle(stdoutWrite);
+		stdoutWriteScopeExit.dismiss();
+
+		CHAR buffer[BUFFER_SIZE] = "";
+
+		// TODO: what if the child process hasn't written it yet
+		if (!ReadFile(stdoutRead, buffer, BUFFER_SIZE - 1, NULL, NULL) && GetLastError() != ERROR_BROKEN_PIPE) {
+			throw std::runtime_error("Failed to Read File");
+		}
+
+		closeHandle(stdoutRead);
+		stdoutReadScopeExit.dismiss();
+
+		// max so we don't hang forever in the worst case
+		const DWORD MILLISECONDS = 10000;
+
+		DWORD wait = WaitForSingleObject(processInformation.hProcess, MILLISECONDS);
+
+		if (wait != WAIT_OBJECT_0 && wait != WAIT_ABANDONED) {
+			throw std::runtime_error("Failed to Wait For Single Object");
+		}
+
+		size_t size = stringToLong(buffer, computeMoveVectorPosition);
+
+		resultScopeExit.dismiss();
+		return size;
+	}
+	#endif
+	return true;
 }
 
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha) {
@@ -860,85 +954,7 @@ void M4Revolution::toggleCameraInertia() {
 
 	Log log("Toggling Camera Inertia", fileStream);
 
-	// default value is the position as of the latest Steam version
-	long position = 0x000109C0;
-
-	#ifdef WINDOWS
-	{
-		const DWORD BUFFER_SIZE = sizeof("0x00000000\r\n");
-
-		HANDLE stdoutRead = NULL;
-
-		SCOPE_EXIT {
-			closeHandle(stdoutRead);
-		};
-
-		HANDLE stdoutWrite = NULL;
-
-		MAKE_SCOPE_EXIT(stdoutWriteScopeExit) {
-			closeHandle(stdoutWrite);
-		};
-
-		SECURITY_ATTRIBUTES securityAttributes = {};
-		securityAttributes.nLength = sizeof(securityAttributes);
-		securityAttributes.bInheritHandle = TRUE;
-
-		if (!CreatePipe(&stdoutRead, &stdoutWrite, &securityAttributes, BUFFER_SIZE)) {
-			throw std::runtime_error("Failed to Create Pipe");
-		}
-
-		if (!SetHandleInformation(stdoutRead, HANDLE_FLAG_INHERIT, 0)) {
-			throw std::runtime_error("Failed to Set Handle Information");
-		}
-
-		TCHAR commandLine[] = TEXT("CallGetProcAddress m4_thor_rd.dll ?ComputeMoveVector@COrientationUpdateManager@thor@@AAE?AVVector3@ubi@@M@Z");
-
-		STARTUPINFO startupInfo = {};
-		startupInfo.cb = sizeof(startupInfo);
-		startupInfo.dwFlags = STARTF_USESTDHANDLES;
-		startupInfo.hStdOutput = stdoutWrite;
-
-		PROCESS_INFORMATION processInformation = {};
-
-		SCOPE_EXIT {
-			closeProcess(processInformation.hProcess);
-		};
-
-		SCOPE_EXIT {
-			closeThread(processInformation.hThread);
-		};
-	
-		if (!CreateProcess(NULL, commandLine, NULL, NULL, TRUE, 0, NULL, "bin", &startupInfo, &processInformation)
-			|| !processInformation.hProcess
-			|| !processInformation.hThread) {
-			throw std::runtime_error("Failed to Create Process");
-		}
-
-		closeHandle(stdoutWrite);
-		stdoutWriteScopeExit.dismiss();
-
-		CHAR buffer[BUFFER_SIZE] = "";
-
-		if (!ReadFile(stdoutRead, buffer, BUFFER_SIZE - 1, NULL, NULL) && GetLastError() != ERROR_BROKEN_PIPE) {
-			throw std::runtime_error("Failed to Read File");
-		}
-	
-		if (!stringToLong(buffer, position)) {
-			throw std::runtime_error("Failed to Get Proc Address");
-		}
-
-		// max so we don't hang forever in the worst case
-		const DWORD MILLISECONDS = 10000;
-
-		DWORD wait = WaitForSingleObject(processInformation.hProcess, MILLISECONDS);
-
-		if (wait != WAIT_OBJECT_0 && wait != WAIT_ABANDONED) {
-			throw std::runtime_error("Failed to Wait For Single Object");
-		}
-	}
-	#endif
-
-	OPERATION_EXCEPTION_RETRY_ERR(replaceM4Thor(fileStream, position, "Camera Inertia", log), StreamFailed, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(replaceM4Thor(fileStream, "Camera Inertia", log), StreamFailed, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::fixLoading() {
