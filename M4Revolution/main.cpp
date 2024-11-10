@@ -18,7 +18,7 @@ bool performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_OPEN_ONLINE_HELP = 1;
 	const long OPERATION_TOGGLE_SOUND_FADING = 2;
 	const long OPERATION_EDIT_TRANSITION_TIME = 3;
-	const long OPERATION_EDIT_MOUSE_CONTROLS = 4;
+	const long OPERATION_TOGGLE_CAMERA_INERTIA = 4;
 	const long OPERATION_FIX_LOADING = 5;
 	const long OPERATION_RESTORE_BACKUP = 6;
 	const long OPERATION_EXIT = 7;
@@ -39,8 +39,8 @@ bool performOperation(M4Revolution &m4Revolution) {
 		case OPERATION_EDIT_TRANSITION_TIME:
 		m4Revolution.editTransitionTime();
 		break;
-		case OPERATION_EDIT_MOUSE_CONTROLS:
-		m4Revolution.editMouseControls();
+		case OPERATION_TOGGLE_CAMERA_INERTIA:
+		m4Revolution.toggleCameraInertia();
 		break;
 		case OPERATION_FIX_LOADING:
 		m4Revolution.fixLoading();
@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 		consoleLog("1) Open Online Help");
 		consoleLog("2) Toggle Sound Fading");
 		consoleLog("3) Edit Transition Time");
-		consoleLog("4) Edit Mouse Controls");
+		consoleLog("4) Toggle Camera Inertia");
 		consoleLog("5) Fix Loading");
 		consoleLog("6) Restore Backup");
 		consoleLog("7) Exit", 2);

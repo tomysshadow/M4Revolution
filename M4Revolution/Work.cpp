@@ -223,8 +223,15 @@ namespace Work {
 	const char* Output::FILE_NAME = "~M4R.tmp"; // must be an 8.3 filename
 	const char* Output::FILE_RETRY = "The game files could not be accessed. Please ensure the game is not open while using this tool. If this error is occuring and the game is not open, you may be out of disk space, or you may need to run this tool as admin.";
 
-	const std::filesystem::path Output::DATA_PATH("data/data.m4b");
-	const std::filesystem::path Output::GFX_TOOLS_PATH("bin/gfx_tools_rd.dll");
+	const Output::PATH_MAP Output::FILE_PATH_MAP = {
+		{FILE_PATH_DATA, "data/data.m4b"},
+		{FILE_PATH_M4_THOR, "bin/m4_thor_rd.dll"},
+		{FILE_PATH_GFX_TOOLS, "bin/gfx_tools_rd.dll"}
+	};
+
+	const std::filesystem::path Output::DATA_PATH = FILE_PATH_MAP.at(FILE_PATH_DATA);
+	const std::filesystem::path Output::M4_THOR_PATH = FILE_PATH_MAP.at(FILE_PATH_M4_THOR);
+	const std::filesystem::path Output::GFX_TOOLS_PATH = FILE_PATH_MAP.at(FILE_PATH_GFX_TOOLS);
 
 	void Output::findInstallPath(const std::filesystem::path &path) {
 		bool foundInstalled = setPath(path);
@@ -253,7 +260,13 @@ namespace Work {
 		} catch (std::filesystem::filesystem_error) {
 			return false;
 		}
-		return std::filesystem::is_regular_file(DATA_PATH) && std::filesystem::is_regular_file(GFX_TOOLS_PATH);
+
+		for (PATH_MAP::const_iterator pathMapIterator = FILE_PATH_MAP.begin(); pathMapIterator != FILE_PATH_MAP.end(); pathMapIterator++) {
+			if (!std::filesystem::is_regular_file(pathMapIterator->second)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	Output::Output() {

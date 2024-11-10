@@ -143,7 +143,7 @@ class M4Revolution {
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
 	void toggleSoundFading();
 	void editTransitionTime();
-	void editMouseControls();
+	void toggleCameraInertia();
 	void fixLoading();
 	bool restoreBackup();
 };

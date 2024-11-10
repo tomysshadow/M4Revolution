@@ -148,11 +148,4 @@ namespace AI {
 
 		editF32(edit, "Transition Time", TRANSITION_FADE_PATH_VECTOR, "m_fadingTime", 0.0f, 500.0f);
 	}
-
-	void editMouseControls(std::fstream &fileStream) {
-		Work::Edit edit(fileStream);
-
-		editF32(edit, "Free Look Inertia Level", USER_CONTROLS_PATH_VECTOR, "m_freeLookInertiaLevel", 1.0f, 100.0f);
-		editF32(edit, "Screen Mode Inertia Level", USER_CONTROLS_PATH_VECTOR, "m_screenModeInertiaLevel", 1.0f, 100.0f);
-	}
 }

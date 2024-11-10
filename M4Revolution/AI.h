@@ -5,5 +5,4 @@
 namespace AI {
 	void toggleSoundFading(std::fstream &fileStream);
 	void editTransitionTime(std::fstream &fileStream);
-	void editMouseControls(std::fstream &fileStream);
 };

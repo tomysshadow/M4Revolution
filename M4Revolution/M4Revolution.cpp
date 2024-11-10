@@ -820,12 +820,12 @@ void M4Revolution::editTransitionTime() {
 	OPERATION_EXCEPTION_RETRY_ERR(AI::editTransitionTime(fileStream), StreamFailed, Work::Output::FILE_RETRY);
 }
 
-void M4Revolution::editMouseControls() {
+void M4Revolution::toggleCameraInertia() {
 	std::fstream fileStream;
 
-	Log log("Editing Mouse Controls", fileStream);
+	Log log("Toggling Camera Inertia", fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(AI::editMouseControls(fileStream), StreamFailed, Work::Output::FILE_RETRY);
+	// TODO
 }
 
 void M4Revolution::fixLoading() {
@@ -878,21 +878,29 @@ void M4Revolution::fixLoading() {
 }
 
 bool M4Revolution::restoreBackup() {
-	bool data = false;
-	bool gfxTools = false;
+	Work::Output::FILE_PATH filePath = 0;
 
 	{
-		std::ifstream inputFileStream(Work::Backup::getPath(Work::Output::DATA_PATH), std::ios::binary, _SH_DENYWR);
-		data = inputFileStream.is_open();
+		std::ifstream inputFileStream;
 
-		inputFileStream.close();
-		inputFileStream.open(Work::Backup::getPath(Work::Output::GFX_TOOLS_PATH), std::ios::binary, _SH_DENYWR);
-		gfxTools = inputFileStream.is_open();
+		for (
+			Work::Output::PATH_MAP::const_iterator pathMapIterator = Work::Output::FILE_PATH_MAP.begin();
+			pathMapIterator != Work::Output::FILE_PATH_MAP.end();
+			pathMapIterator++
+		) {
+			inputFileStream.open(Work::Backup::getPath(pathMapIterator->second), std::ios::binary, _SH_DENYWR);
+			
+			if (inputFileStream.is_open()) {
+				filePath |= pathMapIterator->first;
+			}
+
+			inputFileStream.close();
+		}
 
 		Log log("Restoring Backup", inputFileStream);
 	}
 
-	if (!data && !gfxTools) {
+	if (!filePath) {
 		consoleLog("No backup was found. A backup will be automatically created when any other operation is performed.", 2);
 		return false;
 	}
@@ -901,12 +909,14 @@ bool M4Revolution::restoreBackup() {
 		return false;
 	}
 
-	if (data) {
-		Work::Backup::restore(Work::Output::DATA_PATH);
-	}
-
-	if (gfxTools) {
-		Work::Backup::restore(Work::Output::GFX_TOOLS_PATH);
+	for (
+		Work::Output::PATH_MAP::const_iterator pathMapIterator = Work::Output::FILE_PATH_MAP.begin();
+		pathMapIterator != Work::Output::FILE_PATH_MAP.end();
+		pathMapIterator++
+	) {
+		if (filePath & pathMapIterator->first) {
+			Work::Backup::restore(pathMapIterator->second);
+		}
 	}
 	return true;
 }
