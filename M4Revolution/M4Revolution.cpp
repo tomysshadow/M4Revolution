@@ -19,6 +19,15 @@ void M4Revolution::destroy() {
 	#endif
 }
 
+void M4Revolution::Log::replacedM4Thor(const std::string &name, bool on) {
+	std::cout << "Replaced M4 Thor" << std::endl;
+	std::cout << name << TOGGLE_IS << (on ? TOGGLE_ON : TOGGLE_OFF) << std::endl;
+}
+
+void M4Revolution::Log::replacedGfxTools() {
+	std::cout << "Replaced Gfx Tools" << std::endl;
+}
+
 M4Revolution::Log::Log(const char* title, std::istream &inputStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
 	: inputStream(inputStream),
 	inputFileSize(inputFileSize),
@@ -36,15 +45,6 @@ M4Revolution::Log::~Log() {
 
 		std::cout << "Elapsed Seconds: " << std::chrono::duration_cast<std::chrono::seconds>(end - beginOptional.value()).count() << std::endl << std::endl;
 	}
-}
-
-void M4Revolution::Log::replacedM4Thor(const std::string &name, bool on) {
-	std::cout << "Replaced M4 Thor" << std::endl;
-	std::cout << name << TOGGLE_IS << (on ? TOGGLE_ON : TOGGLE_OFF) << std::endl;
-}
-
-void M4Revolution::Log::replacedGfxTools() {
-	std::cout << "Replaced Gfx Tools" << std::endl;
 }
 
 void M4Revolution::Log::step() {
@@ -135,64 +135,6 @@ void M4Revolution::ErrorHandler::error(nvtt::Error error) {
 	consoleLog(nvtt::errorString(error), true, false, true);
 	result = false;
 }
-
-void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &name, Log &log) {
-	const size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
-	const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50, 0x00 };
-	const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xC6, 0x44, 0x24, 0x0B, 0x48, 0x90, 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0x00 };
-
-	long computeMoveVectorPosition = 0;
-
-	while (!getComputeMoveVectorPosition(computeMoveVectorPosition)) {
-		RETRY_ERR(Work::Output::FILE_RETRY);
-	}
-
-	unsigned char computeMoveVector[COMPUTE_MOVE_VECTOR_SIZE] = "";
-
-	Work::Edit edit(fileStream, Work::Output::M4_THOR_PATH);
-
-	fileStream.seekg(computeMoveVectorPosition);
-	readStreamSafe(fileStream, computeMoveVector, COMPUTE_MOVE_VECTOR_SIZE);
-
-	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
-
-	bool on = memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_ON, COMPUTE_MOVE_VECTOR_SIZE);
-	bool off = memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_OFF, COMPUTE_MOVE_VECTOR_SIZE);
-
-	if (!on && !off) {
-		throw std::logic_error("Compute Move Vector untoggleable");
-	}
-
-	// toggle happens here
-	on = !on;
-	edit.join(copyThread, computeMoveVectorPosition, (const char*)(on ? COMPUTE_MOVE_VECTOR_ON : COMPUTE_MOVE_VECTOR_OFF));
-
-	log.replacedM4Thor(name, on);
-}
-
-#ifdef WINDOWS
-void M4Revolution::replaceGfxTools(Log &log) {
-	// scope so that we let go of the output before renaming it and free the resource when no longer needed
-	{
-		HRSRC resourceHandle = FindResource(NULL, MAKEINTRESOURCE(IDR_BIN_GFX_TOOLS), TEXT("BIN"));
-
-		if (!resourceHandle) {
-			throw std::runtime_error("Failed to Find Resource");
-		}
-
-		GlobalHandleLock<> resourceGlobalHandleLock(NULL, resourceHandle);
-
-		Work::Output output = {};
-		writeStreamSafe(output.fileStream, resourceGlobalHandleLock.get(), resourceGlobalHandleLock.size());
-	}
-
-	if (Work::Backup::create(Work::Output::GFX_TOOLS_PATH.string().c_str())) {
-		Work::Backup::log();
-	}
-
-	log.replacedGfxTools();
-}
-#endif
 
 void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks) {
 	// this function waits for the output thread to catch up
@@ -410,99 +352,69 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 	}
 }
 
+void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &name) {
+	const size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
+	const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50, 0x00 };
+	const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xC6, 0x44, 0x24, 0x0B, 0x48, 0x90, 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0x00 };
+
+	long computeMoveVectorPosition = 0;
+
+	while (!getComputeMoveVectorPosition(computeMoveVectorPosition)) {
+		RETRY_ERR(Work::Output::FILE_RETRY);
+	}
+
+	unsigned char computeMoveVector[COMPUTE_MOVE_VECTOR_SIZE] = "";
+
+	Work::Edit edit(fileStream, Work::Output::M4_THOR_PATH);
+
+	fileStream.seekg(computeMoveVectorPosition);
+	readStreamSafe(fileStream, computeMoveVector, COMPUTE_MOVE_VECTOR_SIZE);
+
+	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
+
+	bool on = memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_ON, COMPUTE_MOVE_VECTOR_SIZE);
+	bool off = memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_OFF, COMPUTE_MOVE_VECTOR_SIZE);
+
+	if (!on && !off) {
+		throw std::logic_error("Compute Move Vector untoggleable");
+	}
+
+	// toggle happens here
+	on = !on;
+	edit.join(copyThread, computeMoveVectorPosition, (const char*)(on ? COMPUTE_MOVE_VECTOR_ON : COMPUTE_MOVE_VECTOR_OFF));
+
+	Log::replacedM4Thor(name, on);
+}
+
+#ifdef WINDOWS
+void M4Revolution::replaceGfxTools() {
+	// scope so that we let go of the output before renaming it and free the resource when no longer needed
+	{
+		HRSRC resourceHandle = FindResource(NULL, MAKEINTRESOURCE(IDR_BIN_GFX_TOOLS), TEXT("BIN"));
+
+		if (!resourceHandle) {
+			throw std::runtime_error("Failed to Find Resource");
+		}
+
+		GlobalHandleLock<> resourceGlobalHandleLock(NULL, resourceHandle);
+
+		Work::Output output = {};
+		writeStreamSafe(output.fileStream, resourceGlobalHandleLock.get(), resourceGlobalHandleLock.size());
+	}
+
+	if (Work::Backup::create(Work::Output::GFX_TOOLS_PATH.string().c_str())) {
+		Work::Backup::log();
+	}
+
+	Log::replacedGfxTools();
+}
+#endif
+
 Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
 	inputStream.seekg(0, std::ios::end);
 	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputStream.tellg());
 	inputStream.seekg(0, std::ios::beg);
 	return inputFile;
-}
-
-bool M4Revolution::getComputeMoveVectorPosition(long &computeMoveVectorPosition) {
-	// default value is the position as of the latest Steam version
-	MAKE_SCOPE_EXIT(resultScopeExit) {
-		computeMoveVectorPosition = 0x000109C0;
-	};
-
-	#ifdef WINDOWS
-	{
-		const DWORD BUFFER_SIZE = sizeof("0x00000000\r\n");
-
-		HANDLE stdoutRead = NULL;
-
-		MAKE_SCOPE_EXIT(stdoutReadScopeExit) {
-			closeHandle(stdoutRead);
-		};
-
-		HANDLE stdoutWrite = NULL;
-
-		MAKE_SCOPE_EXIT(stdoutWriteScopeExit) {
-			closeHandle(stdoutWrite);
-		};
-
-		SECURITY_ATTRIBUTES securityAttributes = {};
-		securityAttributes.nLength = sizeof(securityAttributes);
-		securityAttributes.bInheritHandle = TRUE;
-
-		if (!CreatePipe(&stdoutRead, &stdoutWrite, &securityAttributes, BUFFER_SIZE)) {
-			throw std::runtime_error("Failed to Create Pipe");
-		}
-
-		if (!SetHandleInformation(stdoutRead, HANDLE_FLAG_INHERIT, 0)) {
-			throw std::runtime_error("Failed to Set Handle Information");
-		}
-
-		TCHAR commandLine[] = TEXT("CallGetProcAddress m4_thor_rd.dll ?ComputeMoveVector@COrientationUpdateManager@thor@@AAE?AVVector3@ubi@@M@Z");
-
-		STARTUPINFO startupInfo = {};
-		startupInfo.cb = sizeof(startupInfo);
-		startupInfo.dwFlags = STARTF_USESTDHANDLES;
-		startupInfo.hStdOutput = stdoutWrite;
-
-		PROCESS_INFORMATION processInformation = {};
-
-		SCOPE_EXIT {
-			closeProcess(processInformation.hProcess);
-		};
-
-		SCOPE_EXIT {
-			closeThread(processInformation.hThread);
-		};
-
-		if (!CreateProcess(NULL, commandLine, NULL, NULL, TRUE, 0, NULL, TEXT("bin"), &startupInfo, &processInformation)
-			|| !processInformation.hProcess
-			|| !processInformation.hThread) {
-			throw std::runtime_error("Failed to Create Process");
-		}
-
-		closeHandle(stdoutWrite);
-		stdoutWriteScopeExit.dismiss();
-
-		CHAR buffer[BUFFER_SIZE] = "";
-
-		// TODO: what if the child process hasn't written it yet
-		if (!ReadFile(stdoutRead, buffer, BUFFER_SIZE - 1, NULL, NULL) && GetLastError() != ERROR_BROKEN_PIPE) {
-			throw std::runtime_error("Failed to Read File");
-		}
-
-		closeHandle(stdoutRead);
-		stdoutReadScopeExit.dismiss();
-
-		// max so we don't hang forever in the worst case
-		const DWORD MILLISECONDS = 10000;
-
-		DWORD wait = WaitForSingleObject(processInformation.hProcess, MILLISECONDS);
-
-		if (wait != WAIT_OBJECT_0 && wait != WAIT_ABANDONED) {
-			throw std::runtime_error("Failed to Wait For Single Object");
-		}
-
-		size_t size = stringToLong(buffer, computeMoveVectorPosition);
-
-		resultScopeExit.dismiss();
-		return size;
-	}
-	#endif
-	return true;
 }
 
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha) {
@@ -624,6 +536,94 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 
 	// when this unlocks one line later, the output thread will begin waiting on data
 	convertSurface(convert, surface, true);
+}
+
+bool M4Revolution::getComputeMoveVectorPosition(long &computeMoveVectorPosition) {
+	// default value is the position as of the latest Steam version
+	MAKE_SCOPE_EXIT(resultScopeExit) {
+		computeMoveVectorPosition = 0x000109C0;
+	};
+
+	#ifdef WINDOWS
+	{
+		const DWORD BUFFER_SIZE = sizeof("0x00000000\r\n");
+
+		HANDLE stdoutRead = NULL;
+
+		MAKE_SCOPE_EXIT(stdoutReadScopeExit) {
+			closeHandle(stdoutRead);
+		};
+
+		HANDLE stdoutWrite = NULL;
+
+		MAKE_SCOPE_EXIT(stdoutWriteScopeExit) {
+			closeHandle(stdoutWrite);
+		};
+
+		SECURITY_ATTRIBUTES securityAttributes = {};
+		securityAttributes.nLength = sizeof(securityAttributes);
+		securityAttributes.bInheritHandle = TRUE;
+
+		if (!CreatePipe(&stdoutRead, &stdoutWrite, &securityAttributes, BUFFER_SIZE)) {
+			throw std::runtime_error("Failed to Create Pipe");
+		}
+
+		if (!SetHandleInformation(stdoutRead, HANDLE_FLAG_INHERIT, 0)) {
+			throw std::runtime_error("Failed to Set Handle Information");
+		}
+
+		TCHAR commandLine[] = TEXT("CallGetProcAddress m4_thor_rd.dll ?ComputeMoveVector@COrientationUpdateManager@thor@@AAE?AVVector3@ubi@@M@Z");
+
+		STARTUPINFO startupInfo = {};
+		startupInfo.cb = sizeof(startupInfo);
+		startupInfo.dwFlags = STARTF_USESTDHANDLES;
+		startupInfo.hStdOutput = stdoutWrite;
+
+		PROCESS_INFORMATION processInformation = {};
+
+		SCOPE_EXIT {
+			closeProcess(processInformation.hProcess);
+		};
+
+		SCOPE_EXIT {
+			closeThread(processInformation.hThread);
+		};
+
+		if (!CreateProcess(NULL, commandLine, NULL, NULL, TRUE, 0, NULL, TEXT("bin"), &startupInfo, &processInformation)
+			|| !processInformation.hProcess
+			|| !processInformation.hThread) {
+			throw std::runtime_error("Failed to Create Process");
+		}
+
+		closeHandle(stdoutWrite);
+		stdoutWriteScopeExit.dismiss();
+
+		CHAR buffer[BUFFER_SIZE] = "";
+
+		// TODO: what if the child process hasn't written it yet
+		if (!ReadFile(stdoutRead, buffer, BUFFER_SIZE - 1, NULL, NULL) && GetLastError() != ERROR_BROKEN_PIPE) {
+			throw std::runtime_error("Failed to Read File");
+		}
+
+		closeHandle(stdoutRead);
+		stdoutReadScopeExit.dismiss();
+
+		// max so we don't hang forever in the worst case
+		const DWORD MILLISECONDS = 10000;
+
+		DWORD wait = WaitForSingleObject(processInformation.hProcess, MILLISECONDS);
+
+		if (wait != WAIT_OBJECT_0 && wait != WAIT_ABANDONED) {
+			throw std::runtime_error("Failed to Wait For Single Object");
+		}
+
+		size_t size = stringToLong(buffer, computeMoveVectorPosition);
+
+		resultScopeExit.dismiss();
+		return size;
+	}
+	#endif
+	return true;
 }
 
 #ifdef MULTITHREADED
@@ -954,7 +954,7 @@ void M4Revolution::toggleCameraInertia() {
 
 	Log log("Toggling Camera Inertia", fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(replaceM4Thor(fileStream, "Camera Inertia", log), StreamFailed, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(replaceM4Thor(fileStream, "Camera Inertia"), StreamFailed, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::fixLoading() {
@@ -983,7 +983,7 @@ void M4Revolution::fixLoading() {
 		// to avoid a sharing violation this must happen first before creating the output thread
 		// as they will both write to the same temporary file
 		#ifdef WINDOWS
-		OPERATION_EXCEPTION_RETRY_ERR(replaceGfxTools(log), StreamFailed, Work::Output::FILE_RETRY);
+		OPERATION_EXCEPTION_RETRY_ERR(replaceGfxTools(), StreamFailed, Work::Output::FILE_RETRY);
 		#endif
 
 		bool yield = true;

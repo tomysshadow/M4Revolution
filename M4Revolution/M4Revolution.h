@@ -30,12 +30,13 @@ class M4Revolution {
 		int filesCopying = 0;
 
 		public:
+		static void replacedM4Thor(const std::string &name, bool on);
+		static void replacedGfxTools();
+
 		Log(const char* title, std::istream &inputStream, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
 		~Log();
 		Log(const Log &log) = delete;
 		Log &operator=(const Log &log) = delete;
-		void replacedM4Thor(const std::string &name, bool on);
-		void replacedGfxTools();
 		void step();
 		void copying();
 		void converting(const Ubi::BigFile::File &file);
@@ -78,12 +79,6 @@ class M4Revolution {
 
 	Work::Tasks tasks = {};
 
-	void replaceM4Thor(std::fstream &fileStream, const std::string &name, Log &log);
-
-	#ifdef WINDOWS
-	void replaceGfxTools(Log &log);
-	#endif
-
 	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks);
 
 	void copyFiles(
@@ -119,12 +114,17 @@ class M4Revolution {
 
 	void fixLoading(std::istream &inputStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
-	Ubi::BigFile::File createInputFile(std::istream &inputStream);
-	bool getComputeMoveVectorPosition(long &result);
+	static void replaceM4Thor(std::fstream &fileStream, const std::string &name);
 
+	#ifdef WINDOWS
+	static void replaceGfxTools();
+	#endif
+
+	static Ubi::BigFile::File createInputFile(std::istream &inputStream);
 	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha);
 	static void convertImageStandardWorkCallback(Work::Convert* convertPointer);
 	static void convertImageZAPWorkCallback(Work::Convert* convertPointer);
+	static bool getComputeMoveVectorPosition(long &result);
 	#ifdef MULTITHREADED
 	static VOID CALLBACK convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
 	#endif
