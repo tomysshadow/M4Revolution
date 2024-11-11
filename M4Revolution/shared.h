@@ -336,7 +336,7 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 }
 
 #define RETRY_ERR(retry) do {\
-	consoleLog(retry, true, false, true);\
+	consoleLog((retry), true, false, true);\
 	consoleWait();\
 } while (0)
 

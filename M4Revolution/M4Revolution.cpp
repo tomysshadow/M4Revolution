@@ -372,6 +372,8 @@ void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &na
 
 	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 
+	// we must either be on or off
+	// if we're neither, something is wrong so give up
 	bool on = memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_ON, COMPUTE_MOVE_VECTOR_SIZE);
 
 	if (!on) {
