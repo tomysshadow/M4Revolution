@@ -555,11 +555,15 @@ bool M4Revolution::getComputeMoveVectorPosition(long &computeMoveVectorPosition)
 	HANDLE &thread = processInformation.hThread;
 
 	SCOPE_EXIT {
-		closeProcess(process);
+		if (!closeProcess(process)) {
+			throw std::runtime_error("Failed to Close Process");
+		}
 	};
 
 	SCOPE_EXIT {
-		closeThread(thread);
+		if (!closeThread(thread)) {
+			throw std::runtime_error("Failed to Close Thread");
+		}
 	};
 
 	const DWORD BUFFER_SIZE = sizeof("0x00000000");
@@ -569,14 +573,18 @@ bool M4Revolution::getComputeMoveVectorPosition(long &computeMoveVectorPosition)
 		HANDLE stdoutReadPipe = NULL;
 
 		SCOPE_EXIT {
-			closeHandle(stdoutReadPipe);
+			if (!closeHandle(stdoutReadPipe)) {
+				throw std::runtime_error("Failed to Close Handle");
+			}
 		};
 
 		{
 			HANDLE stdoutWritePipe = NULL;
 
 			SCOPE_EXIT {
-				closeHandle(stdoutWritePipe);
+				if (!closeHandle(stdoutWritePipe)) {
+					throw std::runtime_error("Failed to Close Handle");
+				}
 			};
 
 			SECURITY_ATTRIBUTES securityAttributes = {};
