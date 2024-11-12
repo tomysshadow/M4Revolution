@@ -3,6 +3,6 @@
 #include "Work.h"
 
 namespace AI {
-	void toggleSoundFading(std::fstream &fileStream);
 	void editTransitionTime(std::fstream &fileStream);
+	void toggleSoundFading(std::fstream &fileStream);
 };

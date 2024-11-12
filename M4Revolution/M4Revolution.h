@@ -145,8 +145,8 @@ class M4Revolution {
 	~M4Revolution();
 	M4Revolution(const M4Revolution &m4Revolution) = delete;
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
-	void toggleSoundFading();
 	void editTransitionTime();
+	void toggleSoundFading();
 	void toggleCameraInertia();
 	void fixLoading();
 	bool restoreBackup();

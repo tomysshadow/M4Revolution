@@ -951,20 +951,20 @@ M4Revolution::~M4Revolution() {
 	destroy();
 }
 
-void M4Revolution::toggleSoundFading() {
-	std::fstream fileStream;
-
-	Log log("Toggling Sound Fading", fileStream);
-
-	OPERATION_EXCEPTION_RETRY_ERR(AI::toggleSoundFading(fileStream), StreamFailed, Work::Output::FILE_RETRY);
-}
-
 void M4Revolution::editTransitionTime() {
 	std::fstream fileStream;
 
 	Log log("Editing Transition Time", fileStream);
 
 	OPERATION_EXCEPTION_RETRY_ERR(AI::editTransitionTime(fileStream), StreamFailed, Work::Output::FILE_RETRY);
+}
+
+void M4Revolution::toggleSoundFading() {
+	std::fstream fileStream;
+
+	Log log("Toggling Sound Fading", fileStream);
+
+	OPERATION_EXCEPTION_RETRY_ERR(AI::toggleSoundFading(fileStream), StreamFailed, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::toggleCameraInertia() {
@@ -1048,7 +1048,7 @@ bool M4Revolution::restoreBackup() {
 	}
 
 	if (!filePath) {
-		consoleLog("No backup was found. A backup will be automatically created when any other operation is performed.", 2);
+		consoleLog("No backup was found. Backups will automatically be created when other operations are performed.", 2);
 		return false;
 	}
 

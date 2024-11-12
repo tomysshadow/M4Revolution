@@ -9,15 +9,13 @@
 #pragma warning(pop)
 
 void help() {
-	//consoleLog("Usage: M4Revolution [-p path -lfn -nohw -mt maxThreads]");
-
 	openFile("https://github.com/tomysshadow/M4Revolution/blob/master/README.md");
 }
 
 bool performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_OPEN_ONLINE_HELP = 1;
-	const long OPERATION_TOGGLE_SOUND_FADING = 2;
-	const long OPERATION_EDIT_TRANSITION_TIME = 3;
+	const long OPERATION_EDIT_TRANSITION_TIME = 2;
+	const long OPERATION_TOGGLE_SOUND_FADING = 3;
 	const long OPERATION_TOGGLE_CAMERA_INERTIA = 4;
 	const long OPERATION_FIX_LOADING = 5;
 	const long OPERATION_RESTORE_BACKUP = 6;
@@ -33,11 +31,11 @@ bool performOperation(M4Revolution &m4Revolution) {
 		case OPERATION_OPEN_ONLINE_HELP:
 		help();
 		break;
-		case OPERATION_TOGGLE_SOUND_FADING:
-		m4Revolution.toggleSoundFading();
-		break;
 		case OPERATION_EDIT_TRANSITION_TIME:
 		m4Revolution.editTransitionTime();
+		break;
+		case OPERATION_TOGGLE_SOUND_FADING:
+		m4Revolution.toggleSoundFading();
 		break;
 		case OPERATION_TOGGLE_CAMERA_INERTIA:
 		m4Revolution.toggleCameraInertia();
@@ -119,8 +117,8 @@ int main(int argc, char** argv) {
 		consoleLog("This menu may be used to perform the following operations.", 2);
 
 		consoleLog("1) Open Online Help");
-		consoleLog("2) Toggle Sound Fading");
-		consoleLog("3) Edit Transition Time");
+		consoleLog("2) Edit Transition Time");
+		consoleLog("3) Toggle Sound Fading");
 		consoleLog("4) Toggle Camera Inertia");
 		consoleLog("5) Fix Loading");
 		consoleLog("6) Restore Backup");
