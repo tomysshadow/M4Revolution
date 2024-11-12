@@ -271,13 +271,13 @@ void openFile(const std::string &path) {
 	std::ostringstream outputStringStream;
 
 	#ifdef MACINTOSH
-	outputStringStream << "open ";
+	outputStringStream << "open";
 	#endif
 	#ifdef WINDOWS
-	outputStringStream << "start \"\" ";
+	outputStringStream << "start \"\"";
 	#endif
 
-	outputStringStream << std::quoted(path);
+	outputStringStream << " " << std::quoted(path);
 
 	if (system(outputStringStream.str().c_str())) {
 		throw std::runtime_error("Failed to Process Command");
