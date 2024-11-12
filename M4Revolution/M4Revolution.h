@@ -124,7 +124,7 @@ class M4Revolution {
 	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha);
 	static void convertImageStandardWorkCallback(Work::Convert* convertPointer);
 	static void convertImageZAPWorkCallback(Work::Convert* convertPointer);
-	static bool getComputeMoveVectorPosition(long &result);
+	static bool getComputeMoveVectorPosition(unsigned long &result);
 	#ifdef MULTITHREADED
 	static VOID CALLBACK convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
 	#endif

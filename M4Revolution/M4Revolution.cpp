@@ -357,7 +357,7 @@ void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &na
 	const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50, 0x00 };
 	const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xC6, 0x44, 0x24, 0x0B, 0x48, 0x90, 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0x00 };
 
-	long computeMoveVectorPosition = 0;
+	unsigned long computeMoveVectorPosition = 0;
 
 	while (!getComputeMoveVectorPosition(computeMoveVectorPosition)) {
 		RETRY_ERR(Work::Output::FILE_RETRY);
@@ -543,7 +543,7 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 	convertSurface(convert, surface, true);
 }
 
-bool M4Revolution::getComputeMoveVectorPosition(long &computeMoveVectorPosition) {
+bool M4Revolution::getComputeMoveVectorPosition(unsigned long &computeMoveVectorPosition) {
 	// default value is the position as of the latest Steam version
 	MAKE_SCOPE_EXIT(computeMoveVectorPositionScopeExit) {
 		computeMoveVectorPosition = 0x000109C0;
@@ -626,7 +626,7 @@ bool M4Revolution::getComputeMoveVectorPosition(long &computeMoveVectorPosition)
 		throw std::runtime_error("Failed to Wait For Single Object");
 	}
 
-	size_t size = stringToLong(buffer, computeMoveVectorPosition);
+	size_t size = stringToLongUnsigned(buffer, computeMoveVectorPosition);
 
 	if (!size) {
 		DWORD exitCode = 0;

@@ -315,17 +315,12 @@ void openFile(const std::string &path) {
 void readPipePartial(HANDLE pipe, LPVOID buffer, DWORD numberOfBytesToRead, DWORD &numberOfBytesRead) {
 	numberOfBytesRead = 0;
 
-	DWORD numberOfBytesToCopy = numberOfBytesToRead;
 	DWORD numberOfBytesCopied = 0;
 
-	while (ReadFile(pipe, (LPSTR)buffer + numberOfBytesRead, numberOfBytesToCopy, &numberOfBytesCopied, NULL)) {
-		numberOfBytesToCopy -= numberOfBytesCopied;
-
-		if (!numberOfBytesToCopy) {
+	while (ReadFile(pipe, (LPSTR)buffer + numberOfBytesRead, numberOfBytesToRead - numberOfBytesRead, &numberOfBytesCopied, NULL)) {
+		if ((numberOfBytesRead += numberOfBytesCopied) == numberOfBytesToRead) {
 			return;
 		}
-
-		numberOfBytesRead += numberOfBytesCopied;
 	}
 
 	if (GetLastError() != ERROR_BROKEN_PIPE) {
