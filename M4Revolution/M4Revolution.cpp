@@ -593,7 +593,7 @@ bool M4Revolution::getComputeMoveVectorPosition(unsigned long &computeMoveVector
 			securityAttributes.nLength = sizeof(securityAttributes);
 			securityAttributes.bInheritHandle = TRUE;
 
-			if (!CreatePipe(&stdoutReadPipe, &stdoutWritePipe, &securityAttributes, BUFFER_SIZE)) {
+			if (!CreatePipe(&stdoutReadPipe, &stdoutWritePipe, &securityAttributes, BUFFER_SIZE - 1)) {
 				throw std::runtime_error("Failed to Create Pipe");
 			}
 
