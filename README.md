@@ -83,6 +83,15 @@ Restore the backup to revert all changes made by the tool. If no backup was foun
 
 Exit the application.
 
+## Command Line Arguments
+
+Command line arguments may be used for some advanced features.
+
+ - `-p` or `--path`: sets the install path to use instead of the Steam install path
+ - `-lfn` or `--log-file-names`: log the file names of all copied and converted files (slow, but useful for debugging)
+ - `-nohw` or `--disable-hardware-acceleration`: disables hardware acceleration (via NVIDIA CUDA) when converting assets
+ - `-mt` or `--max-threads`: sets the maximum number of threads to use for multithreading when converting assets
+
 # Dependencies
 
 Myst IV: Revolution depends on these libraries.
