@@ -21,11 +21,11 @@ void M4Revolution::destroy() {
 
 void M4Revolution::Log::replacedM4Thor(const std::string &name, bool on) {
 	std::cout << "Replaced M4 Thor" << std::endl;
-	std::cout << name << TOGGLE_IS << (on ? TOGGLE_ON : TOGGLE_OFF) << std::endl;
+	std::cout << name << TOGGLE_IS << (on ? TOGGLE_ON : TOGGLE_OFF) << std::endl << std::endl;
 }
 
 void M4Revolution::Log::replacedGfxTools() {
-	std::cout << "Replaced Gfx Tools" << std::endl;
+	std::cout << "Replaced Gfx Tools" << std::endl << std::endl;
 }
 
 M4Revolution::Log::Log(const char* title, std::istream &inputStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)

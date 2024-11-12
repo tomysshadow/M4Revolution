@@ -268,11 +268,13 @@ void copyStreamToString(std::istream &inputStream, std::string &outputString, st
 }
 
 void openFile(const std::string &path) {
+	std::ostringstream outputStringStream;
+
 	#ifdef MACINTOSH
-	std::ostringstream outputStringStream("open ");
+	outputStringStream << "open ";
 	#endif
 	#ifdef WINDOWS
-	std::ostringstream outputStringStream("start \"\" ");
+	outputStringStream << "start \"\" ";
 	#endif
 
 	outputStringStream << std::quoted(path);
