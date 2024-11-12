@@ -1,7 +1,6 @@
 #pragma once
 #define _WIN32_WINNT 0x0600
 #define NOMINMAX
-#include "scope_guard.hpp"
 #include "Locale.h"
 #include <memory>
 #include <functional>
@@ -13,6 +12,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <libzap.h>
+#include <scope_guard.hpp>
 
 #ifdef _WIN32
 	#define WINDOWS

@@ -1,11 +1,11 @@
 #pragma once
 #define _WIN32_WINNT 0x0500
-#include "scope_guard.hpp"
 #include <memory>
 #include <functional>
 #include <stdexcept>
 #include <string.h>
 #include <libzap.h>
+#include <scope_guard.hpp>
 
 #ifdef _WIN32
 #include <windows.h>
