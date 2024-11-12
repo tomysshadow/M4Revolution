@@ -408,9 +408,7 @@ namespace gfx_tools {
 		RawBufferEx::POINTER &rawBufferPointer = rawBufferPointers[lod];
 		RawBuffer::SIZE sizeOld = rawBufferPointer ? rawBufferPointer->size : 0;
 		rawBufferPointer = std::make_unique<RawBufferEx>(data, size, owner, resizeInfoOptional);
-
-		rawBufferTotalSize -= sizeOld;
-		rawBufferTotalSize += size;
+		rawBufferTotalSize += size - sizeOld;
 
 		if (this->refCountedPointer != refCountedPointer) {
 			if (this->refCountedPointer) {
