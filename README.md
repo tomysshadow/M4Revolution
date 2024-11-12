@@ -96,6 +96,7 @@ Command line arguments may be used for some advanced features.
 
 Myst IV: Revolution depends on these libraries.
 
+- [scope_guard](https://github.com/Neargye/scope_guard) by Neargye
 - [M4Image](https://github.com/tomysshadow/M4Image) by Anthony Kleine
 - [libzap](https://github.com/HumanGamer/libzap) by HumanGamer
 - [mango](https://github.com/t0rakka/mango) by t0rakka

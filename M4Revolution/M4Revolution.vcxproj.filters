@@ -21,9 +21,6 @@
     <ClInclude Include="shared.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="scope_guard.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Ubi.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -62,9 +62,6 @@
     <ClInclude Include="RawBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="scope_guard.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FormatHint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
