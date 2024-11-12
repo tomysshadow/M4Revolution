@@ -482,7 +482,6 @@ void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination wr
 
 void copyStream(std::istream &inputStream, std::ostream &outputStream, std::streamsize count = -1);
 void copyStreamToString(std::istream &inputStream, std::string &outputString, std::streamsize count = -1);
-
 void openFile(const std::string &path);
 
 #ifdef WINDOWS
