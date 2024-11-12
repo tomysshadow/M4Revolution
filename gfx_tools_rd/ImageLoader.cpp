@@ -45,25 +45,16 @@ namespace gfx_tools {
 	}
 
 	ImageLoaderMultipleBuffer::~ImageLoaderMultipleBuffer() {
-		for (LOD i = 0; i < numberOfRawBuffers; i++) {
-			RawBufferEx &rawBuffer = rawBuffers[i];
-
-			if (rawBuffer.owner) {
-				M4Image::allocator.freeSafe(rawBuffer.pointer);
-			}
-		}
 	}
 
-	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::POINTER pointer, SIZE stride, SIZE size) {
-		if (!pointer) {
-			throw std::invalid_argument("pointer must not be zero");
+	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::DATA data, SIZE stride, SIZE size) {
+		if (!data) {
+			throw std::invalid_argument("data must not be zero");
 		}
 
 		if (lod > numberOfRawBuffers) {
 			throw std::invalid_argument("lod must not be greater than numberOfRawBuffers");
 		}
-
-		const RawBufferEx &RAW_BUFFER = rawBuffers[lod];
 
 		if (!validatedImageInfoOptional.has_value()) {
 			GetImageInfoImpEx();
@@ -75,6 +66,14 @@ namespace gfx_tools {
 			throw std::invalid_argument("size is too small");
 		}
 
+		const RawBufferEx::POINTER &RAW_BUFFER_POINTER = rawBufferPointers[lod];
+
+		if (!RAW_BUFFER_POINTER) {
+			throw std::logic_error("Raw Buffer must be set");
+		}
+
+		const RawBufferEx &RAW_BUFFER = *RAW_BUFFER_POINTER;
+
 		if (RAW_BUFFER.resizeInfoOptional.has_value()) {
 			const RawBufferEx::ResizeInfo &RESIZE_INFO = RAW_BUFFER.resizeInfoOptional.value();
 
@@ -85,7 +84,7 @@ namespace gfx_tools {
 				RESIZE_INFO.height,
 				m4ImageStride,
 				resizeImageInfo.GetColorFormat(),
-				RAW_BUFFER.pointer
+				RAW_BUFFER.data
 			);
 
 			m4ImageStride = stride;
@@ -95,19 +94,19 @@ namespace gfx_tools {
 				IMAGE_INFO.textureHeight,
 				m4ImageStride,
 				IMAGE_INFO.GetColorFormat(),
-				pointer
+				data
 			);
 
 			m4Image.blit(RAW_BUFFER_M4_IMAGE);
 			return;
 		}
 
-		LoadRawBuffer(RAW_BUFFER, IMAGE_INFO, pointer, stride);
+		LoadRawBuffer(RAW_BUFFER, IMAGE_INFO, data, stride);
 	}
 
 	void ImageLoaderMultipleBuffer::ResizeLOD(
 		LOD lod,
-		RawBuffer::POINTER pointer,
+		RawBuffer::DATA data,
 		SIZE stride,
 		SIZE size,
 		Q_FACTOR qFactor,
@@ -116,8 +115,8 @@ namespace gfx_tools {
 		DIMENSION resizeTextureHeight,
 		ares::RectU32* rectU32Pointer
 	) {
-		if (!pointer) {
-			throw std::invalid_argument("pointer must not be zero");
+		if (!data) {
+			throw std::invalid_argument("data must not be zero");
 		}
 
 		if (size < imageInfo.textureHeight * stride) {
@@ -131,7 +130,7 @@ namespace gfx_tools {
 			imageInfo.textureHeight,
 			m4ImageStride,
 			imageInfo.GetColorFormat(),
-			pointer
+			data
 		);
 
 		m4ImageStride = 0;
@@ -146,52 +145,44 @@ namespace gfx_tools {
 		resizeM4Image.blit(M4IMAGE);
 
 		RawBufferEx::ResizeInfo resizeInfo(resizeTextureWidth, resizeTextureHeight, m4ImageStride, qFactor);
-		
-		RawBufferEx rawBuffer(
-			resizeM4Image.acquire(),
-			(RawBuffer::SIZE)(resizeTextureHeight * m4ImageStride),
-			true,
-			resizeInfo
-		);
-
-		SetLODRawBufferImpEx(lod, rawBuffer, 0);
+		SetLODRawBufferImpEx(lod, resizeM4Image.acquire(), (RawBuffer::SIZE)(resizeTextureHeight * m4ImageStride), true, resizeInfo, 0);
 		resizeImageInfo = imageInfo;
 	}
 
 	void ImageLoaderMultipleBuffer::SetLOD(
 		LOD lod,
-		RawBuffer::POINTER pointer,
+		RawBuffer::DATA data,
 		SIZE stride,
 		SIZE size,
 		Q_FACTOR qFactor,
 		const ImageInfo &imageInfo,
 		ares::RectU32* rectU32Pointer
 	) {
-		ResizeLOD(lod, pointer, stride, size, qFactor, imageInfo, imageInfo.textureWidth, imageInfo.textureHeight, rectU32Pointer);
+		ResizeLOD(lod, data, stride, size, qFactor, imageInfo, imageInfo.textureWidth, imageInfo.textureHeight, rectU32Pointer);
 	}
 
-	RawBuffer::POINTER ImageLoaderMultipleBuffer::CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) {
-		RawBuffer::POINTER pointer = (RawBuffer::POINTER)M4Image::allocator.mallocSafe(size);
-		SetLODRawBufferImp(lod, pointer, size, true, 0);
-		return pointer;
+	RawBuffer::DATA ImageLoaderMultipleBuffer::CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) {
+		RawBuffer::DATA data = (RawBuffer::DATA)M4Image::allocator.mallocSafe(size);
+		SetLODRawBufferImp(lod, data, size, true, 0);
+		return data;
 	}
 
-	void ImageLoaderMultipleBuffer::SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer) {
-		SetLODRawBufferImp(lod, pointer, size, false, refCountedPointer);
+	void ImageLoaderMultipleBuffer::SetLODRawBuffer(LOD lod, RawBuffer::DATA data, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer) {
+		SetLODRawBufferImp(lod, data, size, false, refCountedPointer);
 	}
 
-	RawBuffer::POINTER ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod) {
-		RawBuffer::POINTER pointer = 0;
+	RawBuffer::DATA ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod) {
+		RawBuffer::DATA data = 0;
 		RawBuffer::SIZE size = 0;
-		GetLODRawBuffer(lod, pointer, size);
-		return pointer;
+		GetLODRawBuffer(lod, data, size);
+		return data;
 	}
 
-	void ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) {
-		pointer = 0;
+	void ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod, RawBuffer::DATA &data, RawBuffer::SIZE &size) {
+		data = 0;
 
-		MAKE_SCOPE_EXIT(pointerScopeExit) {
-			M4Image::allocator.freeSafe(pointer);
+		MAKE_SCOPE_EXIT(dataScopeExit) {
+			M4Image::allocator.freeSafe(data);
 		};
 
 		MAKE_SCOPE_EXIT(sizeScopeExit) {
@@ -202,19 +193,29 @@ namespace gfx_tools {
 			throw std::invalid_argument("lod must not be greater than numberOfRawBuffers");
 		}
 
-		const RawBufferEx &RAW_BUFFER = rawBuffers[lod];
+		const RawBufferEx::POINTER &RAW_BUFFER_POINTER = rawBufferPointers[lod];
 
-		if (RAW_BUFFER.resizeInfoOptional.has_value()) {
-			SaveRawBuffer(RAW_BUFFER, pointer, size);
+		if (!RAW_BUFFER_POINTER) {
+			data = 0;
+			size = 0;
 			sizeScopeExit.dismiss();
-			pointerScopeExit.dismiss();
+			dataScopeExit.dismiss();
 			return;
 		}
 
-		pointer = RAW_BUFFER.pointer;
+		const RawBufferEx &RAW_BUFFER = *RAW_BUFFER_POINTER;
+
+		if (RAW_BUFFER.resizeInfoOptional.has_value()) {
+			SaveRawBuffer(RAW_BUFFER, data, size);
+			sizeScopeExit.dismiss();
+			dataScopeExit.dismiss();
+			return;
+		}
+
+		data = RAW_BUFFER.data;
 		size = RAW_BUFFER.size;
 		sizeScopeExit.dismiss();
-		pointerScopeExit.dismiss();
+		dataScopeExit.dismiss();
 	}
 
 	bool ImageLoaderMultipleBuffer::GetImageInfoImp(ValidatedImageInfo &validatedImageInfo) {
@@ -234,13 +235,12 @@ namespace gfx_tools {
 
 	void ImageLoaderMultipleBuffer::SetLODRawBufferImp(
 		LOD lod,
-		RawBuffer::POINTER pointer,
+		RawBuffer::DATA data,
 		RawBuffer::SIZE size,
 		bool owner,
 		ubi::RefCounted* refCountedPointer
 	) {
-		RawBuffer rawBuffer(pointer, size, owner);
-		SetLODRawBufferImpEx(lod, rawBuffer, refCountedPointer);
+		SetLODRawBufferImpEx(lod, data, size, owner, std::nullopt, refCountedPointer);
 	}
 
 	const L_TCHAR* ImageLoaderMultipleBuffer::GetExtension() {
@@ -264,10 +264,10 @@ namespace gfx_tools {
 		int* textureWidthPointer,
 		int* textureHeightPointer
 	) {
-		M4Image::getInfo(rawBuffer.pointer, rawBuffer.size, GetExtension(), isAlphaPointer, bitsPointer, textureWidthPointer, textureHeightPointer);
+		M4Image::getInfo(rawBuffer.data, rawBuffer.size, GetExtension(), isAlphaPointer, bitsPointer, textureWidthPointer, textureHeightPointer);
 	}
 
-	void ImageLoaderMultipleBuffer::LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) {
+	void ImageLoaderMultipleBuffer::LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::DATA data, SIZE stride) {
 		size_t m4ImageStride = stride;
 
 		M4Image m4Image(
@@ -275,13 +275,13 @@ namespace gfx_tools {
 			imageInfo.textureHeight,
 			m4ImageStride,
 			imageInfo.GetColorFormat(),
-			pointer
+			data
 		);
 
-		m4Image.load(rawBuffer.pointer, rawBuffer.size, GetExtension());
+		m4Image.load(rawBuffer.data, rawBuffer.size, GetExtension());
 	}
 
-	void ImageLoaderMultipleBuffer::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
+	void ImageLoaderMultipleBuffer::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::DATA &data, SIZE &size) {
 		const RawBufferEx::ResizeInfo &RESIZE_INFO = rawBuffer.resizeInfoOptional.value();
 
 		size_t m4ImageStride = RESIZE_INFO.stride;
@@ -291,11 +291,11 @@ namespace gfx_tools {
 			RESIZE_INFO.height,
 			m4ImageStride,
 			resizeImageInfo.GetColorFormat(),
-			rawBuffer.pointer
+			rawBuffer.data
 		);
 
 		size_t m4ImageSize = 0;
-		pointer = M4_IMAGE.save(m4ImageSize, GetExtension(), RESIZE_INFO.quality);
+		data = M4_IMAGE.save(m4ImageSize, GetExtension(), RESIZE_INFO.quality);
 		size = (SIZE)m4ImageSize;
 	}
 
@@ -305,10 +305,17 @@ namespace gfx_tools {
 		};
 
 		const LOD MAIN_LOD = 0;
-		const RawBufferEx &MAIN_RAW_BUFFER = rawBuffers[MAIN_LOD];
 
-		// the main raw buffer's pointer is required
-		if (!MAIN_RAW_BUFFER.pointer) {
+		const RawBufferEx::POINTER &RAW_BUFFER_POINTER = rawBufferPointers[MAIN_LOD];
+
+		if (!RAW_BUFFER_POINTER) {
+			return;
+		}
+
+		const RawBufferEx &MAIN_RAW_BUFFER = *RAW_BUFFER_POINTER;
+
+		// the main raw buffer's data is required
+		if (!MAIN_RAW_BUFFER.data) {
 			return;
 		}
 
@@ -352,9 +359,15 @@ namespace gfx_tools {
 				validatedImageInfo.SetLodSizeInBytes(i, 0);
 			};
 
-			const RawBufferEx &RAW_BUFFER = rawBuffers[i];
+			const RawBufferEx::POINTER &RAW_BUFFER_POINTER = rawBufferPointers[i];
 
-			if (!RAW_BUFFER.pointer) {
+			if (!RAW_BUFFER_POINTER) {
+				continue;
+			}
+
+			const RawBufferEx &RAW_BUFFER = *RAW_BUFFER_POINTER;
+
+			if (!RAW_BUFFER.data) {
 				continue;
 			}
 
@@ -376,23 +389,28 @@ namespace gfx_tools {
 		validatedImageInfoOptionalScopeExit.dismiss();
 	}
 
-	void ImageLoaderMultipleBuffer::SetLODRawBufferImpEx(LOD lod, const RawBufferEx &value, ubi::RefCounted* refCountedPointer) {
+	void ImageLoaderMultipleBuffer::SetLODRawBufferImpEx(
+		LOD lod,
+		RawBuffer::DATA data,
+		RawBuffer::SIZE size,
+		bool owner,
+		std::optional<RawBufferEx::ResizeInfo> resizeInfoOptional,
+		ubi::RefCounted* refCountedPointer
+	) {
 		if (lod >= NUMBER_OF_LOD_MAX) {
 			throw std::invalid_argument("lod must not be greater than or equal to NUMBER_OF_LOD_MAX");
 		}
-
-		RawBufferEx &rawBuffer = rawBuffers[lod];
 
 		if (numberOfRawBuffers <= lod) {
 			numberOfRawBuffers = lod + 1;
 		}
 
-		if (rawBuffer.owner) {
-			M4Image::allocator.freeSafe(rawBuffer.pointer);
-		}
+		RawBufferEx::POINTER &rawBufferPointer = rawBufferPointers[lod];
+		RawBuffer::SIZE sizeOld = rawBufferPointer ? rawBufferPointer->size : 0;
+		rawBufferPointer = std::make_unique<RawBufferEx>(data, size, owner, resizeInfoOptional);
 
-		rawBufferTotalSize += value.size - rawBuffer.size;
-		rawBuffer = value;
+		rawBufferTotalSize -= sizeOld;
+		rawBufferTotalSize += size;
 
 		if (this->refCountedPointer != refCountedPointer) {
 			if (this->refCountedPointer) {
@@ -434,21 +452,21 @@ namespace gfx_tools {
 			*bitsPointer = ZAP_BITS;
 		}
 
-		zap_error_t err = zap_get_info(rawBuffer.pointer, textureWidthPointer, textureHeightPointer);
+		zap_error_t err = zap_get_info(rawBuffer.data, textureWidthPointer, textureHeightPointer);
 
 		if (err != ZAP_ERROR_NONE) {
 			throw std::runtime_error("Failed to Get ZAP Info");
 		}
 	}
 
-	void ImageLoaderMultipleBufferZAP::LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) {
+	void ImageLoaderMultipleBufferZAP::LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::DATA data, SIZE stride) {
 		zap_size_t zapStride = stride;
 		zap_size_t zapSize = 0;
 
 		zap_error_t err = zap_resize_memory(
-			rawBuffer.pointer,
+			rawBuffer.data,
 			(zap_uint_t)imageInfo.GetColorFormat(),
-			&pointer,
+			&data,
 			&zapSize,
 			imageInfo.textureWidth,
 			imageInfo.textureHeight,
@@ -460,14 +478,14 @@ namespace gfx_tools {
 		}
 	}
 
-	void ImageLoaderMultipleBufferZAP::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
+	void ImageLoaderMultipleBufferZAP::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::DATA &data, SIZE &size) {
 		const RawBufferEx::ResizeInfo &RESIZE_INFO = rawBuffer.resizeInfoOptional.value();
 
 		zap_size_t zapSize = 0;
 		size_t zapStride = RESIZE_INFO.stride;
 
 		zap_error_t err = zap_save_memory(
-			&pointer,
+			&data,
 			&zapSize,
 			RESIZE_INFO.width,
 			RESIZE_INFO.height,

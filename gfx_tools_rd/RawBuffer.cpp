@@ -1,13 +1,20 @@
 #include "RawBuffer.h"
+#include <M4Image/M4Image.h>
 
 namespace gfx_tools {
 	RawBuffer::RawBuffer() {
 	}
 
-	RawBuffer::RawBuffer(POINTER pointer, SIZE size, bool owner)
-		: pointer(pointer),
+	RawBuffer::RawBuffer(DATA data, SIZE size, bool owner)
+		: data(data),
 		size(size),
 		owner(owner) {
+	}
+
+	RawBuffer::~RawBuffer() {
+		if (owner) {
+			M4Image::allocator.freeSafe(data);
+		}
 	}
 	
 	float RawBufferEx::ResizeInfo::GetQuality(L_INT qFactor) {
@@ -33,13 +40,8 @@ namespace gfx_tools {
 	RawBufferEx::RawBufferEx() {
 	}
 
-	RawBufferEx::RawBufferEx(POINTER pointer, SIZE size, bool owner, const std::optional<ResizeInfo> &resizeInfoOptional)
-		: RawBuffer(pointer, size, owner),
-		resizeInfoOptional(resizeInfoOptional) {
-	}
-
-	RawBufferEx::RawBufferEx(const RawBuffer &rawBuffer, const std::optional<ResizeInfo> &resizeInfoOptional)
-		: RawBuffer(rawBuffer),
+	RawBufferEx::RawBufferEx(DATA data, SIZE size, bool owner, const std::optional<ResizeInfo> &resizeInfoOptional)
+		: RawBuffer(data, size, owner),
 		resizeInfoOptional(resizeInfoOptional) {
 	}
 }

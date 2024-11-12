@@ -1,6 +1,7 @@
 #pragma once
 #define _WIN32_WINNT 0x0500
 #include "scope_guard.hpp"
+#include <memory>
 #include <functional>
 #include <stdexcept>
 #include <string.h>

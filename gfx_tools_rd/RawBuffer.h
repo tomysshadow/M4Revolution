@@ -4,18 +4,23 @@
 
 namespace gfx_tools {
 	struct RawBuffer {
-		typedef unsigned char* POINTER;
+		typedef unsigned char* DATA;
 		typedef unsigned long SIZE;
 
-		POINTER pointer = 0;
+		DATA data = 0;
 		SIZE size = 0;
 		bool owner = false;
 
 		GFX_TOOLS_RD_API RawBuffer();
-		GFX_TOOLS_RD_API RawBuffer(POINTER pointer, SIZE size, bool owner);
+		GFX_TOOLS_RD_API RawBuffer(DATA data, SIZE size, bool owner = false);
+		GFX_TOOLS_RD_API ~RawBuffer();
+		GFX_TOOLS_RD_API RawBuffer(const RawBuffer &rawBuffer) = delete;
+		GFX_TOOLS_RD_API RawBuffer& GFX_TOOLS_RD_CALL operator=(const RawBuffer &rawBuffer) = delete;
 	};
 
 	struct RawBufferEx : public RawBuffer {
+		typedef std::unique_ptr<RawBufferEx> POINTER;
+
 		struct ResizeInfo {
 			int width = 0;
 			int height = 0;
@@ -31,7 +36,6 @@ namespace gfx_tools {
 		std::optional<ResizeInfo> resizeInfoOptional = std::nullopt;
 
 		GFX_TOOLS_RD_API RawBufferEx();
-		GFX_TOOLS_RD_API RawBufferEx(POINTER pointer, SIZE size, bool owner, const std::optional<ResizeInfo> &resizeInfoOptional = std::nullopt);
-		GFX_TOOLS_RD_API RawBufferEx(const RawBuffer &rawBuffer, const std::optional<ResizeInfo> &resizeInfoOptional = std::nullopt);
+		GFX_TOOLS_RD_API RawBufferEx(DATA data, SIZE size, bool owner = false, const std::optional<ResizeInfo> &resizeInfoOptional = std::nullopt);
 	};
 }

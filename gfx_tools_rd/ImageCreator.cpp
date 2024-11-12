@@ -125,13 +125,13 @@ namespace gfx_tools {
 		ubi::InputFileStream inputFileStream(fileName);
 		ubi::InputFileStream::SIZE size = inputFileStream.GetSize();
 
-		RawBuffer::POINTER pointer = imageLoaderPointer->CreateLODRawBuffer(0, (RawBuffer::SIZE)size);
+		RawBuffer::DATA data = imageLoaderPointer->CreateLODRawBuffer(0, (RawBuffer::SIZE)size);
 
-		if (!pointer) {
+		if (!data) {
 			return 0;
 		}
 		
-		if (inputFileStream.Read(pointer, 0, (ubi::Stream::SIZE)size) != size) {
+		if (inputFileStream.Read(data, 0, (ubi::Stream::SIZE)size) != size) {
 			return 0;
 		}
 
