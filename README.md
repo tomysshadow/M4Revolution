@@ -89,7 +89,7 @@ Command line arguments may be used for some advanced features.
 
  - `-p` or `--path`: sets an install path to use instead of the Steam install path
  - `-lfn` or `--log-file-names`: log the file names of all copied and converted files (slow, but useful for debugging)
- - `-nohw` or `--disable-hardware-acceleration`: disables hardware acceleration (via NVIDIA CUDA) when converting assets
+ - `-nohw` or `--disable-hardware-acceleration`: disables hardware acceleration (via NVIDIA CUDA) when converting assets - if you do not have an NVIDIA graphics card, hardware acceleration will be disabled automatically
  - `-mt` or `--max-threads`: sets the maximum number of threads to use for multithreading when converting assets - if not set, it will be chosen automatically
 
 # Dependencies
