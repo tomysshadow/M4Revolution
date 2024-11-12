@@ -72,7 +72,7 @@ namespace Ubi {
 
 	namespace Binary {
 		namespace BinarizerLoader {
-			bool toggleResource(std::istream &inputStream, std::streamsize size, const std::string &name, const std::string &path, std::ostream &outputStream) {
+			bool toggleResource(std::istream &inputStream, std::streamsize size, const std::string &name, const std::string &key, std::ostream &outputStream) {
 				// toggle a resource on or off by adding it to or removing it from a binarizer_loader.log file
 				std::streampos position = inputStream.tellg();
 
@@ -96,10 +96,10 @@ namespace Ubi {
 				bool on = true;
 
 				for (uint32_t i = 0; i < resources; i++) {
-					const std::optional<std::string> &RESOURCE_PATH = String::readOptional(inputStream, nullTerminator);
+					const std::optional<std::string> &KEY = String::readOptional(inputStream, nullTerminator);
 
-					if (RESOURCE_PATH == path) {
-						// if we find the resource path it is currently on
+					if (KEY == key) {
+						// if we find the key it is currently on
 						// so we shift everything else up, overwriting it
 						copyStream(inputStream, outputStream, position + size - inputStream.tellg());
 						resources--;
@@ -108,7 +108,7 @@ namespace Ubi {
 						break;
 					}
 
-					String::writeOptional(outputStream, RESOURCE_PATH, nullTerminator);
+					String::writeOptional(outputStream, KEY, nullTerminator);
 				}
 	
 				consoleLog((name + TOGGLE_IS).c_str(), false);
@@ -119,7 +119,7 @@ namespace Ubi {
 					// to turn the resource back on we simply write it again at the end
 					// we assume it was on originally and turned off
 					// so there is some padding space at the end of the file
-					String::writeOptional(outputStream, path, false);
+					String::writeOptional(outputStream, key, false);
 					resources++;
 				} else {
 					consoleLog(TOGGLE_OFF.c_str());

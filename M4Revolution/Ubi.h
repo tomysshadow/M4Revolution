@@ -43,7 +43,7 @@ namespace Ubi {
 		};
 
 		namespace BinarizerLoader {
-			bool toggleResource(std::istream &inputStream, std::streamsize size, const std::string &name, const std::string &path, std::ostream &outputStream);
+			bool toggleResource(std::istream &inputStream, std::streamsize size, const std::string &name, const std::string &key, std::ostream &outputStream);
 		};
 
 		/*

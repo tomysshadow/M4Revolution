@@ -16,17 +16,46 @@ namespace AI {
 
 	static const Locale LOCALE("English", LC_NUMERIC);
 
+	Ubi::BigFile::File::SIZE findFileSize(Work::Edit &edit, const Ubi::BigFile::Path::VECTOR &pathVector) {
+		return Ubi::BigFile::findFile(edit.fileStream, pathVector)->size;
+	}
+
+	void toggleResource(
+		Work::Edit &edit,
+		const Ubi::BigFile::Path::VECTOR &pathVector,
+		const std::string &name,
+		const std::string &key
+	) {
+		std::fstream &fileStream = edit.fileStream;
+
+		Ubi::BigFile::File::SIZE size = findFileSize(edit, pathVector);
+		std::streampos position = fileStream.tellg();
+
+		std::ostringstream outputStringStream;
+
+		Ubi::Binary::BinarizerLoader::toggleResource(
+			fileStream,
+			size,
+			name,
+			key,
+			outputStringStream
+		);
+
+		std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
+		edit.join(copyThread, position, outputStringStream.str());
+	}
+
 	void editF32(
 		Work::Edit &edit,
-		const std::string &name,
 		const Ubi::BigFile::Path::VECTOR &pathVector,
+		const std::string &name,
 		const std::string &key,
 		float min,
 		float max
 	) {
-		// find the AI file
 		std::fstream &fileStream = edit.fileStream;
-		Ubi::BigFile::File::SIZE size = Ubi::BigFile::findFile(fileStream, pathVector)->size;
+
+		Ubi::BigFile::File::SIZE size = findFileSize(edit, pathVector);
 		std::streampos position = fileStream.tellg();
 
 		std::string ai = "";
@@ -78,7 +107,7 @@ namespace AI {
 		}
 
 		// log the current value
-		std::ostringstream outputStringStream = {};
+		std::ostringstream outputStringStream;
 		outputStringStream.imbue(LOCALE);
 		outputStringStream << "The current " << name << " is: " << f32 << ".";
 		consoleLog(outputStringStream.str().c_str());
@@ -121,26 +150,12 @@ namespace AI {
 	void toggleSoundFading(std::fstream &fileStream) {
 		Work::Edit edit(fileStream, Work::Output::DATA_PATH);
 
-		Ubi::BigFile::File::SIZE size = Ubi::BigFile::findFile(fileStream, BINARIZER_LOADER_PATH_VECTOR)->size;
-		std::streampos position = fileStream.tellg();
-
-		std::ostringstream outputStringStream = {};
-
-		Ubi::Binary::BinarizerLoader::toggleResource(
-			edit.fileStream,
-			size,
-			"Sound Fading",
-			"/common/ai/aisndtransition/ai_snd_transition.ai",
-			outputStringStream
-		);
-
-		std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
-		edit.join(copyThread, position, outputStringStream.str());
+		toggleResource(edit, BINARIZER_LOADER_PATH_VECTOR, "Sound Fading", "/common/ai/aisndtransition/ai_snd_transition.ai");
 	}
 
 	void editTransitionTime(std::fstream &fileStream) {
 		Work::Edit edit(fileStream, Work::Output::DATA_PATH);
 
-		editF32(edit, "Transition Time", TRANSITION_FADE_PATH_VECTOR, "m_fadingTime", 0.0f, 500.0f);
+		editF32(edit, TRANSITION_FADE_PATH_VECTOR, "Transition Time", "m_fadingTime", 0.0f, 500.0f);
 	}
 }
