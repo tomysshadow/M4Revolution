@@ -94,7 +94,7 @@ Command line arguments may be used for some advanced features.
 
 # Do I need to use this tool on the same computer I play the game on?
 
-Yes. The files produced by this tool will be optimized for the computer it is used on, so you should use it on the same computer that you play the game on rather than using it on one and copy pasting the game files to another.
+Yes. The files produced by this tool will be optimized for the computer it is used on. You should use it on the same computer that you play the game on, rather than using it on one computer and copy pasting the game files to another computer.
 
 # Is this the definitive way to play Myst IV: Revelation?
 
