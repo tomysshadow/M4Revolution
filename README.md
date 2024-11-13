@@ -87,10 +87,10 @@ Exit the application.
 
 Command line arguments may be used for some advanced features.
 
- - `-p` or `--path`: sets an install path to use instead of the Steam install path
+ - `-p path` or `--path path`: sets an install path to use - if not set, the Steam install path is found automatically
  - `-lfn` or `--log-file-names`: log the file names of all copied and converted files (slow, but useful for debugging)
  - `-nohw` or `--disable-hardware-acceleration`: disables hardware acceleration (via NVIDIA CUDA) when converting assets - if you do not have an NVIDIA graphics card, hardware acceleration will be disabled automatically
- - `-mt` or `--max-threads`: sets the maximum number of threads to use for multithreading when converting assets - if not set, it will be chosen automatically
+ - `-mt maxThreads` or `--max-threads maxThreads`: sets the maximum number of threads to use for multithreading when converting assets - maxThreads must be a valid number, and if not set, it will be chosen automatically
 
 # Do I need to use this tool on the same computer I play the game on?
 
