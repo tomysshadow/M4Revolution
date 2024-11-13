@@ -445,9 +445,9 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	const nvtt::ResizeFilter RESIZE_FILTER = nvtt::ResizeFilter_Triangle;
 	const int MIPMAP_COUNT = 1;
 
-	Work::Convert::EXTENT width = clampUINT32(surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
-	Work::Convert::EXTENT height = clampUINT32(surface.height(), CONFIGURATION.minTextureHeight, CONFIGURATION.maxTextureHeight);
-	Work::Convert::EXTENT depth = clampUINT32(surface.depth(), CONFIGURATION.minVolumeExtent, CONFIGURATION.maxVolumeExtent);
+	Work::Convert::EXTENT width = clampLongUnsigned(surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
+	Work::Convert::EXTENT height = clampLongUnsigned(surface.height(), CONFIGURATION.minTextureHeight, CONFIGURATION.maxTextureHeight);
+	Work::Convert::EXTENT depth = clampLongUnsigned(surface.depth(), CONFIGURATION.minVolumeExtent, CONFIGURATION.maxVolumeExtent);
 
 	Work::Convert::EXTENT maxExtent = __max(width, height);
 	maxExtent = __max(depth, maxExtent);
@@ -868,41 +868,12 @@ M4Revolution::M4Revolution(
 	bool logFileNames,
 	bool disableHardwareAcceleration,
 	uint32_t maxThreads,
-	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks
+	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks,
+	std::optional<Work::Convert::Configuration> configurationOptional
 )
 	: logFileNames(logFileNames) {
 	// here we make the path lexically normal just so that it displays nice
 	Work::Output::findInstallPath(path.lexically_normal());
-
-	#ifdef D3D9
-	{
-		// we need to get the max texture size supported by this graphics card
-		// and ensure that all textures we convert are resized to less than this size
-		// ares uses Direct3D 9 to do this - so I do also
-		// it is assumed this tool will be run on the same GPU as the game itself will
-		Microsoft::WRL::ComPtr<IDirect3D9> direct3D9InterfacePointer = Direct3DCreate9(D3D_SDK_VERSION);
-
-		if (!direct3D9InterfacePointer) {
-			throw std::runtime_error("Failed to Create Direct3D");
-		}
-
-		D3DCAPS9 d3dcaps9 = {};
-
-		HRESULT err = direct3D9InterfacePointer->GetDeviceCaps(
-			D3DADAPTER_DEFAULT,
-			D3DDEVTYPE_HAL,
-			&d3dcaps9
-		);
-
-		if (err != D3D_OK) {
-			throw _com_error(err);
-		}
-
-		configuration.maxTextureWidth = d3dcaps9.MaxTextureWidth;
-		configuration.maxTextureHeight = d3dcaps9.MaxTextureHeight;
-		configuration.maxVolumeExtent = d3dcaps9.MaxVolumeExtent;
-	}
-	#endif
 
 	context.enableCudaAcceleration(!disableHardwareAcceleration);
 
@@ -945,6 +916,39 @@ M4Revolution::M4Revolution(
 	const Work::FileTask::POINTER_QUEUE::size_type DEFAULT_MAX_FILE_TASKS = 216;
 
 	this->maxFileTasks = maxFileTasks ? maxFileTasks : DEFAULT_MAX_FILE_TASKS;
+
+	if (configurationOptional.has_value()) {
+		configuration = configurationOptional.value();
+	}
+	#ifdef D3D9
+	else {
+		// we need to get the max texture size supported by this graphics card
+		// and ensure that all textures we convert are resized to less than this size
+		// ares uses Direct3D 9 to do this - so I do also
+		// it is assumed this tool will be run on the same GPU as the game itself will
+		Microsoft::WRL::ComPtr<IDirect3D9> direct3D9InterfacePointer = Direct3DCreate9(D3D_SDK_VERSION);
+
+		if (!direct3D9InterfacePointer) {
+			throw std::runtime_error("Failed to Create Direct3D");
+		}
+
+		D3DCAPS9 d3dcaps9 = {};
+
+		HRESULT err = direct3D9InterfacePointer->GetDeviceCaps(
+			D3DADAPTER_DEFAULT,
+			D3DDEVTYPE_HAL,
+			&d3dcaps9
+		);
+
+		if (err != D3D_OK) {
+			throw _com_error(err);
+		}
+
+		configuration.maxTextureWidth = d3dcaps9.MaxTextureWidth;
+		configuration.maxTextureHeight = d3dcaps9.MaxTextureHeight;
+		configuration.maxVolumeExtent = d3dcaps9.MaxVolumeExtent;
+	}
+	#endif
 }
 
 M4Revolution::~M4Revolution() {

@@ -49,7 +49,7 @@ Opens this file.
 
 ### Edit Transition Time
 
-Upon navigating, the game will play a fade transition. You may edit the transition time on a scale of zero to 500, where zero is instant and 500 is slow.
+Upon navigating, the game will play a fade transition. You may edit the transition time on a scale of zero to 500, where zero is instant and 500 is slow. The currently set transition time is displayed. The default is 500.
 
 This operation will create a backup of your game files if one has not already been made.
 
@@ -71,7 +71,7 @@ This operation will create a backup of your game files if one has not already be
 
 ### Fix Loading
 
-Fixes loading in order to make navigation faster. This operation will take several minutes to complete, because it works by converting the game assets into a format that is faster to load.
+Fixes loading in order to make navigation faster. This operation will take several minutes to complete, because it works by converting the assets into a format that is faster to load.
 
 This operation will create a backup of your game files if one has not already been made.
 
@@ -91,6 +91,14 @@ Command line arguments may be used for some advanced features.
  - `-lfn` or `--log-file-names`: log the file names of all copied and converted files (slow, but useful for debugging)
  - `-nohw` or `--disable-hardware-acceleration`: disables hardware acceleration (via NVIDIA CUDA) when converting assets - if you do not have an NVIDIA graphics card, hardware acceleration will be disabled automatically
  - `-mt` or `--max-threads`: sets the maximum number of threads to use for multithreading when converting assets - if not set, it will be chosen automatically
+
+# Do I need to use this tool on the same computer I play the game on?
+
+Yes. The files produced by this tool will be optimized for the computer it is used on, so you should use it on the same computer that you play the game on rather than using it on one and copy pasting the game files to another.
+
+# Is this the definitive way to play Myst IV: Revelation?
+
+Not necessarily. I would consider the long loading times to be a bug. However, the fade transition and sound fading are intentional features, and although editing or disabling them allows for instant movement, doing so arguably goes against the intended artistic vision of the game. Different players will have different preferences. I personally prefer the game with camera inertia enabled, like it is by default. As such, I would prefer that this remain a seperate, optional enhancement, and not be integrated into the game in an official capacity.
 
 # Dependencies
 

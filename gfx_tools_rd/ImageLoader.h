@@ -26,14 +26,14 @@ namespace gfx_tools {
 
 		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL GetLOD(
 			LOD lod,
-			RawBuffer::DATA data,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE size
 		) = 0;
 
 		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL ResizeLOD(
 			LOD lod,
-			RawBuffer::DATA data,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE size,
 			Q_FACTOR qFactor,
@@ -45,7 +45,7 @@ namespace gfx_tools {
 
 		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL SetLOD(
 			LOD lod,
-			RawBuffer::DATA data,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE size,
 			Q_FACTOR requestedQFactor,
@@ -53,10 +53,10 @@ namespace gfx_tools {
 			ares::RectU32* rectU32Pointer
 		) = 0;
 
-		GFX_TOOLS_RD_API virtual RawBuffer::DATA GFX_TOOLS_RD_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) = 0;
-		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL SetLODRawBuffer(LOD lod, RawBuffer::DATA data, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer = 0) = 0;
-		GFX_TOOLS_RD_API virtual RawBuffer::DATA GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod) = 0;
-		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, RawBuffer::DATA &data, RawBuffer::SIZE &size) = 0;
+		GFX_TOOLS_RD_API virtual RawBuffer::POINTER GFX_TOOLS_RD_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) = 0;
+		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer = 0) = 0;
+		GFX_TOOLS_RD_API virtual RawBuffer::POINTER GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod) = 0;
+		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) = 0;
 
 		GFX_TOOLS_RD_API virtual bool GFX_TOOLS_RD_CALL GetImageInfoImp(
 			ValidatedImageInfo &validatedImageInfo
@@ -65,7 +65,7 @@ namespace gfx_tools {
 		protected:
 		virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImp(
 			LOD lod,
-			RawBuffer::DATA data,
+			RawBuffer::POINTER pointer,
 			RawBuffer::SIZE size,
 			bool owner = false,
 			ubi::RefCounted* refCountedPointer = 0
@@ -86,13 +86,13 @@ namespace gfx_tools {
 			int* heightPointer
 		) = 0;
 
-		virtual void GFX_TOOLS_RD_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::DATA data, SIZE stride) = 0;
-		virtual void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::DATA &data, SIZE &size) = 0;
+		virtual void GFX_TOOLS_RD_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) = 0;
+		virtual void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) = 0;
 		virtual void GFX_TOOLS_RD_CALL GetImageInfoImpEx() = 0;
 
 		virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
 			LOD lod,
-			RawBuffer::DATA data,
+			RawBuffer::POINTER pointer,
 			RawBuffer::SIZE size,
 			bool owner = false,
 			std::optional<RawBufferEx::ResizeInfo> resizeInfoOptional = std::nullopt,
@@ -113,14 +113,14 @@ namespace gfx_tools {
 
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL GetLOD(
 			LOD lod,
-			RawBuffer::DATA data,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE size
 		);
 
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL ResizeLOD(
 			LOD lod,
-			RawBuffer::DATA data,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE size,
 			Q_FACTOR qFactor,
@@ -132,7 +132,7 @@ namespace gfx_tools {
 
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetLOD(
 			LOD lod,
-			RawBuffer::DATA data,
+			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE size,
 			Q_FACTOR requestedQFactor,
@@ -140,10 +140,10 @@ namespace gfx_tools {
 			ares::RectU32* rectU32Pointer
 		);
 
-		GFX_TOOLS_RD_API RawBuffer::DATA GFX_TOOLS_RD_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size);
-		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetLODRawBuffer(LOD lod, RawBuffer::DATA data, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer = 0);
-		GFX_TOOLS_RD_API RawBuffer::DATA GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod);
-		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, RawBuffer::DATA &data, RawBuffer::SIZE &size);
+		GFX_TOOLS_RD_API RawBuffer::POINTER GFX_TOOLS_RD_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size);
+		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer = 0);
+		GFX_TOOLS_RD_API RawBuffer::POINTER GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod);
+		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size);
 
 		GFX_TOOLS_RD_API bool GFX_TOOLS_RD_CALL GetImageInfoImp(
 			ValidatedImageInfo &validatedImageInfo
@@ -152,7 +152,7 @@ namespace gfx_tools {
 		protected:
 		void GFX_TOOLS_RD_CALL SetLODRawBufferImp(
 			LOD lod,
-			RawBuffer::DATA data,
+			RawBuffer::POINTER pointer,
 			RawBuffer::SIZE size,
 			bool owner = false,
 			ubi::RefCounted* refCountedPointer = 0
@@ -170,13 +170,13 @@ namespace gfx_tools {
 			int* textureHeightPointer
 		);
 
-		void GFX_TOOLS_RD_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::DATA data, SIZE stride);
-		void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::DATA &data, SIZE &size);
+		void GFX_TOOLS_RD_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride);
+		void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size);
 		void GFX_TOOLS_RD_CALL GetImageInfoImpEx();
 
 		void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
 			LOD lod,
-			RawBuffer::DATA data,
+			RawBuffer::POINTER pointer,
 			RawBuffer::SIZE size,
 			bool owner = false,
 			std::optional<RawBufferEx::ResizeInfo> resizeInfoOptional = std::nullopt,
@@ -184,7 +184,7 @@ namespace gfx_tools {
 		);
 
 		SIZE numberOfRawBuffers = 0;
-		RawBufferEx::POINTER rawBufferPointers[NUMBER_OF_LOD_MAX] = {};
+		std::optional<RawBufferEx> rawBufferOptionals[NUMBER_OF_LOD_MAX] = {};
 		ImageInfo resizeImageInfo;
 	};
 
@@ -201,8 +201,8 @@ namespace gfx_tools {
 			int* textureHeightPointer
 		);
 
-		void GFX_TOOLS_RD_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::DATA data, SIZE stride);
-		void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::DATA &data, SIZE &size);
+		void GFX_TOOLS_RD_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride);
+		void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size);
 	};
 
 	class ImageLoaderMultipleBufferTGA : public ImageLoaderMultipleBuffer {

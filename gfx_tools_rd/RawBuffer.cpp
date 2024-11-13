@@ -5,15 +5,15 @@ namespace gfx_tools {
 	RawBuffer::RawBuffer() {
 	}
 
-	RawBuffer::RawBuffer(DATA data, SIZE size, bool owner)
-		: data(data),
+	RawBuffer::RawBuffer(POINTER pointer, SIZE size, bool owner)
+		: pointer(pointer),
 		size(size),
 		owner(owner) {
 	}
 
 	RawBuffer::~RawBuffer() {
 		if (owner) {
-			M4Image::allocator.freeSafe(data);
+			M4Image::allocator.freeSafe(pointer);
 		}
 	}
 	
@@ -40,8 +40,8 @@ namespace gfx_tools {
 	RawBufferEx::RawBufferEx() {
 	}
 
-	RawBufferEx::RawBufferEx(DATA data, SIZE size, bool owner, const std::optional<ResizeInfo> &resizeInfoOptional)
-		: RawBuffer(data, size, owner),
+	RawBufferEx::RawBufferEx(POINTER pointer, SIZE size, bool owner, const std::optional<ResizeInfo> &resizeInfoOptional)
+		: RawBuffer(pointer, size, owner),
 		resizeInfoOptional(resizeInfoOptional) {
 	}
 }

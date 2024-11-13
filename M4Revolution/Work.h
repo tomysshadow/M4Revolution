@@ -8,7 +8,6 @@
 #include <atomic>
 #include <map>
 #include <filesystem>
-
 #include <nvtt/nvtt.h>
 
 #ifdef WINDOWS
@@ -177,7 +176,7 @@ namespace Work {
 	};
 
 	struct Convert {
-		typedef uint32_t EXTENT;
+		typedef unsigned long EXTENT;
 		typedef void(*FileWorkCallback)(Work::Convert* convertPointer);
 
 		struct Configuration {

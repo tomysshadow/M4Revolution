@@ -355,7 +355,7 @@ const std::string TOGGLE_IS = " has now been toggled ";
 const std::string TOGGLE_ON = "on.";
 const std::string TOGGLE_OFF = "off.";
 
-constexpr inline uint32_t clampUINT32(uint32_t extent, uint32_t min, uint32_t max) {
+constexpr inline unsigned long clampLongUnsigned(unsigned long extent, unsigned long min, unsigned long max) {
 	return __min(max, __max(extent, min));
 }
 

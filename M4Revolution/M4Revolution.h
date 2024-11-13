@@ -2,7 +2,7 @@
 #include "shared.h"
 #include "Ubi.h"
 #include "Work.h"
-
+#include <optional>
 #include <nvtt/nvtt.h>
 
 #ifdef WINDOWS
@@ -64,8 +64,6 @@ class M4Revolution {
 
 	bool logFileNames = false;
 
-	Work::Convert::Configuration configuration;
-
 	nvtt::Context context = {};
 	nvtt::CompressionOptions compressionOptionsDXT1 = {};
 	nvtt::CompressionOptions compressionOptionsDXT5 = {};
@@ -76,7 +74,7 @@ class M4Revolution {
 	#endif
 
 	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0;
-
+	Work::Convert::Configuration configuration;
 	Work::Tasks tasks = {};
 
 	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks);
@@ -139,7 +137,8 @@ class M4Revolution {
 		bool logFileNames = false,
 		bool disableHardwareAcceleration = false,
 		uint32_t maxThreads = 0,
-		Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0
+		Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0,
+		std::optional<Work::Convert::Configuration> configurationOptional = std::nullopt
 	);
 	
 	~M4Revolution();

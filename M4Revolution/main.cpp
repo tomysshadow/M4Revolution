@@ -64,12 +64,14 @@ int main(int argc, char** argv) {
 
 	std::string arg = "";
 	int argc2 = argc - 1;
+	int argc7 = argc - 6;
 
 	std::optional<std::string> pathStringOptional = std::nullopt;
 	bool logFileNames = false;
 	bool disableHardwareAcceleration = false;
 	unsigned long maxThreads = 0;
 	unsigned long maxFileTasks = 0;
+	std::optional<Work::Convert::Configuration> configurationOptional = std::nullopt;
 
 	for (int i = MIN_ARGC; i < argc; i++) {
 		arg = std::string(argv[i]);
@@ -86,15 +88,30 @@ int main(int argc, char** argv) {
 				pathStringOptional = argv[++i];
 			} else if (arg == "-mt" || arg == "--max-threads") {
 				if (!stringToLongUnsigned(argv[++i], maxThreads)) {
-					consoleLog("Max Threads must be a valid number", 2);
+					consoleLog("Max Threads must be a valid non-zero number", 2);
 					help();
 					return 1;
 				}
 			} else if (arg == "--dev-max-file-tasks") {
 				if (!stringToLongUnsigned(argv[++i], maxFileTasks)) {
-					consoleLog("Max File Tasks must be a valid number", 2);
+					consoleLog("Max File Tasks must be a valid non-zero number", 2);
 					help();
 					return 1;
+				}
+			} else if (i < argc7) {
+				if (arg == "--dev-configuration") {
+					Work::Convert::Configuration &configuration = configurationOptional.emplace();
+
+					if (!stringToLongUnsigned(argv[++i], configuration.minTextureWidth)
+						|| !stringToLongUnsigned(argv[++i], configuration.maxTextureWidth)
+						|| !stringToLongUnsigned(argv[++i], configuration.minTextureHeight)
+						|| !stringToLongUnsigned(argv[++i], configuration.maxTextureHeight)
+						|| !stringToLongUnsigned(argv[++i], configuration.minVolumeExtent)
+						|| !stringToLongUnsigned(argv[++i], configuration.maxVolumeExtent)) {
+						consoleLog("Configuration must be six valid non-zero numbers", 2);
+						help();
+						return 1;
+					}
 				}
 			}
 		}
@@ -111,7 +128,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	M4Revolution m4Revolution(pathStringOptional.value(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks);
+	M4Revolution m4Revolution(pathStringOptional.value(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks, configurationOptional);
 
 	do {
 		consoleLog("This menu may be used to perform the following operations.", 2);
