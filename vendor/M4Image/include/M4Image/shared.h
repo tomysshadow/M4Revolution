@@ -13,7 +13,7 @@
 #define M4IMAGE_API
 #define M4IMAGE_CALL __cdecl
 
-constexpr inline unsigned char clampUCHAR(int number) {
+inline constexpr unsigned char clampUCHAR(int number) {
 	return __min(UCHAR_MAX, __max(0, number));
 }
 
