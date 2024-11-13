@@ -88,13 +88,13 @@ int main(int argc, char** argv) {
 				pathStringOptional = argv[++i];
 			} else if (arg == "-mt" || arg == "--max-threads") {
 				if (!stringToLongUnsigned(argv[++i], maxThreads)) {
-					consoleLog("Max Threads must be a valid non-zero number", 2);
+					consoleLog("Max Threads must be a valid number", 2);
 					help();
 					return 1;
 				}
 			} else if (arg == "--dev-max-file-tasks") {
 				if (!stringToLongUnsigned(argv[++i], maxFileTasks)) {
-					consoleLog("Max File Tasks must be a valid non-zero number", 2);
+					consoleLog("Max File Tasks must be a valid number", 2);
 					help();
 					return 1;
 				}
@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
 						|| !stringToLongUnsigned(argv[++i], configuration.maxTextureHeight)
 						|| !stringToLongUnsigned(argv[++i], configuration.minVolumeExtent)
 						|| !stringToLongUnsigned(argv[++i], configuration.maxVolumeExtent)) {
-						consoleLog("Configuration must be six valid non-zero numbers", 2);
+						consoleLog("Configuration must be six valid numbers", 2);
 						help();
 						return 1;
 					}
