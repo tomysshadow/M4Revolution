@@ -3,8 +3,6 @@
 #define NOMINMAX
 
 #include <stdexcept>
-#include <stdlib.h>
-#include <limits.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -12,10 +10,6 @@
 
 #define M4IMAGE_API
 #define M4IMAGE_CALL __cdecl
-
-inline constexpr unsigned char clampToUCHAR(unsigned short number) {
-	return __min(UCHAR_MAX, __max(0, number));
-}
 
 // forward declared so Pixman doesn't need to be included here
 // (so you only need the static lib to include M4Image in another project)
