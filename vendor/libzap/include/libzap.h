@@ -42,12 +42,13 @@ enum ZAP_IMAGE_FORMAT
     ZAP_IMAGE_FORMAT_JTIF = 2
 };
 
+// Note that these are expressed as platform-independent byte arrays, not packed pixels
 enum ZAP_COLOR_FORMAT
 {
-    ZAP_COLOR_FORMAT_RGBA32 = 0,
-    ZAP_COLOR_FORMAT_RGBX32,
-    ZAP_COLOR_FORMAT_BGRA32,
-    ZAP_COLOR_FORMAT_BGRX32
+    ZAP_COLOR_FORMAT_RGBA = 0,
+    ZAP_COLOR_FORMAT_RGBX,
+    ZAP_COLOR_FORMAT_BGRA,
+    ZAP_COLOR_FORMAT_BGRX
 };
 
 /// Get info for a ZAP file

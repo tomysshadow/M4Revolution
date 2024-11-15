@@ -520,7 +520,7 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 		zap_int_t height = 0;
 		zap_size_t stride = 0;
 
-		zap_error_t err = zap_load_memory(convert.dataPointer.get(), ZAP_COLOR_FORMAT_BGRA32, &image, &size, &width, &height, &stride);
+		zap_error_t err = zap_load_memory(convert.dataPointer.get(), ZAP_COLOR_FORMAT_BGRA, &image, &size, &width, &height, &stride);
 
 		if (err != ZAP_ERROR_NONE) {
 			throw std::runtime_error("Failed to Load ZAP From Memory");

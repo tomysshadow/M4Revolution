@@ -42,16 +42,14 @@ namespace gfx_tools {
 	// frankly, it doesn't make sense, but it's what the game does
 	// so I try to rationalize it
 	M4Image::COLOR_FORMAT ImageInfo::GetColorFormat() const {
-		// equivalent
 		if (enumPixelFormat == requestedEnumPixelFormat) {
 			return PIXELFORMAT_COLOR_FORMAT_MAP.at(requestedEnumPixelFormat);
 		}
 
-		// 16-bit
 		if (enumPixelFormat == PIXELFORMAT_AL_88) {
-			return PIXELFORMAT_COLOR_FORMAT_8_TO_16_MAP.at(requestedEnumPixelFormat);
+			return PIXELFORMAT_COLOR_FORMAT_8_TO_88_MAP.at(requestedEnumPixelFormat);
 		}
-		return PIXELFORMAT_COLOR_FORMAT_8_TO_32_MAP.at(requestedEnumPixelFormat); // 8-bit
+		return PIXELFORMAT_COLOR_FORMAT_8_TO_8888_MAP.at(requestedEnumPixelFormat);
 	}
 
 	M4Image::COLOR_FORMAT ImageInfo::GetRequestedColorFormat() const {
@@ -59,23 +57,23 @@ namespace gfx_tools {
 	}
 
 	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_MAP = {
-		{PIXELFORMAT_ARGB_8888, M4Image::COLOR_FORMAT::BGRA32},
-		{PIXELFORMAT_XRGB_8888, M4Image::COLOR_FORMAT::BGRX32},
-		{PIXELFORMAT_RGB_888, M4Image::COLOR_FORMAT::BGR24},
-		{PIXELFORMAT_AL_88, M4Image::COLOR_FORMAT::LA16},
-		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::L8},
-		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::L8}
+		{PIXELFORMAT_ARGB_8888, M4Image::COLOR_FORMAT::BGRA},
+		{PIXELFORMAT_XRGB_8888, M4Image::COLOR_FORMAT::BGRX},
+		{PIXELFORMAT_RGB_888, M4Image::COLOR_FORMAT::BGR},
+		{PIXELFORMAT_AL_88, M4Image::COLOR_FORMAT::LA},
+		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::L},
+		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::L}
 	};
 
 	// input is assumed to be luminance for these conversions
-	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_8_TO_16_MAP = {
-		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::AL16}, // L -> L(A)
-		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::LA16} // L -> (L)A
+	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_8_TO_88_MAP = {
+		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::AL}, // L -> L(A)
+		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::LA} // L -> (L)A
 	};
 
-	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_8_TO_32_MAP = {
-		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::XXXL32}, // L -> BGR(A)
-		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::BGRA32} // L -> (BGR)A
+	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_8_TO_8888_MAP = {
+		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::XXXL}, // L -> BGR(A)
+		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::BGRA} // L -> (BGR)A
 	};
 
 	void ValidatedImageInfo::MakePowerOfTwo(DIMENSION &dimension, bool reserved) {

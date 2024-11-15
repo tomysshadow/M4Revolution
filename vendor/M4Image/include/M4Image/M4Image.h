@@ -68,21 +68,22 @@ class M4Image {
         unsigned char channels[4] = {};
     };
 
+    // note: this is expressed as platform-independent byte arrays, not packed pixels
     enum struct COLOR_FORMAT {
-        RGBA32 = 0,
-        RGBX32,
-        BGRA32,
-        BGRX32,
-        RGB24,
-        BGR24,
-        LA16,
-        AL16,
-        A8,
-        L8,
+        RGBA = 0,
+        RGBX,
+        BGRA,
+        BGRX,
+        RGB,
+        BGR,
+        LA,
+        AL,
+        A,
+        L,
 
         // these colour formats are mostly for internal use (you're free to use them, though)
-        XXXL32 = 16000,
-        XXLA32
+        XXXL = 16000,
+        XXLA
     };
 
     M4IMAGE_API static Allocator allocator;
@@ -99,7 +100,7 @@ class M4Image {
         bool* premultipliedPointer = 0
     );
 
-    M4IMAGE_API M4Image(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* imagePointer = 0);
+    M4IMAGE_API M4Image(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA, unsigned char* imagePointer = 0);
     M4IMAGE_API M4Image(int width, int height);
     M4IMAGE_API ~M4Image();
     M4IMAGE_API void M4IMAGE_CALL blit(const M4Image &m4Image, bool linear = false, bool premultiplied = false);
@@ -110,13 +111,13 @@ class M4Image {
     M4IMAGE_API unsigned char* M4IMAGE_CALL acquire();
 
     private:
-    void M4IMAGE_CALL create(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32, unsigned char* imagePointer = 0);
+    void M4IMAGE_CALL create(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA, unsigned char* imagePointer = 0);
     void M4IMAGE_CALL destroy();
 
     int width = 0;
     int height = 0;
     size_t stride = 0;
-    COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA32;
+    COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA;
     unsigned char* imagePointer = 0;
     bool owner = false;
 };
