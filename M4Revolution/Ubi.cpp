@@ -137,7 +137,7 @@ namespace Ubi {
 		}
 
 		namespace RLE {
-			SLICE_MAP createSliceMap(std::istream &inputStream, std::streamsize size) {
+			void appendToSliceMap(std::istream &inputStream, std::streamsize size, SLICE_MAP &sliceMap) {
 				std::optional<HeaderReader> headerReaderOptional = std::nullopt;
 				readFileHeader(inputStream, headerReaderOptional, size);
 
@@ -146,7 +146,6 @@ namespace Ubi {
 				ROW sliceRow = 0;
 				COL sliceCol = 0;
 
-				SLICE_MAP sliceMap = {};
 				SLICE_MAP::iterator sliceMapIterator = {};
 
 				uint32_t waterRLERegions = 0;
@@ -209,7 +208,6 @@ namespace Ubi {
 						}
 					}
 				}
-				return sliceMap;
 			}
 		}
 
@@ -1362,6 +1360,9 @@ namespace Ubi {
 		};
 
 		File::POINTER layerFilePointer = 0;
+		std::streampos maskFileSystemPosition = 0;
+		Binary::RLE::FACE_STR_MAP::const_iterator fileFaceStrMapIterator = {};
+		Binary::RLE::MASK_MAP::iterator waterMaskMapIterator = {};
 
 		for (
 			Binary::RLE::LAYER_MAP::iterator layerMapIterator = layerMap.begin();
@@ -1394,7 +1395,7 @@ namespace Ubi {
 						continue;
 					}
 
-					std::streampos maskFileSystemPosition = (std::streampos)fileSystemPosition + (std::streampos)layerFilePointer->position;
+					maskFileSystemPosition = (std::streampos)fileSystemPosition + (std::streampos)layerFilePointer->position;
 					inputStream.seekg(maskFileSystemPosition);
 
 					BigFile maskBigFile(inputStream);
@@ -1412,14 +1413,21 @@ namespace Ubi {
 							continue;
 						}
 
-						Binary::RLE::FACE_STR_MAP::const_iterator fileFaceStrMapIterator = Binary::RLE::FILE_FACE_STR_MAP.find(maskFile.nameOptional.value());
+						fileFaceStrMapIterator = Binary::RLE::FILE_FACE_STR_MAP.find(maskFile.nameOptional.value());
 
 						if (fileFaceStrMapIterator == Binary::RLE::FILE_FACE_STR_MAP.end()) {
 							continue;
 						}
 
 						inputStream.seekg(maskFileSystemPosition + (std::streampos)maskFile.position);
-						waterMaskMap.insert({ fileFaceStrMapIterator->second, Binary::RLE::createSliceMap(inputStream, maskFile.size) });
+
+						waterMaskMapIterator = waterMaskMap.find(fileFaceStrMapIterator->second);
+
+						if (waterMaskMapIterator == waterMaskMap.end()) {
+							waterMaskMapIterator = waterMaskMap.insert({ fileFaceStrMapIterator->second, {} }).first;
+						}
+
+						Binary::RLE::appendToSliceMap(inputStream, maskFile.size, waterMaskMapIterator->second);
 					}
 				}
 			}

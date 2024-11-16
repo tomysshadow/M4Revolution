@@ -113,7 +113,7 @@ namespace Ubi {
 			typedef std::map<std::string, Layer> LAYER_MAP;
 			typedef std::shared_ptr<LAYER_MAP> LAYER_MAP_POINTER;
 
-			SLICE_MAP createSliceMap(std::istream &inputStream, std::streamsize size);
+			void appendToSliceMap(std::istream &inputStream, std::streamsize size, SLICE_MAP &sliceMap);
 		};
 
 		// this is the abstract class on which all resources are based
