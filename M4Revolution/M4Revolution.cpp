@@ -193,11 +193,7 @@ void M4Revolution::convertFile(
 	Ubi::BigFile::File &file,
 	Work::Convert::FileWorkCallback fileWorkCallback
 ) {
-	Work::Convert* convertPointer = file.rgba
-		? new Work::Convert(file, configuration, context, compressionOptionsRGBA, compressionOptionsRGBA, compressionOptionsRGBA)
-		: new Work::Convert(file, configuration, context, compressionOptionsDXT1, compressionOptionsDXT5, compressionOptionsRGBA);
-
-	Work::Convert &convert = *convertPointer;
+	Work::Convert &convert = *new Work::Convert(configuration, context, compressionOptionsDXT1, compressionOptionsDXT5, compressionOptionsRGBA, file);
 
 	Work::Data::POINTER &dataPointer = convert.dataPointer;
 	dataPointer = Work::Data::POINTER(new unsigned char[file.size]);
@@ -443,7 +439,6 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	#endif
 
 	const nvtt::ResizeFilter RESIZE_FILTER = nvtt::ResizeFilter_Triangle;
-	const int DEPTH_SQUARE = 1;
 	const nvtt::Context &CONTEXT = convert.context;
 	const int MIPMAP_COUNT = 1;
 
@@ -460,19 +455,7 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	surface.resize(maxExtent, ROUND_MODE, RESIZE_FILTER);
 	#endif
 
-	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = 
-		(
-			surface.width() == surface.height()
-			&& surface.depth() == DEPTH_SQUARE
-		)
-
-		? (
-			hasAlpha
-			? convert.compressionOptionsAlpha
-			: convert.compressionOptions
-		)
-
-		: convert.compressionOptionsOblong;
+	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = getCompressionOptions(convert, surface, hasAlpha);
 
 	nvtt::OutputOptions outputOptions = {};
 	outputOptions.setContainer(nvtt::Container_DDS);
@@ -874,6 +857,22 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 			fileTaskPointerQueue.pop();
 		}
 	}
+}
+
+const nvtt::CompressionOptions &M4Revolution::getCompressionOptions(const Work::Convert &convert, const nvtt::Surface &surface, bool hasAlpha) {
+	// immediately use RGBA if the file forces us to
+	if (convert.file.rgba) {
+		return convert.compressionOptionsRGBA;
+	}
+
+	// ares assumes all DXT textures are square
+	// so if they are not, we must use RGBA instead
+	const int DEPTH_SQUARE = 1;
+
+	if (surface.width() != surface.height() || surface.depth() != DEPTH_SQUARE) {
+		return convert.compressionOptionsRGBA;
+	}
+	return hasAlpha ? convert.compressionOptionsDXT5 : convert.compressionOptionsDXT1;
 }
 
 M4Revolution::M4Revolution(

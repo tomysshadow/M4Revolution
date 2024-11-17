@@ -130,6 +130,7 @@ class M4Revolution {
 	static void outputData(std::ostream &outputStream, Work::FileTask &fileTask, bool &yield);
 	static void outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
 	static void outputThread(Work::Tasks &tasks, bool &yield);
+	static const nvtt::CompressionOptions &getCompressionOptions(const Work::Convert &convert, const nvtt::Surface &surface, bool hasAlpha);
 
 	public:
 	M4Revolution(

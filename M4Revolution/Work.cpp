@@ -207,19 +207,19 @@ namespace Work {
 	}
 
 	Convert::Convert(
-		Ubi::BigFile::File &file,
-		Configuration &configuration,
-		nvtt::Context &context,
-		nvtt::CompressionOptions &compressionOptions,
-		nvtt::CompressionOptions &compressionOptionsAlpha,
-		nvtt::CompressionOptions &compressionOptionsOblong
+		const Configuration &configuration,
+		const nvtt::Context &context,
+		const nvtt::CompressionOptions &compressionOptionsDXT1,
+		const nvtt::CompressionOptions &compressionOptionsDXT5,
+		const nvtt::CompressionOptions &compressionOptionsRGBA,
+		Ubi::BigFile::File &file
 	)
-		: file(file),
-		configuration(configuration),
+		: configuration(configuration),
 		context(context),
-		compressionOptions(compressionOptions),
-		compressionOptionsAlpha(compressionOptionsAlpha),
-		compressionOptionsOblong(compressionOptionsOblong) {
+		compressionOptionsDXT1(compressionOptionsDXT1),
+		compressionOptionsDXT5(compressionOptionsDXT5),
+		compressionOptionsRGBA(compressionOptionsRGBA),
+		file(file) {
 	}
 
 	const char* Output::FILE_NAME = "~M4R.tmp"; // must be an 8.3 filename

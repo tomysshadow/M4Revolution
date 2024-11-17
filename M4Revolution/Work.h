@@ -190,25 +190,25 @@ namespace Work {
 
 		FileWorkCallback fileWorkCallback = 0;
 
+		const Configuration &configuration;
+
+		const nvtt::Context &context;
+		const nvtt::CompressionOptions &compressionOptionsDXT1;
+		const nvtt::CompressionOptions &compressionOptionsDXT5;
+		const nvtt::CompressionOptions &compressionOptionsRGBA;
+
 		Ubi::BigFile::File &file;
-
-		Configuration &configuration;
-
-		nvtt::Context &context;
-		nvtt::CompressionOptions &compressionOptions;
-		nvtt::CompressionOptions &compressionOptionsAlpha;
-		nvtt::CompressionOptions &compressionOptionsOblong;
 
 		FileTask::POINTER fileTaskPointer = 0;
 		Data::POINTER dataPointer = 0;
 
 		Convert(
-			Ubi::BigFile::File &file,
-			Configuration &configuration,
-			nvtt::Context &context,
-			nvtt::CompressionOptions &compressionOptions,
-			nvtt::CompressionOptions &compressionOptionsAlpha,
-			nvtt::CompressionOptions &compressionOptionsOblong
+			const Configuration &configuration,
+			const nvtt::Context &context,
+			const nvtt::CompressionOptions &compressionOptionsDXT1,
+			const nvtt::CompressionOptions &compressionOptionsDXT5,
+			const nvtt::CompressionOptions &compressionOptionsRGBA,
+			Ubi::BigFile::File &file
 		);
 	};
 
