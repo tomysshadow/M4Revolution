@@ -244,16 +244,24 @@ namespace Ubi {
 				RLE::Layer &layer = layerMapIterator->second;
 				layer.textureBoxNameOptional = LOADER_POINTER->nameOptional;
 
-				const size_t FIELDS_SIZE = 17;
+				const size_t FIELDS_SIZE = 4;
 				inputStream.seekg(FIELDS_SIZE, std::ios::cur);
+
+				bool &isZBox = layer.isZBox;
+				const size_t IS_Z_BOX_SIZE = sizeof(isZBox);
+
+				readStreamSafe(inputStream, &isZBox, IS_Z_BOX_SIZE);
+
+				const size_t FIELDS_SIZE2 = 12;
+				inputStream.seekg(FIELDS_SIZE2, std::ios::cur);
 
 				bool &isLayerMask = layer.isLayerMask;
 				const size_t IS_LAYER_MASK_SIZE = sizeof(isLayerMask);
 
 				readStreamSafe(inputStream, &isLayerMask, IS_LAYER_MASK_SIZE);
 
-				const size_t FIELDS_SIZE2 = 4;
-				inputStream.seekg(FIELDS_SIZE2, std::ios::cur);
+				const size_t FIELDS_SIZE3 = 4;
+				inputStream.seekg(FIELDS_SIZE3, std::ios::cur);
 			} else {
 				const size_t FIELDS_SIZE = 22;
 				inputStream.seekg(FIELDS_SIZE, std::ios::cur);
@@ -732,9 +740,9 @@ namespace Ubi {
 		type = nameTypeExtensionMapIterator->second.type;
 	
 		if (layerFileOptional.has_value() && (type == TYPE::IMAGE_STANDARD || type == TYPE::IMAGE_ZAP)) {
-			const File &LAYER_FILE = layerFileOptional.value();
+			const Binary::RLE::Layer &LAYER = layerFileOptional.value().layerMapIterator->second;
 
-			if (LAYER_FILE.layerMapIterator->second.isLayerMask) {
+			if (LAYER.isLayerMask) {
 				#ifdef GREYSCALE_ENABLED
 				//greyScale = true;
 				#else
@@ -744,7 +752,7 @@ namespace Ubi {
 			}
 
 			#ifdef RGBA_ENABLED
-			if (isWaterSlice(NAME, LAYER_FILE.layerMapIterator->second.waterMaskMap)) {
+			if (!LAYER.isZBox && isWaterSlice(NAME, LAYER.waterMaskMap)) {
 				rgba = true;
 			}
 			#endif
