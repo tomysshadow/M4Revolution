@@ -211,13 +211,15 @@ namespace Work {
 		Configuration &configuration,
 		nvtt::Context &context,
 		nvtt::CompressionOptions &compressionOptions,
-		nvtt::CompressionOptions &compressionOptionsAlpha
+		nvtt::CompressionOptions &compressionOptionsAlpha,
+		nvtt::CompressionOptions &compressionOptionsOblong
 	)
 		: file(file),
 		configuration(configuration),
 		context(context),
 		compressionOptions(compressionOptions),
-		compressionOptionsAlpha(compressionOptionsAlpha) {
+		compressionOptionsAlpha(compressionOptionsAlpha),
+		compressionOptionsOblong(compressionOptionsOblong) {
 	}
 
 	const char* Output::FILE_NAME = "~M4R.tmp"; // must be an 8.3 filename

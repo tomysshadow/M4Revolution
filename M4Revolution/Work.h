@@ -197,6 +197,7 @@ namespace Work {
 		nvtt::Context &context;
 		nvtt::CompressionOptions &compressionOptions;
 		nvtt::CompressionOptions &compressionOptionsAlpha;
+		nvtt::CompressionOptions &compressionOptionsOblong;
 
 		FileTask::POINTER fileTaskPointer = 0;
 		Data::POINTER dataPointer = 0;
@@ -206,7 +207,8 @@ namespace Work {
 			Configuration &configuration,
 			nvtt::Context &context,
 			nvtt::CompressionOptions &compressionOptions,
-			nvtt::CompressionOptions &compressionOptionsAlpha
+			nvtt::CompressionOptions &compressionOptionsAlpha,
+			nvtt::CompressionOptions &compressionOptionsOblong
 		);
 	};
 

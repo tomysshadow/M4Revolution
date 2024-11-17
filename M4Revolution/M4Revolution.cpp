@@ -194,8 +194,8 @@ void M4Revolution::convertFile(
 	Work::Convert::FileWorkCallback fileWorkCallback
 ) {
 	Work::Convert* convertPointer = file.rgba
-		? new Work::Convert(file, configuration, context, compressionOptionsRGBA, compressionOptionsRGBA)
-		: new Work::Convert(file, configuration, context, compressionOptionsDXT1, compressionOptionsDXT5);
+		? new Work::Convert(file, configuration, context, compressionOptionsRGBA, compressionOptionsRGBA, compressionOptionsRGBA)
+		: new Work::Convert(file, configuration, context, compressionOptionsDXT1, compressionOptionsDXT5, compressionOptionsRGBA);
 
 	Work::Convert &convert = *convertPointer;
 
@@ -458,6 +458,18 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	surface.resize(maxExtent, ROUND_MODE, RESIZE_FILTER);
 	#endif
 
+	const nvtt::Context &CONTEXT = convert.context;
+
+	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = surface.width() == surface.height()
+
+		? (
+			hasAlpha
+			? convert.compressionOptionsAlpha
+			: convert.compressionOptions
+		)
+
+		: convert.compressionOptionsOblong;
+
 	nvtt::OutputOptions outputOptions = {};
 	outputOptions.setContainer(nvtt::Container_DDS);
 
@@ -469,15 +481,12 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	ErrorHandler errorHandler;
 	outputOptions.setErrorHandler(&errorHandler);
 
-	nvtt::Context &context = convert.context;
-	nvtt::CompressionOptions &compressionOptions = hasAlpha ? convert.compressionOptionsAlpha : convert.compressionOptions;
-
-	if (!context.outputHeader(surface, MIPMAP_COUNT, compressionOptions, outputOptions)) {
+	if (!CONTEXT.outputHeader(surface, MIPMAP_COUNT, COMPRESSION_OPTIONS, outputOptions)) {
 		throw std::runtime_error("Failed to Output Context Header");
 	}
 
 	for (int i = 0; i < MIPMAP_COUNT; i++) {
-		if (!context.compress(surface, 0, i, compressionOptions, outputOptions) || !errorHandler.result) {
+		if (!CONTEXT.compress(surface, 0, i, COMPRESSION_OPTIONS, outputOptions) || !errorHandler.result) {
 			throw std::runtime_error("Failed to Compress Context");
 		}
 	}
