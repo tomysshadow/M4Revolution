@@ -43,6 +43,17 @@ class M4Revolution {
 		void finishing();
 	};
 
+	class CompressionOptions {
+		private:
+		nvtt::CompressionOptions rgba = {};
+		nvtt::CompressionOptions dxt1 = {};
+		nvtt::CompressionOptions dxt5 = {};
+
+		public:
+		CompressionOptions();
+		const nvtt::CompressionOptions &get(const Ubi::BigFile::File &file, const nvtt::Surface &surface, bool hasAlpha) const;
+	};
+
 	struct OutputHandler : public nvtt::OutputHandler {
 		OutputHandler(Work::FileTask &fileTask);
 		OutputHandler(const OutputHandler &outputHandler) = delete;
@@ -65,9 +76,6 @@ class M4Revolution {
 	bool logFileNames = false;
 
 	nvtt::Context context = {};
-	nvtt::CompressionOptions compressionOptionsDXT1 = {};
-	nvtt::CompressionOptions compressionOptionsDXT5 = {};
-	nvtt::CompressionOptions compressionOptionsRGBA = {};
 
 	#ifdef MULTITHREADED
 	PTP_POOL pool = NULL;
@@ -112,12 +120,12 @@ class M4Revolution {
 
 	void fixLoading(std::istream &inputStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
-	static void replaceM4Thor(std::fstream &fileStream, const std::string &name);
+	static const CompressionOptions COMPRESSION_OPTIONS;
 
+	static void replaceM4Thor(std::fstream &fileStream, const std::string &name);
 	#ifdef WINDOWS
 	static void replaceGfxTools();
 	#endif
-
 	static Ubi::BigFile::File createInputFile(std::istream &inputStream);
 	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha);
 	static void convertImageStandardWorkCallback(Work::Convert* convertPointer);
@@ -130,7 +138,6 @@ class M4Revolution {
 	static void outputData(std::ostream &outputStream, Work::FileTask &fileTask, bool &yield);
 	static void outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
 	static void outputThread(Work::Tasks &tasks, bool &yield);
-	static const nvtt::CompressionOptions &getCompressionOptions(const Work::Convert &convert, const nvtt::Surface &surface, bool hasAlpha);
 
 	public:
 	M4Revolution(

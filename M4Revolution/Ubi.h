@@ -47,7 +47,7 @@ namespace Ubi {
 		};
 
 		/*
-		for water slices, DXT5 is not supported and an uncompressed format must be used instead
+		for water slices, DXT is not supported and RGBA must be used instead
 		in order to detect which images are water slices, we need to read the RLE files
 		which are pointed to by the Water files (typically named water.bin)
 		*/

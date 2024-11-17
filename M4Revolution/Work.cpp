@@ -209,16 +209,10 @@ namespace Work {
 	Convert::Convert(
 		const Configuration &configuration,
 		const nvtt::Context &context,
-		const nvtt::CompressionOptions &compressionOptionsDXT1,
-		const nvtt::CompressionOptions &compressionOptionsDXT5,
-		const nvtt::CompressionOptions &compressionOptionsRGBA,
 		Ubi::BigFile::File &file
 	)
-		: configuration(configuration),
-		context(context),
-		compressionOptionsDXT1(compressionOptionsDXT1),
-		compressionOptionsDXT5(compressionOptionsDXT5),
-		compressionOptionsRGBA(compressionOptionsRGBA),
+		: CONFIGURATION(configuration),
+		CONTEXT(context),
 		file(file) {
 	}
 

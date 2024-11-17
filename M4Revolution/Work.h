@@ -190,12 +190,8 @@ namespace Work {
 
 		FileWorkCallback fileWorkCallback = 0;
 
-		const Configuration &configuration;
-
-		const nvtt::Context &context;
-		const nvtt::CompressionOptions &compressionOptionsDXT1;
-		const nvtt::CompressionOptions &compressionOptionsDXT5;
-		const nvtt::CompressionOptions &compressionOptionsRGBA;
+		const Configuration &CONFIGURATION;
+		const nvtt::Context &CONTEXT;
 
 		Ubi::BigFile::File &file;
 
@@ -205,9 +201,6 @@ namespace Work {
 		Convert(
 			const Configuration &configuration,
 			const nvtt::Context &context,
-			const nvtt::CompressionOptions &compressionOptionsDXT1,
-			const nvtt::CompressionOptions &compressionOptionsDXT5,
-			const nvtt::CompressionOptions &compressionOptionsRGBA,
 			Ubi::BigFile::File &file
 		);
 	};

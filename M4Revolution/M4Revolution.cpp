@@ -95,6 +95,33 @@ void M4Revolution::Log::finishing() {
 	}
 }
 
+M4Revolution::CompressionOptions::CompressionOptions() {
+	rgba.setFormat(nvtt::Format_RGBA);
+	rgba.setQuality(nvtt::Quality_Highest);
+
+	dxt1.setFormat(nvtt::Format_DXT1);
+	dxt1.setQuality(nvtt::Quality_Highest);
+
+	dxt5.setFormat(nvtt::Format_DXT5);
+	dxt5.setQuality(nvtt::Quality_Highest);
+}
+
+const nvtt::CompressionOptions &M4Revolution::CompressionOptions::get(const Ubi::BigFile::File &file, const nvtt::Surface &surface, bool hasAlpha) const {
+	// immediately use RGBA if the file forces us to
+	if (file.rgba) {
+		return rgba;
+	}
+
+	// ares assumes all DXT textures are square
+	// so if they are not, we must use RGBA instead
+	const int DEPTH_SQUARE = 1;
+
+	if (surface.width() != surface.height() || surface.depth() != DEPTH_SQUARE) {
+		return rgba;
+	}
+	return hasAlpha ? dxt5 : dxt1;
+}
+
 M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask)
 	: fileTask(fileTask) {
 }
@@ -193,7 +220,7 @@ void M4Revolution::convertFile(
 	Ubi::BigFile::File &file,
 	Work::Convert::FileWorkCallback fileWorkCallback
 ) {
-	Work::Convert &convert = *new Work::Convert(configuration, context, compressionOptionsDXT1, compressionOptionsDXT5, compressionOptionsRGBA, file);
+	Work::Convert &convert = *new Work::Convert(configuration, context, file);
 
 	Work::Data::POINTER &dataPointer = convert.dataPointer;
 	dataPointer = Work::Data::POINTER(new unsigned char[file.size]);
@@ -348,6 +375,8 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 	}
 }
 
+const M4Revolution::CompressionOptions M4Revolution::COMPRESSION_OPTIONS;
+
 void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &name) {
 	const size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
 	const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50, 0x00 };
@@ -420,13 +449,13 @@ Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
 
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha) {
 	/*
-	if (convert.file.greyScale) {
+	if (file.greyScale) {
 		// NTSC Luminance Weights
 		surface.toGreyScale(0.299f, 0.587f, 0.114f, 1.0f);
 	}
 	*/
 
-	const Work::Convert::Configuration &CONFIGURATION = convert.configuration;
+	const Work::Convert::Configuration &CONFIGURATION = convert.CONFIGURATION;
 
 	#ifdef EXTENTS_MAKE_POWER_OF_TWO
 	#ifdef TO_NEXT_POWER_OF_TWO
@@ -439,7 +468,7 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	#endif
 
 	const nvtt::ResizeFilter RESIZE_FILTER = nvtt::ResizeFilter_Triangle;
-	const nvtt::Context &CONTEXT = convert.context;
+	const nvtt::Context &CONTEXT = convert.CONTEXT;
 	const int MIPMAP_COUNT = 1;
 
 	Work::Convert::EXTENT width = clampLongUnsigned(surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
@@ -455,8 +484,10 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	surface.resize(maxExtent, ROUND_MODE, RESIZE_FILTER);
 	#endif
 
+	Ubi::BigFile::File &file = convert.file;
+
 	// must be called here after we've resized the surface
-	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = getCompressionOptions(convert, surface, hasAlpha);
+	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = M4Revolution::COMPRESSION_OPTIONS.get(file, surface, hasAlpha);
 
 	nvtt::OutputOptions outputOptions = {};
 	outputOptions.setContainer(nvtt::Container_DDS);
@@ -479,7 +510,7 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 		}
 	}
 
-	convert.file.size = outputHandler.size;
+	file.size = outputHandler.size;
 
 	// this will wake up the output thread to tell it we have no more data to add, and to move on to the next FileTask
 	fileTask.complete();
@@ -860,22 +891,6 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 	}
 }
 
-const nvtt::CompressionOptions &M4Revolution::getCompressionOptions(const Work::Convert &convert, const nvtt::Surface &surface, bool hasAlpha) {
-	// immediately use RGBA if the file forces us to
-	if (convert.file.rgba) {
-		return convert.compressionOptionsRGBA;
-	}
-
-	// ares assumes all DXT textures are square
-	// so if they are not, we must use RGBA instead
-	const int DEPTH_SQUARE = 1;
-
-	if (surface.width() != surface.height() || surface.depth() != DEPTH_SQUARE) {
-		return convert.compressionOptionsRGBA;
-	}
-	return hasAlpha ? convert.compressionOptionsDXT5 : convert.compressionOptionsDXT1;
-}
-
 M4Revolution::M4Revolution(
 	const std::filesystem::path &path,
 	bool logFileNames,
@@ -889,15 +904,6 @@ M4Revolution::M4Revolution(
 	Work::Output::findInstallPath(path.lexically_normal());
 
 	context.enableCudaAcceleration(!disableHardwareAcceleration);
-
-	compressionOptionsDXT1.setFormat(nvtt::Format_DXT1);
-	compressionOptionsDXT1.setQuality(nvtt::Quality_Highest);
-
-	compressionOptionsDXT5.setFormat(nvtt::Format_DXT5);
-	compressionOptionsDXT5.setQuality(nvtt::Quality_Highest);
-
-	compressionOptionsRGBA.setFormat(nvtt::Format_RGBA);
-	compressionOptionsRGBA.setQuality(nvtt::Quality_Highest);
 
 	#ifdef MULTITHREADED
 	pool = CreateThreadpool(NULL);
