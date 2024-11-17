@@ -332,7 +332,7 @@ namespace Ubi {
 							textureBoxMapIterator = textureBoxMap.insert({ TEXTURE_BOX_NAME, {} }).first;
 						}
 
-						createMaskPathSet(inputStream, textureBoxMapIterator->second);
+						appendToMaskPathSet(inputStream, textureBoxMapIterator->second);
 					}
 					return;
 				}
@@ -534,11 +534,7 @@ namespace Ubi {
 			return 0;
 		}
 
-		Resource::POINTER createLayerMap(std::istream &inputStream, RLE::LAYER_MAP &layerMap, std::streamsize size) {
-			MAKE_SCOPE_EXIT(layerFileOptionalScopeExit) {
-				layerMap = {};
-			};
-
+		Resource::POINTER appendToLayerMap(std::istream &inputStream, RLE::LAYER_MAP &layerMap, std::streamsize size) {
 			std::optional<HeaderReader> headerReaderOptional = std::nullopt;
 			Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
 			Resource::POINTER resourcePointer = 0;
@@ -547,18 +543,10 @@ namespace Ubi {
 				case TextureBox::ID:
 				resourcePointer = std::make_shared<TextureBox>(loaderPointer, inputStream, layerMap);
 			}
-
-			if (resourcePointer) {
-				layerFileOptionalScopeExit.dismiss();
-			}
 			return resourcePointer;
 		}
 
-		Resource::POINTER createTextureBoxMap(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap, std::streamsize size) {
-			MAKE_SCOPE_EXIT(textureBoxMapScopeExit) {
-				textureBoxMap = {};
-			};
-
+		Resource::POINTER appendToTextureBoxMap(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap, std::streamsize size) {
 			std::optional<HeaderReader> headerReaderOptional = std::nullopt;
 			Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
 			Resource::POINTER resourcePointer = 0;
@@ -567,18 +555,10 @@ namespace Ubi {
 				case Water::ID:
 				resourcePointer = std::make_shared<Water>(loaderPointer, inputStream, textureBoxMap);
 			}
-
-			if (resourcePointer) {
-				textureBoxMapScopeExit.dismiss();
-			}
 			return resourcePointer;
 		}
 
-		Resource::POINTER createMaskPathSet(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size) {
-			MAKE_SCOPE_EXIT(maskPathSetScopeExit) {
-				maskPathSet = {};
-			};
-
+		Resource::POINTER appendToMaskPathSet(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size) {
 			std::optional<HeaderReader> headerReaderOptional = std::nullopt;
 			Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
 			Resource::POINTER resourcePointer = 0;
@@ -586,10 +566,6 @@ namespace Ubi {
 			switch (loaderPointer->id) {
 				case StateData::ID:
 				resourcePointer = std::make_shared<StateData>(loaderPointer, inputStream, maskPathSet);
-			}
-
-			if (resourcePointer) {
-				maskPathSetScopeExit.dismiss();
 			}
 			return resourcePointer;
 		}
@@ -668,7 +644,7 @@ namespace Ubi {
 		writeStreamSafe(outputStream, &position, POSITION_SIZE);
 	}
 
-	Binary::Resource::POINTER BigFile::File::createLayerMap(
+	Binary::Resource::POINTER BigFile::File::appendToLayerMap(
 		std::istream &inputStream,
 		SIZE fileSystemPosition,
 		Binary::RLE::LAYER_MAP &layerMap
@@ -678,7 +654,7 @@ namespace Ubi {
 
 		try {
 			inputStream.seekg(fileSystemPosition + (std::streampos)this->position);
-			resourcePointer = Binary::createLayerMap(inputStream, layerMap, this->size);
+			resourcePointer = Binary::appendToLayerMap(inputStream, layerMap, this->size);
 		} catch (...) {
 			// fail silently
 		}
@@ -697,7 +673,7 @@ namespace Ubi {
 	
 		try {
 			inputStream.seekg(fileSystemPosition + (std::streampos)this->position);
-			resourcePointer = Binary::createTextureBoxMap(inputStream, textureBoxMap, this->size);
+			resourcePointer = Binary::appendToTextureBoxMap(inputStream, textureBoxMap, this->size);
 		} catch (...) {
 			// fail silently
 		}
@@ -818,6 +794,7 @@ namespace Ubi {
 		}
 
 		const Binary::RLE::SLICE_MAP &SLICE_MAP = waterMaskMapIterator->second;
+
 		Binary::RLE::SLICE_MAP::const_iterator sliceMapIterator = SLICE_MAP.find(row);
 
 		if (sliceMapIterator == SLICE_MAP.end()) {
@@ -913,19 +890,19 @@ namespace Ubi {
 		return find(path, path.directoryNameVector.begin());
 	}
 
-	void BigFile::Directory::createLayerMap(
+	void BigFile::Directory::appendToLayerMap(
 		std::istream &inputStream,
 		File::SIZE fileSystemPosition,
 		Binary::RLE::LAYER_MAP &layerMap
 	) const {
-		createLayerMap(inputStream, fileSystemPosition, layerMap, binaryFilePointerVector);
+		appendToLayerMap(inputStream, fileSystemPosition, layerMap, binaryFilePointerVector);
 
 		for (
 			VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
 			directoryVectorIterator != directoryVector.end();
 			directoryVectorIterator++
 		) {
-			createLayerMap(inputStream, fileSystemPosition, layerMap, directoryVectorIterator->binaryFilePointerVector);
+			appendToLayerMap(inputStream, fileSystemPosition, layerMap, directoryVectorIterator->binaryFilePointerVector);
 		}
 	}
 
@@ -1006,12 +983,14 @@ namespace Ubi {
 				filePointerVector.push_back(filePointer);
 			}
 
+			const Ubi::BigFile::File::SIZE &POSITION = FILE.position;
+
 			// are there any other files at this position?
-			filePointerSetMapIterator = filePointerSetMap.find(FILE.position);
+			filePointerSetMapIterator = filePointerSetMap.find(POSITION);
 
 			// if not, then create a new set
 			if (filePointerSetMapIterator == filePointerSetMap.end()) {
-				filePointerSetMapIterator = filePointerSetMap.insert({ FILE.position, {} }).first;
+				filePointerSetMapIterator = filePointerSetMap.insert({ POSITION, {} }).first;
 			}
 
 			// add this file to the set
@@ -1089,9 +1068,7 @@ namespace Ubi {
 				filePointerVector.push_back(filePointer);
 
 				// is this the file we are looking for?
-				const std::optional<std::string> &NAME_OPTIONAL = filePointer->nameOptional;
-
-				if (path.fileName == NAME_OPTIONAL) {
+				if (filePointer->nameOptional == path.fileName) {
 					// erase all but the last element
 					// (there should always be at least one element in the vector at this point)
 					filePointerVector.erase(filePointerVector.begin(), filePointerVector.end() - 1);
@@ -1142,12 +1119,8 @@ namespace Ubi {
 			filePointer = *filePointerVectorIterator;
 
 			// is this the file we are looking for?
-			if (filePointer) {
-				const std::optional<std::string> &NAME_OPTIONAL = filePointer->nameOptional;
-
-				if (path.fileName == NAME_OPTIONAL) {
-					return filePointer;
-				}
+			if (filePointer && filePointer->nameOptional == path.fileName) {
+				return filePointer;
 			}
 		}
 		return 0;
@@ -1193,7 +1166,7 @@ namespace Ubi {
 		return SETS_SET.find(nameOptional.value()) != SETS_SET.end();
 	}
 
-	void BigFile::Directory::createLayerMap(
+	void BigFile::Directory::appendToLayerMap(
 		std::istream &inputStream,
 		File::SIZE fileSystemPosition,
 		Binary::RLE::LAYER_MAP &layerMap,
@@ -1204,7 +1177,7 @@ namespace Ubi {
 			binaryFilePointerVectorIterator != binaryFilePointerVector.end();
 			binaryFilePointerVectorIterator++
 		) {
-			(*binaryFilePointerVectorIterator)->createLayerMap(inputStream, fileSystemPosition, layerMap);
+			(*binaryFilePointerVectorIterator)->appendToLayerMap(inputStream, fileSystemPosition, layerMap);
 		}
 	}
 
@@ -1336,7 +1309,7 @@ namespace Ubi {
 			cubeVectorIteratorsIterator != cubeVectorIterators.end();
 			cubeVectorIteratorsIterator++
 		) {
-			(*cubeVectorIteratorsIterator)->createLayerMap(inputStream, fileSystemPosition, layerMap);
+			(*cubeVectorIteratorsIterator)->appendToLayerMap(inputStream, fileSystemPosition, layerMap);
 		}
 
 		if (layerMap.empty()) {

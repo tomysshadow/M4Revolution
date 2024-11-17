@@ -254,9 +254,9 @@ namespace Ubi {
 		void writeFileHeader(std::ostream &outputStream, std::optional<HeaderWriter> &headerWriterOptional, std::streamsize size = -1);
 		Resource::Loader::POINTER readFileLoader(std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size = -1);
 		Resource::POINTER createResourcePointer(std::istream &inputStream, std::streamsize size = -1);
-		Resource::POINTER createLayerMap(std::istream &inputStream, RLE::LAYER_MAP &layerMap, std::streamsize size = -1);
-		Resource::POINTER createTextureBoxMap(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap, std::streamsize size = -1);
-		Resource::POINTER createMaskPathSet(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size = -1);
+		Resource::POINTER appendToLayerMap(std::istream &inputStream, RLE::LAYER_MAP &layerMap, std::streamsize size = -1);
+		Resource::POINTER appendToTextureBoxMap(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap, std::streamsize size = -1);
+		Resource::POINTER appendToMaskPathSet(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size = -1);
 	};
 
 	struct BigFile {
@@ -326,7 +326,7 @@ namespace Ubi {
 			File(SIZE inputFileSize);
 			void write(std::ostream &outputStream) const;
 
-			Binary::Resource::POINTER createLayerMap(
+			Binary::Resource::POINTER appendToLayerMap(
 				std::istream &inputStream,
 				SIZE fileSystemPosition,
 				Binary::RLE::LAYER_MAP &layerMap
@@ -396,7 +396,7 @@ namespace Ubi {
 			void write(std::ostream &outputStream) const;
 			File::POINTER find(const Path &path) const;
 
-			void createLayerMap(
+			void appendToLayerMap(
 				std::istream &inputStream,
 				File::SIZE fileSystemPosition,
 				Binary::RLE::LAYER_MAP &layerMap
@@ -423,7 +423,7 @@ namespace Ubi {
 			bool isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const;
 			bool isSet(bool bftex, const std::optional<File> &layerFileOptional) const;
 
-			void createLayerMap(
+			void appendToLayerMap(
 				std::istream &inputStream,
 				File::SIZE fileSystemPosition,
 				Binary::RLE::LAYER_MAP &layerMap,
