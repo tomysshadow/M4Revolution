@@ -107,7 +107,6 @@ namespace Ubi {
 				std::optional<std::string> textureBoxNameOptional = std::nullopt;
 				SETS_SET setsSet = {};
 				bool isLayerMask = false;
-				bool isZBox = false;
 				MASK_MAP waterMaskMap = {};
 			};
 
