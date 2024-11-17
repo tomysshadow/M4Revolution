@@ -443,6 +443,8 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	#endif
 
 	const nvtt::ResizeFilter RESIZE_FILTER = nvtt::ResizeFilter_Triangle;
+	const int DEPTH_SQUARE = 1;
+	const nvtt::Context &CONTEXT = convert.context;
 	const int MIPMAP_COUNT = 1;
 
 	Work::Convert::EXTENT width = clampLongUnsigned(surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
@@ -458,9 +460,11 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	surface.resize(maxExtent, ROUND_MODE, RESIZE_FILTER);
 	#endif
 
-	const nvtt::Context &CONTEXT = convert.context;
-
-	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = surface.width() == surface.height()
+	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = 
+		(
+			surface.width() == surface.height()
+			&& surface.depth() == DEPTH_SQUARE
+		)
 
 		? (
 			hasAlpha
