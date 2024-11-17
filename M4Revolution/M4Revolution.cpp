@@ -448,13 +448,6 @@ Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
 }
 
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha) {
-	/*
-	if (file.greyScale) {
-		// NTSC Luminance Weights
-		surface.toGreyScale(0.299f, 0.587f, 0.114f, 1.0f);
-	}
-	*/
-
 	const Work::Convert::Configuration &CONFIGURATION = convert.CONFIGURATION;
 
 	#ifdef EXTENTS_MAKE_POWER_OF_TWO
@@ -486,7 +479,14 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 
 	Ubi::BigFile::File &file = convert.file;
 
-	// must be called here after we've resized the surface
+	/*
+	if (file.greyScale) {
+		// NTSC Luminance Weights
+		surface.toGreyScale(0.299f, 0.587f, 0.114f, 1.0f);
+	}
+	*/
+
+	// must be called here after we've modified the surface
 	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = M4Revolution::COMPRESSION_OPTIONS.get(file, surface, hasAlpha);
 
 	nvtt::OutputOptions outputOptions = {};
