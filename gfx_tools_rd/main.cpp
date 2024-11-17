@@ -70,8 +70,9 @@ namespace gfx_tools {
 				M4Image::Color32 &inputColor = *inputColorPointer;
 				M4Image::Color16 &outputColor = *outputColorPointer;
 
-				outputColor.channels[OUTPUT_CHANNEL_DU] = inputColor.channels[INPUT_CHANNEL_UV] - inputUColorPointer->channels[INPUT_CHANNEL_UV];
+				// DU is done last so input and output buffer may be the same
 				outputColor.channels[OUTPUT_CHANNEL_DV] = inputColor.channels[INPUT_CHANNEL_UV] - inputVColorPointer++->channels[INPUT_CHANNEL_UV];
+				outputColor.channels[OUTPUT_CHANNEL_DU] = inputColor.channels[INPUT_CHANNEL_UV] - inputUColorPointer->channels[INPUT_CHANNEL_UV];
 
 				outputColorFunction();
 				inputColorPointer++;
