@@ -455,6 +455,7 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	surface.resize(maxExtent, ROUND_MODE, RESIZE_FILTER);
 	#endif
 
+	// must be called here after we've resized the surface
 	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = getCompressionOptions(convert, surface, hasAlpha);
 
 	nvtt::OutputOptions outputOptions = {};
