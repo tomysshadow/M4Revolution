@@ -112,7 +112,7 @@ const nvtt::CompressionOptions &M4Revolution::CompressionOptions::get(const Ubi:
 		return rgba;
 	}
 
-	// ares assumes all DXT textures are square
+	// ares assumes all DXT textures are square and power of two sized
 	// so if they are not, we must use RGBA instead
 	const int DEPTH_SQUARE = 1;
 
@@ -124,11 +124,10 @@ const nvtt::CompressionOptions &M4Revolution::CompressionOptions::get(const Ubi:
 		return rgba;
 	}
 
-	/*
-	if (!isPowerOfTwoUnsigned(width) || !isPowerOfTwoUnsigned(height)) {
+	// only need to check width, because we know it's the same as the height
+	if (!isPowerOfTwoUnsigned(width)) {
 		return rgba;
 	}
-	*/
 	return hasAlpha ? dxt5 : dxt1;
 }
 

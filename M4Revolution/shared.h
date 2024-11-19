@@ -359,11 +359,9 @@ inline constexpr unsigned int clampUnsigned(unsigned int number, unsigned int mi
 	return __min(max, __max(number, min));
 }
 
-/*
 inline constexpr bool isPowerOfTwoUnsigned(unsigned int number) {
 	return number && !(number & (number - 1));
 }
-*/
 
 inline bool freeZAP(zap_byte_t* &out) {
 	if (out) {
