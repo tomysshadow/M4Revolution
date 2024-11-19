@@ -16,8 +16,6 @@ class M4Revolution {
 	private:
 	void destroy();
 
-	typedef uint32_t COLOR32;
-
 	class Log {
 		private:
 		std::istream &inputStream;
