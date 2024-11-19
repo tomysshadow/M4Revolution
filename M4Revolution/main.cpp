@@ -23,11 +23,7 @@ bool performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_MIN = OPERATION_OPEN_ONLINE_HELP;
 	const long OPERATION_MAX = OPERATION_EXIT;
 
-	switch (consoleLong(
-		"Please enter the number corresponding to the operation you would like to perform.",
-		OPERATION_MIN,
-		OPERATION_MAX
-	)) {
+	switch (consoleLong("Please enter the number corresponding to the operation you would like to perform.", OPERATION_MIN, OPERATION_MAX)) {
 		case OPERATION_OPEN_ONLINE_HELP:
 		help();
 		break;
