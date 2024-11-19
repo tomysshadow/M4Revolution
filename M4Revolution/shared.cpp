@@ -50,7 +50,7 @@ void consoleLog(const char* str, short newline, short tab, bool err, const char*
 	}
 }
 
-void consoleWait() {
+void consoleWait(short newline) {
 	#ifdef MACINTOSH
 	const char* command = "read";
 	#endif
@@ -61,6 +61,8 @@ void consoleWait() {
 	if (system(command)) {
 		throw std::runtime_error("Failed to Process Command");
 	}
+
+	consoleLog(0, newline);
 }
 
 #define CONSOLE_NUMBER_LOCALE(locale) do {\

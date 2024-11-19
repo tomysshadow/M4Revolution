@@ -143,7 +143,6 @@ int main(int argc, char** argv) {
 		consoleLog("The operation has been ", false);
 		consoleLog(performedOperation ? "performed." : "aborted.");
 		consoleWait();
-		consoleLog();
 	};
 	return 0;
 }

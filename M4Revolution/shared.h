@@ -416,7 +416,7 @@ inline bool destroyWindow(HWND &windowHandle) {
 #endif
 
 void consoleLog(const char* str = 0, short newline = true, short tab = false, bool err = false, const char* file = 0, unsigned int line = 0);
-void consoleWait();
+void consoleWait(short newline = true);
 double consoleDouble(const char* str = 0, double minValue = -DBL_MAX, double maxValue = DBL_MAX, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
 float consoleFloat(const char* str = 0, float minValue = -FLT_MAX, float maxValue = FLT_MAX, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
 long consoleLong(const char* str = 0, long minValue = -LONG_MAX, long maxValue = LONG_MAX, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT);
