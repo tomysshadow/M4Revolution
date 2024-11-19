@@ -1,6 +1,28 @@
 #pragma once
-#include "M4Image/shared.h"
+#include <stdexcept>
 #include <stdint.h>
+
+#define M4IMAGE_API
+#define M4IMAGE_CALL __cdecl
+
+// forward declared so Pixman doesn't need to be included here
+// (so you only need the static lib to include M4Image in another project)
+extern "C" {
+    typedef int pixman_bool_t;
+    typedef union pixman_image pixman_image_t;
+    pixman_bool_t pixman_image_unref(pixman_image_t* image);
+}
+
+inline bool unrefImage(pixman_image_t* &image) {
+    if (image) {
+        if (!pixman_image_unref(image)) {
+            return false;
+        }
+    }
+
+    image = NULL;
+    return true;
+}
 
 class M4Image {
     public:

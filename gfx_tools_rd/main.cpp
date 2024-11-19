@@ -1,7 +1,7 @@
 #include "main.h"
 #include "base_rd.h"
 #include <math.h>
-#include <M4Image/M4Image.h>
+#include <M4Image.h>
 
 namespace gfx_tools {
 	void convertHeightMapIntoDuDvBumpMapColor(

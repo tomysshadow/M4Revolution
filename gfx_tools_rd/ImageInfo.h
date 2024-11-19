@@ -3,7 +3,7 @@
 #include "PixelFormat.h"
 #include "FormatHint.h"
 #include <map>
-#include <M4Image/M4Image.h>
+#include <M4Image.h>
 
 namespace gfx_tools {
 	typedef unsigned char LOD;

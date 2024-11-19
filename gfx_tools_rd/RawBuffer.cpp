@@ -1,5 +1,5 @@
 #include "RawBuffer.h"
-#include <M4Image/M4Image.h>
+#include <M4Image.h>
 
 namespace gfx_tools {
 	RawBuffer::RawBuffer() {
