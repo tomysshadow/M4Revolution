@@ -116,9 +116,19 @@ const nvtt::CompressionOptions &M4Revolution::CompressionOptions::get(const Ubi:
 	// so if they are not, we must use RGBA instead
 	const int DEPTH_SQUARE = 1;
 
-	if (surface.width() != surface.height() || surface.depth() != DEPTH_SQUARE) {
+	int width = surface.width();
+	int height = surface.height();
+	int depth = surface.depth();
+
+	if (width != height || depth != DEPTH_SQUARE) {
 		return rgba;
 	}
+
+	/*
+	if (!isPowerOfTwoUnsigned(width) || !isPowerOfTwoUnsigned(height)) {
+		return rgba;
+	}
+	*/
 	return hasAlpha ? dxt5 : dxt1;
 }
 
@@ -464,9 +474,9 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	const nvtt::Context &CONTEXT = convert.CONTEXT;
 	const int MIPMAP_COUNT = 1;
 
-	Work::Convert::EXTENT width = clampLongUnsigned(surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
-	Work::Convert::EXTENT height = clampLongUnsigned(surface.height(), CONFIGURATION.minTextureHeight, CONFIGURATION.maxTextureHeight);
-	Work::Convert::EXTENT depth = clampLongUnsigned(surface.depth(), CONFIGURATION.minVolumeExtent, CONFIGURATION.maxVolumeExtent);
+	Work::Convert::EXTENT width = clampUnsigned(surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
+	Work::Convert::EXTENT height = clampUnsigned(surface.height(), CONFIGURATION.minTextureHeight, CONFIGURATION.maxTextureHeight);
+	Work::Convert::EXTENT depth = clampUnsigned(surface.depth(), CONFIGURATION.minVolumeExtent, CONFIGURATION.maxVolumeExtent);
 
 	Work::Convert::EXTENT maxExtent = __max(width, height);
 	maxExtent = __max(depth, maxExtent);

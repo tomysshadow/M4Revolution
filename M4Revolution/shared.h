@@ -355,9 +355,15 @@ const std::string TOGGLE_IS = " has now been toggled ";
 const std::string TOGGLE_ON = "on.";
 const std::string TOGGLE_OFF = "off.";
 
-inline constexpr unsigned long clampLongUnsigned(unsigned long extent, unsigned long min, unsigned long max) {
-	return __min(max, __max(extent, min));
+inline constexpr unsigned int clampUnsigned(unsigned int number, unsigned int min, unsigned int max) {
+	return __min(max, __max(number, min));
 }
+
+/*
+inline constexpr bool isPowerOfTwoUnsigned(unsigned int number) {
+	return number && !(number & (number - 1));
+}
+*/
 
 inline bool freeZAP(zap_byte_t* &out) {
 	if (out) {
