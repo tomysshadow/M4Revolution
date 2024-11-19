@@ -30,7 +30,7 @@ class M4Revolution {
 		int filesCopying = 0;
 
 		public:
-		static void replacedM4Thor(const std::string &name, bool on);
+		static void replacedM4Thor(const std::string &name, bool toggledOn);
 		static void replacedGfxTools();
 
 		Log(const char* title, std::istream &inputStream, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);

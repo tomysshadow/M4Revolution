@@ -19,9 +19,9 @@ void M4Revolution::destroy() {
 	#endif
 }
 
-void M4Revolution::Log::replacedM4Thor(const std::string &name, bool on) {
+void M4Revolution::Log::replacedM4Thor(const std::string &name, bool toggledOn) {
 	std::cout << "Replaced M4 Thor" << std::endl;
-	std::cout << name << TOGGLE_IS << (on ? TOGGLE_ON : TOGGLE_OFF) << std::endl << std::endl;
+	std::cout << name << TOGGLE_IS << (toggledOn ? TOGGLE_ON : TOGGLE_OFF) << std::endl << std::endl;
 }
 
 void M4Revolution::Log::replacedGfxTools() {
@@ -408,21 +408,21 @@ void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &na
 
 	// we must either be on or off
 	// if we're neither, something is wrong so give up
-	bool on = memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_ON, COMPUTE_MOVE_VECTOR_SIZE);
+	bool toggledOn = memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_ON, COMPUTE_MOVE_VECTOR_SIZE);
 
-	if (!on) {
-		on = !memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_OFF, COMPUTE_MOVE_VECTOR_SIZE);
+	if (!toggledOn) {
+		toggledOn = !memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_OFF, COMPUTE_MOVE_VECTOR_SIZE);
 
-		if (on) {
+		if (toggledOn) {
 			throw std::logic_error("Compute Move Vector untoggleable");
 		}
 	}
 
 	// toggle happens here
-	on = !on;
-	edit.join(copyThread, computeMoveVectorPosition, (const char*)(on ? COMPUTE_MOVE_VECTOR_ON : COMPUTE_MOVE_VECTOR_OFF));
+	toggledOn = !toggledOn;
+	edit.join(copyThread, computeMoveVectorPosition, (const char*)(toggledOn ? COMPUTE_MOVE_VECTOR_ON : COMPUTE_MOVE_VECTOR_OFF));
 
-	Log::replacedM4Thor(name, on);
+	Log::replacedM4Thor(name, toggledOn);
 }
 
 #ifdef WINDOWS

@@ -129,6 +129,7 @@ int main(int argc, char** argv) {
 	}
 
 	M4Revolution m4Revolution(pathStringOptional.value(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks, configurationOptional);
+	bool performedOperation = false;
 
 	for(;;) {
 		consoleLog("This menu may be used to perform the following operations.", 2);
@@ -141,7 +142,10 @@ int main(int argc, char** argv) {
 		consoleLog("6) Restore Backup");
 		consoleLog("7) Exit", 2);
 
-		consoleLog((std::string("The operation has been ") + (performOperation(m4Revolution) ? "performed." : "aborted.")).c_str());
+		performedOperation = performOperation(m4Revolution);
+
+		consoleLog("The operation has been ", false);
+		consoleLog(performedOperation ? "performed." : "aborted.");
 		consoleWait();
 		consoleLog();
 	};

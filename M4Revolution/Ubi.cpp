@@ -93,7 +93,7 @@ namespace Ubi {
 				writeStreamSafe(outputStream, &resources, RESOURCES_SIZE);
 
 				bool nullTerminator = false;
-				bool on = true;
+				bool toggledOn = true;
 
 				for (uint32_t i = 0; i < resources; i++) {
 					const std::optional<std::string> &KEY = String::readOptional(inputStream, nullTerminator);
@@ -104,17 +104,18 @@ namespace Ubi {
 						copyStream(inputStream, outputStream, position + size - inputStream.tellg());
 						resources--;
 
-						on = false;
+						toggledOn = false;
 						break;
 					}
 
 					String::writeOptional(outputStream, KEY, nullTerminator);
 				}
-	
-				consoleLog((name + TOGGLE_IS).c_str(), false);
 
-				if (on) {
-					consoleLog(TOGGLE_ON.c_str());
+				consoleLog(name.c_str(), false);
+				consoleLog(TOGGLE_IS, false);
+
+				if (toggledOn) {
+					consoleLog(TOGGLE_ON);
 
 					// to turn the resource back on we simply write it again at the end
 					// we assume it was on originally and turned off
@@ -122,7 +123,7 @@ namespace Ubi {
 					String::writeOptional(outputStream, key, false);
 					resources++;
 				} else {
-					consoleLog(TOGGLE_OFF.c_str());
+					consoleLog(TOGGLE_OFF);
 				}
 
 				std::streampos endPosition = outputStream.tellp();
@@ -132,7 +133,7 @@ namespace Ubi {
 
 				// seek back to the end for the benefit of the caller
 				outputStream.seekp(endPosition);
-				return on;
+				return toggledOn;
 			}
 		}
 
