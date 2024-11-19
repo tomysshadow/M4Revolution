@@ -62,9 +62,16 @@ namespace gfx_tools {
 
 		const ImageInfo &IMAGE_INFO = validatedImageInfoOptional.value().Get();
 
+		// sometimes the provided size is smaller than the real size
+		// namely, if the image has an odd width, the width is used for the size calculation
+		// instead of the stride, which is rounded up to an even number
+		// therefore this check is not useful
+		// disabling it is necessary to fix a crash when using the telescope in Spire [w3z02n101]
+		/*
 		if (size < IMAGE_INFO.textureHeight * stride) {
 			throw std::invalid_argument("size is too small");
 		}
+		*/
 
 		// we want an exception to occur if it has no value
 		const RawBufferEx &RAW_BUFFER = rawBufferOptionals[lod].value();

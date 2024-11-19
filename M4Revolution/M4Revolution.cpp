@@ -125,7 +125,7 @@ const nvtt::CompressionOptions &M4Revolution::CompressionOptions::get(const Ubi:
 	}
 
 	// only need to check width, because we know it's the same as the height
-	if (!isPowerOfTwoUnsigned(width)) {
+	if (!isPowerOfTwo((unsigned int)width)) {
 		return rgba;
 	}
 	return hasAlpha ? dxt5 : dxt1;
@@ -473,9 +473,9 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	const nvtt::Context &CONTEXT = convert.CONTEXT;
 	const int MIPMAP_COUNT = 1;
 
-	Work::Convert::EXTENT width = clampUnsigned(surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
-	Work::Convert::EXTENT height = clampUnsigned(surface.height(), CONFIGURATION.minTextureHeight, CONFIGURATION.maxTextureHeight);
-	Work::Convert::EXTENT depth = clampUnsigned(surface.depth(), CONFIGURATION.minVolumeExtent, CONFIGURATION.maxVolumeExtent);
+	Work::Convert::EXTENT width = clamp((Work::Convert::EXTENT)surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
+	Work::Convert::EXTENT height = clamp((Work::Convert::EXTENT)surface.height(), CONFIGURATION.minTextureHeight, CONFIGURATION.maxTextureHeight);
+	Work::Convert::EXTENT depth = clamp((Work::Convert::EXTENT)surface.depth(), CONFIGURATION.minVolumeExtent, CONFIGURATION.maxVolumeExtent);
 
 	Work::Convert::EXTENT maxExtent = __max(width, height);
 	maxExtent = __max(depth, maxExtent);
