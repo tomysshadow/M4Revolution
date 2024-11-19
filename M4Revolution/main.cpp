@@ -9,7 +9,7 @@
 #pragma warning(pop)
 
 void help() {
-	openFile("https://github.com/tomysshadow/M4Revolution/blob/master/README.md");
+	openFile("https://github.com/tomysshadow/M4Revolution/blob/main/README.md");
 }
 
 bool performOperation(M4Revolution &m4Revolution) {
