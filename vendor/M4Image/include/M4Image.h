@@ -13,17 +13,6 @@ extern "C" {
     pixman_bool_t pixman_image_unref(pixman_image_t* image);
 }
 
-inline bool unrefImage(pixman_image_t* &image) {
-    if (image) {
-        if (!pixman_image_unref(image)) {
-            return false;
-        }
-    }
-
-    image = NULL;
-    return true;
-}
-
 class M4Image {
     public:
     class Allocator {
@@ -131,6 +120,19 @@ class M4Image {
     M4IMAGE_API void M4IMAGE_CALL load(const unsigned char* pointer, size_t size, const char* extension = 0);
     M4IMAGE_API unsigned char* M4IMAGE_CALL save(size_t &size, const char* extension = 0, float quality = 0.90f) const;
     M4IMAGE_API unsigned char* M4IMAGE_CALL acquire();
+
+    // ignore this method
+    // it is only declared here in the header so it can be made inline
+    static inline bool unrefImage(pixman_image_t* &image) {
+        if (image) {
+            if (!pixman_image_unref(image)) {
+                return false;
+            }
+        }
+
+        image = NULL;
+        return true;
+    }
 
     private:
     void M4IMAGE_CALL create(int width, int height, size_t &stride, COLOR_FORMAT colorFormat = COLOR_FORMAT::RGBA, unsigned char* imagePointer = 0);
