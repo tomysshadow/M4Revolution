@@ -47,7 +47,7 @@ namespace gfx_tools {
 	ImageLoaderMultipleBuffer::~ImageLoaderMultipleBuffer() {
 	}
 
-	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::POINTER pointer, SIZE stride, SIZE size) {
+	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::POINTER pointer, SIZE stride, SIZE sizeInBytes) {
 		if (!pointer) {
 			throw std::invalid_argument("pointer must not be zero");
 		}
@@ -68,8 +68,8 @@ namespace gfx_tools {
 		// therefore this check is not useful
 		// disabling it is necessary to fix a crash when using the telescope in Spire [w3z02n101]
 		/*
-		if (size < IMAGE_INFO.textureHeight * stride) {
-			throw std::invalid_argument("size is too small");
+		if (sizeInBytes < IMAGE_INFO.textureHeight * stride) {
+			throw std::invalid_argument("sizeInBytes is too small");
 		}
 		*/
 
@@ -110,7 +110,7 @@ namespace gfx_tools {
 		LOD lod,
 		RawBuffer::POINTER pointer,
 		SIZE stride,
-		SIZE size,
+		SIZE sizeInBytes,
 		Q_FACTOR qFactor,
 		const ImageInfo &imageInfo,
 		DIMENSION resizeTextureWidth,
@@ -121,9 +121,11 @@ namespace gfx_tools {
 			throw std::invalid_argument("pointer must not be zero");
 		}
 
-		if (size < imageInfo.textureHeight * stride) {
+		/*
+		if (sizeInBytes < imageInfo.textureHeight * stride) {
 			throw std::invalid_argument("size is too small");
 		}
+		*/
 
 		size_t m4ImageStride = stride;
 
@@ -155,12 +157,12 @@ namespace gfx_tools {
 		LOD lod,
 		RawBuffer::POINTER pointer,
 		SIZE stride,
-		SIZE size,
+		SIZE sizeInBytes,
 		Q_FACTOR qFactor,
 		const ImageInfo &imageInfo,
 		ares::RectU32* rectU32Pointer
 	) {
-		ResizeLOD(lod, pointer, stride, size, qFactor, imageInfo, imageInfo.textureWidth, imageInfo.textureHeight, rectU32Pointer);
+		ResizeLOD(lod, pointer, stride, sizeInBytes, qFactor, imageInfo, imageInfo.textureWidth, imageInfo.textureHeight, rectU32Pointer);
 	}
 
 	RawBuffer::POINTER ImageLoaderMultipleBuffer::CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) {
@@ -283,7 +285,7 @@ namespace gfx_tools {
 		m4Image.load(rawBuffer.pointer, rawBuffer.size, GetExtension());
 	}
 
-	void ImageLoaderMultipleBuffer::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
+	void ImageLoaderMultipleBuffer::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) {
 		const RawBufferEx::ResizeInfo &RESIZE_INFO = rawBuffer.resizeInfoOptional.value();
 
 		size_t m4ImageStride = RESIZE_INFO.stride;
@@ -478,7 +480,7 @@ namespace gfx_tools {
 		}
 	}
 
-	void ImageLoaderMultipleBufferZAP::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) {
+	void ImageLoaderMultipleBufferZAP::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) {
 		const RawBufferEx::ResizeInfo &RESIZE_INFO = rawBuffer.resizeInfoOptional.value();
 
 		zap_size_t zapSize = 0;

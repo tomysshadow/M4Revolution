@@ -28,14 +28,14 @@ namespace gfx_tools {
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE size
+			SIZE sizeInBytes
 		) = 0;
 
 		GFX_TOOLS_RD_API virtual void GFX_TOOLS_RD_CALL ResizeLOD(
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE size,
+			SIZE sizeInBytes,
 			Q_FACTOR qFactor,
 			const ImageInfo &imageInfo,
 			DIMENSION resizeTextureWidth,
@@ -47,7 +47,7 @@ namespace gfx_tools {
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE size,
+			SIZE sizeInBytes,
 			Q_FACTOR requestedQFactor,
 			const ImageInfo &imageInfo,
 			ares::RectU32* rectU32Pointer
@@ -87,7 +87,7 @@ namespace gfx_tools {
 		) = 0;
 
 		virtual void GFX_TOOLS_RD_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) = 0;
-		virtual void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size) = 0;
+		virtual void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) = 0;
 		virtual void GFX_TOOLS_RD_CALL GetImageInfoImpEx() = 0;
 
 		virtual void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
@@ -115,14 +115,14 @@ namespace gfx_tools {
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE size
+			SIZE sizeInBytes
 		);
 
 		GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL ResizeLOD(
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE size,
+			SIZE sizeInBytes,
 			Q_FACTOR qFactor,
 			const ImageInfo &imageInfo,
 			DIMENSION resizeTextureWidth,
@@ -134,7 +134,7 @@ namespace gfx_tools {
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
-			SIZE size,
+			SIZE sizeInBytes,
 			Q_FACTOR requestedQFactor,
 			const ImageInfo &imageInfo,
 			ares::RectU32* rectU32Pointer
@@ -171,7 +171,7 @@ namespace gfx_tools {
 		);
 
 		void GFX_TOOLS_RD_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride);
-		void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size);
+		void GFX_TOOLS_RD_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size);
 		void GFX_TOOLS_RD_CALL GetImageInfoImpEx();
 
 		void GFX_TOOLS_RD_CALL SetLODRawBufferImpEx(
