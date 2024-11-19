@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 
 	M4Revolution m4Revolution(pathStringOptional.value(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks, configurationOptional);
 
-	do {
+	for(;;) {
 		consoleLog("This menu may be used to perform the following operations.", 2);
 
 		consoleLog("1) Open Online Help");
@@ -140,22 +140,11 @@ int main(int argc, char** argv) {
 		consoleLog("5) Fix Loading");
 		consoleLog("6) Restore Backup");
 		consoleLog("7) Exit", 2);
-	} while (consoleBool(
-		(
-			std::string("The operation has been ")
 
-			+ (
-				performOperation(m4Revolution)
-					
-				? "performed"
-				: "aborted"
-			)
-				
-			+ ". Would you like to return to the menu? If not, the application will exit."
-		).c_str(),
-			
-		true
-	));
+		consoleLog((std::string("The operation has been ") + (performOperation(m4Revolution) ? "performed." : "aborted.")).c_str());
+		consoleWait();
+		consoleLog();
+	};
 	return 0;
 }
 
