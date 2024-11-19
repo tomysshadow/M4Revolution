@@ -83,12 +83,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)\vendor\scope_guard\include;$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(SolutionDir)\vendor\half\include;$(SolutionDir)\vendor\sourcepp\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x64\Debug;$(SolutionDir)\vendor\pixman\lib\x64\Debug;$(SolutionDir)\vendor\M4Image\lib\x64\Debug;$(SolutionDir)\vendor\libzap\lib\x64\Debug;$(SolutionDir)\vendor\nvtt\lib\x64-v142;$(SolutionDir)\vendor\sourcepp\lib\x64\Debug;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x64\Debug;$(SolutionDir)\vendor\pixman\lib\x64\Debug;$(SolutionDir)\vendor\M4Image\lib\x64\Debug;$(SolutionDir)\vendor\libzap\lib\x64\Debug;$(SolutionDir)\vendor\nvtt\lib\x64;$(SolutionDir)\vendor\sourcepp\lib\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)\vendor\scope_guard\include;$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\vendor\nvtt\include;$(SolutionDir)\vendor\half\include;$(SolutionDir)\vendor\sourcepp\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x64\Release;$(SolutionDir)\vendor\pixman\lib\x64\Release;$(SolutionDir)\vendor\M4Image\lib\x64\Release;$(SolutionDir)\vendor\libzap\lib\x64\Release;$(SolutionDir)\vendor\nvtt\lib\x64-v142;$(SolutionDir)\vendor\sourcepp\lib\x64\Release;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x64\Release;$(SolutionDir)\vendor\pixman\lib\x64\Release;$(SolutionDir)\vendor\M4Image\lib\x64\Release;$(SolutionDir)\vendor\libzap\lib\x64\Release;$(SolutionDir)\vendor\nvtt\lib\x64;$(SolutionDir)\vendor\sourcepp\lib\x64\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
