@@ -110,5 +110,6 @@ Myst IV: Revolution depends on these libraries.
 - [mango](https://github.com/t0rakka/mango) by t0rakka
 - [Pixman](https://www.pixman.org) by freedesktop.org
 - [NVIDIA Texture Tools 3](https://developer.nvidia.com/gpu-accelerated-texture-compression) by NVIDIA
+- [half](https://sourceforge.net/projects/half/) by rauy
 - [sourcepp](https://github.com/craftablescience/sourcepp) by craftablescience
 - [GetDLLExportRVA](https://github.com/tomysshadow/GetDLLExportRVA) by Anthony Kleine
