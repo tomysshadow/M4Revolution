@@ -7,7 +7,7 @@ Currently, only the Windows Steam release of the game is supported. If you try w
 
 This tool requires the Visual Studio 2019 C++ Redistributable to be installed for both [x86](https://aka.ms/vs/17/release/vc_redist.x86.exe) and [x64.](https://aka.ms/vs/17/release/vc_redist.x64.exe) If the tool or the game will not start, please ensure that both are installed.
 
-Supports Windows 10 or 11, 64-bit, with an SSE4-capable CPU and at least 1 GB of RAM. Although Myst IV: Revolution itself is only about 45 MB large, it will create a backup of your game files, which requires up to 3 GB of free disk space.
+Supports Windows 10 or 11, 64-bit, with an SSE4-capable CPU and at least 1 GB of RAM. Although Myst IV: Revolution itself is only about 60 MB large, it will create a backup of your game files, which requires up to 3 GB of free disk space.
 
 Usage: `M4Revolution [-p path -lfn -nohw -mt maxThreads]`
 
