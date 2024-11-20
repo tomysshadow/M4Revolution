@@ -129,8 +129,8 @@ Compiling Myst IV: Revolution requires Visual Studio 2019 or newer.
 9. Copy the sourcepp include files to `vendor/sourcepp/include`.
 10. Copy the resulting sourcepp.lib, kvpp.lib, bsppp.lib, and steampp.lib files to `vendor/sourcepp/lib/x64/Debug` and `vendor/sourcepp/lib/x64/Release` respectively.
 11. Download GetDLLExportRVA from its [Releases page.](https://github.com/tomysshadow/GetDLLExportRVA/release)
-12. Copy the **x86** Debug GetDLLExportRVA files to `x64/Debug`. Notice that the **x86** build must be copied to the **x64** Debug folder.
-13. Copy the **x86** Release GetDLLExportRVA files to `x64/Release`. Notice that the **x86** build must be copied to the **x64** Release folder.
+12. Copy the **x86** Debug GetDLLExportRVA files to `x64/Debug`. Notice that the **x86** Debug build must be copied to the **x64** Debug folder.
+13. Copy the **x86** Release GetDLLExportRVA files to `x64/Release`. Notice that the **x86** Release build must be copied to the **x64** Release folder.
 14. Open the M4Revolution solution in your Visual Studio version.
 15. Build the solution for x86 first. It must be built for x86 first because the x64 M4Revolution project includes the x86 gfx_tools_rd.dll as a resource.
 16. After building the solution for x86, build the solution for x64.
