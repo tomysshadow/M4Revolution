@@ -92,6 +92,27 @@ Command line arguments may be used for some advanced features.
  - `-nohw` or `--disable-hardware-acceleration`: disables hardware acceleration (via NVIDIA CUDA) when converting assets - if you do not have an NVIDIA graphics card, hardware acceleration will be disabled automatically
  - `-mt maxThreads` or `--max-threads maxThreads`: sets the maximum number of threads to use for multithreading when converting assets - maxThreads must be a valid number, and if not set, it will be chosen automatically
 
+## Compiling for Windows with Visual Studio
+
+Compiling Myst IV: Revolution requires Visual Studio 2019 or newer.
+
+1. Compile [libzap](https://github.com/HumanGamer/libzap) for both x86 (Win32) and x64 with CMake using the default settings, and your Visual Studio version.
+2. Copy the resulting libzap.lib, M4Image.lib, and mango.lib files to `vendor/libzap/lib`, `vendor/M4Image/lib`, `vendor/mango/lib` folders respectively, categorized by architecture and configuration. For instance: the x64, Debug libzap.lib should be located at `vendor/libzap/x64/Debug/libzap.lib`.
+3. Copy the resulting pixman-1_staticd.lib files to `vendor/pixman-1/lib/x86/Debug` and `vendor/pixman-1/lib/x64/Debug` respectively.
+4. Copy the resulting pixman-1_static.lib files to `vendor/pixman-1/lib/x86/Release` and `vendor/pixman-1/lib/x64/Release` respectively.
+5. Install [NVIDIA Texture Tools 3.](https://developer.nvidia.com/gpu-accelerated-texture-compression) This requires an NVIDIA developer account.
+6. Copy the nvtt30205.lib for your Visual Studio version from the install directory to `vendor/nvtt/lib/x64`.
+7. Copy nvtt30205.dll from the install directory to `x64/Debug` and `x64/Release`.
+8. Compile [sourcepp](https://github.com/craftablescience/sourcepp) for x64 with CMake, and your Visual Studio version. You may optionally uncheck all of the `SOURCEPP_USE` settings, except for `SOURCEPP_USE_STEAMPP`.
+9. Copy the sourcepp include files to `vendor/sourcepp/include`.
+10. Copy the resulting sourcepp.lib, kvpp.lib, bsppp.lib, and steampp.lib files to `vendor/sourcepp/lib/x64/Debug` and `vendor/sourcepp/lib/x64/Release` respectively.
+11. Download GetDLLExportRVA from its [Releases page.](https://github.com/tomysshadow/GetDLLExportRVA/release)
+12. Copy the **x86** Debug GetDLLExportRVA files to `x64/Debug`. Notice that the **x86** Debug build must be copied to the **x64** Debug folder.
+13. Copy the **x86** Release GetDLLExportRVA files to `x64/Release`. Notice that the **x86** Release build must be copied to the **x64** Release folder.
+14. Open the M4Revolution solution in your Visual Studio version.
+15. Build the solution for x86 first. It must be built for x86 first because the x64 M4Revolution project includes the x86 gfx_tools_rd.dll as a resource.
+16. After building the solution for x86, build the solution for x64.
+
 # Do I need to use this tool on the same computer I play the game on?
 
 Yes. The files produced by this tool will be optimized for the computer it is used on. You should use it on the same computer that you play the game on, rather than using it on one computer and copy pasting the game files to another computer.
@@ -113,24 +134,3 @@ Myst IV: Revolution depends on these libraries.
 - [half](https://sourceforge.net/projects/half/) by rauy
 - [sourcepp](https://github.com/craftablescience/sourcepp) by craftablescience
 - [GetDLLExportRVA](https://github.com/tomysshadow/GetDLLExportRVA) by Anthony Kleine
-
-## Compiling for Windows with Visual Studio
-
-Compiling Myst IV: Revolution requires Visual Studio 2019 or newer.
-
-1. Compile [libzap](https://github.com/HumanGamer/libzap) for both x86 (Win32) and x64 with CMake using the default settings, and your Visual Studio version.
-2. Copy the resulting libzap.lib, M4Image.lib, and mango.lib files to `vendor/libzap/lib`, `vendor/M4Image/lib`, `vendor/mango/lib` folders respectively, categorized by architecture and configuration. For instance: the x64, Debug libzap.lib should be located at `vendor/libzap/x64/Debug/libzap.lib`.
-3. Copy the resulting pixman-1_staticd.lib files to `vendor/pixman-1/lib/x86/Debug` and `vendor/pixman-1/lib/x64/Debug` respectively.
-4. Copy the resulting pixman-1_static.lib files to `vendor/pixman-1/lib/x86/Release` and `vendor/pixman-1/lib/x64/Release` respectively.
-5. Install [NVIDIA Texture Tools 3.](https://developer.nvidia.com/gpu-accelerated-texture-compression) This requires an NVIDIA developer account.
-6. Copy the nvtt30205.lib for your Visual Studio version from the install directory to `vendor/nvtt/lib/x64`.
-7. Copy nvtt30205.dll from the install directory to `x64/Debug` and `x64/Release`.
-8. Compile [sourcepp](https://github.com/craftablescience/sourcepp) for x64 with CMake, and your Visual Studio version. You may optionally uncheck all of the `SOURCEPP_USE` settings, except for `SOURCEPP_USE_STEAMPP`.
-9. Copy the sourcepp include files to `vendor/sourcepp/include`.
-10. Copy the resulting sourcepp.lib, kvpp.lib, bsppp.lib, and steampp.lib files to `vendor/sourcepp/lib/x64/Debug` and `vendor/sourcepp/lib/x64/Release` respectively.
-11. Download GetDLLExportRVA from its [Releases page.](https://github.com/tomysshadow/GetDLLExportRVA/release)
-12. Copy the **x86** Debug GetDLLExportRVA files to `x64/Debug`. Notice that the **x86** Debug build must be copied to the **x64** Debug folder.
-13. Copy the **x86** Release GetDLLExportRVA files to `x64/Release`. Notice that the **x86** Release build must be copied to the **x64** Release folder.
-14. Open the M4Revolution solution in your Visual Studio version.
-15. Build the solution for x86 first. It must be built for x86 first because the x64 M4Revolution project includes the x86 gfx_tools_rd.dll as a resource.
-16. After building the solution for x86, build the solution for x64.
