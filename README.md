@@ -125,7 +125,7 @@ Compiling Myst IV: Revolution requires Visual Studio 2019 or newer.
 5. Install [NVIDIA Texture Tools 3.](https://developer.nvidia.com/gpu-accelerated-texture-compression) This requires an NVIDIA developer account.
 6. Copy the nvtt30205.lib for your Visual Studio version from the install directory to `vendor/nvtt/lib/x64`.
 7. Copy nvtt30205.dll from the install directory to `x64/Debug` and `x64/Release`.
-8. Compile [sourcepp](https://github.com/craftablescience/sourcepp) for x64 with CMake, and your Visual Studio version. You may optionally uncheck all of the SOURCEPP_USE flags, except for SOURCEPP_USE_STEAMPP.
+8. Compile [sourcepp](https://github.com/craftablescience/sourcepp) for x64 with CMake, and your Visual Studio version. You may optionally uncheck all of the `SOURCEPP_USE` settings, except for `SOURCEPP_USE_STEAMPP`.
 9. Copy the sourcepp include files to `vendor/sourcepp/include`.
 10. Copy the resulting sourcepp.lib, kvpp.lib, bsppp.lib, and steampp.lib files to `vendor/sourcepp/lib/x64/Debug` and `vendor/sourcepp/lib/x64/Release` respectively.
 11. Download GetDLLExportRVA from its [Releases page.](https://github.com/tomysshadow/GetDLLExportRVA/release)
