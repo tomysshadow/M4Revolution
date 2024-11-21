@@ -275,12 +275,11 @@ namespace Ubi {
 				}
 			}
 
-			const size_t STATES_FIELDS_SIZE = 4;
-
 			uint32_t states = 0;
 			uint32_t stateNames = 0;
 
 			const size_t STATES_SIZE = sizeof(states);
+			const size_t STATES_FIELDS_SIZE = 4;
 			const size_t STATE_NAMES_SIZE = sizeof(stateNames);
 
 			readStreamSafe(inputStream, &states, STATES_SIZE);
@@ -310,7 +309,6 @@ namespace Ubi {
 			std::optional<std::string> resourceNameOptional = String::readOptionalEncrypted(inputStream);
 
 			const size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
-
 			inputStream.seekg(WATER_FIELDS_SIZE, std::ios::cur);
 
 			uint32_t resources = 0;
@@ -707,8 +705,14 @@ namespace Ubi {
 		}
 
 		type = nameTypeExtensionMapIterator->second.type;
-	
-		if (layerFileOptional.has_value() && (type == TYPE::IMAGE_STANDARD || type == TYPE::IMAGE_ZAP)) {
+		
+		if (type == TYPE::IMAGE_STANDARD || type == TYPE::IMAGE_ZAP) {
+			// only rename images in layers
+			if (!layerFileOptional.has_value()) {
+				type = TYPE::NONE;
+				return;
+			}
+
 			const Binary::RLE::Layer &LAYER = layerFileOptional.value().layerMapIterator->second;
 
 			if (LAYER.isLayerMask) {

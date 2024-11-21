@@ -58,8 +58,12 @@ void consoleWait(short newline) {
 	const char* command = "pause";
 	#endif
 
-	if (system(command)) {
-		throw std::runtime_error("Failed to Process Command");
+	// we only want to know if we failed to create the process
+	// processing the command may fail if the user closes the window (which is fine)
+	errno = 0;
+	
+	if (system(command) == -1 && errno) {
+		throw std::runtime_error("Failed to Create Child Process");
 	}
 
 	consoleLog(0, newline);
