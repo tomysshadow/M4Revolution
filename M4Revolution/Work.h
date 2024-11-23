@@ -10,6 +10,9 @@
 #include <filesystem>
 #include <nvtt/nvtt.h>
 
+#define GAMEDATABINDIR "data"
+#define EXEDIR "bin"
+
 #ifdef WINDOWS
 	#define MULTITHREADED
 #else

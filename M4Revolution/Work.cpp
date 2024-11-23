@@ -220,9 +220,9 @@ namespace Work {
 	const char* Output::FILE_RETRY = "The game files could not be accessed. Please ensure the game is not open while using this tool. If this error is occuring and the game is not open, you may be out of disk space, or you may need to run this tool as admin.";
 
 	const Output::PATH_MAP Output::FILE_PATH_MAP = {
-		{FILE_PATH_DATA, "data/data.m4b"},
-		{FILE_PATH_M4_THOR, "bin/m4_thor_rd.dll"},
-		{FILE_PATH_GFX_TOOLS, "bin/gfx_tools_rd.dll"}
+		{FILE_PATH_DATA, GAMEDATABINDIR "/data.m4b"},
+		{FILE_PATH_M4_THOR, EXEDIR "/m4_thor_rd.dll"},
+		{FILE_PATH_GFX_TOOLS, EXEDIR "/gfx_tools_rd.dll"}
 	};
 
 	const std::filesystem::path Output::DATA_PATH = FILE_PATH_MAP.at(FILE_PATH_DATA);

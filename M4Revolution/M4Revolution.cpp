@@ -393,7 +393,7 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 const M4Revolution::CompressionOptions M4Revolution::COMPRESSION_OPTIONS;
 
 void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
-	const char USER_PREFERENCE_FILE_NAME[] = "bin/user.dsc";
+	const char USER_PREFERENCE_FILE_NAME[] = EXEDIR "/user.dsc";
 
 	const size_t FULL_SCREEN_SIZE = 41;
 	const char FULL_SCREEN_ON[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( true ) \n}\n";
@@ -407,9 +407,11 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 	if (!toggledOn) {
 		readStreamSafe(inputFileStream, fullScreen, FULL_SCREEN_SIZE);
 
+		/*
 		if (inputFileStream.peek() != std::ifstream::traits_type::eof()) {
 			throw Untoggleable("Full Screen untoggleable");
 		}
+		*/
 
 		toggledOn = memoryEquals(fullScreen, FULL_SCREEN_ON, FULL_SCREEN_SIZE);
 
@@ -689,7 +691,7 @@ bool M4Revolution::getComputeMoveVectorPosition(unsigned long &computeMoveVector
 			startupInfo.dwFlags = STARTF_USESTDHANDLES;
 			startupInfo.hStdOutput = stdoutWritePipe;
 
-			if (!CreateProcess(NULL, commandLine, NULL, NULL, TRUE, 0, NULL, TEXT("bin"), &startupInfo, &processInformation)
+			if (!CreateProcess(NULL, commandLine, NULL, NULL, TRUE, 0, NULL, TEXT(EXEDIR), &startupInfo, &processInformation)
 				|| !process
 				|| !thread) {
 				throw std::runtime_error("Failed to Create Process");
