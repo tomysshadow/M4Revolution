@@ -396,6 +396,7 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 	const char USER_PREFERENCE_FILE_NAME[] = "bin/user.dsc";
 
 	const size_t FULL_SCREEN_SIZE = 41;
+	const char FULL_SCREEN_ON[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( true ) \n}\n";
 	const char FULL_SCREEN_OFF[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( false )\n}\n";
 
 	char fullScreen[FULL_SCREEN_SIZE] = "";
@@ -406,8 +407,18 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 	if (!toggledOn) {
 		readStreamSafe(inputFileStream, fullScreen, FULL_SCREEN_SIZE);
 
-		if (!memoryEquals(fullScreen, FULL_SCREEN_OFF, FULL_SCREEN_SIZE)) {
+		if (inputFileStream.peek() != std::ifstream::traits_type::eof()) {
 			throw Untoggleable("Full Screen untoggleable");
+		}
+
+		toggledOn = memoryEquals(fullScreen, FULL_SCREEN_ON, FULL_SCREEN_SIZE);
+
+		if (!toggledOn) {
+			toggledOn = !memoryEquals(fullScreen, FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
+
+			if (toggledOn) {
+				throw Untoggleable("Full Screen untoggleable");
+			}
 		}
 
 		inputFileStream.close();
@@ -415,12 +426,8 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 
 	toggledOn = !toggledOn;
 
-	if (toggledOn) {
-		OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::remove(USER_PREFERENCE_FILE_NAME), std::filesystem::filesystem_error, Work::Output::FILE_RETRY);
-	} else {
-		std::ofstream outputFileStream(USER_PREFERENCE_FILE_NAME, std::ios::out, _SH_DENYRW);
-		writeStreamSafe(outputFileStream, FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
-	}
+	std::ofstream outputFileStream(USER_PREFERENCE_FILE_NAME, std::ios::out, _SH_DENYRW);
+	writeStreamSafe(outputFileStream, toggledOn ? FULL_SCREEN_ON : FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
 
 	log.toggledFullScreen(toggledOn);
 }
