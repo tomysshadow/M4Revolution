@@ -219,15 +219,17 @@ namespace Work {
 	const char* Output::FILE_NAME = "~M4R.tmp"; // must be an 8.3 filename
 	const char* Output::FILE_RETRY = "The game files could not be accessed. Please ensure the game is not open while using this tool. If this error is occuring and the game is not open, you may be out of disk space, or you may need to run this tool as admin.";
 
-	const Output::PATH_MAP Output::FILE_PATH_MAP = {
-		{FILE_PATH_DATA, GAMEDATABINDIR "/data.m4b"},
-		{FILE_PATH_M4_THOR, EXEDIR "/m4_thor_rd.dll"},
-		{FILE_PATH_GFX_TOOLS, EXEDIR "/gfx_tools_rd.dll"}
+	const Output::INFO_MAP Output::FILE_PATH_INFO_MAP = {
+		{FILE_PATH_DATA, {GAMEDATABINDIR "/data.m4b", true}},
+		{FILE_PATH_USER_PREFERENCE, {EXEDIR "/user.dsc", false}},
+		{FILE_PATH_M4_THOR, {EXEDIR "/m4_thor_rd.dll", true}},
+		{FILE_PATH_GFX_TOOLS, {EXEDIR "/gfx_tools_rd.dll", true}}
 	};
 
-	const std::filesystem::path Output::DATA_PATH = FILE_PATH_MAP.at(FILE_PATH_DATA);
-	const std::filesystem::path Output::M4_THOR_PATH = FILE_PATH_MAP.at(FILE_PATH_M4_THOR);
-	const std::filesystem::path Output::GFX_TOOLS_PATH = FILE_PATH_MAP.at(FILE_PATH_GFX_TOOLS);
+	const std::filesystem::path Output::DATA_PATH = FILE_PATH_INFO_MAP.at(FILE_PATH_DATA).path;
+	const std::filesystem::path Output::USER_PREFERENCE_PATH = FILE_PATH_INFO_MAP.at(FILE_PATH_USER_PREFERENCE).path;
+	const std::filesystem::path Output::M4_THOR_PATH = FILE_PATH_INFO_MAP.at(FILE_PATH_M4_THOR).path;
+	const std::filesystem::path Output::GFX_TOOLS_PATH = FILE_PATH_INFO_MAP.at(FILE_PATH_GFX_TOOLS).path;
 
 	void Output::findInstallPath(const std::filesystem::path &path) {
 		bool foundInstalled = setPath(path);
@@ -257,8 +259,10 @@ namespace Work {
 			return false;
 		}
 
-		for (PATH_MAP::const_iterator pathMapIterator = FILE_PATH_MAP.begin(); pathMapIterator != FILE_PATH_MAP.end(); pathMapIterator++) {
-			if (!std::filesystem::is_regular_file(pathMapIterator->second)) {
+		for (INFO_MAP::const_iterator infoMapIterator = FILE_PATH_INFO_MAP.begin(); infoMapIterator != FILE_PATH_INFO_MAP.end(); infoMapIterator++) {
+			const Info &INFO = infoMapIterator->second;
+
+			if (INFO.required && !std::filesystem::is_regular_file(INFO.path)) {
 				return false;
 			}
 		}
@@ -285,14 +289,20 @@ namespace Work {
 	}
 
 	namespace Backup {
-		bool create(const char* fileName) {
+		bool rename(const char* oldFileName, const char* newFileName) {
 			// here I'm using CRT rename because I don't want to be able
 			// to overwrite the backup file (which std::filesystem::rename has no option to disallow)
-			bool result = !rename(fileName, getPath(fileName).string().c_str());
+			bool result = !::rename(oldFileName, newFileName);
 
-			if (!result && errno != EEXIST) {
+			// the error is EEXIST if the file exists and is not empty, but ENOENT if it exists and is empty
+			if (!result && errno != EEXIST && errno != ENOENT) {
 				throw std::runtime_error("Failed to Rename");
 			}
+			return result;
+		}
+
+		bool create(const char* fileName) {
+			bool result = rename(fileName, getPath(fileName).string().c_str());
 
 			// here I use std::filesystem::rename because I do want to overwrite the file if it exists
 			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(Output::FILE_NAME, fileName), std::filesystem::filesystem_error, Output::FILE_RETRY);
@@ -300,12 +310,11 @@ namespace Work {
 		}
 
 		bool createFromOutput(const char* fileName) {
-			bool result = !rename(Output::FILE_NAME, getPath(fileName).string().c_str());
+			return rename(Output::FILE_NAME, getPath(fileName).string().c_str());
+		}
 
-			if (!result && errno != EEXIST) {
-				throw std::runtime_error("Failed to Rename");
-			}
-			return result;
+		void createEmpty(const std::filesystem::path &path) {
+			std::ofstream outputFileStream(getPath(path));
 		}
 
 		void restore(const std::filesystem::path &path) {
@@ -336,7 +345,7 @@ namespace Work {
 				};
 
 				{
-					Output output = {};
+					Output output;
 
 					fileStream.seekg(0);
 					copyStream(fileStream, output.fileStream);

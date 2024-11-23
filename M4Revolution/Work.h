@@ -217,19 +217,26 @@ namespace Work {
 		Ubi::BigFile::File::SIZE filePosition = 0;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
-		typedef int FILE_PATH;
-		typedef std::map<FILE_PATH, std::filesystem::path> PATH_MAP;
+		struct Info {
+			std::filesystem::path path = {};
+			bool required = false;
+		};
+
+		typedef unsigned int FILE_PATH;
+		typedef std::map<FILE_PATH, Info> INFO_MAP;
 
 		static const char* FILE_NAME;
 		static const char* FILE_RETRY;
 
-		static const FILE_PATH FILE_PATH_DATA = 1;
-		static const FILE_PATH FILE_PATH_M4_THOR = 2;
-		static const FILE_PATH FILE_PATH_GFX_TOOLS = 4;
+		static const FILE_PATH FILE_PATH_DATA = 0x00000001;
+		static const FILE_PATH FILE_PATH_USER_PREFERENCE = 0x00000002;
+		static const FILE_PATH FILE_PATH_M4_THOR = 0x00000004;
+		static const FILE_PATH FILE_PATH_GFX_TOOLS = 0x00000008;
 
-		static const PATH_MAP FILE_PATH_MAP;
+		static const INFO_MAP FILE_PATH_INFO_MAP;
 
 		static const std::filesystem::path DATA_PATH;
+		static const std::filesystem::path USER_PREFERENCE_PATH;
 		static const std::filesystem::path M4_THOR_PATH;
 		static const std::filesystem::path GFX_TOOLS_PATH;
 
@@ -243,6 +250,7 @@ namespace Work {
 	namespace Backup {
 		bool create(const char* fileName);
 		bool createFromOutput(const char* fileName);
+		void createEmpty(const std::filesystem::path &path);
 		void restore(const std::filesystem::path &path);
 		void log();
 		std::filesystem::path getPath(std::filesystem::path path);

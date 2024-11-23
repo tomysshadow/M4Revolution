@@ -273,6 +273,10 @@ void copyStreamToString(std::istream &inputStream, std::string &outputString, st
 	);
 }
 
+bool peekStreamEOF(std::istream &inputStream) {
+	return inputStream.peek() == std::istream::traits_type::eof();
+}
+
 void openFile(const std::string &path) {
 	std::ostringstream outputStringStream;
 

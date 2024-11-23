@@ -391,33 +391,34 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 const M4Revolution::CompressionOptions M4Revolution::COMPRESSION_OPTIONS;
 
 void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
-	const char USER_PREFERENCE_FILE_NAME[] = EXEDIR "/user.dsc";
-
 	const size_t FULL_SCREEN_SIZE = 41;
 	const char FULL_SCREEN_ON[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( true ) \n}\n";
 	const char FULL_SCREEN_OFF[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( false )\n}\n";
 
 	char fullScreen[FULL_SCREEN_SIZE] = "";
 
-	inputFileStream.open(USER_PREFERENCE_FILE_NAME, std::ios::in, _SH_DENYWR);
+	inputFileStream.open(Work::Output::USER_PREFERENCE_PATH, std::ios::in, _SH_DENYWR);
 	bool toggledOn = !inputFileStream.is_open();
 
-	if (!toggledOn) {
-		readStreamSafe(inputFileStream, fullScreen, FULL_SCREEN_SIZE);
-
-		/*
-		if (inputFileStream.peek() != std::ifstream::traits_type::eof()) {
-			throw Untoggleable("Full Screen untoggleable");
-		}
-		*/
-
-		toggledOn = memoryEquals(fullScreen, FULL_SCREEN_ON, FULL_SCREEN_SIZE);
+	if (toggledOn) {
+		// we create an empty file here for when the backup is restored
+		// otherwise, since this file is not required, we couldn't know whether to delete it
+		Work::Backup::createEmpty(Work::Output::USER_PREFERENCE_PATH);
+	} else {
+		// if file is empty, we also assume full screen is toggled on
+		toggledOn = peekStreamEOF(inputFileStream);
 
 		if (!toggledOn) {
-			toggledOn = !memoryEquals(fullScreen, FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
+			readStreamSafe(inputFileStream, fullScreen, FULL_SCREEN_SIZE);
 
-			if (toggledOn) {
-				throw Untoggleable("Full Screen untoggleable");
+			toggledOn = memoryEquals(fullScreen, FULL_SCREEN_ON, FULL_SCREEN_SIZE);
+
+			if (!toggledOn) {
+				toggledOn = !memoryEquals(fullScreen, FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
+
+				if (toggledOn) {
+					throw Untoggleable("Full Screen untoggleable");
+				}
 			}
 		}
 
@@ -426,8 +427,14 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 
 	toggledOn = !toggledOn;
 
-	std::ofstream outputFileStream(USER_PREFERENCE_FILE_NAME, std::ios::out, _SH_DENYRW);
-	writeStreamSafe(outputFileStream, toggledOn ? FULL_SCREEN_ON : FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
+	{
+		Work::Output output;
+		writeStreamSafe(output.fileStream, toggledOn ? FULL_SCREEN_ON : FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
+	}
+
+	if (Work::Backup::create(Work::Output::USER_PREFERENCE_PATH.string().c_str())) {
+		Work::Backup::log();
+	}
 
 	log.toggledFullScreen(toggledOn);
 }
@@ -483,7 +490,7 @@ void M4Revolution::replaceGfxTools() {
 
 		GlobalHandleLock<> resourceGlobalHandleLock(NULL, resourceHandle);
 
-		Work::Output output = {};
+		Work::Output output;
 		writeStreamSafe(output.fileStream, resourceGlobalHandleLock.get(), resourceGlobalHandleLock.size());
 	}
 
@@ -904,7 +911,7 @@ void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::FILE_VARIAN
 }
 
 void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
-	Work::Output output = {};
+	Work::Output output;
 
 	Work::FileTask::POINTER_QUEUE fileTaskPointerQueue = {};
 
@@ -1117,14 +1124,14 @@ bool M4Revolution::restoreBackup() {
 		std::ifstream inputFileStream;
 
 		for (
-			Work::Output::PATH_MAP::const_iterator pathMapIterator = Work::Output::FILE_PATH_MAP.begin();
-			pathMapIterator != Work::Output::FILE_PATH_MAP.end();
-			pathMapIterator++
+			Work::Output::INFO_MAP::const_iterator infoMapIterator = Work::Output::FILE_PATH_INFO_MAP.begin();
+			infoMapIterator != Work::Output::FILE_PATH_INFO_MAP.end();
+			infoMapIterator++
 		) {
-			inputFileStream.open(Work::Backup::getPath(pathMapIterator->second), std::ios::binary, _SH_DENYWR);
+			inputFileStream.open(Work::Backup::getPath(infoMapIterator->second.path), std::ios::binary, _SH_DENYWR);
 			
 			if (inputFileStream.is_open()) {
-				filePath |= pathMapIterator->first;
+				filePath |= infoMapIterator->first;
 			}
 
 			inputFileStream.close();
@@ -1143,12 +1150,12 @@ bool M4Revolution::restoreBackup() {
 	}
 
 	for (
-		Work::Output::PATH_MAP::const_iterator pathMapIterator = Work::Output::FILE_PATH_MAP.begin();
-		pathMapIterator != Work::Output::FILE_PATH_MAP.end();
-		pathMapIterator++
+		Work::Output::INFO_MAP::const_iterator infoMapIterator = Work::Output::FILE_PATH_INFO_MAP.begin();
+		infoMapIterator != Work::Output::FILE_PATH_INFO_MAP.end();
+		infoMapIterator++
 	) {
-		if (filePath & pathMapIterator->first) {
-			Work::Backup::restore(pathMapIterator->second);
+		if (filePath & infoMapIterator->first) {
+			Work::Backup::restore(infoMapIterator->second.path);
 		}
 	}
 	return true;
