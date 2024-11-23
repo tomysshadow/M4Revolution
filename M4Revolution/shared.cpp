@@ -291,7 +291,7 @@ void openFile(const std::string &path) {
 }
 
 void toggleLog(const std::string &name, bool toggledOn) {
-	std::cout << name << " has now been toggled " << (toggledOn ? "on." : "off.") << std::endl;
+	std::cout << name << " has now been toggled " << (toggledOn ? "on." : "off.") << std::endl << std::endl;
 }
 
 #ifdef WINDOWS

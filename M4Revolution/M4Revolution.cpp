@@ -21,13 +21,11 @@ void M4Revolution::destroy() {
 
 void M4Revolution::Log::toggledFullScreen(bool toggledOn) {
 	toggleLog("Full Screen", toggledOn);
-	std::cout << std::endl;
 }
 
 void M4Revolution::Log::replacedM4Thor(const std::string &name, bool toggledOn) {
 	std::cout << "Replaced M4 Thor" << std::endl;
 	toggleLog(name, toggledOn);
-	std::cout << std::endl;
 }
 
 void M4Revolution::Log::replacedGfxTools() {
