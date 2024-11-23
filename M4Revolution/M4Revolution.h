@@ -28,6 +28,7 @@ class M4Revolution {
 		int filesCopying = 0;
 
 		public:
+		static void toggledFullScreen(bool toggledOn);
 		static void replacedM4Thor(const std::string &name, bool toggledOn);
 		static void replacedGfxTools();
 
@@ -120,6 +121,7 @@ class M4Revolution {
 
 	static const CompressionOptions COMPRESSION_OPTIONS;
 
+	static void toggleFullScreen(std::ifstream &inputFileStream, Log &log);
 	static void replaceM4Thor(std::fstream &fileStream, const std::string &name);
 	#ifdef WINDOWS
 	static void replaceGfxTools();
@@ -138,6 +140,12 @@ class M4Revolution {
 	static void outputThread(Work::Tasks &tasks, bool &yield);
 
 	public:
+	class Untoggleable : public std::logic_error {
+		public:
+		Untoggleable(const char* message) noexcept : std::logic_error(message) {
+		}
+	};
+
 	M4Revolution(
 		const std::filesystem::path &path,
 		bool logFileNames = false,
@@ -152,6 +160,7 @@ class M4Revolution {
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
 	void editTransitionTime();
 	void toggleSoundFading();
+	void toggleFullScreen();
 	void toggleCameraInertia();
 	void fixLoading();
 	bool restoreBackup();

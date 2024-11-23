@@ -290,6 +290,10 @@ void openFile(const std::string &path) {
 	}
 }
 
+void toggleLog(const std::string &name, bool toggledOn) {
+	std::cout << name << " has now been toggled " << (toggledOn ? "on." : "off.") << std::endl;
+}
+
 #ifdef WINDOWS
 void readPipePartial(HANDLE pipe, LPVOID buffer, DWORD numberOfBytesToRead, DWORD &numberOfBytesRead) {
 	numberOfBytesRead = 0;

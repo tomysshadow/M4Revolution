@@ -16,33 +16,42 @@ bool performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_OPEN_ONLINE_HELP = 1;
 	const long OPERATION_EDIT_TRANSITION_TIME = 2;
 	const long OPERATION_TOGGLE_SOUND_FADING = 3;
-	const long OPERATION_TOGGLE_CAMERA_INERTIA = 4;
-	const long OPERATION_FIX_LOADING = 5;
-	const long OPERATION_RESTORE_BACKUP = 6;
-	const long OPERATION_EXIT = 7;
+	const long OPERATION_TOGGLE_FULL_SCREEN = 4;
+	const long OPERATION_TOGGLE_CAMERA_INERTIA = 5;
+	const long OPERATION_FIX_LOADING = 6;
+	const long OPERATION_RESTORE_BACKUP = 7;
+	const long OPERATION_EXIT = 8;
 	const long OPERATION_MIN = OPERATION_OPEN_ONLINE_HELP;
 	const long OPERATION_MAX = OPERATION_EXIT;
 
-	switch (consoleLong("Please enter the number corresponding to the operation you would like to perform.", OPERATION_MIN, OPERATION_MAX)) {
-		case OPERATION_OPEN_ONLINE_HELP:
-		help();
-		break;
-		case OPERATION_EDIT_TRANSITION_TIME:
-		m4Revolution.editTransitionTime();
-		break;
-		case OPERATION_TOGGLE_SOUND_FADING:
-		m4Revolution.toggleSoundFading();
-		break;
-		case OPERATION_TOGGLE_CAMERA_INERTIA:
-		m4Revolution.toggleCameraInertia();
-		break;
-		case OPERATION_FIX_LOADING:
-		m4Revolution.fixLoading();
-		break;
-		case OPERATION_RESTORE_BACKUP:
-		return m4Revolution.restoreBackup();
-		case OPERATION_EXIT:
-		exit(0);
+	try {
+		switch (consoleLong("Please enter the number corresponding to the operation you would like to perform.", OPERATION_MIN, OPERATION_MAX)) {
+			case OPERATION_OPEN_ONLINE_HELP:
+			help();
+			break;
+			case OPERATION_EDIT_TRANSITION_TIME:
+			m4Revolution.editTransitionTime();
+			break;
+			case OPERATION_TOGGLE_SOUND_FADING:
+			m4Revolution.toggleSoundFading();
+			break;
+			case OPERATION_TOGGLE_FULL_SCREEN:
+			m4Revolution.toggleFullScreen();
+			break;
+			case OPERATION_TOGGLE_CAMERA_INERTIA:
+			m4Revolution.toggleCameraInertia();
+			break;
+			case OPERATION_FIX_LOADING:
+			m4Revolution.fixLoading();
+			break;
+			case OPERATION_RESTORE_BACKUP:
+			return m4Revolution.restoreBackup();
+			case OPERATION_EXIT:
+			exit(0);
+		}
+	} catch (M4Revolution::Untoggleable ex) {
+		consoleLog(ex.what(), 2, false, true);
+		return false;
 	}
 	return true;
 }
@@ -133,10 +142,11 @@ int main(int argc, char** argv) {
 		consoleLog("1) Open Online Help");
 		consoleLog("2) Edit Transition Time");
 		consoleLog("3) Toggle Sound Fading");
-		consoleLog("4) Toggle Camera Inertia");
-		consoleLog("5) Fix Loading");
-		consoleLog("6) Restore Backup");
-		consoleLog("7) Exit", 2);
+		consoleLog("4) Toggle Full Screen");
+		consoleLog("5) Toggle Camera Inertia");
+		consoleLog("6) Fix Loading");
+		consoleLog("7) Restore Backup");
+		consoleLog("8) Exit", 2);
 
 		performedOperation = performOperation(m4Revolution);
 

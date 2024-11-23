@@ -351,10 +351,6 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 	break;\
 } while (1)
 
-static const char* TOGGLE_IS = " has now been toggled ";
-static const char* TOGGLE_ON = "on.";
-static const char* TOGGLE_OFF = "off.";
-
 template <typename Number>
 inline constexpr Number clamp(Number number, Number min, Number max) {
 	return __min(max, __max(number, min));
@@ -489,6 +485,7 @@ void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination wr
 void copyStream(std::istream &inputStream, std::ostream &outputStream, std::streamsize count = -1);
 void copyStreamToString(std::istream &inputStream, std::string &outputString, std::streamsize count = -1);
 void openFile(const std::string &path);
+void toggleLog(const std::string &name, bool toggledOn);
 
 #ifdef WINDOWS
 void readPipePartial(HANDLE pipe, LPVOID buffer, DWORD numberOfBytesToRead, DWORD &numberOfBytesRead);

@@ -327,9 +327,9 @@ namespace Work {
 
 		if (!edit.copied) {
 			// check if the file exists, if it doesn't create a backup
-			std::fstream backupFileStream(Backup::getPath(edit.path), std::ios::binary | std::ios::in, _SH_DENYWR);
+			std::ifstream backupInputFileStream(Backup::getPath(edit.path), std::ios::binary, _SH_DENYWR);
 
-			if (!backupFileStream.is_open()) {
+			if (!backupInputFileStream.is_open()) {
 				// always delete the temporary file when done
 				SCOPE_EXIT {
 					std::filesystem::remove(Output::FILE_NAME);

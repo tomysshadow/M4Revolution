@@ -19,9 +19,15 @@ void M4Revolution::destroy() {
 	#endif
 }
 
+void M4Revolution::Log::toggledFullScreen(bool toggledOn) {
+	toggleLog("Full Screen", toggledOn);
+	std::cout << std::endl;
+}
+
 void M4Revolution::Log::replacedM4Thor(const std::string &name, bool toggledOn) {
 	std::cout << "Replaced M4 Thor" << std::endl;
-	std::cout << name << TOGGLE_IS << (toggledOn ? TOGGLE_ON : TOGGLE_OFF) << std::endl << std::endl;
+	toggleLog(name, toggledOn);
+	std::cout << std::endl;
 }
 
 void M4Revolution::Log::replacedGfxTools() {
@@ -386,6 +392,39 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 
 const M4Revolution::CompressionOptions M4Revolution::COMPRESSION_OPTIONS;
 
+void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
+	const char USER_PREFERENCE_FILE_NAME[] = "bin/user.dsc";
+
+	const size_t FULL_SCREEN_SIZE = 41;
+	const char FULL_SCREEN_OFF[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( false )\n}\n";
+
+	char fullScreen[FULL_SCREEN_SIZE] = "";
+
+	inputFileStream.open(USER_PREFERENCE_FILE_NAME, std::ios::in, _SH_DENYWR);
+	bool toggledOn = !inputFileStream.is_open();
+
+	if (!toggledOn) {
+		readStreamSafe(inputFileStream, fullScreen, FULL_SCREEN_SIZE);
+
+		if (!memoryEquals(fullScreen, FULL_SCREEN_OFF, FULL_SCREEN_SIZE)) {
+			throw Untoggleable("Full Screen untoggleable");
+		}
+
+		inputFileStream.close();
+	}
+
+	toggledOn = !toggledOn;
+
+	if (toggledOn) {
+		OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::remove(USER_PREFERENCE_FILE_NAME), std::filesystem::filesystem_error, Work::Output::FILE_RETRY);
+	} else {
+		std::ofstream outputFileStream(USER_PREFERENCE_FILE_NAME, std::ios::out, _SH_DENYRW);
+		writeStreamSafe(outputFileStream, FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
+	}
+
+	log.toggledFullScreen(toggledOn);
+}
+
 void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &name) {
 	const size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
 	const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50, 0x00 };
@@ -414,7 +453,7 @@ void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &na
 		toggledOn = !memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_OFF, COMPUTE_MOVE_VECTOR_SIZE);
 
 		if (toggledOn) {
-			throw std::logic_error("Compute Move Vector untoggleable");
+			throw Untoggleable("Compute Move Vector untoggleable");
 		}
 	}
 
@@ -997,6 +1036,14 @@ void M4Revolution::toggleSoundFading() {
 	Log log("Toggling Sound Fading", fileStream);
 
 	OPERATION_EXCEPTION_RETRY_ERR(AI::toggleSoundFading(fileStream), StreamFailed, Work::Output::FILE_RETRY);
+}
+
+void M4Revolution::toggleFullScreen() {
+	std::ifstream inputFileStream;
+
+	Log log("Toggling Full Screen", inputFileStream);
+
+	OPERATION_EXCEPTION_RETRY_ERR(toggleFullScreen(inputFileStream, log), StreamFailed, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::toggleCameraInertia() {

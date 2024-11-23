@@ -111,19 +111,14 @@ namespace Ubi {
 					String::writeOptional(outputStream, KEY, nullTerminator);
 				}
 
-				consoleLog(name.c_str(), false);
-				consoleLog(TOGGLE_IS, false);
+				toggleLog(name, toggledOn);
 
 				if (toggledOn) {
-					consoleLog(TOGGLE_ON);
-
 					// to turn the resource back on we simply write it again at the end
 					// we assume it was on originally and turned off
 					// so there is some padding space at the end of the file
 					String::writeOptional(outputStream, key, false);
 					resources++;
-				} else {
-					consoleLog(TOGGLE_OFF);
 				}
 
 				std::streampos endPosition = outputStream.tellp();
