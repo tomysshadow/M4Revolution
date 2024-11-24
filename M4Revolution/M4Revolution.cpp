@@ -400,63 +400,59 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 
 	// we assume if the file is not open (that is, doesn't exist/can't be accessed,) full screen is on by default
 	Work::Output output(false);
-	bool isOpen = inputFileStream.is_open();
-	bool toggledOn = !isOpen;
+	bool toggledOn = !inputFileStream.is_open();
 
 	if (toggledOn) {
 		// we create an empty file here for when the backup is restored
 		// otherwise, since this file is not required, we couldn't know whether to delete it
 		Work::Backup::createEmpty(Work::Output::USER_PREFERENCE_PATH);
+		Work::Backup::log();
 	} else {
-		// does the section have a beginning?
 		std::string line = "";
-		bool section = false;
+		char fullScreen[FULL_SCREEN_SIZE] = "";
+		bool untoggleable = false;
 
 		while (std::getline(inputFileStream, line)) {
 			if (line == LINE_SECTION_BEGIN) {
-				section = true;
-				break;
-			}
+				// read the section to determine if on/off, then skip over it
+				readStreamSafe(inputFileStream, fullScreen, FULL_SCREEN_SIZE);
 
-			output.fileStream << line << "\n";
-		}
+				untoggleable = !std::getline(inputFileStream, line) || line != LINE_SECTION_END;
 
-		// if the section exists, it must be either on or off
-		if (section) {
-			char fullScreen[FULL_SCREEN_SIZE] = "";
-			readStreamSafe(inputFileStream, fullScreen, FULL_SCREEN_SIZE);
+				if (!untoggleable) {
+					toggledOn = memoryEquals(fullScreen, FULL_SCREEN_ON, FULL_SCREEN_SIZE);
 
-			// does the section have an ending?
-			bool untoggleable = !std::getline(inputFileStream, line) || line != LINE_SECTION_END;
+					if (!toggledOn) {
+						toggledOn = !memoryEquals(fullScreen, FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
 
-			if (!untoggleable) {
-				toggledOn = memoryEquals(fullScreen, FULL_SCREEN_ON, FULL_SCREEN_SIZE);
-
-				if (!toggledOn) {
-					toggledOn = !memoryEquals(fullScreen, FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
-
-					if (toggledOn) {
-						untoggleable = true;
+						if (toggledOn) {
+							untoggleable = true;
+						}
 					}
+				}
+
+				if (untoggleable) {
+					throw Aborted("Full Screen untoggleable. Restoring the backup or reinstalling the game may fix this problem.");
+				}
+
+				// get the next line after the section to copy next
+				if (!std::getline(inputFileStream, line)) {
+					break;
 				}
 			}
 
-			if (untoggleable) {
-				throw Untoggleable("Full Screen untoggleable.");
-			}
+			// copy line by line
+			// this is used instead of copyStream to ensure there is a newline on the end for when we write the section
+			output.fileStream << line << "\n";
 		}
 	}
 
 	toggledOn = !toggledOn;
 
+	// always write the section at the end
 	output.fileStream << LINE_SECTION_BEGIN << "\n";
 	writeStreamSafe(output.fileStream, toggledOn ? FULL_SCREEN_ON : FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
 	output.fileStream << LINE_SECTION_END << "\n";
-
-	// copy any preference after the section
-	if (isOpen) {
-		copyStream(inputFileStream, output.fileStream);
-	}
 
 	log.toggledFullScreen(toggledOn);
 }
@@ -489,7 +485,7 @@ void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &na
 		toggledOn = !memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_OFF, COMPUTE_MOVE_VECTOR_SIZE);
 
 		if (toggledOn) {
-			throw Untoggleable("Compute Move Vector untoggleable.");
+			throw Aborted("Compute Move Vector untoggleable. Restoring the backup or reinstalling the game may fix this problem.");
 		}
 	}
 

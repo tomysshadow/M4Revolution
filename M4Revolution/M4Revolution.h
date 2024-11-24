@@ -146,12 +146,6 @@ class M4Revolution {
 		}
 	};
 
-	class Untoggleable : public Aborted {
-		public:
-		Untoggleable(const char* message) noexcept : Aborted(message) {
-		}
-	};
-
 	M4Revolution(
 		const std::filesystem::path &path,
 		bool logFileNames = false,
