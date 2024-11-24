@@ -269,13 +269,13 @@ namespace Work {
 		return true;
 	}
 
-	Output::Output() {
+	Output::Output(bool binary) {
 		// without this remove first it may crash trying to open a hidden file
 		// (I mean, this isn't atomic so that can happen anyway but at least it's not our fault then)
 		// this is just a temp file so deleting it should be fine
 		std::filesystem::remove(FILE_NAME);
 
-		fileStream.open(FILE_NAME, std::ios::binary | std::ios::trunc, _SH_DENYRW);
+		fileStream.open(FILE_NAME, std::ios::trunc | (std::ios::binary * binary), _SH_DENYRW);
 
 		#ifdef WINDOWS
 		setFileAttributeHidden(true, FILE_NAME);

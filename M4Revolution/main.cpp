@@ -45,11 +45,12 @@ bool performOperation(M4Revolution &m4Revolution) {
 			m4Revolution.fixLoading();
 			break;
 			case OPERATION_RESTORE_BACKUP:
-			return m4Revolution.restoreBackup();
+			m4Revolution.restoreBackup();
+			break;
 			case OPERATION_EXIT:
 			exit(0);
 		}
-	} catch (M4Revolution::Untoggleable ex) {
+	} catch (M4Revolution::Aborted ex) {
 		consoleLog(ex.what(), 2, false, true);
 		return false;
 	}

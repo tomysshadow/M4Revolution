@@ -140,9 +140,15 @@ class M4Revolution {
 	static void outputThread(Work::Tasks &tasks, bool &yield);
 
 	public:
-	class Untoggleable : public std::logic_error {
+	class Aborted : public std::logic_error {
 		public:
-		Untoggleable(const char* message) noexcept : std::logic_error(message) {
+		Aborted(const char* message) noexcept : std::logic_error(message) {
+		}
+	};
+
+	class Untoggleable : public Aborted {
+		public:
+		Untoggleable(const char* message) noexcept : Aborted(message) {
 		}
 	};
 
@@ -163,5 +169,5 @@ class M4Revolution {
 	void toggleFullScreen();
 	void toggleCameraInertia();
 	void fixLoading();
-	bool restoreBackup();
+	void restoreBackup();
 };

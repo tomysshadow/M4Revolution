@@ -410,15 +410,22 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 
 		if (!toggledOn) {
 			readStreamSafe(inputFileStream, fullScreen, FULL_SCREEN_SIZE);
+			bool untoggleable = !peekStreamEOF(inputFileStream);
 
-			toggledOn = memoryEquals(fullScreen, FULL_SCREEN_ON, FULL_SCREEN_SIZE);
+			if (!untoggleable) {
+				toggledOn = memoryEquals(fullScreen, FULL_SCREEN_ON, FULL_SCREEN_SIZE);
 
-			if (!toggledOn) {
-				toggledOn = !memoryEquals(fullScreen, FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
+				if (!toggledOn) {
+					toggledOn = !memoryEquals(fullScreen, FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
 
-				if (toggledOn) {
-					throw Untoggleable("Full Screen untoggleable");
+					if (toggledOn) {
+						untoggleable = true;
+					}
 				}
+			}
+
+			if (untoggleable) {
+				throw Untoggleable("Full Screen untoggleable.");
 			}
 		}
 
@@ -428,7 +435,7 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 	toggledOn = !toggledOn;
 
 	{
-		Work::Output output;
+		Work::Output output(false);
 		writeStreamSafe(output.fileStream, toggledOn ? FULL_SCREEN_ON : FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
 	}
 
@@ -467,7 +474,7 @@ void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &na
 		toggledOn = !memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_OFF, COMPUTE_MOVE_VECTOR_SIZE);
 
 		if (toggledOn) {
-			throw Untoggleable("Compute Move Vector untoggleable");
+			throw Untoggleable("Compute Move Vector untoggleable.");
 		}
 	}
 
@@ -1117,7 +1124,7 @@ void M4Revolution::fixLoading() {
 	}
 }
 
-bool M4Revolution::restoreBackup() {
+void M4Revolution::restoreBackup() {
 	Work::Output::FILE_PATH filePath = 0;
 
 	{
@@ -1141,12 +1148,11 @@ bool M4Revolution::restoreBackup() {
 	}
 
 	if (!filePath) {
-		consoleLog("No backup was found. Backups will automatically be created when other operations are performed.", 2);
-		return false;
+		throw Aborted("No backup was found. Backups will automatically be created when other operations are performed.");
 	}
 
 	if (!consoleBool("Restoring the backup will revert any changes made by this tool. Would you like to restore the backup?", false)) {
-		return false;
+		throw Aborted("The operation was aborted by the user.");
 	}
 
 	for (
@@ -1158,5 +1164,4 @@ bool M4Revolution::restoreBackup() {
 			Work::Backup::restore(infoMapIterator->second.path);
 		}
 	}
-	return true;
 }

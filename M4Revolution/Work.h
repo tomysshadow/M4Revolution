@@ -243,7 +243,7 @@ namespace Work {
 		static void findInstallPath(const std::filesystem::path &path);
 		static bool setPath(const std::filesystem::path &path);
 
-		Output();
+		Output(bool binary = true);
 		~Output();
 	};
 
