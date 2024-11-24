@@ -314,7 +314,17 @@ namespace Work {
 		}
 
 		void createEmpty(const std::filesystem::path &path) {
-			std::ofstream outputFileStream(getPath(path));
+			std::ofstream outputFileStream;
+
+			for(;;) {
+				outputFileStream.open(getPath(path));
+
+				if (outputFileStream.is_open()) {
+					break;
+				}
+
+				RETRY_ERR(Work::Output::FILE_RETRY);
+			}
 		}
 
 		void restore(const std::filesystem::path &path) {
