@@ -391,26 +391,43 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 const M4Revolution::CompressionOptions M4Revolution::COMPRESSION_OPTIONS;
 
 void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
+	const std::string LINE_SECTION_BEGIN = "; Added by Myst IV: Revolution";
+	const std::string LINE_SECTION_END = "; End of section";
+
 	const size_t FULL_SCREEN_SIZE = 41;
 	const char FULL_SCREEN_ON[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( true ) \n}\n";
 	const char FULL_SCREEN_OFF[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( false )\n}\n";
 
-	char fullScreen[FULL_SCREEN_SIZE] = "";
-
-	inputFileStream.open(Work::Output::USER_PREFERENCE_PATH, std::ios::in, _SH_DENYWR);
-	bool toggledOn = !inputFileStream.is_open();
+	// we assume if the file is not open (that is, doesn't exist/can't be accessed,) full screen is on by default
+	Work::Output output(false);
+	bool isOpen = inputFileStream.is_open();
+	bool toggledOn = !isOpen;
 
 	if (toggledOn) {
 		// we create an empty file here for when the backup is restored
 		// otherwise, since this file is not required, we couldn't know whether to delete it
 		Work::Backup::createEmpty(Work::Output::USER_PREFERENCE_PATH);
 	} else {
-		// if file is empty, we also assume full screen is toggled on
-		toggledOn = peekStreamEOF(inputFileStream);
+		// does the section have a beginning?
+		std::string line = "";
+		bool section = false;
 
-		if (!toggledOn) {
+		while (std::getline(inputFileStream, line)) {
+			if (line == LINE_SECTION_BEGIN) {
+				section = true;
+				break;
+			}
+
+			output.fileStream << line << "\n";
+		}
+
+		// if the section exists, it must be either on or off
+		if (section) {
+			char fullScreen[FULL_SCREEN_SIZE] = "";
 			readStreamSafe(inputFileStream, fullScreen, FULL_SCREEN_SIZE);
-			bool untoggleable = !peekStreamEOF(inputFileStream);
+
+			// does the section have an ending?
+			bool untoggleable = !std::getline(inputFileStream, line) || line != LINE_SECTION_END;
 
 			if (!untoggleable) {
 				toggledOn = memoryEquals(fullScreen, FULL_SCREEN_ON, FULL_SCREEN_SIZE);
@@ -428,19 +445,17 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 				throw Untoggleable("Full Screen untoggleable.");
 			}
 		}
-
-		inputFileStream.close();
 	}
 
 	toggledOn = !toggledOn;
 
-	{
-		Work::Output output(false);
-		writeStreamSafe(output.fileStream, toggledOn ? FULL_SCREEN_ON : FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
-	}
+	output.fileStream << LINE_SECTION_BEGIN << "\n";
+	writeStreamSafe(output.fileStream, toggledOn ? FULL_SCREEN_ON : FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
+	output.fileStream << LINE_SECTION_END << "\n";
 
-	if (Work::Backup::create(Work::Output::USER_PREFERENCE_PATH.string().c_str())) {
-		Work::Backup::log();
+	// copy any preference after the section
+	if (isOpen) {
+		copyStream(inputFileStream, output.fileStream);
 	}
 
 	log.toggledFullScreen(toggledOn);
@@ -1060,11 +1075,17 @@ void M4Revolution::toggleSoundFading() {
 }
 
 void M4Revolution::toggleFullScreen() {
-	std::ifstream inputFileStream;
+	{
+		std::ifstream inputFileStream(Work::Output::USER_PREFERENCE_PATH, std::ios::in, _SH_DENYWR);
 
-	Log log("Toggling Full Screen", inputFileStream);
+		Log log("Toggling Full Screen", inputFileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(toggleFullScreen(inputFileStream, log), StreamFailed, Work::Output::FILE_RETRY);
+		OPERATION_EXCEPTION_RETRY_ERR(toggleFullScreen(inputFileStream, log), StreamFailed, Work::Output::FILE_RETRY);
+	}
+
+	if (Work::Backup::create(Work::Output::USER_PREFERENCE_PATH.string().c_str())) {
+		Work::Backup::log();
+	}
 }
 
 void M4Revolution::toggleCameraInertia() {
