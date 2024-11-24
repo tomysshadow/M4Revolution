@@ -405,8 +405,9 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 	if (toggledOn) {
 		// we create an empty file here for when the backup is restored
 		// otherwise, since this file is not required, we couldn't know whether to delete it
-		Work::Backup::createEmpty(Work::Output::USER_PREFERENCE_PATH);
-		Work::Backup::log();
+		if (Work::Backup::createEmpty(Work::Output::USER_PREFERENCE_PATH)) {
+			Work::Backup::log();
+		}
 	} else {
 		std::string line = "";
 		char fullScreen[FULL_SCREEN_SIZE] = "";

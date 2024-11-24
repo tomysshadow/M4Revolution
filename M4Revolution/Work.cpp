@@ -309,15 +309,21 @@ namespace Work {
 			return result;
 		}
 
-		bool createFromOutput(const char* fileName) {
+		bool createOutput(const char* fileName) {
 			return rename(Output::FILE_NAME, getPath(fileName).string().c_str());
 		}
 
-		void createEmpty(const std::filesystem::path &path) {
+		bool createEmpty(const std::filesystem::path &path) {
+			const std::filesystem::path PATH = getPath(path);
+
+			if (std::filesystem::is_regular_file(PATH)) {
+				return false;
+			}
+
 			std::ofstream outputFileStream;
 
 			for(;;) {
-				outputFileStream.open(getPath(path));
+				outputFileStream.open(PATH);
 
 				if (outputFileStream.is_open()) {
 					break;
@@ -325,6 +331,7 @@ namespace Work {
 
 				RETRY_ERR(Work::Output::FILE_RETRY);
 			}
+			return true;
 		}
 
 		void restore(const std::filesystem::path &path) {
@@ -361,7 +368,7 @@ namespace Work {
 					copyStream(fileStream, output.fileStream);
 				}
 
-				backup = Backup::createFromOutput(edit.path.string().c_str());
+				backup = Backup::createOutput(edit.path.string().c_str());
 			}
 
 			edit.copied = true;
