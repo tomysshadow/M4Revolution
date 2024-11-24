@@ -38,8 +38,12 @@ Debug.zip
 Release.zip
 data.bak
 data.m4b
+m4_thor_dd.dll
+m4_thor_dd.bak
 m4_thor_rd.dll
 m4_thor_rd.bak
+gfx_tools_dd.dll
+gfx_tools_dd.bak
 gfx_tools_rd.dll
 gfx_tools_rd.bak
 ~M4R.tmp

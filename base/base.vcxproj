@@ -21,9 +21,10 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{2c80b387-1e04-4213-b52d-513069f5c5db}</ProjectGuid>
-    <RootNamespace>gfxtoolsrd</RootNamespace>
+    <ProjectGuid>{eebe9684-7f9b-414e-9362-2ebf501008bf}</ProjectGuid>
+    <RootNamespace>baserd</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>base</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,38 +73,31 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\scope_guard\include;$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman-1\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\base_rd;$(SolutionDir)\ares_base_rd;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x86\Debug;$(SolutionDir)\vendor\pixman-1\lib\x86\Debug;$(SolutionDir)\vendor\M4Image\lib\x86\Debug;$(SolutionDir)\vendor\libzap\lib\x86\Debug;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)_dd</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\scope_guard\include;$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman-1\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\base_rd;$(SolutionDir)\ares_base_rd;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x86\Release;$(SolutionDir)\vendor\pixman-1\lib\x86\Release;$(SolutionDir)\vendor\M4Image\lib\x86\Release;$(SolutionDir)\vendor\libzap\lib\x86\Release;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)_rd</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\scope_guard\include;$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman-1\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\base_rd;$(SolutionDir)\ares_base_rd;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x64\Debug;$(SolutionDir)\vendor\pixman-1\lib\x64\Debug;$(SolutionDir)\vendor\M4Image\lib\x64\Debug;$(SolutionDir)\vendor\libzap\lib\x64\Debug;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)_dd</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\vendor\scope_guard\include;$(SolutionDir)\vendor\mango\include;$(SolutionDir)\vendor\pixman-1\include;$(SolutionDir)\vendor\M4Image\include;$(SolutionDir)\vendor\libzap\include;$(SolutionDir)\base_rd;$(SolutionDir)\ares_base_rd;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\vendor\mango\lib\x64\Release;$(SolutionDir)\vendor\pixman-1\lib\x64\Release;$(SolutionDir)\vendor\M4Image\lib\x64\Release;$(SolutionDir)\vendor\libzap\lib\x64\Release;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)_rd</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GFX_TOOLS_RD_LIBRARY;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BASE_LIBRARY;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/Zc:strictStrings- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mango.lib;pixman-1_staticd.lib;M4Image.lib;libzap.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -112,34 +106,28 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GFX_TOOLS_RD_LIBRARY;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BASE_LIBRARY;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/Zc:strictStrings- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mango.lib;pixman-1_static.lib;M4Image.lib;libzap.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GFX_TOOLS_RD_LIBRARY;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BASE_LIBRARY;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/Zc:strictStrings- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mango.lib;pixman-1_staticd.lib;M4Image.lib;libzap.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,49 +136,22 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GFX_TOOLS_RD_LIBRARY;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BASE_LIBRARY;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/Zc:strictStrings- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mango.lib;pixman-1_static.lib;M4Image.lib;libzap.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Configuration.cpp" />
-    <ClCompile Include="FormatHint.cpp" />
-    <ClCompile Include="ImageCreator.cpp" />
-    <ClCompile Include="ImageInfo.cpp" />
-    <ClCompile Include="ImageLoader.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="PixelFormat.cpp" />
-    <ClCompile Include="RawBuffer.cpp" />
+    <ClInclude Include="base.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Configuration.h" />
-    <ClInclude Include="FormatHint.h" />
-    <ClInclude Include="IgnoreCaseComparer.h" />
-    <ClInclude Include="ImageCreator.h" />
-    <ClInclude Include="ImageInfo.h" />
-    <ClInclude Include="main.h" />
-    <ClInclude Include="ImageLoader.h" />
-    <ClInclude Include="PixelFormat.h" />
-    <ClInclude Include="RawBuffer.h" />
-    <ClInclude Include="shared.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ares_base_rd\ares_base_rd.vcxproj">
-      <Project>{ec46594f-1c5f-43af-99c1-08a13ad54379}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\base_rd\base_rd.vcxproj">
-      <Project>{eebe9684-7f9b-414e-9362-2ebf501008bf}</Project>
-    </ProjectReference>
+    <ClCompile Include="base.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

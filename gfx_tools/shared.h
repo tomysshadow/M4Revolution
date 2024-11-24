@@ -117,16 +117,16 @@ inline bool memoryShift(void* mem, size_t memSize, void* sourceMem, size_t sourc
 	#pragma warning(pop)
 }
 
-#define GFX_TOOLS_RD_CALL
+#define GFX_TOOLS_CALL
 
 #ifdef _WIN32
-	#ifdef GFX_TOOLS_RD_LIBRARY
-		#define GFX_TOOLS_RD_API __declspec(dllexport)
+	#ifdef GFX_TOOLS_LIBRARY
+		#define GFX_TOOLS_API __declspec(dllexport)
 	#else
-		#define GFX_TOOLS_RD_API __declspec(dllimport)
+		#define GFX_TOOLS_API __declspec(dllimport)
 	#endif
 #else
-	#define GFX_TOOLS_RD_API
+	#define GFX_TOOLS_API
 #endif
 
 typedef int L_INT;

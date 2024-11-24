@@ -3,13 +3,13 @@
 #include "PixelFormat.h"
 
 namespace gfx_tools {
-	GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL Init();
-	GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL Shutdown();
+	GFX_TOOLS_API void GFX_TOOLS_CALL Init();
+	GFX_TOOLS_API void GFX_TOOLS_CALL Shutdown();
 
 	typedef unsigned long DIMENSION;
 	typedef unsigned long STRIDE;
 
-	GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL ConvertHeightMapIntoDuDvBumpMap(
+	GFX_TOOLS_API void GFX_TOOLS_CALL ConvertHeightMapIntoDuDvBumpMap(
 		DIMENSION width,
 		DIMENSION height,
 		unsigned char* inputPointer,
@@ -20,7 +20,7 @@ namespace gfx_tools {
 		STRIDE outputStride
 	);
 
-	GFX_TOOLS_RD_API void GFX_TOOLS_RD_CALL ConvertHeightMapIntoNormalMap(
+	GFX_TOOLS_API void GFX_TOOLS_CALL ConvertHeightMapIntoNormalMap(
 		DIMENSION width,
 		DIMENSION height,
 		unsigned char* inputPointer,

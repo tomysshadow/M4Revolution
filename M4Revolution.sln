@@ -5,11 +5,11 @@ VisualStudioVersion = 16.0.34729.46
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "M4Revolution", "M4Revolution\M4Revolution.vcxproj", "{58D8B4FC-0EB6-4004-BE2F-1919937661CE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base_rd", "base_rd\base_rd.vcxproj", "{EEBE9684-7F9B-414E-9362-2EBF501008BF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "base\base.vcxproj", "{EEBE9684-7F9B-414E-9362-2EBF501008BF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ares_base_rd", "ares_base_rd\ares_base_rd.vcxproj", "{EC46594F-1C5F-43AF-99C1-08A13AD54379}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ares_base", "ares_base\ares_base.vcxproj", "{EC46594F-1C5F-43AF-99C1-08A13AD54379}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gfx_tools_rd", "gfx_tools_rd\gfx_tools_rd.vcxproj", "{2C80B387-1E04-4213-B52D-513069F5C5DB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gfx_tools", "gfx_tools\gfx_tools.vcxproj", "{2C80B387-1E04-4213-B52D-513069F5C5DB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

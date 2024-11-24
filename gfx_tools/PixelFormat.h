@@ -59,9 +59,9 @@ namespace gfx_tools {
 		typedef unsigned __int64 MASK;
 		typedef unsigned char BITS_PER_PIXEL;
 
-		GFX_TOOLS_RD_API PixelFormat();
+		GFX_TOOLS_API PixelFormat();
 
-		GFX_TOOLS_RD_API PixelFormat(
+		GFX_TOOLS_API PixelFormat(
 			MASK maskRed,
 			MASK maskGreen,
 			MASK maskBlue,
@@ -72,29 +72,29 @@ namespace gfx_tools {
 			MASK maskStencil
 		);
 
-		GFX_TOOLS_RD_API bool GFX_TOOLS_RD_CALL HasRed();
-		GFX_TOOLS_RD_API bool GFX_TOOLS_RD_CALL HasGreen();
-		GFX_TOOLS_RD_API bool GFX_TOOLS_RD_CALL HasBlue();
-		GFX_TOOLS_RD_API bool GFX_TOOLS_RD_CALL HasAlpha();
-		GFX_TOOLS_RD_API bool GFX_TOOLS_RD_CALL HasPalette();
-		GFX_TOOLS_RD_API bool GFX_TOOLS_RD_CALL HasDepth();
-		GFX_TOOLS_RD_API bool GFX_TOOLS_RD_CALL HasStencil();
-		GFX_TOOLS_RD_API bool GFX_TOOLS_RD_CALL HasColor();
-		GFX_TOOLS_RD_API bool GFX_TOOLS_RD_CALL HasBitsPerPixel();
+		GFX_TOOLS_API bool GFX_TOOLS_CALL HasRed();
+		GFX_TOOLS_API bool GFX_TOOLS_CALL HasGreen();
+		GFX_TOOLS_API bool GFX_TOOLS_CALL HasBlue();
+		GFX_TOOLS_API bool GFX_TOOLS_CALL HasAlpha();
+		GFX_TOOLS_API bool GFX_TOOLS_CALL HasPalette();
+		GFX_TOOLS_API bool GFX_TOOLS_CALL HasDepth();
+		GFX_TOOLS_API bool GFX_TOOLS_CALL HasStencil();
+		GFX_TOOLS_API bool GFX_TOOLS_CALL HasColor();
+		GFX_TOOLS_API bool GFX_TOOLS_CALL HasBitsPerPixel();
 
-		GFX_TOOLS_RD_API MASK GFX_TOOLS_RD_CALL GetMaskRed();
-		GFX_TOOLS_RD_API MASK GFX_TOOLS_RD_CALL GetMaskGreen();
-		GFX_TOOLS_RD_API MASK GFX_TOOLS_RD_CALL GetMaskBlue();
-		GFX_TOOLS_RD_API MASK GFX_TOOLS_RD_CALL GetMaskAlpha();
-		GFX_TOOLS_RD_API MASK GFX_TOOLS_RD_CALL GetMaskPalette();
-		GFX_TOOLS_RD_API BITS_PER_PIXEL GFX_TOOLS_RD_CALL GetBitsPerPixel();
-		GFX_TOOLS_RD_API MASK GFX_TOOLS_RD_CALL GetMaskDepth();
-		GFX_TOOLS_RD_API MASK GFX_TOOLS_RD_CALL GetMaskStencil();
+		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskRed();
+		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskGreen();
+		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskBlue();
+		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskAlpha();
+		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskPalette();
+		GFX_TOOLS_API BITS_PER_PIXEL GFX_TOOLS_CALL GetBitsPerPixel();
+		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskDepth();
+		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskStencil();
 
-		GFX_TOOLS_RD_API static PixelFormat* GFX_TOOLS_RD_CALL GetPixelFormat(EnumPixelFormat enumPixelFormat);
-		GFX_TOOLS_RD_API static EnumPixelFormat GFX_TOOLS_RD_CALL GetEnumPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat);
-		GFX_TOOLS_RD_API static EnumPixelFormat GFX_TOOLS_RD_CALL GetEnumPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat);
-		GFX_TOOLS_RD_API static char* GFX_TOOLS_RD_CALL GetPixelFormatString(EnumPixelFormat enumPixelFormat);
+		GFX_TOOLS_API static PixelFormat* GFX_TOOLS_CALL GetPixelFormat(EnumPixelFormat enumPixelFormat);
+		GFX_TOOLS_API static EnumPixelFormat GFX_TOOLS_CALL GetEnumPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat);
+		GFX_TOOLS_API static EnumPixelFormat GFX_TOOLS_CALL GetEnumPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat);
+		GFX_TOOLS_API static char* GFX_TOOLS_CALL GetPixelFormatString(EnumPixelFormat enumPixelFormat);
 
 		private:
 		MASK maskRed = 0;

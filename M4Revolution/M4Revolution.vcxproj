@@ -180,13 +180,6 @@
     <ClCompile Include="Work.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\gfx_tools_rd\gfx_tools_rd.vcxproj">
-      <Project>{2c80b387-1e04-4213-b52d-513069f5c5db}</Project>
-      <Private>false</Private>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="M4Revolution.rc" />
   </ItemGroup>
   <ItemGroup>
@@ -194,6 +187,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\gfx_tools\gfx_tools.vcxproj">
+      <Project>{2c80b387-1e04-4213-b52d-513069f5c5db}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

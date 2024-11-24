@@ -1,4 +1,4 @@
-#include "ares_base_rd.h"
+#include "ares_base.h"
 
 namespace ares {
 	Resource::Resource() {

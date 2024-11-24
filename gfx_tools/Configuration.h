@@ -19,9 +19,9 @@ namespace gfx_tools {
 		bool dimensionsMakePowerOfTwo = false;
 		bool toNext = true;
 
-		GFX_TOOLS_RD_API static Configuration const GFX_TOOLS_RD_CALL &Get();
-		GFX_TOOLS_RD_API static void GFX_TOOLS_RD_CALL Set(Configuration const &configuration);
+		GFX_TOOLS_API static Configuration const GFX_TOOLS_CALL &Get();
+		GFX_TOOLS_API static void GFX_TOOLS_CALL Set(Configuration const &configuration);
 
-		GFX_TOOLS_RD_API Configuration();
+		GFX_TOOLS_API Configuration();
 	};
 }

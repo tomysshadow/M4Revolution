@@ -15,12 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="base_rd.h">
+    <ClInclude Include="ares_base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="base_rd.cpp">
+    <ClCompile Include="ares_base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

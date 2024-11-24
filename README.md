@@ -120,8 +120,8 @@ If you are a developer who would like to contribute, you may compile for Windows
 13. Copy the **x86** Debug GetDLLExportRVA files to `x64/Debug`. Notice that the **x86** Debug build must be copied to the **x64** Debug folder.
 14. Copy the **x86** Release GetDLLExportRVA files to `x64/Release`. Notice that the **x86** Release build must be copied to the **x64** Release folder.
 15. Open the M4Revolution solution in your Visual Studio version.
-16. Build the solution for x86 first. It must be built for x86 first because the x64 M4Revolution project includes the x86 gfx_tools_rd.dll as a resource.
-17. After building the solution for x86, build the solution for x64.
+16. Build the solution for x86 Release first. It must be built for x86 Release first because the x64 M4Revolution project includes the x86 gfx_tools_rd.dll as a resource.
+17. After building the solution for x86 Release, build the solution for x64.
 
 # Do I need to use this tool on the same computer I play the game on?
 
