@@ -18,7 +18,7 @@ class M4Revolution {
 
 	class Log {
 		private:
-		std::istream &inputStream;
+		std::istream* inputStreamPointer = 0;
 		Ubi::BigFile::File::SIZE inputFileSize = 0;
 		bool fileNames = false;
 		std::optional<std::chrono::steady_clock::time_point> beginOptional = std::nullopt;
@@ -32,7 +32,7 @@ class M4Revolution {
 		static void replacedM4Thor(const std::string &name, bool toggledOn);
 		static void replacedGfxTools();
 
-		Log(const char* title, std::istream &inputStream, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
+		Log(const char* title, std::istream* inputStreamPointer = 0, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
 		~Log();
 		Log(const Log &log) = delete;
 		Log &operator=(const Log &log) = delete;

@@ -353,9 +353,7 @@ namespace Work {
 
 		if (!edit.copied) {
 			// check if the file exists, if it doesn't create a backup
-			std::ifstream backupInputFileStream(Backup::getPath(edit.path), std::ios::binary, _SH_DENYWR);
-
-			if (!backupInputFileStream.is_open()) {
+			if (!std::filesystem::is_regular_file(Backup::getPath(edit.path))) {
 				// always delete the temporary file when done
 				SCOPE_EXIT {
 					std::filesystem::remove(Output::FILE_NAME);
@@ -387,9 +385,8 @@ namespace Work {
 	Edit::Edit(std::fstream &fileStream, const std::filesystem::path &path)
 		: fileStream(fileStream),
 		path(path) {
-		if (!fileStream.is_open()) {
-			fileStream.open(path, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
-		}
+		fileStream.close();
+		fileStream.open(path, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 	}
 
 	void Edit::join(std::thread &copyThread, std::streampos position, const std::string &str) {

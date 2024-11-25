@@ -1258,7 +1258,7 @@ namespace Ubi {
 			BigFile bigFile(stream, *pathVectorIterator, filePointer);
 
 			if (!filePointer) {
-				throw std::runtime_error("filePointer must not be zero");
+				throw std::logic_error("filePointer must not be zero");
 			}
 
 			stream.seekg(position + (std::streampos)filePointer->position);

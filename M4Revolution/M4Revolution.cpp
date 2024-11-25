@@ -32,8 +32,8 @@ void M4Revolution::Log::replacedGfxTools() {
 	std::cout << "Replaced Gfx Tools" << std::endl << std::endl;
 }
 
-M4Revolution::Log::Log(const char* title, std::istream &inputStream, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
-	: inputStream(inputStream),
+M4Revolution::Log::Log(const char* title, std::istream* inputStreamPointer, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
+	: inputStreamPointer(inputStreamPointer),
 	inputFileSize(inputFileSize),
 	fileNames(fileNames) {
 	if (slow) {
@@ -57,9 +57,13 @@ void M4Revolution::Log::step() {
 
 void M4Revolution::Log::copying() {
 	if (!fileNames) {
+		if (!inputStreamPointer) {
+			throw std::logic_error("inputStreamPointer must not be zero");
+		}
+
 		// use the position to log the current progress
 		// this works because we read the input file stream from beginning to end in order
-		int currentProgress = (int)(((double)inputStream.tellg() / inputFileSize) * 100.0);
+		int currentProgress = (int)(((double)inputStreamPointer->tellg() / inputFileSize) * 100.0);
 
 		while (progress < currentProgress) {
 			std::cout << ++progress << "% complete" << std::endl;
@@ -235,6 +239,10 @@ void M4Revolution::convertFile(
 ) {
 	Work::Convert &convert = *new Work::Convert(configuration, context, file);
 
+	MAKE_SCOPE_EXIT(convertScopeExit) {
+		delete &convert;
+	};
+
 	Work::Data::POINTER &dataPointer = convert.dataPointer;
 	dataPointer = Work::Data::POINTER(new unsigned char[file.size]);
 	readStreamSafe(inputStream, dataPointer.get(), file.size);
@@ -252,10 +260,14 @@ void M4Revolution::convertFile(
 		throw std::runtime_error("Failed to Create Threadpool Work");
 	}
 
+	convertScopeExit.dismiss();
+
 	SubmitThreadpoolWork(work);
 	CloseThreadpoolWork(work);
 	#endif
 	#ifdef SINGLETHREADED
+	convertScopeExit.dismiss();
+
 	convert.fileWorkCallback(&convert);
 	#endif
 }
@@ -398,17 +410,11 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 	const char FULL_SCREEN_ON[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( true ) \n}\n";
 	const char FULL_SCREEN_OFF[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( false )\n}\n";
 
-	// we assume if the file is not open (that is, doesn't exist/can't be accessed,) full screen is on by default
+	// we assume if we don't find the section full screen is on by default
 	Work::Output output(false);
-	bool toggledOn = !inputFileStream.is_open();
+	bool toggledOn = true;
 
-	if (toggledOn) {
-		// we create an empty file here for when the backup is restored
-		// otherwise, since this file is not required, we couldn't know whether to delete it
-		if (Work::Backup::createEmpty(Work::Output::USER_PREFERENCE_PATH)) {
-			Work::Backup::log();
-		}
-	} else {
+	if (inputFileStream.is_open()) {
 		std::string line = "";
 		char fullScreen[FULL_SCREEN_SIZE] = "";
 		bool untoggleable = false;
@@ -449,6 +455,12 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 			} catch (std::runtime_error) {
 				throw WriteStreamFailed();
 			}
+		}
+	} else {
+		// we create an empty file here for when the backup is restored
+		// otherwise, since this file is not required, we couldn't know whether to delete it
+		if (Work::Backup::createEmpty(Work::Output::USER_PREFERENCE_PATH)) {
+			Work::Backup::log();
 		}
 	}
 
@@ -1068,7 +1080,7 @@ M4Revolution::~M4Revolution() {
 void M4Revolution::editTransitionTime() {
 	std::fstream fileStream;
 
-	Log log("Editing Transition Time", fileStream);
+	Log log("Editing Transition Time", &fileStream);
 
 	OPERATION_EXCEPTION_RETRY_ERR(AI::editTransitionTime(fileStream), StreamFailed, Work::Output::FILE_RETRY);
 }
@@ -1076,7 +1088,7 @@ void M4Revolution::editTransitionTime() {
 void M4Revolution::toggleSoundFading() {
 	std::fstream fileStream;
 
-	Log log("Toggling Sound Fading", fileStream);
+	Log log("Toggling Sound Fading", &fileStream);
 
 	OPERATION_EXCEPTION_RETRY_ERR(AI::toggleSoundFading(fileStream), StreamFailed, Work::Output::FILE_RETRY);
 }
@@ -1085,7 +1097,7 @@ void M4Revolution::toggleFullScreen() {
 	{
 		std::ifstream inputFileStream(Work::Output::USER_PREFERENCE_PATH, std::ios::in, _SH_DENYWR);
 
-		Log log("Toggling Full Screen", inputFileStream);
+		Log log("Toggling Full Screen", &inputFileStream);
 
 		OPERATION_EXCEPTION_RETRY_ERR(toggleFullScreen(inputFileStream, log), StreamFailed, Work::Output::FILE_RETRY);
 	}
@@ -1098,7 +1110,7 @@ void M4Revolution::toggleFullScreen() {
 void M4Revolution::toggleCameraInertia() {
 	std::fstream fileStream;
 
-	Log log("Toggling Camera Inertia", fileStream);
+	Log log("Toggling Camera Inertia", &fileStream);
 
 	OPERATION_EXCEPTION_RETRY_ERR(replaceM4Thor(fileStream, "Camera Inertia"), StreamFailed, Work::Output::FILE_RETRY);
 }
@@ -1124,7 +1136,7 @@ void M4Revolution::fixLoading() {
 
 		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
-		Log log("Fixing Loading, this may take several minutes", inputFileStream, inputFile.size, logFileNames, true);
+		Log log("Fixing Loading, this may take several minutes", &inputFileStream, inputFile.size, logFileNames, true);
 
 		// to avoid a sharing violation this must happen first before creating the output thread
 		// as they will both write to the same temporary file
@@ -1153,26 +1165,20 @@ void M4Revolution::fixLoading() {
 }
 
 void M4Revolution::restoreBackup() {
+	Log log("Restoring Backup");
+
 	Work::Output::FILE_PATH filePath = 0;
 
-	{
-		std::ifstream inputFileStream;
-
-		for (
-			Work::Output::INFO_MAP::const_iterator infoMapIterator = Work::Output::FILE_PATH_INFO_MAP.begin();
-			infoMapIterator != Work::Output::FILE_PATH_INFO_MAP.end();
-			infoMapIterator++
-		) {
-			inputFileStream.open(Work::Backup::getPath(infoMapIterator->second.path), std::ios::binary, _SH_DENYWR);
-			
-			if (inputFileStream.is_open()) {
-				filePath |= infoMapIterator->first;
-			}
-
-			inputFileStream.close();
+	for (
+		Work::Output::INFO_MAP::const_iterator infoMapIterator = Work::Output::FILE_PATH_INFO_MAP.begin();
+		infoMapIterator != Work::Output::FILE_PATH_INFO_MAP.end();
+		infoMapIterator++
+	) {
+		// we assume these files will stick around until after the yes or no prompt
+		// it should cause an error if they don't
+		if (std::filesystem::is_regular_file(Work::Backup::getPath(infoMapIterator->second.path))) {
+			filePath |= infoMapIterator->first;
 		}
-
-		Log log("Restoring Backup", inputFileStream);
 	}
 
 	if (!filePath) {
