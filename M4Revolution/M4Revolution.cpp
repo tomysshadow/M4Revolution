@@ -176,7 +176,7 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 }
 
 void M4Revolution::ErrorHandler::error(nvtt::Error error) {
-	consoleLog(nvtt::errorString(error), true, false, true);
+	consoleLog(nvtt::errorString(error), 2, false, true);
 	result = false;
 }
 
