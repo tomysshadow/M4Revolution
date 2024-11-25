@@ -444,16 +444,26 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 
 			// copy line by line
 			// this is used instead of copyStream to ensure there is a newline on the end for when we write the section
-			output.fileStream << line << "\n";
+			try {
+				output.fileStream << line << "\n";
+			} catch (std::runtime_error) {
+				throw WriteStreamFailed();
+			}
 		}
 	}
 
 	toggledOn = !toggledOn;
 
-	// always write the section at the end
-	output.fileStream << LINE_SECTION_BEGIN << "\n";
-	writeStreamSafe(output.fileStream, toggledOn ? FULL_SCREEN_ON : FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
-	output.fileStream << LINE_SECTION_END << "\n";
+	try {
+		// always write the section at the end
+		output.fileStream << LINE_SECTION_BEGIN << "\n";
+		writeStreamSafe(output.fileStream, toggledOn ? FULL_SCREEN_ON : FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
+		output.fileStream << LINE_SECTION_END << "\n";
+	} catch (WriteStreamFailed) {
+		throw;
+	} catch (std::runtime_error) {
+		throw WriteStreamFailed();
+	}
 
 	log.toggledFullScreen(toggledOn);
 }
