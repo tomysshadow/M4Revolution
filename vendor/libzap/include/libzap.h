@@ -130,12 +130,12 @@ LIBZAP_API zap_error_t LIBZAP_CALL zap_save(const char* filename, const zap_byte
 /// \return 0 on success, non-zero on failure
 LIBZAP_API zap_error_t LIBZAP_CALL zap_save_memory(zap_byte_t** pOut, zap_size_t* pOutSize, zap_int_t width, zap_int_t height, zap_size_t stride, zap_uint_t colorFormat, zap_uint_t format1, zap_uint_t format2, float quality = 0.90f);
 
-/// Free the image loaded by zap_load, zap_resize, zap_load_memory, zap_resize_memory, or zap_save_memory
+/// Free the image loaded by zap_load, zap_load_memory, zap_resize, zap_resize_memory, or zap_save_memory
 /// \param pImage The image to free
 /// \return 0 on success, non-zero on failure
 LIBZAP_API zap_error_t LIBZAP_CALL zap_free(zap_byte_t* pImage);
 
-/// Set the allocator used by zap_load, zap_resize, zap_load_memory, or zap_resize_memory
+/// Set the allocator used by zap_load, zap_load_memory, zap_resize, or zap_resize_memory
 /// \param mallocProc The malloc procedure
 /// \param freeProc The free procedure
 /// \return 0 on success, non-zero on failure

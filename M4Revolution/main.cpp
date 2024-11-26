@@ -58,7 +58,7 @@ bool performOperation(M4Revolution &m4Revolution) {
 }
 
 int main(int argc, char** argv) {
-	consoleLog("Myst IV: Revolution 1.0.0");
+	consoleLog("Myst IV: Revolution 1.1.0");
 	consoleLog("By Anthony Kleine", 2);
 
 	const int MIN_ARGC = 1;
