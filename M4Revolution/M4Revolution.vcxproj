@@ -187,7 +187,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
-    <None Include="..\Release\gfx_tools_rd.dll" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\gfx_tools\gfx_tools.vcxproj">

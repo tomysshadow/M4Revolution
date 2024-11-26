@@ -81,6 +81,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
-    <None Include="..\Release\gfx_tools_rd.dll" />
   </ItemGroup>
 </Project>
