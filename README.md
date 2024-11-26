@@ -35,9 +35,9 @@ Once the install path has been found, you will be presented a menu that allows y
 
 1. Open Online Help
 2. Edit Transition Time
-3. Toggle Sound Fading
-4. Toggle Full Screen
-5. Toggle Camera Inertia
+3. Toggle Full Screen
+4. Toggle Camera Inertia
+5. Toggle Sound Fading
 6. Fix Loading
 7. Restore Backup
 8. Exit
@@ -54,14 +54,6 @@ Upon navigating, the game will play a fade transition. You may edit the transiti
 
 This operation will create a backup of your game files if one has not already been made.
 
-### Toggle Sound Fading
-
-Upon navigating, the game inserts an intentional half a second delay to crossfade sounds from one place to another. You may toggle the sound fading on or off. When the sound fading is off, the sounds will cut instantly to their volume at the new location instead of fading, allowing faster navigation. The default is on.
-
-If sound fading is on, it will be turned off, and vice-versa. The tool will then report whether sound fading has been toggled on or off.
-
-This operation will create a backup of your game files if one has not already been made.
-
 ### Toggle Full Screen
 
 You may toggle full screen on or off. The default is on.
@@ -73,6 +65,14 @@ If full screen is on, it will be turned off, and vice-versa. The tool will then 
 When moving the camera, there is an inertia applied to the movement. You may toggle the camera inertia on or off. When the camera inertia is off, mouse movements will translate directly into camera movements, effectively disabling mouse acceleration. The default is on.
 
 If camera inertia is on, it will be turned off, and vice-versa. The tool will then report whether camera inertia has been toggled on or off.
+
+This operation will create a backup of your game files if one has not already been made.
+
+### Toggle Sound Fading
+
+Upon navigating, the game inserts an intentional half a second delay to crossfade sounds from one place to another. You may toggle the sound fading on or off. When the sound fading is off, the sounds will cut instantly to their volume at the new location instead of fading, allowing faster navigation. The default is on.
+
+If sound fading is on, it will be turned off, and vice-versa. The tool will then report whether sound fading has been toggled on or off.
 
 This operation will create a backup of your game files if one has not already been made.
 

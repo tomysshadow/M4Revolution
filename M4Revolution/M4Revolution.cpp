@@ -3,6 +3,8 @@
 #include "GlobalHandle.h"
 #include <chrono>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <filesystem>
 
 #ifdef D3D9
@@ -19,17 +21,12 @@ void M4Revolution::destroy() {
 	#endif
 }
 
-void M4Revolution::Log::toggledFullScreen(bool toggledOn) {
-	toggleLog("Full Screen", toggledOn);
-}
+void M4Revolution::Log::replaced(const std::string &file, bool toggled) {
+	std::cout << "Replaced " << file << std::endl;
 
-void M4Revolution::Log::replacedM4Thor(const std::string &name, bool toggledOn) {
-	std::cout << "Replaced M4 Thor" << std::endl;
-	toggleLog(name, toggledOn);
-}
-
-void M4Revolution::Log::replacedGfxTools() {
-	std::cout << "Replaced Gfx Tools" << std::endl << std::endl;
+	if (!toggled) {
+		std::cout << std::endl;
+	}
 }
 
 M4Revolution::Log::Log(const char* title, std::istream* inputStreamPointer, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
@@ -477,7 +474,7 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 		throw WriteStreamFailed();
 	}
 
-	log.toggledFullScreen(toggledOn);
+	toggleLog("Full Screen", toggledOn);
 }
 
 void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &name) {
@@ -485,11 +482,14 @@ void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &na
 	const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50, 0x00 };
 	const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xC6, 0x44, 0x24, 0x0B, 0x48, 0x90, 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0x00 };
 
-	unsigned long computeMoveVectorPosition = 0;
+	// default value is the position as of the latest Steam version
+	unsigned long computeMoveVectorPosition = 0x000109C0;
 
-	while (!getComputeMoveVectorPosition(computeMoveVectorPosition)) {
+	#ifdef WINDOWS
+	while (!getDLLExportRVA("m4_thor_rd.dll", "?ComputeMoveVector@COrientationUpdateManager@thor@@AAE?AVVector3@ubi@@M@Z", computeMoveVectorPosition)) {
 		RETRY_ERR(Work::Output::FILE_RETRY);
 	}
+	#endif
 
 	unsigned char computeMoveVector[COMPUTE_MOVE_VECTOR_SIZE] = "";
 
@@ -516,7 +516,47 @@ void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &na
 	toggledOn = !toggledOn;
 	edit.join(copyThread, computeMoveVectorPosition, (const char*)(toggledOn ? COMPUTE_MOVE_VECTOR_ON : COMPUTE_MOVE_VECTOR_OFF));
 
-	Log::replacedM4Thor(name, toggledOn);
+	Log::replaced("M4 Thor", true);
+	toggleLog(name, toggledOn);
+}
+
+void M4Revolution::replaceM4AIGlobal(std::fstream &fileStream, const std::string &name) {
+	unsigned char onActivate = 0x00;
+	const size_t ON_ACTIVATE_SIZE = sizeof(onActivate);
+
+	const unsigned char ON_ACTIVATE_ON[ON_ACTIVATE_SIZE + 1] = { 0x53, 0x00 };
+	const unsigned char ON_ACTIVATE_OFF[ON_ACTIVATE_SIZE + 1] = { 0xC3, 0x00 };
+
+	unsigned long onActivatePosition = 0x00010F60;
+
+	#ifdef WINDOWS
+	while (!getDLLExportRVA("m4_ai_global_rd.dll", "?OnActivate@AiSndTransition@ai@@UAEXXZ", onActivatePosition)) {
+		RETRY_ERR(Work::Output::FILE_RETRY);
+	}
+	#endif
+
+	Work::Edit edit(fileStream, Work::Output::M4_AI_GLOBAL_PATH);
+
+	fileStream.seekg(onActivatePosition);
+	readStreamSafe(fileStream, &onActivate, ON_ACTIVATE_SIZE);
+
+	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
+
+	bool toggledOn = onActivate == *ON_ACTIVATE_ON;
+
+	if (!toggledOn) {
+		toggledOn = onActivate != *ON_ACTIVATE_OFF;
+
+		if (toggledOn) {
+			throw Aborted("On Activate untoggleable. Restoring the backup or reinstalling the game may fix this problem.");
+		}
+	}
+
+	toggledOn = !toggledOn;
+	edit.join(copyThread, onActivatePosition, (const char*)(toggledOn ? ON_ACTIVATE_ON : ON_ACTIVATE_OFF));
+
+	Log::replaced("M4 AI Global", true);
+	toggleLog(name, toggledOn);
 }
 
 #ifdef WINDOWS
@@ -539,7 +579,7 @@ void M4Revolution::replaceGfxTools() {
 		Work::Backup::log();
 	}
 
-	Log::replacedGfxTools();
+	Log::replaced("Gfx Tools", false);
 }
 #endif
 
@@ -672,107 +712,6 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 
 	// when this unlocks one line later, the output thread will begin waiting on data
 	convertSurface(convert, surface, true);
-}
-
-bool M4Revolution::getComputeMoveVectorPosition(unsigned long &computeMoveVectorPosition) {
-	// default value is the position as of the latest Steam version
-	MAKE_SCOPE_EXIT(computeMoveVectorPositionScopeExit) {
-		computeMoveVectorPosition = 0x000109C0;
-	};
-
-	#ifdef WINDOWS
-	TCHAR commandLine[] = TEXT("GetDLLExportRVA m4_thor_rd.dll ?ComputeMoveVector@COrientationUpdateManager@thor@@AAE?AVVector3@ubi@@M@Z");
-
-	PROCESS_INFORMATION processInformation = {};
-	HANDLE &process = processInformation.hProcess;
-	HANDLE &thread = processInformation.hThread;
-
-	SCOPE_EXIT {
-		if (!closeProcess(process)) {
-			throw std::runtime_error("Failed to Close Process");
-		}
-	};
-
-	SCOPE_EXIT {
-		if (!closeThread(thread)) {
-			throw std::runtime_error("Failed to Close Thread");
-		}
-	};
-
-	const DWORD BUFFER_SIZE = sizeof("0x00000000");
-	CHAR buffer[BUFFER_SIZE] = "";
-
-	{
-		HANDLE stdoutReadPipe = NULL;
-
-		SCOPE_EXIT {
-			if (!closeHandle(stdoutReadPipe)) {
-				throw std::runtime_error("Failed to Close Handle");
-			}
-		};
-
-		{
-			HANDLE stdoutWritePipe = NULL;
-
-			SCOPE_EXIT {
-				if (!closeHandle(stdoutWritePipe)) {
-					throw std::runtime_error("Failed to Close Handle");
-				}
-			};
-
-			SECURITY_ATTRIBUTES securityAttributes = {};
-			securityAttributes.nLength = sizeof(securityAttributes);
-			securityAttributes.bInheritHandle = TRUE;
-
-			if (!CreatePipe(&stdoutReadPipe, &stdoutWritePipe, &securityAttributes, BUFFER_SIZE - 1)) {
-				throw std::runtime_error("Failed to Create Pipe");
-			}
-
-			if (!SetHandleInformation(stdoutReadPipe, HANDLE_FLAG_INHERIT, 0)) {
-				throw std::runtime_error("Failed to Set Handle Information");
-			}
-
-			STARTUPINFO startupInfo = {};
-			startupInfo.cb = sizeof(startupInfo);
-			startupInfo.dwFlags = STARTF_USESTDHANDLES;
-			startupInfo.hStdOutput = stdoutWritePipe;
-
-			if (!CreateProcess(NULL, commandLine, NULL, NULL, TRUE, 0, NULL, TEXT(EXEDIR), &startupInfo, &processInformation)
-				|| !process
-				|| !thread) {
-				throw std::runtime_error("Failed to Create Process");
-			}
-		}
-
-		DWORD numberOfBytesRead = 0;
-		readPipePartial(stdoutReadPipe, buffer, BUFFER_SIZE - 1, numberOfBytesRead);
-	}
-
-	// max so we don't hang forever in the worst case
-	const DWORD MILLISECONDS = 10000;
-
-	DWORD wait = WaitForSingleObject(process, MILLISECONDS);
-
-	if (wait != WAIT_OBJECT_0 && wait != WAIT_ABANDONED) {
-		throw std::runtime_error("Failed to Wait For Single Object");
-	}
-
-	size_t size = stringToLongUnsigned(buffer, computeMoveVectorPosition);
-
-	if (!size) {
-		DWORD exitCode = 0;
-
-		if (!GetExitCodeProcess(process, &exitCode)) {
-			throw std::runtime_error("Failed to Get Process Exit Code");
-		}
-
-		SetLastError(exitCode);
-	}
-
-	computeMoveVectorPositionScopeExit.dismiss();
-	return size;
-	#endif
-	return true;
 }
 
 #ifdef MULTITHREADED
@@ -994,6 +933,110 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 	}
 }
 
+#ifdef WINDOWS
+bool M4Revolution::getDLLExportRVA(const std::string &libFileName, const std::string &procName, unsigned long &dllExportRVA) {
+	std::ostringstream outputStringStream;
+	outputStringStream << "GetDLLExportRVA " << std::quoted(libFileName) << " " << std::quoted(procName);
+
+	const std::string &COMMAND_LINE = outputStringStream.str();
+
+	size_t commandLineSize = COMMAND_LINE.size() + 1;
+	std::unique_ptr<CHAR> commandLinePointer(new CHAR[commandLineSize]);
+	CHAR* _commandLine = commandLinePointer.get();
+
+	if (strncpy_s(_commandLine, commandLineSize, COMMAND_LINE.c_str(), commandLineSize)) {
+		throw std::runtime_error("Failed to Copy String");
+	}
+
+	PROCESS_INFORMATION processInformation = {};
+	HANDLE &process = processInformation.hProcess;
+	HANDLE &thread = processInformation.hThread;
+
+	SCOPE_EXIT {
+		if (!closeProcess(process)) {
+			throw std::runtime_error("Failed to Close Process");
+		}
+	};
+
+	SCOPE_EXIT {
+		if (!closeThread(thread)) {
+			throw std::runtime_error("Failed to Close Thread");
+		}
+	};
+
+	const DWORD BUFFER_SIZE = sizeof("0x00000000");
+	CHAR buffer[BUFFER_SIZE] = "";
+
+	{
+		HANDLE stdoutReadPipe = NULL;
+
+		SCOPE_EXIT {
+			if (!closeHandle(stdoutReadPipe)) {
+				throw std::runtime_error("Failed to Close Handle");
+			}
+		};
+
+		{
+			HANDLE stdoutWritePipe = NULL;
+
+			SCOPE_EXIT {
+				if (!closeHandle(stdoutWritePipe)) {
+					throw std::runtime_error("Failed to Close Handle");
+				}
+			};
+
+			SECURITY_ATTRIBUTES securityAttributes = {};
+			securityAttributes.nLength = sizeof(securityAttributes);
+			securityAttributes.bInheritHandle = TRUE;
+
+			if (!CreatePipe(&stdoutReadPipe, &stdoutWritePipe, &securityAttributes, BUFFER_SIZE - 1)) {
+				throw std::runtime_error("Failed to Create Pipe");
+			}
+
+			if (!SetHandleInformation(stdoutReadPipe, HANDLE_FLAG_INHERIT, 0)) {
+				throw std::runtime_error("Failed to Set Handle Information");
+			}
+
+			STARTUPINFO startupInfo = {};
+			startupInfo.cb = sizeof(startupInfo);
+			startupInfo.dwFlags = STARTF_USESTDHANDLES;
+			startupInfo.hStdOutput = stdoutWritePipe;
+
+			if (!CreateProcess(NULL, _commandLine, NULL, NULL, TRUE, 0, NULL, TEXT(EXEDIR), &startupInfo, &processInformation)
+				|| !process
+				|| !thread) {
+				throw std::runtime_error("Failed to Create Process");
+			}
+		}
+
+		DWORD numberOfBytesRead = 0;
+		readPipePartial(stdoutReadPipe, buffer, BUFFER_SIZE - 1, numberOfBytesRead);
+	}
+
+	// max so we don't hang forever in the worst case
+	const DWORD MILLISECONDS = 10000;
+
+	DWORD wait = WaitForSingleObject(process, MILLISECONDS);
+
+	if (wait != WAIT_OBJECT_0 && wait != WAIT_ABANDONED) {
+		throw std::runtime_error("Failed to Wait For Single Object");
+	}
+
+	size_t size = stringToLongUnsigned(buffer, dllExportRVA);
+
+	if (!size) {
+		DWORD exitCode = 0;
+
+		if (!GetExitCodeProcess(process, &exitCode)) {
+			throw std::runtime_error("Failed to Get Process Exit Code");
+		}
+
+		SetLastError(exitCode);
+	}
+	return size;
+}
+#endif
+
 M4Revolution::M4Revolution(
 	const std::filesystem::path &path,
 	bool logFileNames,
@@ -1085,14 +1128,6 @@ void M4Revolution::editTransitionTime() {
 	OPERATION_EXCEPTION_RETRY_ERR(AI::editTransitionTime(fileStream), StreamFailed, Work::Output::FILE_RETRY);
 }
 
-void M4Revolution::toggleSoundFading() {
-	std::fstream fileStream;
-
-	Log log("Toggling Sound Fading", &fileStream);
-
-	OPERATION_EXCEPTION_RETRY_ERR(AI::toggleSoundFading(fileStream), StreamFailed, Work::Output::FILE_RETRY);
-}
-
 void M4Revolution::toggleFullScreen() {
 	{
 		std::ifstream inputFileStream(Work::Output::USER_PREFERENCE_PATH, std::ios::in, _SH_DENYWR);
@@ -1113,6 +1148,14 @@ void M4Revolution::toggleCameraInertia() {
 	Log log("Toggling Camera Inertia", &fileStream);
 
 	OPERATION_EXCEPTION_RETRY_ERR(replaceM4Thor(fileStream, "Camera Inertia"), StreamFailed, Work::Output::FILE_RETRY);
+}
+
+void M4Revolution::toggleSoundFading() {
+	std::fstream fileStream;
+
+	Log log("Toggling Sound Fading", &fileStream);
+
+	OPERATION_EXCEPTION_RETRY_ERR(replaceM4AIGlobal(fileStream, "Sound Fading"), StreamFailed, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::fixLoading() {

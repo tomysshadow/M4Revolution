@@ -122,6 +122,7 @@ namespace AI {
 		edit.join(copyThread, position + (std::streamsize)VALUE_STR_PREFIX.length(), outputStringStream.str());
 	}
 
+	/*
 	void toggleResource(
 		Work::Edit &edit,
 		const Ubi::BigFile::Path::VECTOR &pathVector,
@@ -146,6 +147,7 @@ namespace AI {
 		std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 		edit.join(copyThread, position, outputStringStream.str());
 	}
+	*/
 
 	void editTransitionTime(std::fstream &fileStream) {
 		Work::Edit edit(fileStream, Work::Output::DATA_PATH);
@@ -153,9 +155,11 @@ namespace AI {
 		editF32(edit, TRANSITION_FADE_PATH_VECTOR, "Transition Time", "m_fadingTime", 0.0f, 500.0f);
 	}
 
+	/*
 	void toggleSoundFading(std::fstream &fileStream) {
 		Work::Edit edit(fileStream, Work::Output::DATA_PATH);
 
 		toggleResource(edit, BINARIZER_LOADER_PATH_VECTOR, "Sound Fading", "/common/ai/aisndtransition/ai_snd_transition.ai");
 	}
+	*/
 }

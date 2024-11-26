@@ -28,9 +28,7 @@ class M4Revolution {
 		int filesCopying = 0;
 
 		public:
-		static void toggledFullScreen(bool toggledOn);
-		static void replacedM4Thor(const std::string &name, bool toggledOn);
-		static void replacedGfxTools();
+		static void replaced(const std::string &file, bool toggled);
 
 		Log(const char* title, std::istream* inputStreamPointer = 0, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
 		~Log();
@@ -123,6 +121,7 @@ class M4Revolution {
 
 	static void toggleFullScreen(std::ifstream &inputFileStream, Log &log);
 	static void replaceM4Thor(std::fstream &fileStream, const std::string &name);
+	static void replaceM4AIGlobal(std::fstream &fileStream, const std::string &name);
 	#ifdef WINDOWS
 	static void replaceGfxTools();
 	#endif
@@ -130,7 +129,6 @@ class M4Revolution {
 	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha);
 	static void convertImageStandardWorkCallback(Work::Convert* convertPointer);
 	static void convertImageZAPWorkCallback(Work::Convert* convertPointer);
-	static bool getComputeMoveVectorPosition(unsigned long &result);
 	#ifdef MULTITHREADED
 	static VOID CALLBACK convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
 	#endif
@@ -138,6 +136,9 @@ class M4Revolution {
 	static void outputData(std::ostream &outputStream, Work::FileTask &fileTask, bool &yield);
 	static void outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
 	static void outputThread(Work::Tasks &tasks, bool &yield);
+	#ifdef WINDOWS
+	static bool getDLLExportRVA(const std::string &libFileName, const std::string &procName, unsigned long &dllExportRVA);
+	#endif
 
 	public:
 	class Aborted : public std::logic_error {
@@ -159,9 +160,9 @@ class M4Revolution {
 	M4Revolution(const M4Revolution &m4Revolution) = delete;
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
 	void editTransitionTime();
-	void toggleSoundFading();
 	void toggleFullScreen();
 	void toggleCameraInertia();
+	void toggleSoundFading();
 	void fixLoading();
 	void restoreBackup();
 };

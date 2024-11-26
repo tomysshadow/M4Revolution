@@ -223,12 +223,14 @@ namespace Work {
 		{FILE_PATH_DATA, {GAMEDATABINDIR "/data.m4b", true}},
 		{FILE_PATH_USER_PREFERENCE, {EXEDIR "/user.dsc", false}},
 		{FILE_PATH_M4_THOR, {EXEDIR "/m4_thor_rd.dll", true}},
+		{FILE_PATH_M4_AI_GLOBAL, {EXEDIR "/m4_ai_global_rd.dll", true}},
 		{FILE_PATH_GFX_TOOLS, {EXEDIR "/gfx_tools_rd.dll", true}}
 	};
 
 	const std::filesystem::path Output::DATA_PATH = FILE_PATH_INFO_MAP.at(FILE_PATH_DATA).path;
 	const std::filesystem::path Output::USER_PREFERENCE_PATH = FILE_PATH_INFO_MAP.at(FILE_PATH_USER_PREFERENCE).path;
 	const std::filesystem::path Output::M4_THOR_PATH = FILE_PATH_INFO_MAP.at(FILE_PATH_M4_THOR).path;
+	const std::filesystem::path Output::M4_AI_GLOBAL_PATH = FILE_PATH_INFO_MAP.at(FILE_PATH_M4_AI_GLOBAL).path;
 	const std::filesystem::path Output::GFX_TOOLS_PATH = FILE_PATH_INFO_MAP.at(FILE_PATH_GFX_TOOLS).path;
 
 	void Output::findInstallPath(const std::filesystem::path &path) {

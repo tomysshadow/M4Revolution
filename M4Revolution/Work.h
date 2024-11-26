@@ -231,13 +231,15 @@ namespace Work {
 		static const FILE_PATH FILE_PATH_DATA = 0x00000001;
 		static const FILE_PATH FILE_PATH_USER_PREFERENCE = 0x00000002;
 		static const FILE_PATH FILE_PATH_M4_THOR = 0x00000004;
-		static const FILE_PATH FILE_PATH_GFX_TOOLS = 0x00000008;
+		static const FILE_PATH FILE_PATH_M4_AI_GLOBAL = 0x00000008;
+		static const FILE_PATH FILE_PATH_GFX_TOOLS = 0x00000010;
 
 		static const INFO_MAP FILE_PATH_INFO_MAP;
 
 		static const std::filesystem::path DATA_PATH;
 		static const std::filesystem::path USER_PREFERENCE_PATH;
 		static const std::filesystem::path M4_THOR_PATH;
+		static const std::filesystem::path M4_AI_GLOBAL_PATH;
 		static const std::filesystem::path GFX_TOOLS_PATH;
 
 		static void findInstallPath(const std::filesystem::path &path);

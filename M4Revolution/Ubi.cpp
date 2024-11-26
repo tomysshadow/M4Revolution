@@ -71,6 +71,7 @@ namespace Ubi {
 	}
 
 	namespace Binary {
+		/*
 		namespace BinarizerLoader {
 			bool toggleResource(std::istream &inputStream, std::streamsize size, const std::string &name, const std::string &key, std::ostream &outputStream) {
 				// toggle a resource on or off by adding it to or removing it from a binarizer_loader.log file
@@ -131,6 +132,7 @@ namespace Ubi {
 				return toggledOn;
 			}
 		}
+		*/
 
 		namespace RLE {
 			void appendToSliceMap(std::istream &inputStream, std::streamsize size, SLICE_MAP &sliceMap) {

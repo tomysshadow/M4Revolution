@@ -42,9 +42,11 @@ namespace Ubi {
 			}
 		};
 
+		/*
 		namespace BinarizerLoader {
 			bool toggleResource(std::istream &inputStream, std::streamsize size, const std::string &name, const std::string &key, std::ostream &outputStream);
 		};
+		*/
 
 		/*
 		for water slices, DXT is not supported and RGBA must be used instead
