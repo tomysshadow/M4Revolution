@@ -3,6 +3,12 @@
 #include "Work.h"
 
 namespace AI {
-	void editTransitionTime(std::fstream &fileStream);
-	//void toggleSoundFading(std::fstream &fileStream);
+	void editF32(
+		Work::Edit &edit,
+		const Ubi::BigFile::Path::VECTOR &pathVector,
+		const std::string &name,
+		const std::string &key,
+		float min,
+		float max
+	);
 };

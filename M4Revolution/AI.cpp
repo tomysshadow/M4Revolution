@@ -4,16 +4,6 @@
 #include <iomanip>
 
 namespace AI {
-	static const Ubi::BigFile::Path::VECTOR TRANSITION_FADE_PATH_VECTOR = {
-		{{"gamedata", "common"}, "common.m4b"},
-		{{"common", "ai", "aitransitionfade"}, "ai_transition_fade.ai"}
-	};
-
-	static const Ubi::BigFile::Path::VECTOR BINARIZER_LOADER_PATH_VECTOR = {
-		{{"gamedata", "common"}, "common.m4b"},
-		{{"common"}, "binarizer_loader.log"}
-	};
-
 	static const Locale LOCALE("English", LC_NUMERIC);
 
 	Ubi::BigFile::File::SIZE findFileSize(Work::Edit &edit, const Ubi::BigFile::Path::VECTOR &pathVector) {
@@ -146,20 +136,6 @@ namespace AI {
 
 		std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 		edit.join(copyThread, position, outputStringStream.str());
-	}
-	*/
-
-	void editTransitionTime(std::fstream &fileStream) {
-		Work::Edit edit(fileStream, Work::Output::DATA_PATH);
-
-		editF32(edit, TRANSITION_FADE_PATH_VECTOR, "Transition Time", "m_fadingTime", 0.0f, 500.0f);
-	}
-
-	/*
-	void toggleSoundFading(std::fstream &fileStream) {
-		Work::Edit edit(fileStream, Work::Output::DATA_PATH);
-
-		toggleResource(edit, BINARIZER_LOADER_PATH_VECTOR, "Sound Fading", "/common/ai/aisndtransition/ai_snd_transition.ai");
 	}
 	*/
 }

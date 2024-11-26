@@ -14,10 +14,10 @@ void help() {
 
 bool performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_OPEN_ONLINE_HELP = 1;
-	const long OPERATION_EDIT_TRANSITION_TIME = 2;
-	const long OPERATION_TOGGLE_FULL_SCREEN = 3;
-	const long OPERATION_TOGGLE_CAMERA_INERTIA = 4;
-	const long OPERATION_TOGGLE_SOUND_FADING = 5;
+	const long OPERATION_TOGGLE_FULL_SCREEN = 2;
+	const long OPERATION_TOGGLE_CAMERA_INERTIA = 3;
+	const long OPERATION_TOGGLE_SOUND_FADING = 4;
+	const long OPERATION_EDIT_TRANSITION_TIME = 5;
 	const long OPERATION_FIX_LOADING = 6;
 	const long OPERATION_RESTORE_BACKUP = 7;
 	const long OPERATION_EXIT = 8;
@@ -29,9 +29,6 @@ bool performOperation(M4Revolution &m4Revolution) {
 			case OPERATION_OPEN_ONLINE_HELP:
 			help();
 			break;
-			case OPERATION_EDIT_TRANSITION_TIME:
-			m4Revolution.editTransitionTime();
-			break;
 			case OPERATION_TOGGLE_FULL_SCREEN:
 			m4Revolution.toggleFullScreen();
 			break;
@@ -40,6 +37,9 @@ bool performOperation(M4Revolution &m4Revolution) {
 			break;
 			case OPERATION_TOGGLE_SOUND_FADING:
 			m4Revolution.toggleSoundFading();
+			break;
+			case OPERATION_EDIT_TRANSITION_TIME:
+			m4Revolution.editTransitionTime();
 			break;
 			case OPERATION_FIX_LOADING:
 			m4Revolution.fixLoading();
@@ -141,10 +141,10 @@ int main(int argc, char** argv) {
 		consoleLog("This menu may be used to perform the following operations.", 2);
 
 		consoleLog("1) Open Online Help");
-		consoleLog("2) Edit Transition Time");
-		consoleLog("3) Toggle Full Screen");
-		consoleLog("4) Toggle Camera Inertia");
-		consoleLog("5) Toggle Sound Fading");
+		consoleLog("2) Toggle Full Screen");
+		consoleLog("3) Toggle Camera Inertia");
+		consoleLog("4) Toggle Sound Fading");
+		consoleLog("5) Edit Transition Time");
 		consoleLog("6) Fix Loading");
 		consoleLog("7) Restore Backup");
 		consoleLog("8) Exit", 2);

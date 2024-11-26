@@ -28,7 +28,7 @@ class M4Revolution {
 		int filesCopying = 0;
 
 		public:
-		static void replaced(const std::string &file, bool toggled);
+		static void replaced(const std::string &file);
 
 		Log(const char* title, std::istream* inputStreamPointer = 0, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
 		~Log();
@@ -117,11 +117,13 @@ class M4Revolution {
 
 	void fixLoading(std::istream &inputStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
+	static const Ubi::BigFile::Path::VECTOR TRANSITION_FADE_PATH_VECTOR;
 	static const CompressionOptions COMPRESSION_OPTIONS;
 
-	static void toggleFullScreen(std::ifstream &inputFileStream, Log &log);
-	static void replaceM4Thor(std::fstream &fileStream, const std::string &name);
-	static void replaceM4AIGlobal(std::fstream &fileStream, const std::string &name);
+	static void toggleFullScreen(std::ifstream &inputFileStream);
+	static void toggleCameraInertia(std::fstream &fileStream);
+	static void toggleSoundFading(std::fstream &fileStream);
+	static void editTransitionTime(std::fstream &fileStream);
 	#ifdef WINDOWS
 	static void replaceGfxTools();
 	#endif
@@ -159,10 +161,10 @@ class M4Revolution {
 	~M4Revolution();
 	M4Revolution(const M4Revolution &m4Revolution) = delete;
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
-	void editTransitionTime();
 	void toggleFullScreen();
 	void toggleCameraInertia();
 	void toggleSoundFading();
+	void editTransitionTime();
 	void fixLoading();
 	void restoreBackup();
 };

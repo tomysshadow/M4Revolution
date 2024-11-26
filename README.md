@@ -34,10 +34,10 @@ If after following these steps the install path is not accepted, try verifying t
 Once the install path has been found, you will be presented a menu that allows you to perform the following operations.
 
 1. Open Online Help
-2. Edit Transition Time
-3. Toggle Full Screen
-4. Toggle Camera Inertia
-5. Toggle Sound Fading
+2. Toggle Full Screen
+3. Toggle Camera Inertia
+4. Toggle Sound Fading
+5. Edit Transition Time
 6. Fix Loading
 7. Restore Backup
 8. Exit
@@ -48,17 +48,13 @@ Here are detailed descriptions of each operation.
 
 Opens this file.
 
-### Edit Transition Time
-
-Upon navigating, the game will play a fade transition. You may edit the transition time on a scale of zero to 500, where zero is instant and 500 is slow. The currently set transition time is displayed. The default is 500.
-
-This operation will create a backup of your game files if one has not already been made.
-
 ### Toggle Full Screen
 
 You may toggle full screen on or off. The default is on.
 
 If full screen is on, it will be turned off, and vice-versa. The tool will then report whether full screen has been toggled on or off.
+
+This operation will create a backup of your game files if one has not already been made.
 
 ### Toggle Camera Inertia
 
@@ -73,6 +69,14 @@ This operation will create a backup of your game files if one has not already be
 Upon navigating, the game inserts an intentional half a second delay to crossfade sounds from one place to another. You may toggle the sound fading on or off. When the sound fading is off, the sounds will cut instantly to their volume at the new location instead of fading, allowing faster navigation. The default is on.
 
 If sound fading is on, it will be turned off, and vice-versa. The tool will then report whether sound fading has been toggled on or off.
+
+This operation will create a backup of your game files if one has not already been made.
+
+### Edit Transition Time
+
+Upon navigating, the game will play a fade transition. You may edit the transition time on a scale of zero to 500, where zero is instant and 500 is slow.
+
+The currently set transition time is displayed. The default is 500.
 
 This operation will create a backup of your game files if one has not already been made.
 

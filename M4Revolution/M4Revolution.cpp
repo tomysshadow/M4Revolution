@@ -21,12 +21,8 @@ void M4Revolution::destroy() {
 	#endif
 }
 
-void M4Revolution::Log::replaced(const std::string &file, bool toggled) {
-	std::cout << "Replaced " << file << std::endl;
-
-	if (!toggled) {
-		std::cout << std::endl;
-	}
+void M4Revolution::Log::replaced(const std::string &file) {
+	std::cout << "Replaced " << file << std::endl << std::endl;
 }
 
 M4Revolution::Log::Log(const char* title, std::istream* inputStreamPointer, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
@@ -397,9 +393,14 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 	}
 }
 
+const Ubi::BigFile::Path::VECTOR M4Revolution::TRANSITION_FADE_PATH_VECTOR = {
+	   {{"gamedata", "common"}, "common.m4b"},
+	   {{"common", "ai", "aitransitionfade"}, "ai_transition_fade.ai"}
+};
+
 const M4Revolution::CompressionOptions M4Revolution::COMPRESSION_OPTIONS;
 
-void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
+void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 	const std::string LINE_SECTION_BEGIN = "; Added by Myst IV: Revolution";
 	const std::string LINE_SECTION_END = "; End of section";
 
@@ -477,7 +478,7 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream, Log &log) {
 	toggleLog("Full Screen", toggledOn);
 }
 
-void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &name) {
+void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 	const size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
 	const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50, 0x00 };
 	const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xC6, 0x44, 0x24, 0x0B, 0x48, 0x90, 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0x00 };
@@ -516,11 +517,10 @@ void M4Revolution::replaceM4Thor(std::fstream &fileStream, const std::string &na
 	toggledOn = !toggledOn;
 	edit.join(copyThread, computeMoveVectorPosition, (const char*)(toggledOn ? COMPUTE_MOVE_VECTOR_ON : COMPUTE_MOVE_VECTOR_OFF));
 
-	Log::replaced("M4 Thor", true);
-	toggleLog(name, toggledOn);
+	toggleLog("Camera Inertia", toggledOn);
 }
 
-void M4Revolution::replaceM4AIGlobal(std::fstream &fileStream, const std::string &name) {
+void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 	unsigned char onActivate = 0x00;
 	const size_t ON_ACTIVATE_SIZE = sizeof(onActivate);
 
@@ -555,8 +555,13 @@ void M4Revolution::replaceM4AIGlobal(std::fstream &fileStream, const std::string
 	toggledOn = !toggledOn;
 	edit.join(copyThread, onActivatePosition, (const char*)(toggledOn ? ON_ACTIVATE_ON : ON_ACTIVATE_OFF));
 
-	Log::replaced("M4 AI Global", true);
-	toggleLog(name, toggledOn);
+	toggleLog("Sound Fading", toggledOn);
+}
+
+void M4Revolution::editTransitionTime(std::fstream &fileStream) {
+	Work::Edit edit(fileStream, Work::Output::DATA_PATH);
+
+	AI::editF32(edit, TRANSITION_FADE_PATH_VECTOR, "Transition Time", "m_fadingTime", 0.0f, 500.0f);
 }
 
 #ifdef WINDOWS
@@ -579,7 +584,7 @@ void M4Revolution::replaceGfxTools() {
 		Work::Backup::log();
 	}
 
-	Log::replaced("Gfx Tools", false);
+	Log::replaced("Gfx Tools");
 }
 #endif
 
@@ -1120,21 +1125,13 @@ M4Revolution::~M4Revolution() {
 	destroy();
 }
 
-void M4Revolution::editTransitionTime() {
-	std::fstream fileStream;
-
-	Log log("Editing Transition Time", &fileStream);
-
-	OPERATION_EXCEPTION_RETRY_ERR(AI::editTransitionTime(fileStream), StreamFailed, Work::Output::FILE_RETRY);
-}
-
 void M4Revolution::toggleFullScreen() {
 	{
 		std::ifstream inputFileStream(Work::Output::USER_PREFERENCE_PATH, std::ios::in, _SH_DENYWR);
 
 		Log log("Toggling Full Screen", &inputFileStream);
 
-		OPERATION_EXCEPTION_RETRY_ERR(toggleFullScreen(inputFileStream, log), StreamFailed, Work::Output::FILE_RETRY);
+		OPERATION_EXCEPTION_RETRY_ERR(toggleFullScreen(inputFileStream), StreamFailed, Work::Output::FILE_RETRY);
 	}
 
 	if (Work::Backup::create(Work::Output::USER_PREFERENCE_PATH.string().c_str())) {
@@ -1147,7 +1144,7 @@ void M4Revolution::toggleCameraInertia() {
 
 	Log log("Toggling Camera Inertia", &fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(replaceM4Thor(fileStream, "Camera Inertia"), StreamFailed, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(toggleCameraInertia(fileStream), StreamFailed, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::toggleSoundFading() {
@@ -1155,7 +1152,15 @@ void M4Revolution::toggleSoundFading() {
 
 	Log log("Toggling Sound Fading", &fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(replaceM4AIGlobal(fileStream, "Sound Fading"), StreamFailed, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(toggleSoundFading(fileStream), StreamFailed, Work::Output::FILE_RETRY);
+}
+
+void M4Revolution::editTransitionTime() {
+	std::fstream fileStream;
+
+	Log log("Editing Transition Time", &fileStream);
+
+	OPERATION_EXCEPTION_RETRY_ERR(editTransitionTime(fileStream), StreamFailed, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::fixLoading() {
