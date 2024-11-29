@@ -2,7 +2,6 @@
 #include "shared.h"
 #include "Ubi.h"
 #include "Work.h"
-#include <optional>
 #include <nvtt/nvtt.h>
 
 #ifdef WINDOWS

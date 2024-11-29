@@ -274,6 +274,6 @@ namespace Work {
 		std::fstream &fileStream;
 
 		Edit(std::fstream &fileStream, const std::filesystem::path &path);
-		void join(std::thread &copyThread, std::streampos position, const std::string &str);
+		void apply(std::thread &copyThread, std::streampos position, const std::string &str);
 	};
 };

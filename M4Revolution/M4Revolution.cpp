@@ -1,11 +1,11 @@
 #include "M4Revolution.h"
 #include "AI.h"
 #include "GlobalHandle.h"
-#include <chrono>
 #include <iostream>
+#include <chrono>
+#include <filesystem>
 #include <sstream>
 #include <iomanip>
-#include <filesystem>
 
 #ifdef D3D9
 #include <wrl/client.h>
@@ -412,10 +412,14 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 	Work::Output output(false);
 	bool toggledOn = true;
 
-	if (inputFileStream.is_open()) {
+	// used instead of is_open since this should fail if the file exists but is not accessible
+	if (std::filesystem::is_regular_file(Work::Output::USER_PREFERENCE_PATH)) {
 		std::string line = "";
 		char fullScreen[FULL_SCREEN_SIZE] = "";
 		bool untoggleable = false;
+
+		// in case we error out and this method gets started over
+		inputFileStream.seekg(0);
 
 		while (std::getline(inputFileStream, line)) {
 			if (line == LINE_SECTION_BEGIN) {
@@ -515,7 +519,7 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 
 	// toggle happens here
 	toggledOn = !toggledOn;
-	edit.join(copyThread, computeMoveVectorPosition, (const char*)(toggledOn ? COMPUTE_MOVE_VECTOR_ON : COMPUTE_MOVE_VECTOR_OFF));
+	edit.apply(copyThread, computeMoveVectorPosition, (const char*)(toggledOn ? COMPUTE_MOVE_VECTOR_ON : COMPUTE_MOVE_VECTOR_OFF));
 
 	toggleLog("Camera Inertia", toggledOn);
 }
@@ -553,7 +557,7 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 	}
 
 	toggledOn = !toggledOn;
-	edit.join(copyThread, onActivatePosition, (const char*)(toggledOn ? ON_ACTIVATE_ON : ON_ACTIVATE_OFF));
+	edit.apply(copyThread, onActivatePosition, (const char*)(toggledOn ? ON_ACTIVATE_ON : ON_ACTIVATE_OFF));
 
 	toggleLog("Sound Fading", toggledOn);
 }

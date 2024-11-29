@@ -1,6 +1,5 @@
 #include "ImageCreator.h"
 #include "base.h"
-#include <filesystem>
 #include <stdlib.h>
 
 namespace gfx_tools {

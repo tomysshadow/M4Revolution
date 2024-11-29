@@ -1,6 +1,5 @@
 #include "shared.h"
 #include "M4Revolution.h"
-#include <optional>
 #include <filesystem>
 
 #pragma warning(push)

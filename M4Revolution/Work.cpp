@@ -391,7 +391,7 @@ namespace Work {
 		fileStream.open(path, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 	}
 
-	void Edit::join(std::thread &copyThread, std::streampos position, const std::string &str) {
+	void Edit::apply(std::thread &copyThread, std::streampos position, const std::string &str) {
 		this->position = position;
 		this->str = str;
 
