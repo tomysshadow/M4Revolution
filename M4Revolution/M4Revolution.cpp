@@ -238,7 +238,7 @@ void M4Revolution::convertFile(
 
 	Work::Data::POINTER &dataPointer = convert.dataPointer;
 	dataPointer = Work::Data::POINTER(new unsigned char[file.size]);
-	readStreamSafe(inputStream, dataPointer.get(), file.size);
+	readStream(inputStream, dataPointer.get(), file.size);
 
 	Work::FileTask::POINTER &fileTaskPointer = convert.fileTaskPointer;
 	fileTaskPointer = std::make_shared<Work::FileTask>(ownerBigFileInputPosition, &file);
@@ -412,19 +412,24 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 	Work::Output output(false);
 	bool toggledOn = true;
 
-	// used instead of is_open since this should fail if the file exists but is not accessible
+	// is_regular_file is used instead of is_open
+	// since this should fail if the file exists but is inaccessible
+	// it's not a TOCTOU bug because inputFileStream has an exclusive lock on this file
+	// (or it's inaccessible, in which case we'll error out)
 	if (std::filesystem::is_regular_file(Work::Output::USER_PREFERENCE_PATH)) {
 		std::string line = "";
 		char fullScreen[FULL_SCREEN_SIZE] = "";
 		bool untoggleable = false;
 
 		// in case we error out and this method gets started over
+		inputFileStream.clear();
+		inputFileStream.exceptions(std::ifstream::badbit);
 		inputFileStream.seekg(0);
 
 		while (std::getline(inputFileStream, line)) {
 			if (line == LINE_SECTION_BEGIN) {
 				// read the section to determine if on/off, then skip over it
-				readStreamSafe(inputFileStream, fullScreen, FULL_SCREEN_SIZE);
+				readStream(inputFileStream, fullScreen, FULL_SCREEN_SIZE);
 
 				untoggleable = !std::getline(inputFileStream, line) || line != LINE_SECTION_END;
 
@@ -452,11 +457,7 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 
 			// copy line by line
 			// this is used instead of copyStream to ensure there is a newline on the end for when we write the section
-			try {
-				output.fileStream << line << "\n";
-			} catch (std::runtime_error) {
-				throw WriteStreamFailed();
-			}
+			output.fileStream << line << "\n";
 		}
 	} else {
 		// we create an empty file here for when the backup is restored
@@ -468,16 +469,10 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 
 	toggledOn = !toggledOn;
 
-	try {
-		// always write the section at the end
-		output.fileStream << LINE_SECTION_BEGIN << "\n";
-		writeStreamSafe(output.fileStream, toggledOn ? FULL_SCREEN_ON : FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
-		output.fileStream << LINE_SECTION_END << "\n";
-	} catch (WriteStreamFailed) {
-		throw;
-	} catch (std::runtime_error) {
-		throw WriteStreamFailed();
-	}
+	// always write the section at the end
+	output.fileStream << LINE_SECTION_BEGIN << "\n";
+	writeStream(output.fileStream, toggledOn ? FULL_SCREEN_ON : FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
+	output.fileStream << LINE_SECTION_END << "\n";
 
 	toggleLog("Full Screen", toggledOn);
 }
@@ -501,9 +496,7 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 	Work::Edit edit(fileStream, Work::Output::M4_THOR_PATH);
 
 	fileStream.seekg(computeMoveVectorPosition);
-	readStreamSafe(fileStream, computeMoveVector, COMPUTE_MOVE_VECTOR_SIZE);
-
-	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
+	readStream(fileStream, computeMoveVector, COMPUTE_MOVE_VECTOR_SIZE);
 
 	// we must either be on or off
 	// if we're neither, something is wrong so give up
@@ -516,6 +509,8 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 			throw Aborted("Compute Move Vector untoggleable. Restoring the backup or reinstalling the game may fix this problem.");
 		}
 	}
+
+	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 
 	// toggle happens here
 	toggledOn = !toggledOn;
@@ -542,7 +537,7 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 	Work::Edit edit(fileStream, Work::Output::M4_AI_GLOBAL_PATH);
 
 	fileStream.seekg(onActivatePosition);
-	readStreamSafe(fileStream, &onActivate, ON_ACTIVATE_SIZE);
+	readStream(fileStream, &onActivate, ON_ACTIVATE_SIZE);
 
 	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 
@@ -581,7 +576,7 @@ void M4Revolution::replaceGfxTools() {
 		GlobalHandleLock<> resourceGlobalHandleLock(NULL, resourceHandle);
 
 		Work::Output output;
-		writeStreamSafe(output.fileStream, resourceGlobalHandleLock.get(), resourceGlobalHandleLock.size());
+		writeStream(output.fileStream, resourceGlobalHandleLock.get(), resourceGlobalHandleLock.size());
 	}
 
 	if (Work::Backup::create(Work::Output::GFX_TOOLS_PATH.string().c_str())) {
@@ -860,7 +855,7 @@ void M4Revolution::outputData(std::ostream &outputStream, Work::FileTask &fileTa
 				return;
 			}
 
-			writeStreamSafe(outputStream, data.pointer.get(), data.size);
+			writeStream(outputStream, data.pointer.get(), data.size);
 
 			dataQueue.pop();
 		}
@@ -945,6 +940,7 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 #ifdef WINDOWS
 bool M4Revolution::getDLLExportRVA(const std::string &libFileName, const std::string &procName, unsigned long &dllExportRVA) {
 	std::ostringstream outputStringStream;
+	outputStringStream.exceptions(std::ostringstream::badbit);
 	outputStringStream << "GetDLLExportRVA " << std::quoted(libFileName) << " " << std::quoted(procName);
 
 	const std::string &COMMAND_LINE = outputStringStream.str();
@@ -1135,7 +1131,7 @@ void M4Revolution::toggleFullScreen() {
 
 		Log log("Toggling Full Screen", &inputFileStream);
 
-		OPERATION_EXCEPTION_RETRY_ERR(toggleFullScreen(inputFileStream), StreamFailed, Work::Output::FILE_RETRY);
+		OPERATION_EXCEPTION_RETRY_ERR(toggleFullScreen(inputFileStream), std::system_error, Work::Output::FILE_RETRY);
 	}
 
 	if (Work::Backup::create(Work::Output::USER_PREFERENCE_PATH.string().c_str())) {
@@ -1148,7 +1144,7 @@ void M4Revolution::toggleCameraInertia() {
 
 	Log log("Toggling Camera Inertia", &fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(toggleCameraInertia(fileStream), StreamFailed, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(toggleCameraInertia(fileStream), std::system_error, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::toggleSoundFading() {
@@ -1156,7 +1152,7 @@ void M4Revolution::toggleSoundFading() {
 
 	Log log("Toggling Sound Fading", &fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(toggleSoundFading(fileStream), StreamFailed, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(toggleSoundFading(fileStream), std::system_error, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::editTransitionTime() {
@@ -1164,7 +1160,7 @@ void M4Revolution::editTransitionTime() {
 
 	Log log("Editing Transition Time", &fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(editTransitionTime(fileStream), StreamFailed, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(editTransitionTime(fileStream), std::system_error, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::fixLoading() {
@@ -1175,16 +1171,9 @@ void M4Revolution::fixLoading() {
 
 	{
 		std::ifstream inputFileStream;
+		inputFileStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
-		for (;;) {
-			inputFileStream.open(Work::Output::DATA_PATH, std::ios::binary, _SH_DENYWR);
-
-			if (inputFileStream.is_open()) {
-				break;
-			}
-
-			RETRY_ERR(Work::Output::FILE_RETRY);
-		}
+		OPERATION_EXCEPTION_RETRY_ERR(inputFileStream.open(Work::Output::DATA_PATH, std::ios::binary, _SH_DENYWR), std::ifstream::failure, Work::Output::FILE_RETRY);
 
 		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
@@ -1193,7 +1182,7 @@ void M4Revolution::fixLoading() {
 		// to avoid a sharing violation this must happen first before creating the output thread
 		// as they will both write to the same temporary file
 		#ifdef WINDOWS
-		OPERATION_EXCEPTION_RETRY_ERR(replaceGfxTools(), StreamFailed, Work::Output::FILE_RETRY);
+		OPERATION_EXCEPTION_RETRY_ERR(replaceGfxTools(), std::system_error, Work::Output::FILE_RETRY);
 		#endif
 
 		bool yield = true;

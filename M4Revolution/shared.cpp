@@ -221,28 +221,35 @@ std::string consoleString(const char* str) {
 	return result;
 }
 
-void readStreamSafe(std::istream &inputStream, void* buffer, std::streamsize count) {
-	if (!inputStream.read((char*)buffer, count) || count != inputStream.gcount()) {
-		throw ReadStreamFailed();
-	}
+void readStream(std::istream &inputStream, void* buffer, std::streamsize count) {
+	inputStream.read((char*)buffer, count);
 }
 
-void writeStreamSafe(std::ostream &outputStream, const void* buffer, std::streamsize count) {
-	if (!outputStream.write((const char*)buffer, count)) {
-		throw WriteStreamFailed();
-	}
+void writeStream(std::ostream &outputStream, const void* buffer, std::streamsize count) {
+	outputStream.write((const char*)buffer, count);
 }
 
 void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize count, std::streamsize &gcount) {
-	gcount = 0;
-	inputStream.read((char*)buffer, count);
+	MAKE_SCOPE_EXIT(gcountScopeExit) {
+		gcount = 0;
+	};
+
+	try {
+		inputStream.read((char*)buffer, count);
+	} catch (std::ifstream::failure) {
+		inputStream.clear();
+	}
+
 	gcount = inputStream.gcount();
-	inputStream.clear();
+	gcountScopeExit.dismiss();
 }
 
 void writeStreamPartial(std::ostream &outputStream, const void* buffer, std::streamsize count) {
-	outputStream.write((const char*)buffer, count);
-	outputStream.clear();
+	try {
+		outputStream.write((const char*)buffer, count);
+	} catch (std::ofstream::failure) {
+		outputStream.clear();
+	}
 }
 
 void copyStream(std::istream &inputStream, std::ostream &outputStream, std::streamsize count) {
@@ -250,7 +257,7 @@ void copyStream(std::istream &inputStream, std::ostream &outputStream, std::stre
 		inputStream,
 	
 		[&outputStream](void* buffer, std::streamsize count){
-			writeStreamSafe(outputStream, buffer, count);
+			writeStream(outputStream, buffer, count);
 		},
 	
 		count
@@ -275,6 +282,7 @@ void copyStreamToString(std::istream &inputStream, std::string &outputString, st
 
 void openFile(const std::string &path) {
 	std::ostringstream outputStringStream;
+	outputStringStream.exceptions(std::ostringstream::badbit);
 
 	#ifdef MACINTOSH
 	outputStringStream << "open";
@@ -306,8 +314,11 @@ void readPipePartial(HANDLE pipe, LPVOID buffer, DWORD numberOfBytesToRead, DWOR
 		}
 	}
 
-	if (GetLastError() != ERROR_BROKEN_PIPE) {
-		throw ReadStreamFailed();
+	DWORD lastError = GetLastError();
+
+	if (lastError != ERROR_BROKEN_PIPE) {
+		std::error_code errorCode(lastError, std::system_category());
+		throw std::system_error(errorCode);
 	}
 }
 

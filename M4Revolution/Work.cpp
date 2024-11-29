@@ -253,8 +253,6 @@ namespace Work {
 	}
 
 	bool Output::setPath(const std::filesystem::path &path) {
-		// this check is just to prevent the user from being dumb
-		// we need proper checks upon actually opening these as well of course
 		try {
 			std::filesystem::current_path(path);
 		} catch (std::filesystem::filesystem_error) {
@@ -264,6 +262,8 @@ namespace Work {
 		for (INFO_MAP::const_iterator infoMapIterator = FILE_PATH_INFO_MAP.begin(); infoMapIterator != FILE_PATH_INFO_MAP.end(); infoMapIterator++) {
 			const Info &INFO = infoMapIterator->second;
 
+			// this check is just to prevent the user from being dumb
+			// we need proper checks upon actually opening these as well of course
 			if (INFO.required && !std::filesystem::is_regular_file(INFO.path)) {
 				return false;
 			}
@@ -277,6 +277,7 @@ namespace Work {
 		// this is just a temp file so deleting it should be fine
 		std::filesystem::remove(FILE_NAME);
 
+		fileStream.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 		fileStream.open(FILE_NAME, std::ios::trunc | (std::ios::binary * binary), _SH_DENYRW);
 
 		#ifdef WINDOWS
@@ -318,21 +319,16 @@ namespace Work {
 		bool createEmpty(const std::filesystem::path &path) {
 			const std::filesystem::path PATH = getPath(path);
 
+			// we only do this check because we want to know
+			// if the file exists before already (just to log if we created it or not)
 			if (std::filesystem::is_regular_file(PATH)) {
 				return false;
 			}
 
 			std::ofstream outputFileStream;
+			outputFileStream.exceptions(std::ofstream::failbit);
 
-			for(;;) {
-				outputFileStream.open(PATH);
-
-				if (outputFileStream.is_open()) {
-					break;
-				}
-
-				RETRY_ERR(Work::Output::FILE_RETRY);
-			}
+			OPERATION_EXCEPTION_RETRY_ERR(outputFileStream.open(PATH), std::ofstream::failure, Output::FILE_RETRY);
 			return true;
 		}
 
@@ -355,6 +351,9 @@ namespace Work {
 
 		if (!edit.copied) {
 			// check if the file exists, if it doesn't create a backup
+			// note this is not a TOCTOU bug, fileStream already has an exclusive lock
+			// on this file, unless it is inaccessible
+			// in which case we'll error out on copyStream (as we should)
 			if (!std::filesystem::is_regular_file(Backup::getPath(edit.path))) {
 				// always delete the temporary file when done
 				SCOPE_EXIT {
@@ -381,13 +380,19 @@ namespace Work {
 		}
 
 		fileStream.seekp(edit.position);
-		writeStreamSafe(fileStream, edit.str.c_str(), edit.str.length());
+		writeStream(fileStream, edit.str.c_str(), edit.str.length());
 	}
 
 	Edit::Edit(std::fstream &fileStream, const std::filesystem::path &path)
 		: fileStream(fileStream),
 		path(path) {
-		fileStream.close();
+		fileStream.clear();
+		fileStream.exceptions(std::fstream::failbit | std::fstream::badbit);
+
+		if (fileStream.is_open()) {
+			fileStream.close();
+		}
+
 		fileStream.open(path, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 	}
 

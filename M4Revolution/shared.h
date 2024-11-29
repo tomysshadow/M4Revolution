@@ -420,26 +420,8 @@ unsigned long consoleLongUnsigned(const char* str = 0, unsigned long minValue = 
 bool consoleBool(const char* str = 0, const std::optional<bool> &defaultValueOptional = std::nullopt);
 std::string consoleString(const char* str = 0);
 
-class StreamFailed : public std::runtime_error {
-	public:
-	StreamFailed(const char* message) noexcept : std::runtime_error(message) {
-	}
-};
-
-class ReadStreamFailed : public StreamFailed {
-	public:
-	ReadStreamFailed() noexcept : StreamFailed("Failed to Read Stream") {
-	}
-};
-
-class WriteStreamFailed : public StreamFailed {
-	public:
-	WriteStreamFailed() noexcept : StreamFailed("Failed to Write Stream") {
-	}
-};
-
-void readStreamSafe(std::istream &inputStream, void* buffer, std::streamsize count);
-void writeStreamSafe(std::ostream &outputStream, const void* buffer, std::streamsize count);
+void readStream(std::istream &inputStream, void* buffer, std::streamsize count);
+void writeStream(std::ostream &outputStream, const void* buffer, std::streamsize count);
 void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize count, std::streamsize &gcount);
 void writeStreamPartial(std::ostream &outputStream, const void* buffer, std::streamsize count);
 

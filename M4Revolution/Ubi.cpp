@@ -28,7 +28,7 @@ namespace Ubi {
 			};
 
 			SIZE size = 0;
-			readStreamSafe(inputStream, &size, SIZE_SIZE);
+			readStream(inputStream, &size, SIZE_SIZE);
 
 			if (!size) {
 				return std::nullopt;
@@ -36,7 +36,7 @@ namespace Ubi {
 
 			std::unique_ptr<char> strPointer(new char[(size_t)size + 1]);
 			char* str = strPointer.get();
-			readStreamSafe(inputStream, str, size);
+			readStream(inputStream, str, size);
 
 			nullTerminator = !str[size - 1];
 			str[size] = 0;
@@ -56,13 +56,13 @@ namespace Ubi {
 
 		void writeOptional(std::ostream &outputStream, const std::optional<std::string> &strOptional, bool nullTerminator) {
 			SIZE size = strOptional.has_value() ? (SIZE)(strOptional.value().size() + nullTerminator) : 0;
-			writeStreamSafe(outputStream, &size, SIZE_SIZE);
+			writeStream(outputStream, &size, SIZE_SIZE);
 
 			if (!size) {
 				return;
 			}
 
-			writeStreamSafe(outputStream, strOptional.value().c_str(), size);
+			writeStream(outputStream, strOptional.value().c_str(), size);
 		}
 
 		void writeOptionalEncrypted(std::ostream &outputStream, std::optional<std::string> &strOptional) {
@@ -87,11 +87,11 @@ namespace Ubi {
 
 				const size_t RESOURCES_SIZE = sizeof(resources);
 
-				readStreamSafe(inputStream, &resources, RESOURCES_SIZE);
+				readStream(inputStream, &resources, RESOURCES_SIZE);
 
 				// save this position for when we modify this value later
 				std::streampos resourcesPosition = outputStream.tellp();
-				writeStreamSafe(outputStream, &resources, RESOURCES_SIZE);
+				writeStream(outputStream, &resources, RESOURCES_SIZE);
 
 				bool nullTerminator = false;
 				bool toggledOn = true;
@@ -125,7 +125,7 @@ namespace Ubi {
 				std::streampos endPosition = outputStream.tellp();
 
 				outputStream.seekp(resourcesPosition);
-				writeStreamSafe(outputStream, &resources, RESOURCES_SIZE);
+				writeStream(outputStream, &resources, RESOURCES_SIZE);
 
 				// seek back to the end for the benefit of the caller
 				outputStream.seekp(endPosition);
@@ -167,38 +167,38 @@ namespace Ubi {
 				const size_t PIXELS_SIZE = sizeof(pixels);
 
 				inputStream.seekg(WATER_FACE_FIELDS_SIZE, std::ios::cur);
-				readStreamSafe(inputStream, &waterSlices, WATER_SLICES_SIZE);
+				readStream(inputStream, &waterSlices, WATER_SLICES_SIZE);
 
 				for (uint32_t i = 0; i < waterSlices; i++) {
 					// sliceRow and sliceCol are incremented by one
 					// because they are indexed from zero here, but
 					// we want them indexed by one for the face names
-					readStreamSafe(inputStream, &sliceRow, SLICE_ROW_SIZE);
+					readStream(inputStream, &sliceRow, SLICE_ROW_SIZE);
 					sliceMapIterator = sliceMap.find(++sliceRow);
 
 					if (sliceMapIterator == sliceMap.end()) {
 						sliceMapIterator = sliceMap.insert({ sliceRow, {} }).first;
 					}
 
-					readStreamSafe(inputStream, &sliceCol, SLICE_COL_SIZE);
+					readStream(inputStream, &sliceCol, SLICE_COL_SIZE);
 					sliceMapIterator->second.insert(sliceCol + 1);
 
 					// normally these would be in seperate classes
 					// there just isn't much point here because I don't really care about any of this data
 					// I only really care about sliceRow/sliceCol and just want to skip the rest of this stuff
 					inputStream.seekg(WATER_SLICE_FIELDS_SIZE, std::ios::cur);
-					readStreamSafe(inputStream, &waterRLERegions, WATER_RLE_REGIONS_SIZE);
+					readStream(inputStream, &waterRLERegions, WATER_RLE_REGIONS_SIZE);
 
 					for (uint32_t j = 0; j < waterRLERegions; j++) {
 						inputStream.seekg(WATER_RLE_REGION_FIELDS_SIZE, std::ios::cur);
-						readStreamSafe(inputStream, &groups, GROUPS_SIZE);
+						readStream(inputStream, &groups, GROUPS_SIZE);
 
 						for (uint32_t l = 0; l < groups; l++) {
 							inputStream.seekg(WATER_RLE_REGION_GROUP_FIELDS_SIZE, std::ios::cur);
-							readStreamSafe(inputStream, &subGroups, SUB_GROUPS_SIZE);
+							readStream(inputStream, &subGroups, SUB_GROUPS_SIZE);
 
 							for (uint32_t m = 0; m < subGroups; m++) {
-								readStreamSafe(inputStream, &pixels, PIXELS_SIZE);
+								readStream(inputStream, &pixels, PIXELS_SIZE);
 
 								pixelsSize = pixels;
 								inputStream.seekg(pixelsSize + pixelsSize, std::ios::cur);
@@ -213,8 +213,8 @@ namespace Ubi {
 			const size_t ID_SIZE = sizeof(id);
 			const size_t VERSION_SIZE = sizeof(version);
 
-			readStreamSafe(inputStream, &id, ID_SIZE);
-			readStreamSafe(inputStream, &version, VERSION_SIZE);
+			readStream(inputStream, &id, ID_SIZE);
+			readStream(inputStream, &version, VERSION_SIZE);
 			nameOptional = String::readOptionalEncrypted(inputStream);
 		}
 
@@ -248,7 +248,7 @@ namespace Ubi {
 				bool &isLayerMask = layer.isLayerMask;
 				const size_t IS_LAYER_MASK_SIZE = sizeof(isLayerMask);
 
-				readStreamSafe(inputStream, &isLayerMask, IS_LAYER_MASK_SIZE);
+				readStream(inputStream, &isLayerMask, IS_LAYER_MASK_SIZE);
 
 				const size_t FIELDS_SIZE2 = 4;
 				inputStream.seekg(FIELDS_SIZE2, std::ios::cur);
@@ -260,7 +260,7 @@ namespace Ubi {
 			uint32_t sets = 0;
 			const size_t SETS_SIZE = sizeof(sets);
 
-			readStreamSafe(inputStream, &sets, SETS_SIZE);
+			readStream(inputStream, &sets, SETS_SIZE);
 
 			std::optional<std::string> set = std::nullopt;
 
@@ -279,11 +279,11 @@ namespace Ubi {
 			const size_t STATES_FIELDS_SIZE = 4;
 			const size_t STATE_NAMES_SIZE = sizeof(stateNames);
 
-			readStreamSafe(inputStream, &states, STATES_SIZE);
+			readStream(inputStream, &states, STATES_SIZE);
 
 			for (uint32_t i = 0; i < states; i++) {
 				inputStream.seekg(STATES_FIELDS_SIZE, std::ios::cur);
-				readStreamSafe(inputStream, &stateNames, STATE_NAMES_SIZE);
+				readStream(inputStream, &stateNames, STATE_NAMES_SIZE);
 
 				for (uint32_t j = 0; j < stateNames; j++) {
 					String::readOptional(inputStream);
@@ -311,7 +311,7 @@ namespace Ubi {
 			uint32_t resources = 0;
 			const size_t RESOURCES_SIZE = sizeof(resources);
 
-			readStreamSafe(inputStream, &resources, RESOURCES_SIZE);
+			readStream(inputStream, &resources, RESOURCES_SIZE);
 
 			if (resourceNameOptional.has_value()) {
 				const std::optional<std::string> &TEXTURE_BOX_NAME_OPTIONAL = getTextureBoxNameOptional(resourceNameOptional.value());
@@ -393,7 +393,7 @@ namespace Ubi {
 			uint32_t nbrAliases = 0;
 			const size_t NBR_ALIASES_SIZE = sizeof(nbrAliases);
 
-			readStreamSafe(inputStream, &nbrAliases, NBR_ALIASES_SIZE);
+			readStream(inputStream, &nbrAliases, NBR_ALIASES_SIZE);
 
 			for (uint32_t i = 0; i < nbrAliases; i++) {
 				String::readOptional(inputStream);
@@ -411,7 +411,7 @@ namespace Ubi {
 			uint32_t resources = 0;
 			const size_t RESOURCES_SIZE = sizeof(resources);
 
-			readStreamSafe(inputStream, &resources, RESOURCES_SIZE);
+			readStream(inputStream, &resources, RESOURCES_SIZE);
 
 			for (uint32_t i = 0; i < resources; i++) {
 				createResourcePointer(inputStream);
@@ -449,7 +449,7 @@ namespace Ubi {
 			ID id = 0;
 			const size_t ID_SIZE = sizeof(id);
 
-			readStreamSafe(inputStream, &id, ID_SIZE);
+			readStream(inputStream, &id, ID_SIZE);
 			throwReadPastEnd();
 
 			// we only support the UBI_B0_L ID
@@ -476,7 +476,7 @@ namespace Ubi {
 			outputStream(outputStream) {
 			const size_t UBI_B0_L_SIZE = sizeof(UBI_B0_L);
 
-			writeStreamSafe(outputStream, &UBI_B0_L, UBI_B0_L_SIZE);
+			writeStream(outputStream, &UBI_B0_L, UBI_B0_L_SIZE);
 			throwWrotePastEnd();
 		}
 
@@ -636,8 +636,8 @@ namespace Ubi {
 
 	void BigFile::File::write(std::ostream &outputStream) const {
 		String::writeOptional(outputStream, nameOptional);
-		writeStreamSafe(outputStream, &size, SIZE_SIZE);
-		writeStreamSafe(outputStream, &position, POSITION_SIZE);
+		writeStream(outputStream, &size, SIZE_SIZE);
+		writeStream(outputStream, &position, POSITION_SIZE);
 	}
 
 	Binary::Resource::POINTER BigFile::File::appendToLayerMap(
@@ -680,8 +680,8 @@ namespace Ubi {
 
 	void BigFile::File::read(std::istream &inputStream) {
 		nameOptional = String::readOptional(inputStream);
-		readStreamSafe(inputStream, &size, SIZE_SIZE);
-		readStreamSafe(inputStream, &position, POSITION_SIZE);
+		readStream(inputStream, &size, SIZE_SIZE);
+		readStream(inputStream, &position, POSITION_SIZE);
 	}
 
 	void BigFile::File::rename(const std::optional<File> &layerFileOptional) {
@@ -858,7 +858,7 @@ namespace Ubi {
 		String::writeOptional(outputStream, nameOptional);
 
 		DIRECTORY_VECTOR_SIZE directoryVectorSize = (DIRECTORY_VECTOR_SIZE)directoryVector.size();
-		writeStreamSafe(outputStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
+		writeStream(outputStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
 		for (
 			Directory::VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
@@ -869,7 +869,7 @@ namespace Ubi {
 		}
 
 		FILE_POINTER_VECTOR_SIZE fileVectorSize = (FILE_POINTER_VECTOR_SIZE)(filePointerVector.size() + binaryFilePointerVector.size());
-		writeStreamSafe(outputStream, &fileVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
+		writeStream(outputStream, &fileVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
 
 		for (
 			File::POINTER_VECTOR::const_iterator filePointerVectorIterator = filePointerVector.begin();
@@ -933,7 +933,7 @@ namespace Ubi {
 		const std::optional<File> &layerFileOptional
 	) {
 		DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
-		readStreamSafe(inputStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
+		readStream(inputStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
 		bool bftex = !owner
 
@@ -965,7 +965,7 @@ namespace Ubi {
 		File::POINTER_SET_MAP::iterator filePointerSetMapIterator = {};
 
 		FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
-		readStreamSafe(inputStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
+		readStream(inputStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
 
 		for (FILE_POINTER_VECTOR_SIZE i = 0; i < filePointerVectorSize; i++) {
 			filePointer = std::make_shared<File>(
@@ -1027,7 +1027,7 @@ namespace Ubi {
 		bool match = isMatch(DIRECTORY_NAME_VECTOR, directoryNameVectorIterator);
 
 		DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
-		readStreamSafe(inputStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
+		readStream(inputStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
 		if (directoryNameVectorIterator == DIRECTORY_NAME_VECTOR.end()) {
 			// in this case we just read the directories and don't bother checking filePointer
@@ -1062,7 +1062,7 @@ namespace Ubi {
 		}
 
 		FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
-		readStreamSafe(inputStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
+		readStream(inputStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
 
 		if (match) {
 			for (FILE_POINTER_VECTOR_SIZE i = 0; i < filePointerVectorSize; i++) {
@@ -1225,7 +1225,7 @@ namespace Ubi {
 
 	void BigFile::Header::write(std::ostream &outputStream) const {
 		String::writeOptional(outputStream, SIGNATURE);
-		writeStreamSafe(outputStream, &CURRENT_VERSION, VERSION_SIZE);
+		writeStream(outputStream, &CURRENT_VERSION, VERSION_SIZE);
 	}
 
 	void BigFile::Header::read(std::istream &inputStream) {
@@ -1237,7 +1237,7 @@ namespace Ubi {
 		}
 
 		VERSION version = 0;
-		readStreamSafe(inputStream, &version, VERSION_SIZE);
+		readStream(inputStream, &version, VERSION_SIZE);
 
 		if (version != CURRENT_VERSION) {
 			throw Invalid();

@@ -73,6 +73,7 @@ namespace AI {
 
 		// log the current value
 		std::ostringstream outputStringStream;
+		outputStringStream.exceptions(std::ostringstream::badbit);
 		outputStringStream.imbue(LOCALE);
 		outputStringStream << "The current " << name << " is: " << f32 << ".";
 		consoleLog(outputStringStream.str().c_str());
@@ -125,6 +126,7 @@ namespace AI {
 		std::streampos position = fileStream.tellg();
 
 		std::ostringstream outputStringStream;
+		outputStringStream.exceptions(std::ostringstream::badbit);
 
 		Ubi::Binary::BinarizerLoader::toggleResource(
 			fileStream,
