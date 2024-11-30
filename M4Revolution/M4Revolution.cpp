@@ -1188,7 +1188,12 @@ void M4Revolution::fixLoading() {
 		bool yield = true;
 		std::thread outputThread(M4Revolution::outputThread, std::ref(tasks), std::ref(yield));
 
-		fixLoading(inputFileStream, 0, inputFile, log);
+		try {
+			fixLoading(inputFileStream, 0, inputFile, log);
+		} catch (std::system_error) {
+			throw Aborted("Fixing Loading failed due to a system error. It is recommended you restore the backup to revert the changes.");
+		}
+
 		log.finishing();
 
 		// necessary to wake up the output thread one last time at the end
