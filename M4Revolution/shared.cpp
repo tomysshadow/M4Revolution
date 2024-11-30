@@ -236,7 +236,7 @@ void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize 
 
 	try {
 		inputStream.read((char*)buffer, count);
-	} catch (std::ifstream::failure) {
+	} catch (std::istream::failure) {
 		inputStream.clear();
 	}
 
@@ -247,7 +247,7 @@ void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize 
 void writeStreamPartial(std::ostream &outputStream, const void* buffer, std::streamsize count) {
 	try {
 		outputStream.write((const char*)buffer, count);
-	} catch (std::ofstream::failure) {
+	} catch (std::ostream::failure) {
 		outputStream.clear();
 	}
 }
