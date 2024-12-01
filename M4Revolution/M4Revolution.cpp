@@ -25,7 +25,7 @@ void M4Revolution::Log::replaced(const std::string &file) {
 	std::cout << "Replaced " << file << std::endl << std::endl;
 }
 
-M4Revolution::Log::Log(const char* title, std::istream* inputStreamPointer, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
+M4Revolution::Log::Log(const std::string &title, std::istream* inputStreamPointer, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
 	: inputStreamPointer(inputStreamPointer),
 	inputFileSize(inputFileSize),
 	fileNames(fileNames) {

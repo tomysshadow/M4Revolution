@@ -29,7 +29,7 @@ class M4Revolution {
 		public:
 		static void replaced(const std::string &file);
 
-		Log(const char* title, std::istream* inputStreamPointer = 0, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
+		Log(const std::string &title, std::istream* inputStreamPointer = 0, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
 		~Log();
 		Log(const Log &log) = delete;
 		Log &operator=(const Log &log) = delete;
