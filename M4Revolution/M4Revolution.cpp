@@ -938,7 +938,7 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 }
 
 #ifdef WINDOWS
-bool M4Revolution::getDLLExportRVA(const std::string &libFileName, const std::string &procName, unsigned long &dllExportRVA) {
+bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName, unsigned long &dllExportRVA) {
 	std::ostringstream outputStringStream;
 	outputStringStream.exceptions(std::ostringstream::badbit);
 	outputStringStream << "GetDLLExportRVA " << std::quoted(libFileName) << " " << std::quoted(procName);
@@ -1007,7 +1007,7 @@ bool M4Revolution::getDLLExportRVA(const std::string &libFileName, const std::st
 			startupInfo.dwFlags = STARTF_USESTDHANDLES;
 			startupInfo.hStdOutput = stdoutWritePipe;
 
-			if (!CreateProcess(NULL, _commandLine, NULL, NULL, TRUE, 0, NULL, TEXT(EXEDIR), &startupInfo, &processInformation)
+			if (!CreateProcessA(NULL, _commandLine, NULL, NULL, TRUE, 0, NULL, EXEDIR, &startupInfo, &processInformation)
 				|| !process
 				|| !thread) {
 				throw std::runtime_error("Failed to Create Process");

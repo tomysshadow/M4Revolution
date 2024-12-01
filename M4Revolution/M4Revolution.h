@@ -138,7 +138,7 @@ class M4Revolution {
 	static void outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
 	static void outputThread(Work::Tasks &tasks, bool &yield);
 	#ifdef WINDOWS
-	static bool getDLLExportRVA(const std::string &libFileName, const std::string &procName, unsigned long &dllExportRVA);
+	static bool getDLLExportRVA(const char* libFileName, const char* procName, unsigned long &dllExportRVA);
 	#endif
 
 	public:
