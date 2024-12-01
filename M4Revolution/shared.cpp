@@ -280,7 +280,7 @@ void copyStreamToString(std::istream &inputStream, std::string &outputString, st
 	);
 }
 
-void openFile(const std::string &path) {
+void openFile(const char* path) {
 	std::ostringstream outputStringStream;
 	outputStringStream.exceptions(std::ostringstream::badbit);
 
