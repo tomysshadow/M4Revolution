@@ -703,6 +703,7 @@ namespace Ubi {
 
 		type = nameTypeExtensionMapIterator->second.type;
 		
+		#ifdef LAYERS_ENABLED
 		if (type == TYPE::IMAGE_STANDARD || type == TYPE::IMAGE_ZAP) {
 			// only rename images in layers
 			if (!layerFileOptional.has_value()) {
@@ -727,6 +728,7 @@ namespace Ubi {
 			}
 			#endif
 		}
+		#endif
 
 		const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
 		const std::string::size_type PERIOD_SIZE = sizeof(PERIOD);
