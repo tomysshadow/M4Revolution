@@ -97,9 +97,9 @@ namespace Ubi {
 				bool toggledOn = true;
 
 				for (uint32_t i = 0; i < resources; i++) {
-					const std::optional<std::string> &KEY = String::readOptional(inputStream, nullTerminator);
+					const std::optional<std::string> &KEY_OPTIONAL = String::readOptional(inputStream, nullTerminator);
 
-					if (KEY == key) {
+					if (KEY_OPTIONAL == key) {
 						// if we find the key it is currently on
 						// so we shift everything else up, overwriting it
 						copyStream(inputStream, outputStream, position + size - inputStream.tellg());
@@ -109,7 +109,7 @@ namespace Ubi {
 						break;
 					}
 
-					String::writeOptional(outputStream, KEY, nullTerminator);
+					String::writeOptional(outputStream, KEY_OPTIONAL, nullTerminator);
 				}
 
 				toggleLog(name, toggledOn);
@@ -262,13 +262,13 @@ namespace Ubi {
 
 			readStream(inputStream, &sets, SETS_SIZE);
 
-			std::optional<std::string> set = std::nullopt;
+			std::optional<std::string> setOptional = std::nullopt;
 
 			for (uint32_t i = 0; i < sets; i++) {
-				set = String::readOptionalEncrypted(inputStream);
+				setOptional = String::readOptionalEncrypted(inputStream);
 
-				if (set.has_value() && layerFileOptional.has_value()) {
-					layerMapIterator->second.setsSet.insert(set.value());
+				if (setOptional.has_value() && layerFileOptional.has_value()) {
+					layerMapIterator->second.setsSet.insert(setOptional.value());
 				}
 			}
 

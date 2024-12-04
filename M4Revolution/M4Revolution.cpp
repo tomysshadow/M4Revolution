@@ -19,6 +19,9 @@ void M4Revolution::destroy() {
 	#ifdef MULTITHREADED
 	CloseThreadpool(pool);
 	#endif
+
+	// always delete the temporary file when done
+	std::filesystem::remove(Work::Output::FILE_NAME);
 }
 
 void M4Revolution::Log::replaced(const std::string &file) {
@@ -1164,11 +1167,6 @@ void M4Revolution::editTransitionTime() {
 }
 
 void M4Revolution::fixLoading() {
-	// always delete the temporary file when done
-	SCOPE_EXIT {
-		std::filesystem::remove(Work::Output::FILE_NAME);
-	};
-
 	{
 		std::ifstream inputFileStream;
 		inputFileStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);

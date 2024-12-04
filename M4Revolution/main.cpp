@@ -11,7 +11,7 @@ void help() {
 	openFile("https://github.com/tomysshadow/M4Revolution/blob/main/README.md");
 }
 
-bool performOperation(M4Revolution &m4Revolution) {
+std::optional<bool> performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_OPEN_ONLINE_HELP = 1;
 	const long OPERATION_TOGGLE_FULL_SCREEN = 2;
 	const long OPERATION_TOGGLE_CAMERA_INERTIA = 3;
@@ -47,7 +47,7 @@ bool performOperation(M4Revolution &m4Revolution) {
 			m4Revolution.restoreBackup();
 			break;
 			case OPERATION_EXIT:
-			exit(0);
+			return std::nullopt;
 		}
 	} catch (M4Revolution::Aborted ex) {
 		consoleLog(ex.what(), 2, false, true);
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
 	}
 
 	M4Revolution m4Revolution(pathStringOptional.value(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks, configurationOptional);
-	bool performedOperation = false;
+	std::optional<bool> performedOperationOptional = std::nullopt;
 
 	for(;;) {
 		consoleLog("This menu may be used to perform the following operations.", 2);
@@ -148,10 +148,14 @@ int main(int argc, char** argv) {
 		consoleLog("7) Restore Backup");
 		consoleLog("8) Exit", 2);
 
-		performedOperation = performOperation(m4Revolution);
+		performedOperationOptional = performOperation(m4Revolution);
+
+		if (!performedOperationOptional.has_value()) {
+			break;
+		}
 
 		consoleLog("The operation has been ", false);
-		consoleLog(performedOperation ? "performed." : "aborted.");
+		consoleLog(performedOperationOptional.value() ? "performed." : "aborted.");
 		consoleWait();
 	};
 	return 0;

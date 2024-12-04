@@ -355,11 +355,6 @@ namespace Work {
 			// on this file, unless it is inaccessible
 			// in which case we'll error out on copyStream (as we should)
 			if (!std::filesystem::is_regular_file(Backup::getPath(edit.path))) {
-				// always delete the temporary file when done
-				SCOPE_EXIT {
-					std::filesystem::remove(Output::FILE_NAME);
-				};
-
 				{
 					Output output;
 
