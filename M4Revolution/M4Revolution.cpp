@@ -523,11 +523,11 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 }
 
 void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
+	const unsigned char ON_ACTIVATE_ON = 0x53;
+	const unsigned char ON_ACTIVATE_OFF = 0xC3;
+
 	unsigned char onActivate = 0x00;
 	const size_t ON_ACTIVATE_SIZE = sizeof(onActivate);
-
-	const unsigned char ON_ACTIVATE_ON[ON_ACTIVATE_SIZE + 1] = { 0x53, 0x00 };
-	const unsigned char ON_ACTIVATE_OFF[ON_ACTIVATE_SIZE + 1] = { 0xC3, 0x00 };
 
 	unsigned long onActivatePosition = 0x00010F60;
 
@@ -544,10 +544,10 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 
 	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 
-	bool toggledOn = onActivate == *ON_ACTIVATE_ON;
+	bool toggledOn = onActivate == ON_ACTIVATE_ON;
 
 	if (!toggledOn) {
-		toggledOn = onActivate != *ON_ACTIVATE_OFF;
+		toggledOn = onActivate != ON_ACTIVATE_OFF;
 
 		if (toggledOn) {
 			throw Aborted("On Activate untoggleable. Restoring the backup or reinstalling the game may fix this problem.");
@@ -555,7 +555,7 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 	}
 
 	toggledOn = !toggledOn;
-	edit.apply(copyThread, onActivatePosition, (const char*)(toggledOn ? ON_ACTIVATE_ON : ON_ACTIVATE_OFF));
+	edit.apply(copyThread, onActivatePosition, { (const char)(toggledOn ? ON_ACTIVATE_ON : ON_ACTIVATE_OFF) });
 
 	toggleLog("Sound Fading", toggledOn);
 }
