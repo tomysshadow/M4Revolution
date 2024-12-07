@@ -103,7 +103,7 @@ Command line arguments may be used for some advanced features.
  - `-nohw` or `--disable-hardware-acceleration`: disables hardware acceleration (via NVIDIA CUDA) when converting assets - if you do not have an NVIDIA graphics card, hardware acceleration will be disabled automatically
  - `-mt maxThreads` or `--max-threads maxThreads`: sets the maximum number of threads to use for multithreading when converting assets - maxThreads must be a valid number, and if not set, it will be chosen automatically
 
-## Compiling for Windows with Visual Studio
+## Compiling for Windows With Visual Studio
 
 If you are a user who would like to use this tool, please download it from the [Releases page.](https://github.com/tomysshadow/M4Revolution/releases)
 
