@@ -127,11 +127,12 @@ If you are a developer who would like to contribute, you may compile for Windows
 16. Build the solution for x86 Release first. It must be built for x86 Release first because the x64 M4Revolution project includes the x86 gfx_tools_rd.dll as a resource.
 17. After building the solution for x86 Release, build the solution for x64.
 
-# Do I need to use this tool on the same computer I play the game on?
+# FAQ
+## Do I need to use this tool on the same computer I play the game on?
 
 Yes. The files produced by this tool will be optimized for the computer it is used on. You should use it on the same computer that you play the game on, rather than using it on one computer and copy pasting the game files to another computer.
 
-# Is this the definitive way to play Myst IV: Revelation?
+## Is this the definitive way to play Myst IV: Revelation?
 
 Not necessarily. I would consider the long loading times to be a bug (albeit not a compatibility bug - it was always like this, even when the game was new.) However, the sound fading and fade transition are intentional features, and although disabling or editing them allows for instant movement, doing so arguably goes against the intended artistic vision of the game. Different players will have different preferences. I personally prefer the game with camera inertia enabled, like it is by default. As such, I would prefer that this remain a seperate, optional enhancement, and not be integrated into the game in an official capacity.
 
