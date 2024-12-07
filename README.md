@@ -66,7 +66,7 @@ This operation will create a backup of your game files if one has not already be
 
 ### Toggle Sound Fading
 
-Upon navigating, the game inserts an intentional half a second delay to crossfade sounds from one place to another. You may toggle the sound fading on or off. When the sound fading is off, the sounds will cut instantly to their volume at the new location instead of fading, allowing faster navigation. The default is on.
+Upon navigating, the game inserts an intentional half a second delay to crossfade sounds from one place to another. You may toggle the sound fading on or off. When the sound fading is off, the sounds will cut instantly to their volume at the new location instead of fading, allowing for faster navigation. The default is on.
 
 If sound fading is on, it will be turned off, and vice-versa. The tool will then report whether sound fading has been toggled on or off.
 
@@ -114,7 +114,7 @@ If you are a developer who would like to contribute, you may compile for Windows
 3. Copy the resulting pixman-1_staticd.lib files to `vendor/pixman-1/lib/x86/Debug` and `vendor/pixman-1/lib/x64/Debug` respectively.
 4. Copy the resulting pixman-1_static.lib files to `vendor/pixman-1/lib/x86/Release` and `vendor/pixman-1/lib/x64/Release` respectively.
 5. Install [NVIDIA Texture Tools 3.](https://developer.nvidia.com/gpu-accelerated-texture-compression) This requires an NVIDIA developer account.
-6. Copy the nvtt include files to `vendor/nvtt/include`.
+6. Copy the nvtt include files from the install directory to `vendor/nvtt/include`.
 7. Copy the nvtt30205.lib for your Visual Studio version from the install directory to `vendor/nvtt/lib/x64`.
 8. Copy nvtt30205.dll from the install directory to `x64/Debug` and `x64/Release`.
 9. Compile [sourcepp](https://github.com/craftablescience/sourcepp) for x64 with CMake, and your Visual Studio version. You may optionally uncheck all of the `SOURCEPP_USE` settings, except for `SOURCEPP_USE_STEAMPP`.
