@@ -139,14 +139,14 @@ int main(int argc, char** argv) {
 	for(;;) {
 		consoleLog("This menu may be used to perform the following operations.", 2);
 
-		consoleLog("1) Open Online Help");
-		consoleLog("2) Toggle Full Screen");
-		consoleLog("3) Toggle Camera Inertia");
-		consoleLog("4) Toggle Sound Fading");
-		consoleLog("5) Edit Transition Time");
-		consoleLog("6) Fix Loading");
-		consoleLog("7) Restore Backup");
-		consoleLog("8) Exit", 2);
+		consoleLog("1. Open Online Help");
+		consoleLog("2. Toggle Full Screen");
+		consoleLog("3. Toggle Camera Inertia");
+		consoleLog("4. Toggle Sound Fading");
+		consoleLog("5. Edit Transition Time");
+		consoleLog("6. Fix Loading");
+		consoleLog("7. Restore Backup");
+		consoleLog("8. Exit", 2);
 
 		performedOperationOptional = performOperation(m4Revolution);
 
