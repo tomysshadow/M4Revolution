@@ -469,9 +469,7 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 	} else {
 		// we create an empty file here for when the backup is restored
 		// otherwise, since this file is not required, we couldn't know whether to delete it
-		if (Work::Backup::createEmpty(Work::Output::USER_PREFERENCE_PATH)) {
-			Work::Backup::log();
-		}
+		Work::Backup::createEmpty(Work::Output::USER_PREFERENCE_PATH);
 	}
 
 	toggledOn = !toggledOn;
@@ -586,9 +584,7 @@ void M4Revolution::replaceGfxTools() {
 		writeStream(output.fileStream, resourceGlobalHandleLock.get(), resourceGlobalHandleLock.size());
 	}
 
-	if (Work::Backup::create(Work::Output::GFX_TOOLS_PATH.string().c_str())) {
-		Work::Backup::log();
-	}
+	Work::Backup::create(Work::Output::GFX_TOOLS_PATH.string().c_str());
 
 	Log::replaced("Gfx Tools");
 }
@@ -1141,9 +1137,7 @@ void M4Revolution::toggleFullScreen() {
 		OPERATION_EXCEPTION_RETRY_ERR(toggleFullScreen(inputFileStream), std::system_error, Work::Output::FILE_RETRY);
 	}
 
-	if (Work::Backup::create(Work::Output::USER_PREFERENCE_PATH.string().c_str())) {
-		Work::Backup::log();
-	}
+	Work::Backup::create(Work::Output::USER_PREFERENCE_PATH.string().c_str());
 }
 
 void M4Revolution::toggleCameraInertia() {
@@ -1209,9 +1203,7 @@ void M4Revolution::fixLoading() {
 		outputThread.join();
 	}
 
-	if (Work::Backup::create(Work::Output::DATA_PATH.string().c_str())) {
-		Work::Backup::log();
-	}
+	Work::Backup::create(Work::Output::DATA_PATH.string().c_str());
 }
 
 void M4Revolution::restoreBackup() {

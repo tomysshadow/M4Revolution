@@ -293,51 +293,61 @@ namespace Work {
 
 	namespace Backup {
 		bool rename(const char* oldFileName, const char* newFileName) {
-			// here I'm using CRT rename because I don't want to be able
-			// to overwrite the backup file (which std::filesystem::rename has no option to disallow)
-			bool result = !::rename(oldFileName, newFileName);
+			bool result = false;
 
-			// the error is EEXIST if the file exists and is not empty, but ENOENT if it exists and is empty
-			if (!result && errno != EEXIST && errno != ENOENT) {
-				throw std::runtime_error("Failed to Rename");
+			for (;;) {
+				result = !::rename(oldFileName, newFileName);
+
+				// the error is EEXIST if the file exists and is not empty, but ENOENT if it exists and is empty
+				if (result || errno == EEXIST || errno == ENOENT) {
+					break;
+				}
+
+				RETRY_ERR(Output::FILE_RETRY);
 			}
 			return result;
 		}
 
-		bool create(const char* fileName) {
-			bool result = rename(fileName, getPath(fileName).string().c_str());
+		void log() {
+			consoleLog("A backup has been created.", 2);
+		}
+
+		void create(const char* fileName) {
+			bool createdNew = rename(fileName, getPath(fileName).string().c_str());
 
 			// here I use std::filesystem::rename because I do want to overwrite the file if it exists
 			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(Output::FILE_NAME, fileName), std::filesystem::filesystem_error, Output::FILE_RETRY);
-			return result;
+			
+			if (createdNew) {
+				log();
+			}
 		}
 
-		bool createOutput(const char* fileName) {
-			return rename(Output::FILE_NAME, getPath(fileName).string().c_str());
+		void createOutput(const char* fileName) {
+			if (rename(Output::FILE_NAME, getPath(fileName).string().c_str())) {
+				log();
+			}
 		}
 
-		bool createEmpty(const std::filesystem::path &path) {
+		void createEmpty(const std::filesystem::path &path) {
 			const std::filesystem::path PATH = getPath(path);
 
 			// we only do this check because we want to know
 			// if the file exists before already (just to log if we created it or not)
 			if (std::filesystem::is_regular_file(PATH)) {
-				return false;
+				return;
 			}
 
 			std::ofstream outputFileStream;
 			outputFileStream.exceptions(std::ofstream::failbit);
 
 			OPERATION_EXCEPTION_RETRY_ERR(outputFileStream.open(PATH), std::ofstream::failure, Output::FILE_RETRY);
-			return true;
+
+			log();
 		}
 
 		void restore(const std::filesystem::path &path) {
 			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(getPath(path), path), std::filesystem::filesystem_error, Output::FILE_RETRY);
-		}
-
-		void log() {
-			consoleLog("A backup has been created.", 2);
 		}
 
 		std::filesystem::path getPath(std::filesystem::path path) {
@@ -347,7 +357,7 @@ namespace Work {
 
 	void Edit::copyThread(Edit &edit) {
 		std::fstream &fileStream = edit.fileStream;
-		bool backup = false;
+		std::optional<Output> outputOptional = std::nullopt;
 
 		if (!edit.copied) {
 			// check if the file exists, if it doesn't create a backup
@@ -355,14 +365,10 @@ namespace Work {
 			// on this file, unless it is inaccessible
 			// in which case we'll error out on copyStream (as we should)
 			if (!std::filesystem::is_regular_file(Backup::getPath(edit.path))) {
-				{
-					Output output;
+				outputOptional.emplace();
 
-					fileStream.seekg(0);
-					copyStream(fileStream, output.fileStream);
-				}
-
-				backup = Backup::createOutput(edit.path.string().c_str());
+				fileStream.seekg(0);
+				copyStream(fileStream, outputOptional.value().fileStream);
 			}
 
 			edit.copied = true;
@@ -370,8 +376,12 @@ namespace Work {
 
 		edit.event.wait(true);
 
-		if (backup) {
-			Backup::log();
+		// this happens after the wait because createOutput logs stuff
+		// we don't want it to interfere with the logging on the main thread
+		if (outputOptional.has_value()) {
+			outputOptional = std::nullopt;
+
+			Backup::createOutput(edit.path.string().c_str());
 		}
 
 		fileStream.seekp(edit.position);

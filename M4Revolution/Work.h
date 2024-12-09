@@ -250,11 +250,10 @@ namespace Work {
 	};
 
 	namespace Backup {
-		bool create(const char* fileName);
-		bool createOutput(const char* fileName);
-		bool createEmpty(const std::filesystem::path &path);
+		void create(const char* fileName);
+		void createOutput(const char* fileName);
+		void createEmpty(const std::filesystem::path &path);
 		void restore(const std::filesystem::path &path);
-		void log();
 		std::filesystem::path getPath(std::filesystem::path path);
 	}
 
