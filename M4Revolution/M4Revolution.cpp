@@ -20,8 +20,12 @@ void M4Revolution::destroy() {
 	CloseThreadpool(pool);
 	#endif
 
-	// always delete the temporary file when done
-	std::filesystem::remove(Work::Output::FILE_NAME);
+	// delete the temporary file when done
+	try {
+		std::filesystem::remove(Work::Output::FILE_NAME);
+	} catch (std::filesystem::filesystem_error) {
+		// failing to delete the temporary file should not crash the program
+	}
 }
 
 void M4Revolution::Log::replaced(const std::string &file) {

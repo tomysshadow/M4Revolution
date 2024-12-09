@@ -343,7 +343,9 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 #define OPERATION_EXCEPTION_RETRY_ERR(operation, exception, retry) do {\
 	try {\
 		(operation);\
-	} catch (exception) {\
+	} catch (exception ex) {\
+		consoleLog(ex.what(), 2);\
+		\
 		RETRY_ERR(retry);\
 		continue;\
 	}\
