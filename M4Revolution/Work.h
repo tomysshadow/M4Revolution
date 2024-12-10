@@ -258,21 +258,25 @@ namespace Work {
 	}
 
 	class Edit {
-		private:
-		std::filesystem::path path = {};
-
-		std::streampos position = 0;
-		std::string str = "";
-
-		Event event;
-		bool copied = false;
-
 		public:
 		static void copyThread(Edit &edit);
+
+		struct Code {
+			std::streampos position = 0;
+			std::string str = "";
+		};
+
+		typedef std::vector<Code> CODE_VECTOR;
 
 		std::fstream &fileStream;
 
 		Edit(std::fstream &fileStream, const std::filesystem::path &path);
-		void apply(std::thread &copyThread, std::streampos position, const std::string &str);
+		void apply(std::thread &copyThread, const CODE_VECTOR &codeVector);
+
+		private:
+		std::filesystem::path path = {};
+		CODE_VECTOR codeVector = {};
+		Event event;
+		bool copied = false;
 	};
 };

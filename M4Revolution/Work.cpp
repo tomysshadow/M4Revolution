@@ -384,8 +384,16 @@ namespace Work {
 			Backup::createOutput(edit.path.string().c_str());
 		}
 
-		fileStream.seekp(edit.position);
-		writeStream(fileStream, edit.str.c_str(), edit.str.length());
+		fileStream.seekp(0, std::ios::beg);
+
+		CODE_VECTOR &codeVector = edit.codeVector;
+
+		for (CODE_VECTOR::iterator codeVectorIterator = codeVector.begin(); codeVectorIterator != codeVector.end(); codeVectorIterator++) {
+			fileStream.seekp(codeVectorIterator->position, std::ios::cur);
+
+			std::string &str = codeVectorIterator->str;
+			writeStream(fileStream, str.c_str(), str.length());
+		}
 	}
 
 	Edit::Edit(std::fstream &fileStream, const std::filesystem::path &path)
@@ -401,9 +409,8 @@ namespace Work {
 		fileStream.open(path, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
 	}
 
-	void Edit::apply(std::thread &copyThread, std::streampos position, const std::string &str) {
-		this->position = position;
-		this->str = str;
+	void Edit::apply(std::thread &copyThread, const CODE_VECTOR &codeVector) {
+		this->codeVector = codeVector;
 
 		if (!copied) {
 			consoleLog("Please wait...", 2);

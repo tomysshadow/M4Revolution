@@ -484,8 +484,8 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 
 void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 	const size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
-	const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50, 0x00 };
-	const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE + 1] = { 0xC6, 0x44, 0x24, 0x0B, 0x48, 0x90, 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0x00 };
+	const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50 };
+	const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE] = { 0xC6, 0x44, 0x24, 0x0B, 0x48, 0x90, 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C };
 
 	// default value is the position as of the latest Steam version
 	unsigned long computeMoveVectorPosition = 0x000109C0;
@@ -496,11 +496,11 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 	}
 	#endif
 
-	unsigned char computeMoveVector[COMPUTE_MOVE_VECTOR_SIZE] = "";
-
 	Work::Edit edit(fileStream, Work::Output::M4_THOR_PATH);
 
-	fileStream.seekg(computeMoveVectorPosition);
+	fileStream.seekg(computeMoveVectorPosition, std::ios::beg);
+
+	unsigned char computeMoveVector[COMPUTE_MOVE_VECTOR_SIZE] = "";
 	readStream(fileStream, computeMoveVector, COMPUTE_MOVE_VECTOR_SIZE);
 
 	// we must either be on or off
@@ -519,45 +519,110 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 
 	// toggle happens here
 	toggledOn = !toggledOn;
-	edit.apply(copyThread, computeMoveVectorPosition, (const char*)(toggledOn ? COMPUTE_MOVE_VECTOR_ON : COMPUTE_MOVE_VECTOR_OFF));
+
+	edit.apply(
+		copyThread,
+		
+		{
+			{
+				computeMoveVectorPosition,
+				
+				std::string(
+					(const char*)(
+						toggledOn
+						? COMPUTE_MOVE_VECTOR_ON
+						: COMPUTE_MOVE_VECTOR_OFF
+					),
+					
+					COMPUTE_MOVE_VECTOR_SIZE
+				)
+			}
+		}
+	);
 
 	toggleLog("Camera Inertia", toggledOn);
 }
 
 void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
-	const unsigned char ON_ACTIVATE_ON = 0x53;
-	const unsigned char ON_ACTIVATE_OFF = 0xC3;
+	const size_t FADE_OUT_SOUND_SIZE = 13;
+	const unsigned char FADE_OUT_SOUND_ON[FADE_OUT_SOUND_SIZE] = { 0x8B, 0x54, 0x24, 0x04, 0x56, 0x8B, 0xF1, 0x8A, 0x86, 0x87, 0x00, 0x00, 0x00 };
+	const unsigned char FADE_OUT_SOUND_OFF[FADE_OUT_SOUND_SIZE] = { 0x8B, 0x54, 0x24, 0x04, 0x56, 0x8B, 0xF1, 0xB8, 0x01, 0x00, 0x00, 0x00, 0x90 };
 
-	unsigned char onActivate = 0x00;
-	const size_t ON_ACTIVATE_SIZE = sizeof(onActivate);
+	const size_t FADE_OUT_SOUND2_SIZE = 9;
+	const unsigned char FADE_OUT_SOUND2_ON[FADE_OUT_SOUND2_SIZE] = { 0x68, 0x26, 0x02, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
+	const unsigned char FADE_OUT_SOUND2_OFF[FADE_OUT_SOUND2_SIZE] = { 0x68, 0x00, 0x00, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
 
-	unsigned long onActivatePosition = 0x00010F60;
+	unsigned long fadeOutSoundPosition = 0x00010850;
 
 	#ifdef WINDOWS
-	while (!getDLLExportRVA("m4_ai_global_rd.dll", "?OnActivate@AiSndTransition@ai@@UAEXXZ", onActivatePosition)) {
+	while (!getDLLExportRVA("m4_ai_global_rd.dll", "?FadeOutSound@AiSndTransition@ai@@AAEXKKK@Z", fadeOutSoundPosition)) {
 		RETRY_ERR(Work::Output::FILE_RETRY);
 	}
 	#endif
 
+	const std::streampos FADE_OUT_SOUND2_POSITION = 81;
+
 	Work::Edit edit(fileStream, Work::Output::M4_AI_GLOBAL_PATH);
 
-	fileStream.seekg(onActivatePosition);
-	readStream(fileStream, &onActivate, ON_ACTIVATE_SIZE);
+	fileStream.seekg(fadeOutSoundPosition, std::ios::beg);
+
+	unsigned char fadeOutSound[FADE_OUT_SOUND_SIZE] = "";
+	readStream(fileStream, &fadeOutSound, FADE_OUT_SOUND_SIZE);
+
+	fileStream.seekg(FADE_OUT_SOUND2_POSITION, std::ios::cur);
+
+	unsigned char fadeOutSound2[FADE_OUT_SOUND2_SIZE] = "";
+	readStream(fileStream, &fadeOutSound2, FADE_OUT_SOUND2_SIZE);
 
 	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 
-	bool toggledOn = onActivate == ON_ACTIVATE_ON;
+	bool toggledOn = memoryEquals(fadeOutSound, FADE_OUT_SOUND_ON, FADE_OUT_SOUND_SIZE)
+		&& memoryEquals(fadeOutSound2, FADE_OUT_SOUND2_ON, FADE_OUT_SOUND2_SIZE);
 
 	if (!toggledOn) {
-		toggledOn = onActivate != ON_ACTIVATE_OFF;
+		toggledOn = !memoryEquals(fadeOutSound, FADE_OUT_SOUND_OFF, FADE_OUT_SOUND_SIZE)
+			&& !memoryEquals(fadeOutSound2, FADE_OUT_SOUND2_OFF, FADE_OUT_SOUND2_SIZE);
 
 		if (toggledOn) {
-			throw Aborted("On Activate untoggleable. Restoring the backup or reinstalling the game may fix this problem.");
+			throw Aborted("Fade Out Sound untoggleable. Restoring the backup or reinstalling the game may fix this problem.");
 		}
 	}
 
 	toggledOn = !toggledOn;
-	edit.apply(copyThread, onActivatePosition, { (const char)(toggledOn ? ON_ACTIVATE_ON : ON_ACTIVATE_OFF) });
+
+	edit.apply(
+		copyThread,
+	
+		{
+			{
+				fadeOutSoundPosition,
+
+				std::string(
+					(const char*)(
+						toggledOn
+						? FADE_OUT_SOUND_ON
+						: FADE_OUT_SOUND_OFF
+					),
+
+					FADE_OUT_SOUND_SIZE
+				)
+			},
+
+			{
+				FADE_OUT_SOUND2_POSITION,
+
+				std::string(
+					(const char*)(
+						toggledOn
+						? FADE_OUT_SOUND2_ON
+						: FADE_OUT_SOUND2_OFF
+					),
+
+					FADE_OUT_SOUND2_SIZE
+				)
+			}
+		}
+	);
 
 	toggleLog("Sound Fading", toggledOn);
 }

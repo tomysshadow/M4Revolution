@@ -110,7 +110,16 @@ namespace AI {
 		// tell the edit to the copy thread
 		const std::string &VALUE_STR_PREFIX = matches[1];
 
-		edit.apply(copyThread, position + (std::streamsize)VALUE_STR_PREFIX.length(), outputStringStream.str());
+		edit.apply(
+			copyThread,
+			
+			{
+				{
+					position + (std::streamsize)VALUE_STR_PREFIX.length(),
+					outputStringStream.str()
+				}
+			}
+		);
 	}
 
 	/*
