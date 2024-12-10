@@ -317,8 +317,7 @@ void readPipePartial(HANDLE pipe, LPVOID buffer, DWORD numberOfBytesToRead, DWOR
 	DWORD lastError = GetLastError();
 
 	if (lastError != ERROR_BROKEN_PIPE) {
-		std::error_code errorCode(lastError, std::system_category());
-		throw std::system_error(errorCode);
+		osErrThrow();
 	}
 }
 

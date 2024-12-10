@@ -353,6 +353,13 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 	break;\
 } while (1)
 
+#ifdef WINDOWS
+inline void osErrThrow(bool doserrno = false) {
+	std::error_code errorCode(doserrno ? _doserrno : GetLastError(), std::system_category());
+	throw std::system_error(errorCode);
+}
+#endif
+
 template <typename Number>
 inline constexpr Number clamp(Number number, Number min, Number max) {
 	return __min(max, __max(number, min));
