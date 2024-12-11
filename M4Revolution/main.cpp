@@ -17,7 +17,7 @@ std::string getAppInstallDir() {
 	try {
 		// try for the DVD release first
 		const CHAR MYST_IV_REVELATION_DVD_SUBKEY[] = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{96F702F3-7CA4-41B5-A70A-4F348DF99A9A}";
-		return getRegistryString(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_DVD_SUBKEY, "InstallLocation", true);
+		return getRegistryValueString(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_DVD_SUBKEY, "InstallLocation", KEY_WOW64_32KEY);
 	} catch (std::system_error) {
 		// fail silently
 	}
@@ -39,7 +39,7 @@ std::string getAppInstallDir() {
 	try {
 		// try for the GOG release next
 		const CHAR MYST_IV_REVELATION_GOG_GAME_ID_SUBKEY[] = "SOFTWARE\\GOG.com\\Games\\1956555724";
-		return getRegistryString(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_GOG_GAME_ID_SUBKEY, "path", true);
+		return getRegistryValueString(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_GOG_GAME_ID_SUBKEY, "path", KEY_WOW64_32KEY);
 	} catch (std::system_error) {
 		// fail silently
 	}

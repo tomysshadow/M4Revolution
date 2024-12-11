@@ -531,6 +531,6 @@ void toggleLog(const std::string &name, bool toggledOn);
 
 #ifdef WINDOWS
 void readPipePartial(HANDLE pipe, LPVOID buffer, DWORD numberOfBytesToRead, DWORD &numberOfBytesRead);
-std::string getRegistryString(HKEY baseRegistryKey, LPCSTR subkeyPointer, LPCSTR valuePointer, bool wow64 = false);
+std::string getRegistryValueString(HKEY baseRegistryKey, LPCSTR subkeyPointer, LPCSTR valuePointer, DWORD keyFlags = 0);
 void setFileAttributeHidden(bool hidden, LPCSTR pathStringPointer);
 #endif
