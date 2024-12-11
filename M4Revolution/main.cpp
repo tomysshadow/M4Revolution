@@ -12,6 +12,49 @@ void help() {
 	openFile("https://github.com/tomysshadow/M4Revolution/blob/main/README.md");
 }
 
+std::string getAppInstallDir() {
+	#ifdef WINDOWS
+	try {
+		// try for the DVD release first
+		const CHAR MYST_IV_REVELATION_SUBKEY[] = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{96F702F3-7CA4-41B5-A70A-4F348DF99A9A}";
+
+		// open the key, because we will be using it more than once
+		HKEY registryKey = NULL;
+		osErr(RegOpenKeyExA(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_SUBKEY, 0, KEY_QUERY_VALUE | KEY_WOW64_32KEY, &registryKey));
+
+		SCOPE_EXIT {
+			osErr(closeRegistryKey(registryKey));
+		};
+
+		const CHAR INSTALL_LOCATION_VALUE[] = "InstallLocation";
+
+		// get the size
+		DWORD dataSize = 0;
+		osErr(RegGetValueA(registryKey, NULL, INSTALL_LOCATION_VALUE, RRF_RT_REG_SZ, NULL, NULL, &dataSize));
+
+		// get the data
+		std::unique_ptr<CHAR> dataPointer(new CHAR[(size_t)dataSize]);
+		osErr(RegGetValueA(registryKey, NULL, INSTALL_LOCATION_VALUE, RRF_RT_REG_SZ, NULL, dataPointer.get(), &dataSize));
+		return dataPointer.get();
+	} catch (std::system_error) {
+		// fail silently
+	}
+	#endif
+
+	{
+		// try for the Steam release next
+		const steampp::AppID MYST_IV_REVELATION_APP_ID = 925940;
+
+		steampp::Steam steam;
+		std::string pathString = steam.getAppInstallDir(MYST_IV_REVELATION_APP_ID);
+
+		if (!pathString.empty()) {
+			return pathString;
+		}
+	}
+	return std::filesystem::current_path().string();
+}
+
 std::optional<bool> performOperation(M4Revolution &m4Revolution) {
 	const long OPERATION_OPEN_ONLINE_HELP = 1;
 	const long OPERATION_TOGGLE_FULL_SCREEN = 2;
@@ -58,7 +101,7 @@ std::optional<bool> performOperation(M4Revolution &m4Revolution) {
 }
 
 int main(int argc, char** argv) {
-	consoleLog("Myst IV: Revolution 1.1.1");
+	consoleLog("Myst IV: Revolution 1.1.2");
 	consoleLog("By Anthony Kleine", 2);
 
 	const int MIN_ARGC = 1;
@@ -124,14 +167,7 @@ int main(int argc, char** argv) {
 	}
 
 	if (!pathStringOptional.has_value()) {
-		const steampp::AppID MYST_IV_REVELATION_APP_ID = 925940;
-
-		steampp::Steam steam;
-		pathStringOptional.emplace(steam.getAppInstallDir(MYST_IV_REVELATION_APP_ID));
-
-		if (pathStringOptional.value().empty()) {
-			pathStringOptional.emplace(std::filesystem::current_path().string());
-		}
+		pathStringOptional.emplace(getAppInstallDir());
 	}
 
 	M4Revolution m4Revolution(pathStringOptional.value(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks, configurationOptional);
@@ -149,7 +185,12 @@ int main(int argc, char** argv) {
 		consoleLog("7. Restore Backup");
 		consoleLog("8. Exit", 2);
 
-		performedOperationOptional = performOperation(m4Revolution);
+		try {
+			performedOperationOptional = performOperation(m4Revolution);
+		} catch (std::exception ex) {
+			consoleLog(ex.what(), 2, false, true);
+			throw;
+		}
 
 		if (!performedOperationOptional.has_value()) {
 			break;

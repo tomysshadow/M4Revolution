@@ -314,11 +314,7 @@ void readPipePartial(HANDLE pipe, LPVOID buffer, DWORD numberOfBytesToRead, DWOR
 		}
 	}
 
-	DWORD lastError = GetLastError();
-
-	if (lastError != ERROR_BROKEN_PIPE) {
-		osErrThrow();
-	}
+	osErr(GetLastError() == ERROR_BROKEN_PIPE);
 }
 
 void setFileAttributeHidden(bool hidden, LPCSTR pathStringPointer) {
@@ -327,17 +323,12 @@ void setFileAttributeHidden(bool hidden, LPCSTR pathStringPointer) {
 	}
 
 	DWORD fileAttributes = GetFileAttributesA(pathStringPointer);
-
-	if (fileAttributes == INVALID_FILE_ATTRIBUTES) {
-		throw std::runtime_error("Failed to Get File Attributes");
-	}
+	osErr(fileAttributes != INVALID_FILE_ATTRIBUTES);
 
 	fileAttributes = hidden
 		? fileAttributes | FILE_ATTRIBUTE_HIDDEN
 		: fileAttributes & ~FILE_ATTRIBUTE_HIDDEN;
 	
-	if (!SetFileAttributesA(pathStringPointer, fileAttributes)) {
-		throw std::runtime_error("Failed to Set File Attributes");
-	}
+	osErr(SetFileAttributesA(pathStringPointer, fileAttributes));
 }
 #endif

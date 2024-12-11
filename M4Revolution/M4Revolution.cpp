@@ -255,10 +255,7 @@ void M4Revolution::convertFile(
 
 	#ifdef MULTITHREADED
 	PTP_WORK work = CreateThreadpoolWork(convertFileProc, &convert, NULL);
-
-	if (!work) {
-		throw std::runtime_error("Failed to Create Threadpool Work");
-	}
+	osErr(work);
 
 	convertScopeExit.dismiss();
 
@@ -638,10 +635,7 @@ void M4Revolution::replaceGfxTools() {
 	// scope so that we let go of the output before renaming it and free the resource when no longer needed
 	{
 		HRSRC resourceHandle = FindResource(NULL, MAKEINTRESOURCE(IDR_BIN_GFX_TOOLS), TEXT("BIN"));
-
-		if (!resourceHandle) {
-			throw std::runtime_error("Failed to Find Resource");
-		}
+		osErr(resourceHandle);
 
 		GlobalHandleLock<> resourceGlobalHandleLock(NULL, resourceHandle);
 
@@ -1026,15 +1020,11 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 	HANDLE &thread = processInformation.hThread;
 
 	SCOPE_EXIT {
-		if (!closeProcess(process)) {
-			throw std::runtime_error("Failed to Close Process");
-		}
+		osErr(closeProcess(process));
 	};
 
 	SCOPE_EXIT {
-		if (!closeThread(thread)) {
-			throw std::runtime_error("Failed to Close Thread");
-		}
+		osErr(closeThread(thread));
 	};
 
 	const DWORD BUFFER_SIZE = sizeof("0x00000000");
@@ -1044,42 +1034,31 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 		HANDLE stdoutReadPipe = NULL;
 
 		SCOPE_EXIT {
-			if (!closeHandle(stdoutReadPipe)) {
-				throw std::runtime_error("Failed to Close Handle");
-			}
+			osErr(closeHandle(stdoutReadPipe));
 		};
 
 		{
 			HANDLE stdoutWritePipe = NULL;
 
 			SCOPE_EXIT {
-				if (!closeHandle(stdoutWritePipe)) {
-					throw std::runtime_error("Failed to Close Handle");
-				}
+				osErr(closeHandle(stdoutWritePipe));
 			};
 
 			SECURITY_ATTRIBUTES securityAttributes = {};
 			securityAttributes.nLength = sizeof(securityAttributes);
 			securityAttributes.bInheritHandle = TRUE;
 
-			if (!CreatePipe(&stdoutReadPipe, &stdoutWritePipe, &securityAttributes, BUFFER_SIZE - 1)) {
-				throw std::runtime_error("Failed to Create Pipe");
-			}
-
-			if (!SetHandleInformation(stdoutReadPipe, HANDLE_FLAG_INHERIT, 0)) {
-				throw std::runtime_error("Failed to Set Handle Information");
-			}
+			osErr(CreatePipe(&stdoutReadPipe, &stdoutWritePipe, &securityAttributes, BUFFER_SIZE - 1));
+			osErr(SetHandleInformation(stdoutReadPipe, HANDLE_FLAG_INHERIT, 0));
 
 			STARTUPINFO startupInfo = {};
 			startupInfo.cb = sizeof(startupInfo);
 			startupInfo.dwFlags = STARTF_USESTDHANDLES;
 			startupInfo.hStdOutput = stdoutWritePipe;
 
-			if (!CreateProcessA(NULL, _commandLine, NULL, NULL, TRUE, 0, NULL, EXEDIR, &startupInfo, &processInformation)
-				|| !process
-				|| !thread) {
-				throw std::runtime_error("Failed to Create Process");
-			}
+			osErr(CreateProcessA(NULL, _commandLine, NULL, NULL, TRUE, 0, NULL, EXEDIR, &startupInfo, &processInformation)
+				&& process
+				&& thread);
 		}
 
 		DWORD numberOfBytesRead = 0;
@@ -1090,20 +1069,14 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 	const DWORD MILLISECONDS = 10000;
 
 	DWORD wait = WaitForSingleObject(process, MILLISECONDS);
-
-	if (wait != WAIT_OBJECT_0 && wait != WAIT_ABANDONED) {
-		throw std::runtime_error("Failed to Wait For Single Object");
-	}
+	osErr(wait == WAIT_OBJECT_0 || wait == WAIT_ABANDONED);
 
 	size_t size = stringToLongUnsigned(buffer, dllExportRVA);
 
 	if (!size) {
 		DWORD exitCode = 0;
 
-		if (!GetExitCodeProcess(process, &exitCode)) {
-			throw std::runtime_error("Failed to Get Process Exit Code");
-		}
-
+		osErr(GetExitCodeProcess(process, &exitCode));
 		SetLastError(exitCode);
 	}
 	return size;
@@ -1126,10 +1099,7 @@ M4Revolution::M4Revolution(
 
 	#ifdef MULTITHREADED
 	pool = CreateThreadpool(NULL);
-
-	if (!pool) {
-		throw std::runtime_error("Failed to Create Threadpool");
-	}
+	osErr(pool);
 
 	if (!maxThreads) {
 		// chosen so that if you have a quad core there will still be at least two threads for other system stuff
@@ -1144,10 +1114,7 @@ M4Revolution::M4Revolution(
 	}
 
 	SetThreadpoolThreadMaximum(pool, maxThreads);
-
-	if (!SetThreadpoolThreadMinimum(pool, 1)) {
-		throw std::runtime_error("Failed to Set Threadpool Thread Minimum");
-	}
+	osErr(SetThreadpoolThreadMinimum(pool, 1));
 	#endif
 
 	// the number 216 was chosen for being the standard number of tiles in a cube

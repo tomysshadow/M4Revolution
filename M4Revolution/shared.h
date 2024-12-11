@@ -358,6 +358,43 @@ inline void osErrThrow(bool doserrno = false) {
 	std::error_code errorCode(doserrno ? _doserrno : GetLastError(), std::system_category());
 	throw std::system_error(errorCode);
 }
+
+inline void osErr(DWORD dw, bool doserrno = false) {
+	if (dw) {
+		return;
+	}
+	
+	osErrThrow(doserrno);
+}
+
+inline void osErr(WORD w, bool doserrno = false) {
+	osErr((DWORD)w, doserrno);
+}
+
+inline void osErr(BYTE by, bool doserrno = false) {
+	osErr((DWORD)by, doserrno);
+}
+
+inline void osErr(BOOL b, bool doserrno = false) {
+	osErr((DWORD)b, doserrno);
+}
+
+inline void osErr(HANDLE h, bool doserrno = false) {
+	if (h != NULL && h != INVALID_HANDLE_VALUE) {
+		return;
+	}
+	
+	osErrThrow(doserrno);
+}
+
+inline void osErr(LSTATUS err) {
+	if (err == ERROR_SUCCESS) {
+		return;
+	}
+
+	SetLastError(err);
+	osErrThrow(false);
+}
 #endif
 
 template <typename Number>
@@ -416,6 +453,20 @@ inline bool destroyWindow(HWND &windowHandle) {
 	}
 
 	windowHandle = NULL;
+	return true;
+}
+
+inline bool closeRegistryKey(HKEY &registryKey) {
+	if (registryKey) {
+		LSTATUS err = RegCloseKey(registryKey);
+
+		if (err != ERROR_SUCCESS) {
+			SetLastError(err);
+			return false;
+		}
+	}
+
+	registryKey = NULL;
 	return true;
 }
 #endif
