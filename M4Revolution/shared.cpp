@@ -317,6 +317,37 @@ void readPipePartial(HANDLE pipe, LPVOID buffer, DWORD numberOfBytesToRead, DWOR
 	osErr(GetLastError() == ERROR_BROKEN_PIPE);
 }
 
+std::string getRegistryString(HKEY baseRegistryKey, LPCSTR subkeyPointer, LPCSTR valuePointer, bool wow64) {
+	if (!baseRegistryKey) {
+		throw std::invalid_argument("baseRegistryKey must not be NULL");
+	}
+
+	if (!subkeyPointer) {
+		throw std::invalid_argument("subkeyPointer must not be NULL");
+	}
+
+	if (!valuePointer) {
+		throw std::invalid_argument("valuePointer must not be NULL");
+	}
+
+	// open the key, because we will be using it more than once
+	HKEY registryKey = NULL;
+	osErr(RegOpenKeyExA(baseRegistryKey, subkeyPointer, 0, KEY_QUERY_VALUE | (wow64 ? KEY_WOW64_32KEY : KEY_WOW64_64KEY), &registryKey));
+
+	SCOPE_EXIT {
+		osErr(closeRegistryKey(registryKey));
+	};
+
+	// get the data size
+	DWORD dataSize = 0;
+	osErr(RegGetValueA(registryKey, NULL, valuePointer, RRF_RT_REG_SZ, NULL, NULL, &dataSize));
+
+	// get the data
+	std::unique_ptr<CHAR> dataPointer(new CHAR[(size_t)dataSize]);
+	osErr(RegGetValueA(registryKey, NULL, valuePointer, RRF_RT_REG_SZ, NULL, dataPointer.get(), &dataSize));
+	return dataPointer.get();
+}
+
 void setFileAttributeHidden(bool hidden, LPCSTR pathStringPointer) {
 	if (!pathStringPointer) {
 		throw std::invalid_argument("pathStringPointer must not be NULL");

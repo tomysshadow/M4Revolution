@@ -16,26 +16,8 @@ std::string getAppInstallDir() {
 	#ifdef WINDOWS
 	try {
 		// try for the DVD release first
-		const CHAR MYST_IV_REVELATION_SUBKEY[] = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{96F702F3-7CA4-41B5-A70A-4F348DF99A9A}";
-
-		// open the key, because we will be using it more than once
-		HKEY registryKey = NULL;
-		osErr(RegOpenKeyExA(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_SUBKEY, 0, KEY_QUERY_VALUE | KEY_WOW64_32KEY, &registryKey));
-
-		SCOPE_EXIT {
-			osErr(closeRegistryKey(registryKey));
-		};
-
-		const CHAR INSTALL_LOCATION_VALUE[] = "InstallLocation";
-
-		// get the size
-		DWORD dataSize = 0;
-		osErr(RegGetValueA(registryKey, NULL, INSTALL_LOCATION_VALUE, RRF_RT_REG_SZ, NULL, NULL, &dataSize));
-
-		// get the data
-		std::unique_ptr<CHAR> dataPointer(new CHAR[(size_t)dataSize]);
-		osErr(RegGetValueA(registryKey, NULL, INSTALL_LOCATION_VALUE, RRF_RT_REG_SZ, NULL, dataPointer.get(), &dataSize));
-		return dataPointer.get();
+		const CHAR MYST_IV_REVELATION_DVD_SUBKEY[] = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{96F702F3-7CA4-41B5-A70A-4F348DF99A9A}";
+		return getRegistryString(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_DVD_SUBKEY, "InstallLocation", true);
 	} catch (std::system_error) {
 		// fail silently
 	}
@@ -52,6 +34,16 @@ std::string getAppInstallDir() {
 			return pathString;
 		}
 	}
+
+	#ifdef WINDOWS
+	try {
+		// try for the GOG release next
+		const CHAR MYST_IV_REVELATION_GOG_GAME_ID_SUBKEY[] = "SOFTWARE\\GOG.com\\Games\\1956555724";
+		return getRegistryString(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_GOG_GAME_ID_SUBKEY, "path", true);
+	} catch (std::system_error) {
+		// fail silently
+	}
+	#endif
 	return std::filesystem::current_path().string();
 }
 
