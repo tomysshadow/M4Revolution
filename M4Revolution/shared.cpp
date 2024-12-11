@@ -332,7 +332,7 @@ std::string getRegistryValueString(HKEY baseRegistryKey, LPCSTR subkeyPointer, L
 
 	// open the key, because we will be using it more than once
 	HKEY registryKey = NULL;
-	osErr(RegOpenKeyExA(baseRegistryKey, subkeyPointer, 0, KEY_QUERY_VALUE | keyFlags, &registryKey));
+	osErr(RegOpenKeyExA(baseRegistryKey, subkeyPointer, 0, keyFlags | KEY_QUERY_VALUE, &registryKey));
 
 	SCOPE_EXIT {
 		osErr(closeRegistryKey(registryKey));
