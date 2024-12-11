@@ -517,25 +517,23 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 	// toggle happens here
 	toggledOn = !toggledOn;
 
-	edit.apply(
-		copyThread,
+	edit.apply(copyThread,
 		
+	{
 		{
-			{
-				computeMoveVectorPosition,
+			computeMoveVectorPosition,
 				
-				std::string(
-					(const char*)(
-						toggledOn
-						? COMPUTE_MOVE_VECTOR_ON
-						: COMPUTE_MOVE_VECTOR_OFF
-					),
+			std::string(
+				(const char*)(
+					toggledOn
+					? COMPUTE_MOVE_VECTOR_ON
+					: COMPUTE_MOVE_VECTOR_OFF
+				),
 					
-					COMPUTE_MOVE_VECTOR_SIZE
-				)
-			}
+				COMPUTE_MOVE_VECTOR_SIZE
+			)
 		}
-	);
+	});
 
 	toggleLog("Camera Inertia", toggledOn);
 }
@@ -587,39 +585,37 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 
 	toggledOn = !toggledOn;
 
-	edit.apply(
-		copyThread,
+	edit.apply(copyThread,
 	
+	{
 		{
-			{
-				fadeOutSoundPosition,
+			fadeOutSoundPosition,
 
-				std::string(
-					(const char*)(
-						toggledOn
-						? FADE_OUT_SOUND_ON
-						: FADE_OUT_SOUND_OFF
-					),
+			std::string(
+				(const char*)(
+					toggledOn
+					? FADE_OUT_SOUND_ON
+					: FADE_OUT_SOUND_OFF
+				),
 
-					FADE_OUT_SOUND_SIZE
-				)
-			},
+				FADE_OUT_SOUND_SIZE
+			)
+		},
 
-			{
-				FADE_OUT_SOUND2_POSITION,
+		{
+			FADE_OUT_SOUND2_POSITION,
 
-				std::string(
-					(const char*)(
-						toggledOn
-						? FADE_OUT_SOUND2_ON
-						: FADE_OUT_SOUND2_OFF
-					),
+			std::string(
+				(const char*)(
+					toggledOn
+					? FADE_OUT_SOUND2_ON
+					: FADE_OUT_SOUND2_OFF
+				),
 
-					FADE_OUT_SOUND2_SIZE
-				)
-			}
+				FADE_OUT_SOUND2_SIZE
+			)
 		}
-	);
+	});
 
 	toggleLog("Sound Fading", toggledOn);
 }

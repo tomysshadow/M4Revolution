@@ -110,43 +110,13 @@ namespace AI {
 		// tell the edit to the copy thread
 		const std::string &VALUE_STR_PREFIX = matches[1];
 
-		edit.apply(
-			copyThread,
+		edit.apply(copyThread,
 			
+		{
 			{
-				{
-					position + (std::streamsize)VALUE_STR_PREFIX.length(),
-					outputStringStream.str()
-				}
+				position + (std::streamsize)VALUE_STR_PREFIX.length(),
+				outputStringStream.str()
 			}
-		);
+		});
 	}
-
-	/*
-	void toggleResource(
-		Work::Edit &edit,
-		const Ubi::BigFile::Path::VECTOR &pathVector,
-		const std::string &name,
-		const std::string &key
-	) {
-		std::fstream &fileStream = edit.fileStream;
-
-		Ubi::BigFile::File::SIZE size = findFileSize(edit, pathVector);
-		std::streampos position = fileStream.tellg();
-
-		std::ostringstream outputStringStream;
-		outputStringStream.exceptions(std::ostringstream::badbit);
-
-		Ubi::Binary::BinarizerLoader::toggleResource(
-			fileStream,
-			size,
-			name,
-			key,
-			outputStringStream
-		);
-
-		std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
-		edit.apply(copyThread, position, outputStringStream.str());
-	}
-	*/
 }

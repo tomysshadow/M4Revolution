@@ -43,12 +43,6 @@ namespace Ubi {
 		};
 
 		/*
-		namespace BinarizerLoader {
-			bool toggleResource(std::istream &inputStream, std::streamsize size, const std::string &name, const std::string &key, std::ostream &outputStream);
-		};
-		*/
-
-		/*
 		for water slices, DXT is not supported and RGBA must be used instead
 		in order to detect which images are water slices, we need to read the RLE files
 		which are pointed to by the Water files (typically named water.bin)

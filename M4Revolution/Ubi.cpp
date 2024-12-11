@@ -71,69 +71,6 @@ namespace Ubi {
 	}
 
 	namespace Binary {
-		/*
-		namespace BinarizerLoader {
-			bool toggleResource(std::istream &inputStream, std::streamsize size, const std::string &name, const std::string &key, std::ostream &outputStream) {
-				// toggle a resource on or off by adding it to or removing it from a binarizer_loader.log file
-				std::streampos position = inputStream.tellg();
-
-				std::optional<HeaderReader> headerReaderOptional = std::nullopt;
-				readFileHeader(inputStream, headerReaderOptional, size);
-
-				std::optional<HeaderWriter> headerWriterOptional = std::nullopt;
-				writeFileHeader(outputStream, headerWriterOptional, size);
-
-				uint32_t resources = 0;
-
-				const size_t RESOURCES_SIZE = sizeof(resources);
-
-				readStream(inputStream, &resources, RESOURCES_SIZE);
-
-				// save this position for when we modify this value later
-				std::streampos resourcesPosition = outputStream.tellp();
-				writeStream(outputStream, &resources, RESOURCES_SIZE);
-
-				bool nullTerminator = false;
-				bool toggledOn = true;
-
-				for (uint32_t i = 0; i < resources; i++) {
-					const std::optional<std::string> &KEY_OPTIONAL = String::readOptional(inputStream, nullTerminator);
-
-					if (KEY_OPTIONAL == key) {
-						// if we find the key it is currently on
-						// so we shift everything else up, overwriting it
-						copyStream(inputStream, outputStream, position + size - inputStream.tellg());
-						resources--;
-
-						toggledOn = false;
-						break;
-					}
-
-					String::writeOptional(outputStream, KEY_OPTIONAL, nullTerminator);
-				}
-
-				toggleLog(name, toggledOn);
-
-				if (toggledOn) {
-					// to turn the resource back on we simply write it again at the end
-					// we assume it was on originally and turned off
-					// so there is some padding space at the end of the file
-					String::writeOptional(outputStream, key, false);
-					resources++;
-				}
-
-				std::streampos endPosition = outputStream.tellp();
-
-				outputStream.seekp(resourcesPosition);
-				writeStream(outputStream, &resources, RESOURCES_SIZE);
-
-				// seek back to the end for the benefit of the caller
-				outputStream.seekp(endPosition);
-				return toggledOn;
-			}
-		}
-		*/
-
 		namespace RLE {
 			void appendToSliceMap(std::istream &inputStream, std::streamsize size, SLICE_MAP &sliceMap) {
 				std::optional<HeaderReader> headerReaderOptional = std::nullopt;
