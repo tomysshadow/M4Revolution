@@ -1300,7 +1300,6 @@ namespace Ubi {
 						}
 
 						inputStream.seekg(maskFileSystemPosition + (std::streampos)maskFile.position);
-
 						Binary::RLE::appendToSliceMap(inputStream, maskFile.size, waterMaskMap[fileFaceStrMapIterator->second]);
 					}
 				}
