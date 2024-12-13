@@ -1335,13 +1335,7 @@ namespace Ubi {
 
 						inputStream.seekg(maskFileSystemPosition + (std::streampos)maskFile.position);
 
-						waterMaskMapIterator = waterMaskMap.find(fileFaceStrMapIterator->second);
-
-						if (waterMaskMapIterator == waterMaskMap.end()) {
-							waterMaskMapIterator = waterMaskMap.insert({ fileFaceStrMapIterator->second, {} }).first;
-						}
-
-						Binary::RLE::appendToSliceMap(inputStream, maskFile.size, waterMaskMapIterator->second);
+						Binary::RLE::appendToSliceMap(inputStream, maskFile.size, waterMaskMap[fileFaceStrMapIterator->second]);
 					}
 				}
 			}
