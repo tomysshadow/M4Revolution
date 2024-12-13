@@ -81,8 +81,6 @@ namespace Ubi {
 				ROW sliceRow = 0;
 				COL sliceCol = 0;
 
-				SLICE_MAP::iterator sliceMapIterator = {};
-
 				uint32_t waterRLERegions = 0;
 
 				uint32_t groups = 0;
@@ -111,14 +109,8 @@ namespace Ubi {
 					// because they are indexed from zero here, but
 					// we want them indexed by one for the face names
 					readStream(inputStream, &sliceRow, SLICE_ROW_SIZE);
-					sliceMapIterator = sliceMap.find(++sliceRow);
-
-					if (sliceMapIterator == sliceMap.end()) {
-						sliceMapIterator = sliceMap.insert({ sliceRow, {} }).first;
-					}
-
 					readStream(inputStream, &sliceCol, SLICE_COL_SIZE);
-					sliceMapIterator->second.insert(sliceCol + 1);
+					sliceMap[sliceRow + 1].insert(sliceCol + 1);
 
 					// normally these would be in seperate classes
 					// there just isn't much point here because I don't really care about any of this data
@@ -163,20 +155,12 @@ namespace Ubi {
 		}
 
 		void TextureBox::create(std::istream &inputStream, RLE::LAYER_MAP &layerMap) {
-			RLE::LAYER_MAP::iterator layerMapIterator = {};
+			RLE::Layer* layerPointer = 0;
 
 			std::optional<std::string> layerFileOptional = String::readOptionalEncrypted(inputStream);
 
 			if (layerFileOptional.has_value()) {
-				const std::string &LAYER_FILE = layerFileOptional.value();
-
-				layerMapIterator = layerMap.find(LAYER_FILE);
-
-				if (layerMapIterator == layerMap.end()) {
-					layerMapIterator = layerMap.insert({ LAYER_FILE, {} }).first;
-				}
-
-				RLE::Layer &layer = layerMapIterator->second;
+				RLE::Layer &layer = layerMap[layerFileOptional.value()];
 				layer.textureBoxNameOptional = LOADER_POINTER->nameOptional;
 
 				const size_t FIELDS_SIZE = 17;
@@ -189,6 +173,8 @@ namespace Ubi {
 
 				const size_t FIELDS_SIZE2 = 4;
 				inputStream.seekg(FIELDS_SIZE2, std::ios::cur);
+
+				layerPointer = &layer;
 			} else {
 				const size_t FIELDS_SIZE = 22;
 				inputStream.seekg(FIELDS_SIZE, std::ios::cur);
@@ -204,8 +190,8 @@ namespace Ubi {
 			for (uint32_t i = 0; i < sets; i++) {
 				setOptional = String::readOptionalEncrypted(inputStream);
 
-				if (setOptional.has_value() && layerFileOptional.has_value()) {
-					layerMapIterator->second.setsSet.insert(setOptional.value());
+				if (layerPointer && setOptional.has_value()) {
+					layerPointer->setsSet.insert(setOptional.value());
 				}
 			}
 
@@ -256,16 +242,8 @@ namespace Ubi {
 				if (TEXTURE_BOX_NAME_OPTIONAL.has_value()) {
 					const std::string &TEXTURE_BOX_NAME = TEXTURE_BOX_NAME_OPTIONAL.value();
 
-					RLE::TEXTURE_BOX_MAP::iterator textureBoxMapIterator = {};
-
 					for (uint32_t i = 0; i < resources; i++) {
-						textureBoxMapIterator = textureBoxMap.find(TEXTURE_BOX_NAME);
-
-						if (textureBoxMapIterator == textureBoxMap.end()) {
-							textureBoxMapIterator = textureBoxMap.insert({ TEXTURE_BOX_NAME, {} }).first;
-						}
-
-						appendToMaskPathSet(inputStream, textureBoxMapIterator->second);
+						appendToMaskPathSet(inputStream, textureBoxMap[TEXTURE_BOX_NAME]);
 					}
 					return;
 				}
@@ -901,7 +879,6 @@ namespace Ubi {
 		bool set = isSet(bftex, layerFileOptional);
 
 		File::POINTER filePointer = 0;
-		File::POINTER_SET_MAP::iterator filePointerSetMapIterator = {};
 
 		FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
 		readStream(inputStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
@@ -924,18 +901,7 @@ namespace Ubi {
 				filePointerVector.push_back(filePointer);
 			}
 
-			const Ubi::BigFile::File::SIZE &POSITION = FILE.position;
-
-			// are there any other files at this position?
-			filePointerSetMapIterator = filePointerSetMap.find(POSITION);
-
-			// if not, then create a new set
-			if (filePointerSetMapIterator == filePointerSetMap.end()) {
-				filePointerSetMapIterator = filePointerSetMap.insert({ POSITION, {} }).first;
-			}
-
-			// add this file to the set
-			filePointerSetMapIterator->second.insert(filePointer);
+			filePointerSetMap[FILE.position].insert(filePointer);
 		}
 
 		files += filePointerVectorSize;
