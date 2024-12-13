@@ -23,7 +23,9 @@ void consoleLog(const char* str, short newline, short tab, bool err, const char*
 			std::cerr << " [" << file << ":" << line << "]";
 		}
 
+		#ifdef WINDOWS
 		std::cerr << " (" << GetLastError() << ")";
+		#endif
 
 		for (short i = 0; i < newline; i++) {
 			std::cerr << std::endl;
