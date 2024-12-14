@@ -180,7 +180,8 @@ int main(int argc, char** argv) {
 		try {
 			performedOperationOptional = performOperation(m4Revolution);
 		} catch (std::exception ex) {
-			consoleLog(ex.what(), 2, false, true);
+			consoleLog(ex.what(), 2);
+			consoleLog("The operation has not been performed because an unknown exception occurred.", true, false, true);
 			throw;
 		}
 
