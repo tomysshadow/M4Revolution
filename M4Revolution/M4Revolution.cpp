@@ -495,7 +495,7 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 
 	Work::Edit edit(fileStream, Work::Output::M4_THOR_PATH);
 
-	fileStream.seekg(computeMoveVectorPosition, std::ios::beg);
+	fileStream.seekg(computeMoveVectorPosition);
 
 	unsigned char computeMoveVector[COMPUTE_MOVE_VECTOR_SIZE] = "";
 	readStream(fileStream, computeMoveVector, COMPUTE_MOVE_VECTOR_SIZE);
@@ -555,16 +555,17 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 	}
 	#endif
 
-	const std::streampos FADE_OUT_SOUND2_POSITION = 81;
+	const unsigned long FADE_OUT_SOUND2_OFFSET = 94;
 
 	Work::Edit edit(fileStream, Work::Output::M4_AI_GLOBAL_PATH);
 
-	fileStream.seekg(fadeOutSoundPosition, std::ios::beg);
+	fileStream.seekg(fadeOutSoundPosition);
 
 	unsigned char fadeOutSound[FADE_OUT_SOUND_SIZE] = "";
 	readStream(fileStream, &fadeOutSound, FADE_OUT_SOUND_SIZE);
 
-	fileStream.seekg(FADE_OUT_SOUND2_POSITION, std::ios::cur);
+	unsigned long fadeOutSound2Position = fadeOutSoundPosition + FADE_OUT_SOUND2_OFFSET;
+	fileStream.seekg(fadeOutSound2Position);
 
 	unsigned char fadeOutSound2[FADE_OUT_SOUND2_SIZE] = "";
 	readStream(fileStream, &fadeOutSound2, FADE_OUT_SOUND2_SIZE);
@@ -603,7 +604,7 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 		},
 
 		{
-			FADE_OUT_SOUND2_POSITION,
+			fadeOutSound2Position,
 
 			std::string(
 				(const char*)(

@@ -384,12 +384,10 @@ namespace Work {
 			Backup::createOutput(edit.path.string().c_str());
 		}
 
-		fileStream.seekp(0, std::ios::beg);
-
 		CODE_VECTOR &codeVector = edit.codeVector;
 
 		for (CODE_VECTOR::iterator codeVectorIterator = codeVector.begin(); codeVectorIterator != codeVector.end(); codeVectorIterator++) {
-			fileStream.seekp(codeVectorIterator->position, std::ios::cur);
+			fileStream.seekp(codeVectorIterator->position);
 
 			std::string &str = codeVectorIterator->str;
 			writeStream(fileStream, str.c_str(), str.length());
