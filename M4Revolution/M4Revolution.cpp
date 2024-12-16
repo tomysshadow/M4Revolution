@@ -555,7 +555,7 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 	}
 	#endif
 
-	const unsigned long FADE_OUT_SOUND2_OFFSET = 94;
+	const unsigned long FADE_OUT_SOUND2_OFFSET = 0x0000005E;
 
 	Work::Edit edit(fileStream, Work::Output::M4_AI_GLOBAL_PATH);
 
