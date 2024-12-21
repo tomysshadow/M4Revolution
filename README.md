@@ -134,7 +134,7 @@ Yes. The files produced by this tool will be optimized for the computer it is us
 
 ## Is this the definitive way to play Myst IV: Revelation?
 
-Not necessarily. I would consider the long loading times to be a bug (albeit not a compatibility bug - it was always like this, even when the game was new.) However, the sound fading and fade transition are intentional features, and although disabling or editing them allows for instant movement, doing so arguably goes against the intended artistic vision of the game. Different players will have different preferences. I personally prefer the game with camera inertia enabled, like it is by default. As such, I would prefer that this remain a seperate, optional enhancement, and not be integrated into the game in an official capacity.
+Not necessarily. I would consider the long loading times to be a bug (albeit not a compatibility bug - it was always like this, even when the game was new.) However, the sound fading and fade transition are intentional features, and although disabling or editing them allows for instant movement, doing so arguably goes against the intended artistic vision of the game. Different players will have different preferences. I personally prefer the game with camera inertia enabled, like it is by default. As such, I would prefer that this remain a separate, optional enhancement, and not be integrated into the game in an official capacity.
 
 # Dependencies
 
