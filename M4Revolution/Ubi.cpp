@@ -22,13 +22,17 @@ namespace Ubi {
 			return encryptedStringOptional;
 		}
 
-		std::optional<std::string> readOptional(std::istream &inputStream, bool &nullTerminator) {
+		std::optional<std::string> readOptional(std::istream &inputStream, bool &nullTerminator, SIZE maxSize) {
 			MAKE_SCOPE_EXIT(nullTerminatorScopeExit) {
 				nullTerminator = true;
 			};
 
 			SIZE size = 0;
 			readStream(inputStream, &size, SIZE_SIZE);
+
+			if (size > maxSize) {
+				throw std::logic_error("size must not be greater than maxSize");
+			}
 
 			if (!size) {
 				return std::nullopt;
@@ -1134,7 +1138,8 @@ namespace Ubi {
 	}
 
 	void BigFile::Header::read(std::istream &inputStream) {
-		std::optional<std::string> signatureOptional = String::readOptional(inputStream);
+		bool nullTerminator = true;
+		std::optional<std::string> signatureOptional = String::readOptional(inputStream, nullTerminator, (Ubi::String::SIZE)(SIGNATURE.size() + 1));
 
 		// must exactly match, case sensitively
 		if (signatureOptional != SIGNATURE) {
