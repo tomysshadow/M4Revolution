@@ -21,14 +21,14 @@
     #define MANGO_OPENGL_CONTEXT_WGL
     #define MANGO_OPENGL_FRAMEBUFFER
 
-    #define GLEXT_PROC(proc, name) extern proc name
-
     #include <GL/gl.h>
     #include <mango/opengl/khronos/GL/glext.h>
-    #include <mango/opengl/func/glext.hpp>
-
     #include <mango/opengl/khronos/GL/wgl.h>
     #include <mango/opengl/khronos/GL/wglext.h>
+
+    #define GLEXT_PROC(proc, name) extern proc name
+
+    #include <mango/opengl/func/glext.hpp>
     #include <mango/opengl/func/wglext.hpp>
 
     #undef GLEXT_PROC
@@ -148,7 +148,7 @@ namespace mango
     public:
         enum Flags : u32
         {
-            EGL     = 0x00010000,
+            EGL = 0x00010000,
         };
 
         struct Config
@@ -161,8 +161,6 @@ namespace mango
             u32 depth    = 24;
             u32 stencil  = 8;
             u32 samples  = 1;
-            bool srgb    = false;
-            bool hdr     = false;
         };
 
         struct InternalFormat
@@ -220,7 +218,8 @@ namespace mango
             u32 texture_compression_eac : 1;
             u32 texture_compression_latc : 1;
             u32 texture_compression_atc : 1;
-            u32 texture_compression_astc : 1;
+            u32 texture_compression_astc_ldr : 1;
+            u32 texture_compression_astc_hdr : 1;
         } core;
 
 #if defined(MANGO_OPENGL_CONTEXT_WGL)

@@ -102,7 +102,7 @@ namespace mango
         CompressionStatus decompress(Memory dest, ConstMemory source);
     }
 
-#ifdef MANGO_LICENSE_ENABLE_GPL
+#if defined(MANGO_LICENSE_ENABLE_GPL)
 
     namespace lzo
     {
@@ -111,7 +111,7 @@ namespace mango
         CompressionStatus decompress(Memory dest, ConstMemory source);
     }
 
-#endif
+#endif // defined(MANGO_LICENSE_ENABLE_GPL)
 
     namespace zstd
     {
@@ -119,8 +119,6 @@ namespace mango
         CompressionStatus compress(Memory dest, ConstMemory source, int level = 6);
         CompressionStatus decompress(Memory dest, ConstMemory source);
     }
-
-#ifdef MANGO_LICENSE_ENABLE_ZLIB
 
     namespace zlib
     {
@@ -135,8 +133,6 @@ namespace mango
         CompressionStatus compress(Memory dest, ConstMemory source, int level = 6);
         CompressionStatus decompress(Memory dest, ConstMemory source);
     }
-
-#endif
 
     namespace lzfse
     {
@@ -207,20 +203,20 @@ namespace mango
         enum Method
         {
             NONE = 0,
-            BZIP2,
+            BZIP2, // license: ZLIB
             LZ4,
-            LZO,
+            LZO, // license: GPL
             ZSTD,
             LZFSE,
             LZMA,
             LZMA2,
             PPMD8,
-            ZLIB,
+            ZLIB, // license: ZLIB
             DEFLATE,
             DEFLATE_ZLIB,
             DEFLATE_GZIP,
             LZAV,
-            ISAL,
+            ISAL, // optional
         } method = NONE;
         std::string name;
 

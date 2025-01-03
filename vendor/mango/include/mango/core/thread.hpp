@@ -131,6 +131,11 @@ namespace mango
             m_pool.enqueue(&m_queue, std::bind(std::forward<F>(f), std::forward<Args>(args)...));
         }
 
+        bool isCancelled() const
+        {
+            return m_queue.cancelled;
+        }
+
         void steal();
         void cancel();
         void wait();
@@ -191,7 +196,7 @@ namespace mango
         template <class F, class... Args>
         void enqueue(F&& f, Args&&... args)
         {
-            std::unique_lock<std::mutex> lock(m_queue_mutex);
+            std::lock_guard<std::mutex> lock(m_queue_mutex);
             m_task_queue.emplace_back(f, (args)...);
             ++m_task_counter;
             m_task_condition.notify_one();

@@ -399,6 +399,18 @@
         #endif
     #endif
 
+    #if defined(__AVX2__)
+
+        #ifndef __FMA__
+        #define __FMA__
+        #endif
+
+        #ifndef __PCLMUL__
+        #define __PCLMUL__
+        #endif
+
+    #endif
+
     // AVX and AVX2 include support for these
     #if defined(__AVX__) || defined(__AVX2__)
 
@@ -406,20 +418,8 @@
         #define __SSE2__
         #endif
 
-        #ifndef __F16C__
-        #define __F16C__
-        #endif
-
-        // 32 bit x86 target has limited / broken SSE3..SSE4 support :(
+        // 32 bit x86 target has limited support for these
         #if defined(MANGO_CPU_64BIT)
-
-            #ifndef __SSE3__
-            #define __SSE3__
-            #endif
-
-            #ifndef __SSSE3__
-            #define __SSSE3__
-            #endif
 
             #ifndef __SSE4_1__
             #define __SSE4_1__
@@ -433,31 +433,30 @@
 
     #endif
 
-    #if defined(MANGO_CPU_INTEL) && defined(MANGO_CPU_64BIT) && (_MSC_VER >= 1920)
-        // 1920: Visual Studio 2019 (14.20)
+    #if !defined(MANGO_CPU_64BIT) || (_MSC_VER < 1920)
 
-        #ifndef __AES__
-        #define __AES__
+        // _MSC_VER 1920 is Visual Studio 2019 (14.20),
+        // which does not have support for these ISA extensions.
+
+        #ifdef __AES__
+        #undef __AES__
         #endif
 
-        #ifndef __LZCNT__
-        #define __LZCNT__
+        #ifdef __LZCNT__
+        #undef __LZCNT__
         #endif
 
-        #ifndef __BMI__
-        #define __BMI__
+        #ifdef __BMI__
+        #undef __BMI__
         #endif
 
-        #ifndef __BMI2__
-        #define __BMI2__
+        #ifdef __BMI2__
+        #undef __BMI2__
         #endif
 
-        #ifndef __POPCNT__
-        #define __POPCNT__
+        #ifdef __POPCNT__
+        #undef __POPCNT__
         #endif
-
-        #include <immintrin.h>
-        #include <wmmintrin.h>
 
     #endif
 
@@ -504,34 +503,26 @@
             #include <immintrin.h>
         #endif
 
-        #ifdef __AVX2__
+        #if defined(__AVX2__)
             #define MANGO_ENABLE_AVX2
             #include <immintrin.h>
         #endif
 
-        #ifdef __AVX__
+        #if defined(__AVX__)
             #define MANGO_ENABLE_AVX
             #include <immintrin.h>
         #endif
 
-        #ifdef __SSE4_2__
+        #if defined(__SSE4_2__)
             #define MANGO_ENABLE_SSE4_2
             #include <nmmintrin.h>
         #endif
 
         #ifdef __SSE4_1__
             #define MANGO_ENABLE_SSE4_1
-            #include <smmintrin.h>
-        #endif
-
-        #ifdef __SSSE3__
-            #define MANGO_ENABLE_SSSE3
-            #include <tmmintrin.h>
-        #endif
-
-        #ifdef __SSE3__
-            #define MANGO_ENABLE_SSE3
             #include <pmmintrin.h>
+            #include <tmmintrin.h>
+            #include <smmintrin.h>
         #endif
 
         #ifdef __SSE2__
@@ -543,48 +534,23 @@
         #define MANGO_ENABLE_SSE
         #include <xmmintrin.h>
 
-    #endif // MANGO_NO_SIMD
+    #endif // !defined(MANGO_NO_SIMD)
 
-    #ifdef __XOP__
-        #if defined(MANGO_COMPILER_MICROSOFT)
-            #define MANGO_ENABLE_XOP
-            #define MANGO_ENABLE_FMA4
-            #include <ammintrin.h>
-        #elif defined(MANGO_COMPILER_GCC) || defined(MANGO_COMPILER_CLANG)
-            #define MANGO_ENABLE_XOP
-            #define MANGO_ENABLE_FMA4
-            #include <x86intrin.h>
-        #endif
-    #endif
-
-    #ifdef __F16C__
+    #if defined(__F16C__) || defined(__LZCNT__)
         #include <immintrin.h>
     #endif
 
-    #ifdef __POPCNT__
-        #include <immintrin.h>
-    #endif
-
-    #ifdef __BMI__
+    #if defined(__BMI__) || defined(__BMI2__)
         // NOTE: slow on AMD Zen architecture (emulated in microcode)
         #include <immintrin.h>
     #endif
 
-    #ifdef __BMI2__
-        // NOTE: slow on AMD Zen architecture (emulated in microcode)
-        #include <immintrin.h>
+    #if defined(__POPCNT__)
+        #include <nmmintrin.h>
     #endif
 
-    #ifdef __LZCNT__
-        #include <immintrin.h>
-    #endif
-
-    #ifdef __AES__
+    #if defined(__AES__) || defined(__PCLMUL__) || defined(__SHA__)
         #include <wmmintrin.h>
-    #endif
-
-    #ifdef __SHA__
-        #include <immintrin.h>
     #endif
 
     #if defined(__FMA__) && !defined(MANGO_ENABLE_FMA3)
@@ -708,16 +674,6 @@
 #endif
 
 // -----------------------------------------------------------------------
-// gcc built-ins
-// -----------------------------------------------------------------------
-
-#if defined(MANGO_COMPILER_GCC) || defined(MANGO_COMPILER_CLANG) || defined(MANGO_COMPILER_INTEL)
-
-    #define MANGO_GCC_BUILTINS
-
-#endif
-
-// -----------------------------------------------------------------------
 // C++ standard version
 // -----------------------------------------------------------------------
 
@@ -776,6 +732,27 @@
 #endif
 
 // -----------------------------------------------------------------------
+// licenses
+// -----------------------------------------------------------------------
+
+// BSD: zstd, zpng, xxHash, concurrentqueue, lzfse, lz4, webp, exr, adler32, intel-sha, jp2, jxl, isal
+// MIT: libdeflate, lcms, bc, lzav
+// ZLIB: zlib, bzip2, png
+// APACHE: etc1, etc2, astcenc, basisu, arm-sha, avif
+// GPL: lzo, heif
+
+// Required licenses
+#define MANGO_LICENSE_ENABLE_BSD
+#define MANGO_LICENSE_ENABLE_MIT
+#define MANGO_LICENSE_ENABLE_ZLIB
+#define MANGO_LICENSE_ENABLE_APACHE
+
+// GPL license is optional
+#if !defined(MANGO_LICENSE_ENABLE_GPL) && !defined(MANGO_LICENSE_DISABLE_GPL)
+    #define MANGO_LICENSE_ENABLE_GPL
+#endif
+
+// -----------------------------------------------------------------------
 // typedefs
 // -----------------------------------------------------------------------
 
@@ -793,34 +770,3 @@ namespace mango
     using u64 = std::uint64_t;
 
 } // namespace mango
-
-// -----------------------------------------------------------------------
-// licenses
-// -----------------------------------------------------------------------
-
-// BSD license is ALWAYS mandatory with MANGO as important core components require it.
-#ifndef MANGO_LICENSE_DISABLE_BSD
-    #define MANGO_LICENSE_ENABLE_BSD
-    // components: concurrentqueue, zstd, zpng, xxHash, lzfse, lz4, webp, exr, adler32, intel sha, jp2, jxl
-#endif
-
-// NOTE: MIT license is not compile-time checked
-#ifndef MANGO_LICENSE_DISABLE_MIT
-    #define MANGO_LICENSE_ENABLE_MIT
-    // components: libdeflate, lcms, bc, lzav
-#endif
-
-#ifndef MANGO_LICENSE_DISABLE_ZLIB
-    #define MANGO_LICENSE_ENABLE_ZLIB
-    // components: zlib, bzip2
-#endif
-
-#ifndef MANGO_LICENSE_DISABLE_APACHE
-    #define MANGO_LICENSE_ENABLE_APACHE
-    // components: etc, astcenc, basisu, arm sha, avif
-#endif
-
-#ifndef MANGO_LICENSE_DISABLE_GPL
-    #define MANGO_LICENSE_ENABLE_GPL
-    // components: lzo, heif
-#endif

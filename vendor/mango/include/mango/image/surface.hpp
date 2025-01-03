@@ -1,6 +1,6 @@
 /*
     MANGO Multimedia Development Platform
-    Copyright (C) 2012-2023 Twilight Finland 3D Oy Ltd. All rights reserved.
+    Copyright (C) 2012-2024 Twilight Finland 3D Oy Ltd. All rights reserved.
 */
 #pragma once
 
@@ -26,7 +26,7 @@ namespace mango::image
         int     height;
 
         Surface();
-        Surface(const Surface& surface);
+        Surface(const Surface& surface, bool yflip = false);
         Surface(int width, int height, const Format& format, size_t stride, const void* image);
         Surface(const Surface& source, int x, int y, int width, int height);
         ~Surface();
@@ -60,7 +60,10 @@ namespace mango::image
     {
     public:
         Bitmap(int width, int height, const Format& format, size_t stride = 0);
+        Bitmap(const Surface& source);
         Bitmap(const Surface& source, const Format& format);
+        Bitmap(const ImageHeader& header);
+        Bitmap(const ImageHeader& header, const Format& format);
 
         Bitmap(ConstMemory memory, const std::string& extension, const ImageDecodeOptions& options = ImageDecodeOptions());
         Bitmap(ConstMemory memory, const std::string& extension, const Format& format, const ImageDecodeOptions& options = ImageDecodeOptions());
@@ -83,15 +86,19 @@ namespace mango::image
         std::unique_ptr<Bitmap> m_bitmap;
 
     public:
-        TemporaryBitmap(const Surface& surface, const Format& format)
-            : Surface(surface)
-        {
-            if (surface.format != format)
-            {
-                m_bitmap = std::make_unique<Bitmap>(surface, format);
-                static_cast<Surface&>(*this) = *m_bitmap;
-            }
-        }
+        TemporaryBitmap(const Surface& surface, const Format& format, bool yflip = false);
+        TemporaryBitmap(const Surface& surface, int width, int height, const Format& format, bool yflip = false);
     };
+
+    class LuminanceBitmap : public Bitmap
+    {
+    public:
+        LuminanceBitmap(const Surface& source, bool alpha = false, bool force_linear = true);
+    };
+
+    // NOTE: These must be 32 bit RGBA surfaces as the conversion is done in-place
+    void transform(const Surface& surface, ConstMemory icc);
+    void srgbToLinear(const Surface& surface);
+    void linearToSRGB(const Surface& surface);
 
 } // namespace mango::image

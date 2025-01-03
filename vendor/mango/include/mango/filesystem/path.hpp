@@ -1,6 +1,6 @@
 /*
     MANGO Multimedia Development Platform
-    Copyright (C) 2012-2022 Twilight Finland 3D Oy Ltd. All rights reserved.
+    Copyright (C) 2012-2024 Twilight Finland 3D Oy Ltd. All rights reserved.
 */
 #pragma once
 
@@ -28,7 +28,15 @@ namespace mango::filesystem
         Path(ConstMemory memory, const std::string& extension, const std::string& password = "");
         ~Path();
 
-        Mapper& getMapper() const;
+        operator Mapper& () const
+        {
+            return *m_mapper;
+        }
+
+        bool isFile(const std::string& filename) const
+        {
+            return m_mapper->isFile(filename);
+        }
 
         const FileIndex& getIndex() const
         {

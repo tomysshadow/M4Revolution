@@ -30,6 +30,10 @@ class M4Image {
         }
 
         inline void* M4IMAGE_CALL mallocSafe(size_t size) const {
+            if (!size) {
+                throw std::invalid_argument("size must not be zero");
+            }
+
             void* block = mallocProc(size);
 
             if (!block) {
@@ -47,22 +51,42 @@ class M4Image {
         }
 
         template <typename Block>
-        inline void M4IMAGE_CALL reAllocSafe(Block* &block, size_t size) const {
+        inline void M4IMAGE_CALL reallocSafe(Block* &block, size_t size) const {
             if (!size) {
                 throw std::invalid_argument("size must not be zero");
             }
 
-            block = (Block*)reAllocProc(block, size);
+            Block* tmp = (Block*)reAllocProc(block, size);
 
-            if (!block) {
+            if (!tmp) {
+                freeSafe(block);
                 throw std::bad_alloc();
             }
+
+            block = tmp;
         }
 
         private:
-        MallocProc mallocProc = ::malloc;
-        FreeProc freeProc = ::free;
-        ReAllocProc reAllocProc = ::realloc;
+        // by default the allocator will use aligned malloc
+        // for SIMD it is best when allocations are aligned
+        // (though this is not required)
+        static const size_t ALIGNMENT = 64;
+
+        inline static void* M4IMAGE_CALL malloc(size_t size) {
+            return _aligned_malloc(size, ALIGNMENT);
+        }
+
+        inline static void M4IMAGE_CALL free(void* block) {
+            _aligned_free(block);
+        }
+
+        inline static void* M4IMAGE_CALL realloc(void* block, size_t size) {
+            return _aligned_realloc(block, size, ALIGNMENT);
+        }
+
+        MallocProc mallocProc = malloc;
+        FreeProc freeProc = free;
+        ReAllocProc reAllocProc = realloc;
     };
 
     class Invalid : public std::invalid_argument {
@@ -89,12 +113,13 @@ class M4Image {
         BGR,
         LA,
         AL,
-        A,
         L,
+        A,
 
         // these colour formats are mostly for internal use (you're free to use them, though)
         XXXL = 16000,
-        XXLA
+        XXLA,
+        XXLX
     };
 
     M4IMAGE_API static Allocator allocator;
@@ -123,7 +148,7 @@ class M4Image {
 
     // ignore this method
     // it is only declared here in the header so it can be made inline
-    static inline bool unrefImage(pixman_image_t* &image) {
+    static inline bool M4IMAGE_CALL unrefImage(pixman_image_t* &image) {
         if (image) {
             if (!pixman_image_unref(image)) {
                 return false;

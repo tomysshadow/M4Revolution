@@ -96,37 +96,82 @@ namespace mango
     void printEnable(Print target, bool enable);
     bool isEnable(Print target);
 
+    // ----------------------------------------------------------------------------------
+    // print
+    // ----------------------------------------------------------------------------------
+
     template <typename... T>
-    void printLine(Print target, T... s)
+    static inline
+    void print(Print target, fmt::format_string<T...> fmt, T&&... args)
     {
         if (isEnable(target))
         {
-            fmt::print(std::forward<T>(s)...);
-            fmt::print("\n");
+            std::printf("%s", fmt::vformat(fmt.str, fmt::vargs<T...>{{args...}}).c_str());
         }
     }
 
     template <typename... T>
-    void printLine(Print target, int indent, T... s)
+    static inline
+    void print(Print target, int indent, fmt::format_string<T...> fmt, T&&... args)
     {
         if (isEnable(target))
         {
-            fmt::print("{:{}}", "", indent);
-            fmt::print(std::forward<T>(s)...);
-            fmt::print("\n");
+            std::printf("%*s%s", indent, "", 
+                fmt::vformat(fmt.str, fmt::vargs<T...>{{args...}}).c_str());
         }
     }
 
     template <typename... T>
-    void printLine(T... s)
+    static inline
+    void print(fmt::format_string<T...> fmt, T&&... args)
     {
-        printLine(Print::Verbose, std::forward<T>(s)...);
+        print(Print::Verbose, fmt, std::forward<T>(args)...);
     }
 
     template <typename... T>
-    void printLine(int indent, T... s)
+    static inline
+    void print(int indent, fmt::format_string<T...> fmt, T&&... args)
     {
-        printLine(Print::Verbose, indent, std::forward<T>(s)...);
+        print(Print::Verbose, indent, fmt, std::forward<T>(args)...);
+    }
+
+    // ----------------------------------------------------------------------------------
+    // printLine
+    // ----------------------------------------------------------------------------------
+
+    template <typename... T>
+    static inline
+    void printLine(Print target, fmt::format_string<T...> fmt, T&&... args)
+    {
+        if (isEnable(target))
+        {
+            std::printf("%s\n", fmt::vformat(fmt.str, fmt::vargs<T...>{{args...}}).c_str());
+        }
+    }
+
+    template <typename... T>
+    static inline
+    void printLine(Print target, int indent, fmt::format_string<T...> fmt, T&&... args)
+    {
+        if (isEnable(target))
+        {
+            std::printf("%*s%s\n", indent, "", 
+                fmt::vformat(fmt.str, fmt::vargs<T...>{{args...}}).c_str());
+        }
+    }
+
+    template <typename... T>
+    static inline
+    void printLine(fmt::format_string<T...> fmt, T&&... args)
+    {
+        printLine(Print::Verbose, fmt, std::forward<T>(args)...);
+    }
+
+    template <typename... T>
+    static inline
+    void printLine(int indent, fmt::format_string<T...> fmt, T&&... args)
+    {
+        printLine(Print::Verbose, indent, fmt, std::forward<T>(args)...);
     }
 
 } // namespace mango
