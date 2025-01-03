@@ -48,7 +48,7 @@ namespace gfx_tools {
 			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE sizeInBytes,
-			Q_FACTOR requestedQFactor,
+			Q_FACTOR qFactor,
 			const ImageInfo &imageInfo,
 			ares::RectU32* rectU32Pointer
 		) = 0;
@@ -82,8 +82,8 @@ namespace gfx_tools {
 			const RawBufferEx &rawBuffer,
 			bool* isAlphaPointer,
 			uint32_t* bitsPointer,
-			int* widthPointer,
-			int* heightPointer
+			int* textureWidthPointer,
+			int* textureHeightPointer
 		) = 0;
 
 		virtual void GFX_TOOLS_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) = 0;
@@ -95,7 +95,7 @@ namespace gfx_tools {
 			RawBuffer::POINTER pointer,
 			RawBuffer::SIZE size,
 			bool owner = false,
-			std::optional<RawBufferEx::ResizeInfo> resizeInfoOptional = std::nullopt,
+			const std::optional<RawBufferEx::ResizeInfo> &resizeInfoOptional = std::nullopt,
 			ubi::RefCounted* refCountedPointer = 0
 		) = 0;
 
@@ -135,7 +135,7 @@ namespace gfx_tools {
 			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE sizeInBytes,
-			Q_FACTOR requestedQFactor,
+			Q_FACTOR qFactor,
 			const ImageInfo &imageInfo,
 			ares::RectU32* rectU32Pointer
 		);
@@ -179,7 +179,7 @@ namespace gfx_tools {
 			RawBuffer::POINTER pointer,
 			RawBuffer::SIZE size,
 			bool owner = false,
-			std::optional<RawBufferEx::ResizeInfo> resizeInfoOptional = std::nullopt,
+			const std::optional<RawBufferEx::ResizeInfo> &resizeInfoOptional = std::nullopt,
 			ubi::RefCounted* refCountedPointer = 0
 		);
 

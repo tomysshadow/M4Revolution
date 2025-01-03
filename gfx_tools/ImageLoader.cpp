@@ -398,7 +398,7 @@ namespace gfx_tools {
 		RawBuffer::POINTER pointer,
 		RawBuffer::SIZE size,
 		bool owner,
-		std::optional<RawBufferEx::ResizeInfo> resizeInfoOptional,
+		const std::optional<RawBufferEx::ResizeInfo> &resizeInfoOptional,
 		ubi::RefCounted* refCountedPointer
 	) {
 		if (lod >= NUMBER_OF_LOD_MAX) {
