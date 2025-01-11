@@ -1,11 +1,11 @@
-# Myst IV: Revolution 1.1.1
+# Myst IV: Revolution 1.2.0
 ## By Anthony Kleine
 
 Myst IV: Revolution is a command line tool that can perform various fixes for the game Myst IV: Revelation.
 
-Currently, only the Windows Steam release of the game is supported. If you try with other releases please be aware they have not been tested. Support for other releases may be added in future.
+**IMPORTANT:** this tool requires the Visual Studio 2019 C++ Redistributable to be installed for both [x86](https://aka.ms/vs/17/release/vc_redist.x86.exe) and [x64.](https://aka.ms/vs/17/release/vc_redist.x64.exe) If the tool or the game will not start, please ensure that both are installed.
 
-This tool requires the Visual Studio 2019 C++ Redistributable to be installed for both [x86](https://aka.ms/vs/17/release/vc_redist.x86.exe) and [x64.](https://aka.ms/vs/17/release/vc_redist.x64.exe) If the tool or the game will not start, please ensure that both are installed.
+Currently, Myst IV: Revolution is only available for Windows. The DVD release, Steam release and GOG release are supported.
 
 Supports Windows 10 or 11, 64-bit, with an SSE4-capable CPU and at least 1 GB of RAM. Although Myst IV: Revolution itself is only about 60 MB large, it will create a backup of your game files, which requires up to 3 GB of free disk space.
 
@@ -21,9 +21,12 @@ Upon running Myst IV: Revolution, it will attempt to automatically find the inst
 
 Usually, you should just press Enter to continue. If you are certain you would like to use a different install path, press the n key, then press Enter, and input the install path you would like to use instead.
 
-If the tool fails to automatically find the install path, you will need to find it yourself manually. To do this:
+If the tool fails to automatically find the install path, you will need to find it yourself manually.
 
-1. Right click on Myst IV: Revelation in your Steam Library and go to Manage > Browse local files...
+### Manually Find the Install Path
+1. First you must open the install directory in Explorer. The method to do this is different depending on which release you have.
+	* **If you have the Steam release:** right click on Myst IV: Revelation in your Steam Library and go to Manage > Browse local files...
+	* **If you have the GOG release:** right click on Myst IV: Revelation in your GOG Library and go to Manage Installation > Show folder.
 2. In the Explorer window that appears, right click on the Address Bar, then click Copy address as text.
 3. In Myst IV: Revolution's window, click the icon in the title bar at the top left, then go to Edit > Paste, then press Enter.
 
@@ -119,7 +122,7 @@ If you are a developer who would like to contribute, you may compile for Windows
 8. Copy nvtt30205.dll from the install directory to `x64/Debug` and `x64/Release`.
 9. Compile [sourcepp](https://github.com/craftablescience/sourcepp) for x64 with CMake, and your Visual Studio version. You may optionally uncheck all of the `SOURCEPP_USE` settings, except for `SOURCEPP_USE_STEAMPP`.
 10. Copy the sourcepp include files to `vendor/sourcepp/include`.
-11. Copy the resulting sourcepp.lib, kvpp.lib, bsppp.lib, and steampp.lib files to `vendor/sourcepp/lib/x64/Debug` and `vendor/sourcepp/lib/x64/Release` respectively.
+11. Copy the resulting sourcepp.lib, sourcepp_parser.lib, kvpp.lib, steampp.lib, sourcepp_crypto.lib, and vpkpp.lib files to `vendor/sourcepp/lib/x64/Debug` and `vendor/sourcepp/lib/x64/Release` respectively.
 12. Download GetDLLExportRVA from its [Releases page.](https://github.com/tomysshadow/GetDLLExportRVA/release)
 13. Copy the **x86** Debug GetDLLExportRVA files to `x64/Debug`. Notice that the **x86** Debug build must be copied to the **x64** Debug folder.
 14. Copy the **x86** Release GetDLLExportRVA files to `x64/Release`. Notice that the **x86** Release build must be copied to the **x64** Release folder.
