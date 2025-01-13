@@ -10,6 +10,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <stdint.h>
+#include <ctype.h>
 #include <string.h>
 #include <libzap.h>
 #include <scope_guard.hpp>
