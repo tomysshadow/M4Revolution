@@ -716,10 +716,12 @@
 
 #ifdef MANGO_PLATFORM_WINDOWS
 
-    #ifdef MANGO_API_EXPORT
+    #if defined(MANGO_API_EXPORT)
         #define MANGO_API __declspec(dllexport)
-    #else
+    #elif defined(MANGO_API_IMPORT)
         #define MANGO_API __declspec(dllimport)
+    #else
+        #define MANGO_API
     #endif
 
 #elif __GNUC__ >= 4
@@ -730,27 +732,6 @@
 
     #define MANGO_API
 
-#endif
-
-// -----------------------------------------------------------------------
-// licenses
-// -----------------------------------------------------------------------
-
-// BSD: zstd, zpng, xxHash, concurrentqueue, lzfse, lz4, webp, exr, adler32, intel-sha, jp2, jxl, isal
-// MIT: libdeflate, lcms, bc, lzav
-// ZLIB: zlib, bzip2, png
-// APACHE: etc1, etc2, astcenc, basisu, arm-sha, avif
-// GPL: lzo, heif
-
-// Required licenses
-#define MANGO_LICENSE_ENABLE_BSD
-#define MANGO_LICENSE_ENABLE_MIT
-#define MANGO_LICENSE_ENABLE_ZLIB
-#define MANGO_LICENSE_ENABLE_APACHE
-
-// GPL license is optional
-#if !defined(MANGO_LICENSE_ENABLE_GPL) && !defined(MANGO_LICENSE_DISABLE_GPL)
-    #define MANGO_LICENSE_ENABLE_GPL
 #endif
 
 // -----------------------------------------------------------------------
