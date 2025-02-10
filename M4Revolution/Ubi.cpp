@@ -856,6 +856,8 @@ namespace Ubi {
 		DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 		readStream(inputStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
 
+		directoryVector.reserve(directoryVectorSize);
+
 		bool bftex = !owner
 
 		&& (
@@ -949,6 +951,8 @@ namespace Ubi {
 				);
 			}
 		} else {
+			directoryVector.reserve(directoryVectorSize);
+
 			for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
 				directoryVector.emplace_back(
 					inputStream,
@@ -974,6 +978,8 @@ namespace Ubi {
 		readStream(inputStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
 
 		if (match) {
+			filePointerVector.reserve(filePointerVectorSize);
+
 			for (FILE_POINTER_VECTOR_SIZE i = 0; i < filePointerVectorSize; i++) {
 				filePointer = std::make_shared<File>(inputStream);
 				filePointerVector.push_back(filePointer);

@@ -1,4 +1,4 @@
-# Myst IV: Revolution 1.2.1
+# Myst IV: Revolution 1.2.2
 ## By Anthony Kleine
 
 Myst IV: Revolution is a command line tool that can perform various fixes for the game Myst IV: Revelation.
@@ -101,7 +101,7 @@ Exit the application.
 
 Command line arguments may be used for some advanced features.
 
- - `-p path` or `--path path`: sets an install path to use - if not set, the Steam install path is found automatically
+ - `-p path` or `--path path`: sets an install path to use - if not set, the install path is found automatically
  - `-lfn` or `--log-file-names`: log the file names of all copied and converted files (slow, but useful for debugging)
  - `-nohw` or `--disable-hardware-acceleration`: disables hardware acceleration (via NVIDIA CUDA) when converting assets - if you do not have an NVIDIA graphics card, hardware acceleration will be disabled automatically
  - `-mt maxThreads` or `--max-threads maxThreads`: sets the maximum number of threads to use for multithreading when converting assets - maxThreads must be a valid number, and if not set, it will be chosen automatically
