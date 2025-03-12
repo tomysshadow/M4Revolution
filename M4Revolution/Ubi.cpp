@@ -105,7 +105,7 @@ namespace Ubi {
 				const size_t SUB_GROUPS_SIZE = sizeof(subGroups);
 				const size_t PIXELS_SIZE = sizeof(pixels);
 
-				inputStream.seekg(WATER_FACE_FIELDS_SIZE, std::ios::cur);
+				inputStream.seekg(WATER_FACE_FIELDS_SIZE, std::istream::cur);
 				readStream(inputStream, &waterSlices, WATER_SLICES_SIZE);
 
 				for (uint32_t i = 0; i < waterSlices; i++) {
@@ -119,22 +119,22 @@ namespace Ubi {
 					// normally these would be in seperate classes
 					// there just isn't much point here because I don't really care about any of this data
 					// I only really care about sliceRow/sliceCol and just want to skip the rest of this stuff
-					inputStream.seekg(WATER_SLICE_FIELDS_SIZE, std::ios::cur);
+					inputStream.seekg(WATER_SLICE_FIELDS_SIZE, std::istream::cur);
 					readStream(inputStream, &waterRLERegions, WATER_RLE_REGIONS_SIZE);
 
 					for (uint32_t j = 0; j < waterRLERegions; j++) {
-						inputStream.seekg(WATER_RLE_REGION_FIELDS_SIZE, std::ios::cur);
+						inputStream.seekg(WATER_RLE_REGION_FIELDS_SIZE, std::istream::cur);
 						readStream(inputStream, &groups, GROUPS_SIZE);
 
 						for (uint32_t l = 0; l < groups; l++) {
-							inputStream.seekg(WATER_RLE_REGION_GROUP_FIELDS_SIZE, std::ios::cur);
+							inputStream.seekg(WATER_RLE_REGION_GROUP_FIELDS_SIZE, std::istream::cur);
 							readStream(inputStream, &subGroups, SUB_GROUPS_SIZE);
 
 							for (uint32_t m = 0; m < subGroups; m++) {
 								readStream(inputStream, &pixels, PIXELS_SIZE);
 
 								pixelsSize = pixels;
-								inputStream.seekg(pixelsSize + pixelsSize, std::ios::cur);
+								inputStream.seekg(pixelsSize + pixelsSize, std::istream::cur);
 							}
 						}
 					}
@@ -168,7 +168,7 @@ namespace Ubi {
 				layer.textureBoxNameOptional = LOADER_POINTER->nameOptional;
 
 				const size_t FIELDS_SIZE = 17;
-				inputStream.seekg(FIELDS_SIZE, std::ios::cur);
+				inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 
 				bool &isLayerMask = layer.isLayerMask;
 				const size_t IS_LAYER_MASK_SIZE = sizeof(isLayerMask);
@@ -176,12 +176,12 @@ namespace Ubi {
 				readStream(inputStream, &isLayerMask, IS_LAYER_MASK_SIZE);
 
 				const size_t FIELDS_SIZE2 = 4;
-				inputStream.seekg(FIELDS_SIZE2, std::ios::cur);
+				inputStream.seekg(FIELDS_SIZE2, std::istream::cur);
 
 				layerPointer = &layer;
 			} else {
 				const size_t FIELDS_SIZE = 22;
-				inputStream.seekg(FIELDS_SIZE, std::ios::cur);
+				inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 			}
 
 			uint32_t sets = 0;
@@ -209,7 +209,7 @@ namespace Ubi {
 			readStream(inputStream, &states, STATES_SIZE);
 
 			for (uint32_t i = 0; i < states; i++) {
-				inputStream.seekg(STATES_FIELDS_SIZE, std::ios::cur);
+				inputStream.seekg(STATES_FIELDS_SIZE, std::istream::cur);
 				readStream(inputStream, &stateNames, STATE_NAMES_SIZE);
 
 				for (uint32_t j = 0; j < stateNames; j++) {
@@ -233,7 +233,7 @@ namespace Ubi {
 			std::optional<std::string> resourceNameOptional = String::readOptionalEncrypted(inputStream);
 
 			const size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
-			inputStream.seekg(WATER_FIELDS_SIZE, std::ios::cur);
+			inputStream.seekg(WATER_FIELDS_SIZE, std::istream::cur);
 
 			uint32_t resources = 0;
 			const size_t RESOURCES_SIZE = sizeof(resources);
@@ -299,13 +299,13 @@ namespace Ubi {
 		InteractiveOffsetProvider::InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream)
 			: Resource(loaderPointer, VERSION) {
 			const size_t FIELDS_SIZE = 33;
-			inputStream.seekg(FIELDS_SIZE, std::ios::cur);
+			inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 		}
 
 		TextureAlignedOffsetProvider::TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream)
 			: Resource(loaderPointer, VERSION) {
 			const size_t FIELDS_SIZE = 65;
-			inputStream.seekg(FIELDS_SIZE, std::ios::cur);
+			inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 		}
 
 		void StateData::create(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet) {
@@ -319,7 +319,7 @@ namespace Ubi {
 			}
 
 			const size_t REFRESH_RATE_SIZE = 4;
-			inputStream.seekg(REFRESH_RATE_SIZE, std::ios::cur);
+			inputStream.seekg(REFRESH_RATE_SIZE, std::istream::cur);
 
 			std::optional<std::string> maskPathOptional = String::readOptionalEncrypted(inputStream);
 
@@ -337,7 +337,7 @@ namespace Ubi {
 			}
 
 			const size_t WATER_FACE_BILERP_FIELDS_SIZE = 6;
-			inputStream.seekg(WATER_FACE_BILERP_FIELDS_SIZE, std::ios::cur);
+			inputStream.seekg(WATER_FACE_BILERP_FIELDS_SIZE, std::istream::cur);
 		}
 
 		StateData::StateData(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet)

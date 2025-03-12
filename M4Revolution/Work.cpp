@@ -278,7 +278,7 @@ namespace Work {
 		std::filesystem::remove(FILE_NAME);
 
 		fileStream.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-		fileStream.open(FILE_NAME, std::ios::trunc | (std::ios::binary * binary), _SH_DENYRW);
+		fileStream.open(FILE_NAME, std::ofstream::trunc | (std::ofstream::binary * binary), _SH_DENYRW);
 
 		#ifdef WINDOWS
 		setFileAttributeHidden(true, FILE_NAME);
@@ -404,7 +404,7 @@ namespace Work {
 			fileStream.close();
 		}
 
-		fileStream.open(path, std::ios::binary | std::ios::in | std::ios::out, _SH_DENYRW);
+		fileStream.open(path, std::fstream::binary | std::fstream::in | std::fstream::out, _SH_DENYRW);
 	}
 
 	void Edit::apply(std::thread &copyThread, const CODE_VECTOR &codeVector) {

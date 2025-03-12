@@ -647,9 +647,9 @@ void M4Revolution::replaceGfxTools() {
 #endif
 
 Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
-	inputStream.seekg(0, std::ios::end);
+	inputStream.seekg(0, std::istream::end);
 	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputStream.tellg());
-	inputStream.seekg(0, std::ios::beg);
+	inputStream.seekg(0, std::istream::beg);
 	return inputFile;
 }
 
@@ -882,7 +882,7 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 		currentBigFileTask.outputPosition = fileStream.tellp();
 
 		filePosition = currentBigFileTask.getFileSystemSize();
-		fileStream.seekp(filePosition, std::ios::cur);
+		fileStream.seekp(filePosition, std::ofstream::cur);
 	}
 	return true;
 }
@@ -1159,7 +1159,7 @@ M4Revolution::~M4Revolution() {
 
 void M4Revolution::toggleFullScreen() {
 	{
-		std::ifstream inputFileStream(Work::Output::USER_PREFERENCE_PATH, std::ios::in, _SH_DENYWR);
+		std::ifstream inputFileStream(Work::Output::USER_PREFERENCE_PATH, std::ifstream::in, _SH_DENYWR);
 
 		Log log("Toggling Full Screen", &inputFileStream);
 
@@ -1198,7 +1198,7 @@ void M4Revolution::fixLoading() {
 		std::ifstream inputFileStream;
 		inputFileStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
-		OPERATION_EXCEPTION_RETRY_ERR(inputFileStream.open(Work::Output::DATA_PATH, std::ios::binary, _SH_DENYWR), std::ifstream::failure, Work::Output::FILE_RETRY);
+		OPERATION_EXCEPTION_RETRY_ERR(inputFileStream.open(Work::Output::DATA_PATH, std::ifstream::binary, _SH_DENYWR), std::ifstream::failure, Work::Output::FILE_RETRY);
 
 		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 

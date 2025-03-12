@@ -59,8 +59,8 @@ IDR_BIN_GFX_TOOLS       BIN                     "..\\Release\\gfx_tools_rd.dll"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,2,2,0
- PRODUCTVERSION 1,2,2,0
+ FILEVERSION 1,2,3,0
+ PRODUCTVERSION 1,2,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -77,12 +77,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "TOMYSSHADOW"
             VALUE "FileDescription", "Myst IV: Revolution"
-            VALUE "FileVersion", "1.2.2.0"
+            VALUE "FileVersion", "1.2.3.0"
             VALUE "InternalName", "M4Revolution.exe"
             VALUE "LegalCopyright", "Copyright (C) Anthony Kleine 2025"
             VALUE "OriginalFilename", "M4Revolution.exe"
             VALUE "ProductName", "M4Revolution"
-            VALUE "ProductVersion", "1.2.2.0"
+            VALUE "ProductVersion", "1.2.3.0"
         END
     END
     BLOCK "VarFileInfo"
