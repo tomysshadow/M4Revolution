@@ -74,7 +74,7 @@ std::wstring Locale::getGlobalNameWide() {
 }
 
 Locale::LC Locale::categoryToLC(CATEGORY category) {
-	const Locale::CATEGORY_LC_MAP CATEGORY_LC_MAP = {
+	static const Locale::CATEGORY_LC_MAP CATEGORY_LC_MAP = {
 		{std::locale::all, LC_ALL},
 		{std::locale::collate, LC_COLLATE},
 		{std::locale::ctype, LC_CTYPE},
@@ -88,7 +88,7 @@ Locale::LC Locale::categoryToLC(CATEGORY category) {
 }
 
 Locale::CATEGORY Locale::lcToCategory(LC lc) {
-	const Locale::LC_CATEGORY_MAP LC_CATEGORY_MAP = {
+	static const Locale::LC_CATEGORY_MAP LC_CATEGORY_MAP = {
 		{LC_ALL, std::locale::all},
 		{LC_COLLATE, std::locale::collate},
 		{LC_CTYPE, std::locale::ctype},

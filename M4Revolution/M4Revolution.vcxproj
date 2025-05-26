@@ -102,7 +102,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mango.lib;pixman-1_staticd.lib;M4Image.lib;libzap.lib;nvtt30205.lib;sourcepp.lib;sourcepp_parser.lib;kvpp.lib;steampp.lib;sourcepp_crypto.lib;vpkpp.lib;comsuppwd.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mango.lib;pixman-1_staticd.lib;M4Image.lib;libzap.lib;nvtt30205.lib;sourcepp.lib;sourcepp_compression.lib;sourcepp_crypto.lib;sourcepp_parser.lib;sourcepp_kvpp.lib;sourcepp_steampp.lib;comsuppwd.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -121,7 +121,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mango.lib;pixman-1_static.lib;M4Image.lib;libzap.lib;nvtt30205.lib;sourcepp.lib;sourcepp_parser.lib;kvpp.lib;steampp.lib;sourcepp_crypto.lib;vpkpp.lib;comsuppw.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mango.lib;pixman-1_static.lib;M4Image.lib;libzap.lib;nvtt30205.lib;sourcepp.lib;sourcepp_compression.lib;sourcepp_crypto.lib;sourcepp_parser.lib;sourcepp_kvpp.lib;sourcepp_steampp.lib;comsuppw.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -136,7 +136,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mango.lib;pixman-1_staticd.lib;M4Image.lib;libzap.lib;nvtt30205.lib;sourcepp.lib;sourcepp_parser.lib;kvpp.lib;steampp.lib;sourcepp_crypto.lib;vpkpp.lib;comsuppwd.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mango.lib;pixman-1_staticd.lib;M4Image.lib;libzap.lib;nvtt30205.lib;sourcepp.lib;sourcepp_compression.lib;sourcepp_crypto.lib;sourcepp_parser.lib;sourcepp_kvpp.lib;sourcepp_steampp.lib;comsuppwd.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -155,7 +155,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mango.lib;pixman-1_static.lib;M4Image.lib;libzap.lib;nvtt30205.lib;sourcepp.lib;sourcepp_parser.lib;kvpp.lib;steampp.lib;sourcepp_crypto.lib;vpkpp.lib;comsuppw.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mango.lib;pixman-1_static.lib;M4Image.lib;libzap.lib;nvtt30205.lib;sourcepp.lib;sourcepp_compression.lib;sourcepp_crypto.lib;sourcepp_parser.lib;sourcepp_kvpp.lib;sourcepp_steampp.lib;comsuppw.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
