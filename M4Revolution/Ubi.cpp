@@ -8,7 +8,7 @@ namespace Ubi {
 				return encryptedStringOptional;
 			}
 
-			const char MASK = 85;
+			static const char MASK = 85;
 
 			std::string &encryptedString = encryptedStringOptional.value();
 
@@ -93,17 +93,17 @@ namespace Ubi {
 				uint32_t pixels = 0;
 				std::streamsize pixelsSize = 0;
 
-				const size_t WATER_FACE_FIELDS_SIZE = 20; // Type, Width, Height, SliceWidth, SliceHeight
-				const size_t WATER_SLICES_SIZE = sizeof(waterSlices);
-				const size_t SLICE_ROW_SIZE = sizeof(sliceRow);
-				const size_t SLICE_COL_SIZE = sizeof(sliceCol);
-				const size_t WATER_SLICE_FIELDS_SIZE = 8; // Width, Height
-				const size_t WATER_RLE_REGIONS_SIZE = sizeof(waterRLERegions);
-				const size_t WATER_RLE_REGION_FIELDS_SIZE = 20; // TextureCoordsInFace (X, Y,) TextureCoordsInSlice (X, Y,) RegionSize
-				const size_t GROUPS_SIZE = sizeof(groups);
-				const size_t WATER_RLE_REGION_GROUP_FIELDS_SIZE = 4; // Unknown
-				const size_t SUB_GROUPS_SIZE = sizeof(subGroups);
-				const size_t PIXELS_SIZE = sizeof(pixels);
+				static const size_t WATER_FACE_FIELDS_SIZE = 20; // Type, Width, Height, SliceWidth, SliceHeight
+				static const size_t WATER_SLICES_SIZE = sizeof(waterSlices);
+				static const size_t SLICE_ROW_SIZE = sizeof(sliceRow);
+				static const size_t SLICE_COL_SIZE = sizeof(sliceCol);
+				static const size_t WATER_SLICE_FIELDS_SIZE = 8; // Width, Height
+				static const size_t WATER_RLE_REGIONS_SIZE = sizeof(waterRLERegions);
+				static const size_t WATER_RLE_REGION_FIELDS_SIZE = 20; // TextureCoordsInFace (X, Y,) TextureCoordsInSlice (X, Y,) RegionSize
+				static const size_t GROUPS_SIZE = sizeof(groups);
+				static const size_t WATER_RLE_REGION_GROUP_FIELDS_SIZE = 4; // Unknown
+				static const size_t SUB_GROUPS_SIZE = sizeof(subGroups);
+				static const size_t PIXELS_SIZE = sizeof(pixels);
 
 				inputStream.seekg(WATER_FACE_FIELDS_SIZE, std::istream::cur);
 				readStream(inputStream, &waterSlices, WATER_SLICES_SIZE);
@@ -143,8 +143,8 @@ namespace Ubi {
 		}
 
 		Resource::Loader::Loader(std::istream &inputStream) {
-			const size_t ID_SIZE = sizeof(id);
-			const size_t VERSION_SIZE = sizeof(version);
+			static const size_t ID_SIZE = sizeof(id);
+			static const size_t VERSION_SIZE = sizeof(version);
 
 			readStream(inputStream, &id, ID_SIZE);
 			readStream(inputStream, &version, VERSION_SIZE);
@@ -167,25 +167,25 @@ namespace Ubi {
 				RLE::Layer &layer = layerMap[layerFileOptional.value()];
 				layer.textureBoxNameOptional = LOADER_POINTER->nameOptional;
 
-				const size_t FIELDS_SIZE = 17;
+				static const size_t FIELDS_SIZE = 17;
 				inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 
 				bool &isLayerMask = layer.isLayerMask;
-				const size_t IS_LAYER_MASK_SIZE = sizeof(isLayerMask);
+				static const size_t IS_LAYER_MASK_SIZE = sizeof(isLayerMask);
 
 				readStream(inputStream, &isLayerMask, IS_LAYER_MASK_SIZE);
 
-				const size_t FIELDS_SIZE2 = 4;
+				static const size_t FIELDS_SIZE2 = 4;
 				inputStream.seekg(FIELDS_SIZE2, std::istream::cur);
 
 				layerPointer = &layer;
 			} else {
-				const size_t FIELDS_SIZE = 22;
+				static const size_t FIELDS_SIZE = 22;
 				inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 			}
 
 			uint32_t sets = 0;
-			const size_t SETS_SIZE = sizeof(sets);
+			static const size_t SETS_SIZE = sizeof(sets);
 
 			readStream(inputStream, &sets, SETS_SIZE);
 
@@ -202,9 +202,9 @@ namespace Ubi {
 			uint32_t states = 0;
 			uint32_t stateNames = 0;
 
-			const size_t STATES_SIZE = sizeof(states);
-			const size_t STATES_FIELDS_SIZE = 4;
-			const size_t STATE_NAMES_SIZE = sizeof(stateNames);
+			static const size_t STATES_SIZE = sizeof(states);
+			static const size_t STATES_FIELDS_SIZE = 4;
+			static const size_t STATE_NAMES_SIZE = sizeof(stateNames);
 
 			readStream(inputStream, &states, STATES_SIZE);
 
@@ -232,11 +232,11 @@ namespace Ubi {
 		void Water::create(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap) {
 			std::optional<std::string> resourceNameOptional = String::readOptionalEncrypted(inputStream);
 
-			const size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
+			static const size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
 			inputStream.seekg(WATER_FIELDS_SIZE, std::istream::cur);
 
 			uint32_t resources = 0;
-			const size_t RESOURCES_SIZE = sizeof(resources);
+			static const size_t RESOURCES_SIZE = sizeof(resources);
 
 			readStream(inputStream, &resources, RESOURCES_SIZE);
 
@@ -259,8 +259,8 @@ namespace Ubi {
 		}
 
 		std::optional<std::string> Water::getTextureBoxNameOptional(const std::string &resourceName) {
-			const char PERIOD = '.';
-			const std::string::size_type PERIOD_SIZE = sizeof(PERIOD);
+			static const char PERIOD = '.';
+			static const std::string::size_type PERIOD_SIZE = sizeof(PERIOD);
 
 			std::string::size_type periodIndex = resourceName.find(PERIOD);
 
@@ -270,8 +270,8 @@ namespace Ubi {
 
 			// modifying these contexts would be hard, but seems unnecessary
 			// so this is not implemented
-			const std::string CONTEXT_GLOBAL = "global";
-			const std::string CONTEXT_SHARED = "shared";
+			static const std::string CONTEXT_GLOBAL = "global";
+			static const std::string CONTEXT_SHARED = "shared";
 
 			const std::string &CONTEXT = resourceName.substr(0, periodIndex);
 
@@ -298,19 +298,19 @@ namespace Ubi {
 
 		InteractiveOffsetProvider::InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream)
 			: Resource(loaderPointer, VERSION) {
-			const size_t FIELDS_SIZE = 33;
+			static const size_t FIELDS_SIZE = 33;
 			inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 		}
 
 		TextureAlignedOffsetProvider::TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream)
 			: Resource(loaderPointer, VERSION) {
-			const size_t FIELDS_SIZE = 65;
+			static const size_t FIELDS_SIZE = 65;
 			inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 		}
 
 		void StateData::create(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet) {
 			uint32_t nbrAliases = 0;
-			const size_t NBR_ALIASES_SIZE = sizeof(nbrAliases);
+			static const size_t NBR_ALIASES_SIZE = sizeof(nbrAliases);
 
 			readStream(inputStream, &nbrAliases, NBR_ALIASES_SIZE);
 
@@ -318,7 +318,7 @@ namespace Ubi {
 				String::readOptional(inputStream);
 			}
 
-			const size_t REFRESH_RATE_SIZE = 4;
+			static const size_t REFRESH_RATE_SIZE = 4;
 			inputStream.seekg(REFRESH_RATE_SIZE, std::istream::cur);
 
 			std::optional<std::string> maskPathOptional = String::readOptionalEncrypted(inputStream);
@@ -328,7 +328,7 @@ namespace Ubi {
 			}
 
 			uint32_t resources = 0;
-			const size_t RESOURCES_SIZE = sizeof(resources);
+			static const size_t RESOURCES_SIZE = sizeof(resources);
 
 			readStream(inputStream, &resources, RESOURCES_SIZE);
 
@@ -336,7 +336,7 @@ namespace Ubi {
 				createResourcePointer(inputStream);
 			}
 
-			const size_t WATER_FACE_BILERP_FIELDS_SIZE = 6;
+			static const size_t WATER_FACE_BILERP_FIELDS_SIZE = 6;
 			inputStream.seekg(WATER_FACE_BILERP_FIELDS_SIZE, std::istream::cur);
 		}
 
@@ -366,7 +366,7 @@ namespace Ubi {
 			: HeaderCopier(fileSize, inputStream.tellg()),
 			inputStream(inputStream) {
 			ID id = 0;
-			const size_t ID_SIZE = sizeof(id);
+			static const size_t ID_SIZE = sizeof(id);
 
 			readStream(inputStream, &id, ID_SIZE);
 			throwReadPastEnd();
@@ -393,7 +393,7 @@ namespace Ubi {
 		HeaderWriter::HeaderWriter(std::ostream &outputStream, std::streamsize fileSize)
 			: HeaderCopier(fileSize, outputStream.tellp()),
 			outputStream(outputStream) {
-			const size_t UBI_B0_L_SIZE = sizeof(UBI_B0_L);
+			static const size_t UBI_B0_L_SIZE = sizeof(UBI_B0_L);
 
 			writeStream(outputStream, &UBI_B0_L, UBI_B0_L_SIZE);
 			throwWrotePastEnd();
@@ -509,7 +509,7 @@ namespace Ubi {
 	}
 
 	BigFile::Path& BigFile::Path::create(const std::string &file) {
-		const char SEPERATOR = '/';
+		static const char SEPERATOR = '/';
 
 		// split up a string into a Path object
 		std::string::size_type begin = 0;
@@ -650,7 +650,8 @@ namespace Ubi {
 		#endif
 
 		const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
-		const std::string::size_type PERIOD_SIZE = sizeof(PERIOD);
+
+		static const std::string::size_type PERIOD_SIZE = sizeof(PERIOD);
 
 		nameOptional = NAME.substr(
 			0,
@@ -663,7 +664,7 @@ namespace Ubi {
 	}
 
 	std::string BigFile::File::getNameExtension(const std::string &name) {
-		const std::string::size_type PERIOD_SIZE = sizeof(PERIOD);
+		static const std::string::size_type PERIOD_SIZE = sizeof(PERIOD);
 
 		std::string::size_type periodIndex = name.rfind(PERIOD);
 
@@ -681,7 +682,7 @@ namespace Ubi {
 			return false;
 		}
 
-		const std::regex FACE_SLICE("^([a-z]+)_(\\d{2})_(\\d{2})\\.");
+		static const std::regex FACE_SLICE("^([a-z]+)_(\\d{2})_(\\d{2})\\.");
 
 		std::smatch matches = {};
 
@@ -706,7 +707,7 @@ namespace Ubi {
 
 		// since these have leading zeros, I use base 10 specifically
 		// (the ROW/COL should not be misinterpreted as octal)
-		const int BASE = 10;
+		static const int BASE = 10;
 
 		const std::string &ROW_STR = matches[2];
 

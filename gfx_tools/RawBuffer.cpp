@@ -18,8 +18,8 @@ namespace gfx_tools {
 	}
 	
 	float RawBufferEx::ResizeInfo::GetQuality(L_INT qFactor) {
-		const L_INT Q_FACTOR_HIGHEST_QUALITY = 2;
-		const L_INT Q_FACTOR_MOST_COMPRESSION = 255;
+		static const L_INT Q_FACTOR_HIGHEST_QUALITY = 2;
+		static const L_INT Q_FACTOR_MOST_COMPRESSION = 255;
 
 		if (qFactor < Q_FACTOR_HIGHEST_QUALITY) {
 			return 1.0f;

@@ -122,7 +122,7 @@ const nvtt::CompressionOptions &M4Revolution::CompressionOptions::get(const Ubi:
 
 	// ares assumes all DXT textures are square and power of two sized
 	// so if they are not, we must use RGBA instead
-	const int DEPTH_SQUARE = 1;
+	static const int DEPTH_SQUARE = 1;
 
 	int width = surface.width();
 	int height = surface.height();
@@ -189,7 +189,7 @@ void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks)
 	}
 
 	// this is just some moderately small amount of time
-	const std::chrono::milliseconds MILLISECONDS(25);
+	static const std::chrono::milliseconds MILLISECONDS(25);
 
 	while (tasks.fileLock().get().size() >= maxFileTasks) {
 		std::this_thread::sleep_for(MILLISECONDS);
@@ -405,12 +405,12 @@ const Ubi::BigFile::Path::VECTOR M4Revolution::TRANSITION_FADE_PATH_VECTOR = {
 const M4Revolution::CompressionOptions M4Revolution::COMPRESSION_OPTIONS;
 
 void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
-	const std::string LINE_SECTION_BEGIN = "; Added by Myst IV: Revolution";
-	const std::string LINE_SECTION_END = "; End of section";
+	static const std::string LINE_SECTION_BEGIN = "; Added by Myst IV: Revolution";
+	static const std::string LINE_SECTION_END = "; End of section";
 
-	const size_t FULL_SCREEN_SIZE = 41;
-	const char FULL_SCREEN_ON[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( true ) \n}\n";
-	const char FULL_SCREEN_OFF[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( false )\n}\n";
+	static const size_t FULL_SCREEN_SIZE = 41;
+	static const char FULL_SCREEN_ON[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( true ) \n}\n";
+	static const char FULL_SCREEN_OFF[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( false )\n}\n";
 
 	// we assume if we don't find the section full screen is on by default
 	Work::Output output(false);
@@ -480,9 +480,9 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 }
 
 void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
-	const size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
-	const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50 };
-	const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE] = { 0xC6, 0x44, 0x24, 0x0B, 0x48, 0x90, 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C };
+	static const size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
+	static const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50 };
+	static const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE] = { 0xC6, 0x44, 0x24, 0x0B, 0x48, 0x90, 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C };
 
 	// default value is the position as of the latest Steam version
 	unsigned long computeMoveVectorPosition = 0x000109C0;
@@ -539,13 +539,13 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 }
 
 void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
-	const size_t FADE_OUT_SOUND_SIZE = 13;
-	const unsigned char FADE_OUT_SOUND_ON[FADE_OUT_SOUND_SIZE] = { 0x8B, 0x54, 0x24, 0x04, 0x56, 0x8B, 0xF1, 0x8A, 0x86, 0x87, 0x00, 0x00, 0x00 };
-	const unsigned char FADE_OUT_SOUND_OFF[FADE_OUT_SOUND_SIZE] = { 0x8B, 0x54, 0x24, 0x04, 0x56, 0x8B, 0xF1, 0x90, 0xB8, 0x01, 0x00, 0x00, 0x00 };
+	static const size_t FADE_OUT_SOUND_SIZE = 13;
+	static const unsigned char FADE_OUT_SOUND_ON[FADE_OUT_SOUND_SIZE] = { 0x8B, 0x54, 0x24, 0x04, 0x56, 0x8B, 0xF1, 0x8A, 0x86, 0x87, 0x00, 0x00, 0x00 };
+	static const unsigned char FADE_OUT_SOUND_OFF[FADE_OUT_SOUND_SIZE] = { 0x8B, 0x54, 0x24, 0x04, 0x56, 0x8B, 0xF1, 0x90, 0xB8, 0x01, 0x00, 0x00, 0x00 };
 
-	const size_t FADE_OUT_SOUND2_SIZE = 9;
-	const unsigned char FADE_OUT_SOUND2_ON[FADE_OUT_SOUND2_SIZE] = { 0x68, 0x26, 0x02, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
-	const unsigned char FADE_OUT_SOUND2_OFF[FADE_OUT_SOUND2_SIZE] = { 0x68, 0x00, 0x00, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
+	static const size_t FADE_OUT_SOUND2_SIZE = 9;
+	static const unsigned char FADE_OUT_SOUND2_ON[FADE_OUT_SOUND2_SIZE] = { 0x68, 0x26, 0x02, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
+	static const unsigned char FADE_OUT_SOUND2_OFF[FADE_OUT_SOUND2_SIZE] = { 0x68, 0x00, 0x00, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
 
 	unsigned long fadeOutSoundPosition = 0x00010850;
 
@@ -555,7 +555,7 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 	}
 	#endif
 
-	const unsigned long FADE_OUT_SOUND2_OFFSET = 0x0000005E;
+	static const unsigned long FADE_OUT_SOUND2_OFFSET = 0x0000005E;
 
 	Work::Edit edit(fileStream, Work::Output::M4_AI_GLOBAL_PATH);
 
@@ -658,17 +658,18 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 
 	#ifdef EXTENTS_MAKE_POWER_OF_TWO
 	#ifdef TO_NEXT_POWER_OF_TWO
-	const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_ToNextPowerOfTwo;
+	static const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_ToNextPowerOfTwo;
 	#else
-	const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_ToPreviousPowerOfTwo;
+	static const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_ToPreviousPowerOfTwo;
 	#endif
 	#else
-	const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_None;
+	static const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_None;
 	#endif
 
-	const nvtt::ResizeFilter RESIZE_FILTER = nvtt::ResizeFilter_Triangle;
+	static const nvtt::ResizeFilter RESIZE_FILTER = nvtt::ResizeFilter_Triangle;
+	static const int MIPMAP_COUNT = 1;
+
 	const nvtt::Context &CONTEXT = convert.CONTEXT;
-	const int MIPMAP_COUNT = 1;
 
 	Work::Convert::EXTENT width = clamp((Work::Convert::EXTENT)surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
 	Work::Convert::EXTENT height = clamp((Work::Convert::EXTENT)surface.height(), CONFIGURATION.minTextureHeight, CONFIGURATION.maxTextureHeight);
@@ -766,7 +767,7 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 			}
 		};
 
-		const int DEPTH = 1;
+		static const int DEPTH = 1;
 
 		if (!surface.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, width, height, DEPTH, image)) {
 			throw std::runtime_error("Failed to Set Surface Image");
@@ -1024,7 +1025,7 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 		osErr(closeThread(thread));
 	};
 
-	const DWORD BUFFER_SIZE = sizeof("0x00000000");
+	static const DWORD BUFFER_SIZE = sizeof("0x00000000");
 	CHAR buffer[BUFFER_SIZE] = "";
 
 	{
@@ -1063,7 +1064,7 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 	}
 
 	// max so we don't hang forever in the worst case
-	const DWORD MILLISECONDS = 10000;
+	static const DWORD MILLISECONDS = 10000;
 
 	DWORD wait = WaitForSingleObject(process, MILLISECONDS);
 	osErr(wait == WAIT_OBJECT_0 || wait == WAIT_ABANDONED);
@@ -1101,7 +1102,7 @@ M4Revolution::M4Revolution(
 	if (!maxThreads) {
 		// chosen so that if you have a quad core there will still be at least two threads for other system stuff
 		// (meanwhile, barely affecting even more powerful processors)
-		const DWORD RESERVED_THREADS = 2;
+		static const DWORD RESERVED_THREADS = 2;
 
 		SYSTEM_INFO systemInfo = {};
 		GetSystemInfo(&systemInfo);
@@ -1115,7 +1116,7 @@ M4Revolution::M4Revolution(
 	#endif
 
 	// the number 216 was chosen for being the standard number of tiles in a cube
-	const Work::FileTask::POINTER_QUEUE::size_type DEFAULT_MAX_FILE_TASKS = 216;
+	static const Work::FileTask::POINTER_QUEUE::size_type DEFAULT_MAX_FILE_TASKS = 216;
 
 	this->maxFileTasks = maxFileTasks ? maxFileTasks : DEFAULT_MAX_FILE_TASKS;
 

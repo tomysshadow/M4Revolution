@@ -54,17 +54,17 @@ void consoleLog(const char* str, short newline, short tab, bool err, const char*
 
 void consoleWait(short newline) {
 	#ifdef MACINTOSH
-	const char* command = "read";
+	static const char* COMMAND = "read";
 	#endif
 	#ifdef WINDOWS
-	const char* command = "pause";
+	static const char* COMMAND = "pause";
 	#endif
 
 	// we only want to know if we failed to create the process
 	// processing the command may fail if the user closes the window (which is fine)
 	errno = 0;
 	
-	if (system(command) == -1 && errno) {
+	if (system(COMMAND) == -1 && errno) {
 		throw std::runtime_error("Failed to Create Child Process");
 	}
 
@@ -173,8 +173,8 @@ unsigned long consoleLongUnsigned(const char* str, unsigned long minValue, unsig
 }
 
 bool consoleBool(const char* str, const std::optional<bool> &defaultValueOptional) {
-	const char YES = 'Y';
-	const char NO = 'N';
+	static const char YES = 'Y';
+	static const char NO = 'N';
 
 	char yes = 'y';
 	char no = 'n';

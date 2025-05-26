@@ -134,7 +134,7 @@ namespace Work {
 			return;
 		}
 
-		const size_t BUFFER_SIZE = 0x10000;
+		static const size_t BUFFER_SIZE = 0x10000;
 
 		std::streamsize countRead = BUFFER_SIZE;
 		std::streamsize gcountRead = 0;

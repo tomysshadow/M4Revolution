@@ -27,8 +27,8 @@ namespace AI {
 		copyStreamToString(fileStream, ai, size);
 
 		// find the line that the value is on
-		const std::regex AI_LINE("^(\\s*([^\\s\\(]+)\\s*\\(\\s*([^\\s,]+)\\s*,\\s?)(.*)\\)[^\\S\\n]*(?:\\n|$)");
-		const std::string TYPE_F32 = "f32";
+		static const std::regex AI_LINE("^(\\s*([^\\s\\(]+)\\s*\\(\\s*([^\\s,]+)\\s*,\\s?)(.*)\\)[^\\S\\n]*(?:\\n|$)");
+		static const std::string TYPE_F32 = "f32";
 
 		size_t f32Size = 0;
 		float f32 = 0.0f;

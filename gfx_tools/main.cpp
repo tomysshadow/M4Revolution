@@ -22,12 +22,12 @@ namespace gfx_tools {
 			return;
 		}
 
-		const size_t INPUT_CHANNEL_UV = 0;
-		const size_t INPUT_CHANNEL_LUMINANCE = 3;
+		static const size_t INPUT_CHANNEL_UV = 0;
+		static const size_t INPUT_CHANNEL_LUMINANCE = 3;
 
-		const size_t OUTPUT_CHANNEL_DU = 0;
-		const size_t OUTPUT_CHANNEL_DV = 1;
-		const size_t OUTPUT_CHANNEL_LUMINANCE = 2;
+		static const size_t OUTPUT_CHANNEL_DU = 0;
+		static const size_t OUTPUT_CHANNEL_DV = 1;
+		static const size_t OUTPUT_CHANNEL_LUMINANCE = 2;
 
 		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + ((size_t)height * (size_t)inputStride) - inputStride);
 		M4Image::Color32* rowPointer = 0;
@@ -94,16 +94,16 @@ namespace gfx_tools {
 		STRIDE outputStride,
 		double strength
 	) {
-		const size_t INPUT_CHANNEL_XY = 0;
+		static const size_t INPUT_CHANNEL_XY = 0;
 
-		const size_t OUTPUT_CHANNEL_B = 0;
-		const size_t OUTPUT_CHANNEL_G = 1;
-		const size_t OUTPUT_CHANNEL_R = 2;
-		const size_t OUTPUT_CHANNEL_A = 3;
+		static const size_t OUTPUT_CHANNEL_B = 0;
+		static const size_t OUTPUT_CHANNEL_G = 1;
+		static const size_t OUTPUT_CHANNEL_R = 2;
+		static const size_t OUTPUT_CHANNEL_A = 3;
 
-		const double MULTIPLIER = 127.0;
-		const unsigned char BGR_GRAY = 128;
-		const unsigned char ALPHA_OPAQUE = 255;
+		static const double MULTIPLIER = 127.0;
+		static const unsigned char BGR_GRAY = 128;
+		static const unsigned char ALPHA_OPAQUE = 255;
 
 		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + ((size_t)height * (size_t)inputStride) - inputStride);
 		M4Image::Color32* rowPointer = 0;
@@ -171,7 +171,7 @@ namespace gfx_tools {
 			return;
 		}
 
-		const ubi::ErrorManager::MASK INITIALIZED = 0x00000040;
+		static const ubi::ErrorManager::MASK INITIALIZED = 0x00000040;
 
 		ubi::ErrorManager &errorManager = ubi::ErrorManager::GetSingletonInstance();
 		errorManager.SetSystemFlag(errorManager.RegisterCategory(0, "Gfx_Tools"), INITIALIZED, true);

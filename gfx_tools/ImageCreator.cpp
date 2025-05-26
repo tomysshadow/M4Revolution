@@ -104,7 +104,7 @@ namespace gfx_tools {
 			return 0;
 		}
 
-		const char PERIOD = '.';
+		static const char PERIOD = '.';
 
 		const char* extension = strrchr(fileName, PERIOD);
 		return CreateLoaderImp(extension ? extension + 1 : fileName);

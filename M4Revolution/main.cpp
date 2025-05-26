@@ -16,7 +16,7 @@ std::string getAppInstallDir() {
 	#ifdef WINDOWS
 	try {
 		// try for the DVD release first
-		const CHAR MYST_IV_REVELATION_DVD_SUBKEY[] = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{96F702F3-7CA4-41B5-A70A-4F348DF99A9A}";
+		static const CHAR MYST_IV_REVELATION_DVD_SUBKEY[] = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{96F702F3-7CA4-41B5-A70A-4F348DF99A9A}";
 		return getRegistryValueString(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_DVD_SUBKEY, "InstallLocation", KEY_WOW64_32KEY);
 	} catch (std::system_error) {
 		// fail silently
@@ -25,7 +25,7 @@ std::string getAppInstallDir() {
 
 	{
 		// try for the Steam release next
-		const steampp::AppID MYST_IV_REVELATION_APP_ID = 925940;
+		static const steampp::AppID MYST_IV_REVELATION_APP_ID = 925940;
 
 		steampp::Steam steam;
 		std::string pathString = steam.getAppInstallDir(MYST_IV_REVELATION_APP_ID);
@@ -38,7 +38,7 @@ std::string getAppInstallDir() {
 	#ifdef WINDOWS
 	try {
 		// try for the GOG release next
-		const CHAR MYST_IV_REVELATION_GOG_GAME_ID_SUBKEY[] = "SOFTWARE\\GOG.com\\Games\\1956555724";
+		static const CHAR MYST_IV_REVELATION_GOG_GAME_ID_SUBKEY[] = "SOFTWARE\\GOG.com\\Games\\1956555724";
 		return getRegistryValueString(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_GOG_GAME_ID_SUBKEY, "path", KEY_WOW64_32KEY);
 	} catch (std::system_error) {
 		// fail silently
@@ -48,16 +48,16 @@ std::string getAppInstallDir() {
 }
 
 std::optional<bool> performOperation(M4Revolution &m4Revolution) {
-	const long OPERATION_OPEN_ONLINE_HELP = 1;
-	const long OPERATION_TOGGLE_FULL_SCREEN = 2;
-	const long OPERATION_TOGGLE_CAMERA_INERTIA = 3;
-	const long OPERATION_TOGGLE_SOUND_FADING = 4;
-	const long OPERATION_EDIT_TRANSITION_TIME = 5;
-	const long OPERATION_FIX_LOADING = 6;
-	const long OPERATION_RESTORE_BACKUP = 7;
-	const long OPERATION_EXIT = 8;
-	const long OPERATION_MIN = OPERATION_OPEN_ONLINE_HELP;
-	const long OPERATION_MAX = OPERATION_EXIT;
+	static const long OPERATION_OPEN_ONLINE_HELP = 1;
+	static const long OPERATION_TOGGLE_FULL_SCREEN = 2;
+	static const long OPERATION_TOGGLE_CAMERA_INERTIA = 3;
+	static const long OPERATION_TOGGLE_SOUND_FADING = 4;
+	static const long OPERATION_EDIT_TRANSITION_TIME = 5;
+	static const long OPERATION_FIX_LOADING = 6;
+	static const long OPERATION_RESTORE_BACKUP = 7;
+	static const long OPERATION_EXIT = 8;
+	static const long OPERATION_MIN = OPERATION_OPEN_ONLINE_HELP;
+	static const long OPERATION_MAX = OPERATION_EXIT;
 
 	try {
 		switch (consoleLong("Please enter the number corresponding to the operation you would like to perform.", OPERATION_MIN, OPERATION_MAX)) {
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
 	consoleLog("Myst IV: Revolution 1.2.4");
 	consoleLog("By Anthony Kleine", 2);
 
-	const int MIN_ARGC = 1;
+	static const int MIN_ARGC = 1;
 
 	if (argc < MIN_ARGC) {
 		help();
