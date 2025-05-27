@@ -1,4 +1,4 @@
-# Myst IV: Revolution 1.2.3
+# Myst IV: Revolution 1.2.4
 ## By Anthony Kleine
 
 Myst IV: Revolution is a command line tool that can perform various fixes for the game Myst IV: Revelation.
@@ -120,9 +120,9 @@ If you are a developer who would like to contribute, you may compile for Windows
 6. Copy the nvtt include files from the install directory to `vendor/nvtt/include`.
 7. Copy the nvtt30205.lib for your Visual Studio version from the install directory to `vendor/nvtt/lib/x64`.
 8. Copy nvtt30205.dll from the install directory to `x64/Debug` and `x64/Release`.
-9. Compile [sourcepp](https://github.com/craftablescience/sourcepp) for x64 with CMake, and your Visual Studio version. You may optionally uncheck all of the `SOURCEPP_USE` settings, except for `SOURCEPP_USE_STEAMPP`.
+9. Compile [sourcepp](https://github.com/craftablescience/sourcepp) for x64 with CMake, and your Visual Studio version. You may optionally uncheck all of the `SOURCEPP_USE` settings, except for `SOURCEPP_USE_FSPP`.
 10. Copy the sourcepp include files to `vendor/sourcepp/include`.
-11. Copy the resulting sourcepp.lib, sourcepp_parser.lib, kvpp.lib, steampp.lib, sourcepp_crypto.lib, and vpkpp.lib files to `vendor/sourcepp/lib/x64/Debug` and `vendor/sourcepp/lib/x64/Release` respectively.
+11. Copy the resulting sourcepp.lib, sourcepp_compression.lib, sourcepp_crypto.lib, sourcepp_parser.lib, sourcepp_kvpp.lib, and sourcepp_steampp.lib files to `vendor/sourcepp/lib/x64/Debug` and `vendor/sourcepp/lib/x64/Release` respectively.
 12. Download GetDLLExportRVA from its [Releases page.](https://github.com/tomysshadow/GetDLLExportRVA/release)
 13. Copy the **x86** Debug GetDLLExportRVA files to `x64/Debug`. Notice that the **x86** Debug build must be copied to the **x64** Debug folder.
 14. Copy the **x86** Release GetDLLExportRVA files to `x64/Release`. Notice that the **x86** Release build must be copied to the **x64** Release folder.
