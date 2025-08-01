@@ -400,7 +400,7 @@ inline void osErr(LSTATUS err) {
 
 template <typename Number>
 inline constexpr Number clamp(Number number, Number min, Number max) {
-	return __min(max, __max(number, min));
+	return __min(max, __max(min, number));
 }
 
 template <typename Number>
