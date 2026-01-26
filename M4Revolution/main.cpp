@@ -18,7 +18,7 @@ std::string getAppInstallDir() {
 		// try for the DVD release first
 		static const CHAR MYST_IV_REVELATION_DVD_SUBKEY[] = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{96F702F3-7CA4-41B5-A70A-4F348DF99A9A}";
 		return getRegistryValueString(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_DVD_SUBKEY, "InstallLocation", KEY_WOW64_32KEY);
-	} catch (std::system_error) {
+	} catch (const std::system_error&) {
 		// fail silently
 	}
 	#endif
@@ -40,7 +40,7 @@ std::string getAppInstallDir() {
 		// try for the GOG release next
 		static const CHAR MYST_IV_REVELATION_GOG_GAME_ID_SUBKEY[] = "SOFTWARE\\GOG.com\\Games\\1956555724";
 		return getRegistryValueString(HKEY_LOCAL_MACHINE, MYST_IV_REVELATION_GOG_GAME_ID_SUBKEY, "path", KEY_WOW64_32KEY);
-	} catch (std::system_error) {
+	} catch (const std::system_error&) {
 		// fail silently
 	}
 	#endif
@@ -85,7 +85,7 @@ std::optional<bool> performOperation(M4Revolution &m4Revolution) {
 			case OPERATION_EXIT:
 			return std::nullopt;
 		}
-	} catch (M4Revolution::Aborted ex) {
+	} catch (const M4Revolution::Aborted &ex) {
 		consoleLog(ex.what(), 2, false, true);
 		return false;
 	}
@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
 
 		try {
 			performedOperationOptional = performOperation(m4Revolution);
-		} catch (std::exception ex) {
+		} catch (const std::exception &ex) {
 			consoleLog(ex.what(), 2);
 			
 			consoleLog("The operation has not been performed because an unknown exception occurred.", true, false, true);

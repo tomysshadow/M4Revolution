@@ -3,6 +3,10 @@
 
 struct IgnoreCaseComparer {
     bool operator()(const std::string &str, const std::string &str2) const noexcept {
-        return _strnicmp(str.c_str(), str2.c_str(), str.size() + 1) < 0;
+        int result = _strnicmp(str.c_str(), str2.c_str(), str.size() + 1);
+        
+        return result
+            ? result < 0
+            : str.size() < str2.size();
     }
 };

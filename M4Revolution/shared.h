@@ -119,7 +119,7 @@ inline bool memoryEquals(const void* mem, const void* mem2, size_t size) {
 // tries to ensure consistent interpretation of periods and commas in string to number conversions
 // first tries the IETF name "en-US", then the ISO 15897 name "en_US"
 // then tries the global locale (typically "C") if neither are available
-static const Locale STRING_TO_NUMBER_LOCALE_DEFAULT({"en-US", "en_US"}, LC_NUMERIC, true);
+inline const Locale STRING_TO_NUMBER_LOCALE_DEFAULT({"en-US", "en_US"}, LC_NUMERIC, true);
 
 inline size_t stringToDouble(const char* str, double &result, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT) {
 	MAKE_SCOPE_EXIT(resultScopeExit) {
@@ -321,7 +321,7 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 #define OPERATION_EXCEPTION_RETRY_ERR(operation, exception, retry) do {\
 	try {\
 		(operation);\
-	} catch (exception ex) {\
+	} catch (const exception &ex) {\
 		consoleLog(ex.what(), 2);\
 		\
 		RETRY_ERR(retry);\

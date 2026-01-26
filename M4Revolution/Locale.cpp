@@ -15,7 +15,7 @@ Locale& Locale::createGlobal(bool tryGlobal) {
 Locale& Locale::create(bool tryGlobal) {
 	try {
 		standardLocale = std::locale(getName(), lcToCategory(lc));
-	} catch (std::runtime_error) {
+	} catch (const std::runtime_error&) {
 		return createGlobal(tryGlobal);
 	}
 
@@ -41,7 +41,7 @@ Locale& Locale::create(const NAME_VECTOR &nameVector, bool tryGlobal) {
 
 		try {
 			create(false);
-		} catch (Invalid) {
+		} catch (const Invalid&) {
 			continue;
 		}
 		return *this;

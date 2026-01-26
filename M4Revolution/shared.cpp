@@ -207,7 +207,7 @@ bool consoleBool(const char* str, const std::optional<bool> &defaultValueOptiona
 			return defaultValueOptional.value();
 		}
 
-		result = toupper(result);
+		result = toupper((unsigned char)result);
 	} while (result != YES && result != NO);
 	return result == YES;
 }
@@ -238,7 +238,7 @@ void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize 
 
 	try {
 		inputStream.read((char*)buffer, count);
-	} catch (std::istream::failure) {
+	} catch (const std::istream::failure&) {
 		inputStream.clear();
 	}
 
@@ -249,7 +249,7 @@ void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize 
 void writeStreamPartial(std::ostream &outputStream, const void* buffer, std::streamsize count) {
 	try {
 		outputStream.write((const char*)buffer, count);
-	} catch (std::ostream::failure) {
+	} catch (const std::ostream::failure&) {
 		outputStream.clear();
 	}
 }

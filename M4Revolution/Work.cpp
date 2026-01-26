@@ -255,7 +255,7 @@ namespace Work {
 	bool Output::setPath(const std::filesystem::path &path) {
 		try {
 			std::filesystem::current_path(path);
-		} catch (std::filesystem::filesystem_error) {
+		} catch (const std::filesystem::filesystem_error&) {
 			return false;
 		}
 

@@ -23,7 +23,7 @@ void M4Revolution::destroy() {
 	// delete the temporary file when done
 	try {
 		std::filesystem::remove(Work::Output::FILE_NAME);
-	} catch (std::filesystem::filesystem_error) {
+	} catch (const std::filesystem::filesystem_error&) {
 		// failing to delete the temporary file should not crash the program
 	}
 }
@@ -1216,9 +1216,9 @@ void M4Revolution::fixLoading() {
 
 		try {
 			fixLoading(inputFileStream, 0, inputFile, log);
-		} catch (std::system_error) {
+		} catch (const std::system_error&) {
 			throw Aborted("Fixing Loading failed due to a system error. It is recommended you restore the backup to revert the changes.");
-		} catch (std::invalid_argument) {
+		} catch (const std::invalid_argument&) {
 			throw Aborted("Fixing Loading failed due to an invalid argument. It is recommended you restore the backup to revert the changes.");
 		}
 

@@ -36,7 +36,7 @@ namespace AI {
 
 		while (!f32Size
 			&& std::regex_search(ai, matches, AI_LINE)
-			&& matches.length() > 4) {
+			&& matches.size() > 4) {
 			MAKE_SCOPE_EXIT(aiScopeExit) {
 				const std::string &LINE = matches[0];
 
