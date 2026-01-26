@@ -24,7 +24,7 @@ Locale& Locale::create(bool tryGlobal) {
 		std::holds_alternative<std::wstring>(name)
 		? _wcreate_locale(lc, std::get<std::wstring>(name).c_str())
 		: _create_locale(lc, std::get<std::string>(name).c_str()),
-	
+
 		CLocaleDeleter()
 	);
 	#endif
@@ -110,14 +110,6 @@ Locale::Locale() {
 	createGlobal(true);
 }
 
-Locale::Locale(const char* name, LC lc, bool tryGlobal) : name(name ? name : getGlobalName()), lc(lc) {
-	create(tryGlobal);
-}
-
-Locale::Locale(const wchar_t* name, LC lc, bool tryGlobal) : name(name ? name : getGlobalNameWide()), lc(lc) {
-	create(tryGlobal);
-}
-
 Locale::Locale(const NAME &name, LC lc, bool tryGlobal) : name(name), lc(lc) {
 	create(tryGlobal);
 }
@@ -128,6 +120,14 @@ Locale::Locale(const NAME_VECTOR &nameVector, LC lc, bool tryGlobal) : lc(lc) {
 
 Locale::Locale(const NAME_INITIALIZER_LIST &nameInitializerList, LC lc, bool tryGlobal) : lc(lc) {
 	create(NAME_VECTOR(nameInitializerList), tryGlobal);
+}
+
+Locale::Locale(const char* name, LC lc, bool tryGlobal) : name(name ? name : getGlobalName()), lc(lc) {
+	create(tryGlobal);
+}
+
+Locale::Locale(const wchar_t* name, LC lc, bool tryGlobal) : name(name ? name : getGlobalNameWide()), lc(lc) {
+	create(tryGlobal);
 }
 
 Locale::Locale(const std::string &copyString) {
@@ -185,7 +185,7 @@ std::wstring Locale::getNameWide() const {
 		return std::wstring(CA2W(std::get<std::string>(name).c_str()));
 		#endif
 	}
-	return std::get<std::wstring>(name).c_str();
+	return std::get<std::wstring>(name);
 }
 
 std::locale Locale::getStandardLocale() const {
