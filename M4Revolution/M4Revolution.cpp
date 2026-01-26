@@ -1006,7 +1006,7 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 	const std::string &COMMAND_LINE = outputStringStream.str();
 
 	size_t commandLineSize = COMMAND_LINE.size() + 1;
-	std::unique_ptr<CHAR> commandLinePointer(new CHAR[commandLineSize]);
+	std::unique_ptr<CHAR[]> commandLinePointer(new CHAR[commandLineSize]);
 	CHAR* _commandLine = commandLinePointer.get();
 
 	if (strncpy_s(_commandLine, commandLineSize, COMMAND_LINE.c_str(), commandLineSize)) {

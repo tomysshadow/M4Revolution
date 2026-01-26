@@ -138,111 +138,107 @@ namespace Ubi {
 			Resource &operator=(const Resource &resource) = delete;
 		};
 
-		// anonymous namespace so these can't be created directly, instead you need
-		// to go through createResourcePointer
-		namespace {
-			class TextureBox : public virtual Resource {
-				private:
-				void create(std::istream &inputStream, RLE::LAYER_MAP &layerMap);
+		class TextureBox : public virtual Resource {
+			private:
+			void create(std::istream &inputStream, RLE::LAYER_MAP &layerMap);
 
-				public:
-				static const Resource::ID ID = 15;
-				static const Resource::VERSION VERSION = 5;
+			public:
+			static const Resource::ID ID = 15;
+			static const Resource::VERSION VERSION = 5;
 
-				TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::LAYER_MAP &layerMap);
-				TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream);
-				TextureBox(const TextureBox &textureBox) = delete;
-				TextureBox &operator=(const TextureBox &textureBox) = delete;
-			};
+			TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::LAYER_MAP &layerMap);
+			TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream);
+			TextureBox(const TextureBox &textureBox) = delete;
+			TextureBox &operator=(const TextureBox &textureBox) = delete;
+		};
 
-			class Water : public virtual Resource {
-				private:
-				void create(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
+		class Water : public virtual Resource {
+			private:
+			void create(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
 
-				static std::optional<std::string> getTextureBoxNameOptional(const std::string &resourceName);
+			static std::optional<std::string> getTextureBoxNameOptional(const std::string &resourceName);
 
-				public:
-				static const Resource::ID ID = 42;
-				static const Resource::VERSION VERSION = 1;
+			public:
+			static const Resource::ID ID = 42;
+			static const Resource::VERSION VERSION = 1;
 
-				Water(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
-				Water(Loader::POINTER loaderPointer, std::istream &inputStream);
-				Water(const Water &water) = delete;
-				Water &operator=(const Water &water) = delete;
-			};
+			Water(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
+			Water(Loader::POINTER loaderPointer, std::istream &inputStream);
+			Water(const Water &water) = delete;
+			Water &operator=(const Water &water) = delete;
+		};
 
-			class InteractiveOffsetProvider : public virtual Resource {
-				public:
-				static const Resource::ID ID = 43;
-				static const Resource::VERSION VERSION = 1;
+		class InteractiveOffsetProvider : public virtual Resource {
+			public:
+			static const Resource::ID ID = 43;
+			static const Resource::VERSION VERSION = 1;
 
-				InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
-				InteractiveOffsetProvider(const InteractiveOffsetProvider &interactiveOffsetProvider) = delete;
-				InteractiveOffsetProvider &operator=(const InteractiveOffsetProvider &interactiveOffsetProvider) = delete;
-			};
+			InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
+			InteractiveOffsetProvider(const InteractiveOffsetProvider &interactiveOffsetProvider) = delete;
+			InteractiveOffsetProvider &operator=(const InteractiveOffsetProvider &interactiveOffsetProvider) = delete;
+		};
 
-			class TextureAlignedOffsetProvider : public virtual Resource {
-				public:
-				static const Resource::ID ID = 44;
-				static const Resource::VERSION VERSION = 1;
+		class TextureAlignedOffsetProvider : public virtual Resource {
+			public:
+			static const Resource::ID ID = 44;
+			static const Resource::VERSION VERSION = 1;
 
-				TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
-				TextureAlignedOffsetProvider(const TextureAlignedOffsetProvider &textureAlignedOffsetProvider) = delete;
-				TextureAlignedOffsetProvider &operator=(const TextureAlignedOffsetProvider &textureAlignedOffsetProvider) = delete;
-			};
+			TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
+			TextureAlignedOffsetProvider(const TextureAlignedOffsetProvider &textureAlignedOffsetProvider) = delete;
+			TextureAlignedOffsetProvider &operator=(const TextureAlignedOffsetProvider &textureAlignedOffsetProvider) = delete;
+		};
 
-			class StateData : public virtual Resource {
-				private:
-				void create(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet);
+		class StateData : public virtual Resource {
+			private:
+			void create(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet);
 
-				public:
-				static const Resource::ID ID = 45;
-				static const Resource::VERSION VERSION = 1;
+			public:
+			static const Resource::ID ID = 45;
+			static const Resource::VERSION VERSION = 1;
 
-				StateData(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet);
-				StateData(Loader::POINTER loaderPointer, std::istream &inputStream);
-				StateData(const StateData &stateData) = delete;
-				StateData &operator=(const StateData &stateData) = delete;
-			};
+			StateData(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet);
+			StateData(Loader::POINTER loaderPointer, std::istream &inputStream);
+			StateData(const StateData &stateData) = delete;
+			StateData &operator=(const StateData &stateData) = delete;
+		};
 			
-			class HeaderCopier {
-				protected:
-				typedef uint64_t ID;
+		class HeaderCopier {
+			protected:
+			typedef uint64_t ID;
 
-				// "ubi/b0-l"
-				static const ID UBI_B0_L = 0x6C2D30622F696275;
+			// "ubi/b0-l"
+			static const ID UBI_B0_L = 0x6C2D30622F696275;
 
-				std::streamsize fileSize = 0;
-				std::streampos filePosition = 0;
+			std::streamsize fileSize = 0;
+			std::streampos filePosition = 0;
 
-				HeaderCopier(std::streamsize fileSize, std::streampos filePosition);
-			};
+			HeaderCopier(std::streamsize fileSize, std::streampos filePosition);
+		};
 
-			class HeaderReader : private HeaderCopier {
-				private:
-				void throwReadPastEnd();
+		class HeaderReader : private HeaderCopier {
+			private:
+			void throwReadPastEnd();
 
-				std::istream &inputStream;
+			std::istream &inputStream;
 
-				public:
-				HeaderReader(std::istream &inputStream, std::streamsize fileSize);
-				~HeaderReader();
-				HeaderReader(const HeaderReader &headerReader) = delete;
-				HeaderReader &operator=(const HeaderReader &headerReader) = delete;
-			};
+			public:
+			HeaderReader(std::istream &inputStream, std::streamsize fileSize);
+			~HeaderReader();
+			HeaderReader(const HeaderReader &headerReader) = delete;
+			HeaderReader &operator=(const HeaderReader &headerReader) = delete;
+		};
 
-			class HeaderWriter : private HeaderCopier {
-				private:
-				void throwWrotePastEnd();
+		class HeaderWriter : private HeaderCopier {
+			private:
+			void throwWrotePastEnd();
 
-				std::ostream &outputStream;
+			std::ostream &outputStream;
 
-				public:
-				HeaderWriter(std::ostream &outputStream, std::streamsize fileSize);
-				~HeaderWriter();
-				HeaderWriter(const HeaderReader &headerWriter) = delete;
-				HeaderWriter &operator=(const HeaderWriter &headerWriter) = delete;
-			};
+			public:
+			HeaderWriter(std::ostream &outputStream, std::streamsize fileSize);
+			~HeaderWriter();
+			HeaderWriter(const HeaderReader &headerWriter) = delete;
+			HeaderWriter &operator=(const HeaderWriter &headerWriter) = delete;
 		};
 
 		// a basic factory pattern going on here for the creation of resources

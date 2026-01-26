@@ -38,7 +38,7 @@ namespace Ubi {
 				return std::nullopt;
 			}
 
-			std::unique_ptr<char> strPointer(new char[(size_t)size + 1]);
+			std::unique_ptr<char[]> strPointer(new char[(size_t)size + 1]);
 			char* str = strPointer.get();
 			readStream(inputStream, str, size);
 
@@ -380,8 +380,8 @@ namespace Ubi {
 			}
 		}
 
-		HeaderWriter::~HeaderWriter() {
-			throwWrotePastEnd();
+		HeaderReader::~HeaderReader() {
+			throwReadPastEnd();
 		}
 
 		void HeaderWriter::throwWrotePastEnd() {
@@ -399,8 +399,8 @@ namespace Ubi {
 			throwWrotePastEnd();
 		}
 
-		HeaderReader::~HeaderReader() {
-			throwReadPastEnd();
+		HeaderWriter::~HeaderWriter() {
+			throwWrotePastEnd();
 		}
 
 		void readFileHeader(std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size) {

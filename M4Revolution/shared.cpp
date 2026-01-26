@@ -345,7 +345,7 @@ std::string getRegistryValueString(HKEY baseRegistryKey, LPCSTR subkeyPointer, L
 	osErr(RegGetValueA(registryKey, NULL, valuePointer, RRF_RT_REG_SZ, NULL, NULL, &dataSize));
 
 	// get the data
-	std::unique_ptr<CHAR> dataPointer(new CHAR[(size_t)dataSize]);
+	std::unique_ptr<CHAR[]> dataPointer(new CHAR[(size_t)dataSize]);
 	osErr(RegGetValueA(registryKey, NULL, valuePointer, RRF_RT_REG_SZ, NULL, dataPointer.get(), &dataSize));
 	return dataPointer.get();
 }

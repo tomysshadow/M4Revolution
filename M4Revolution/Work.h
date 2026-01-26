@@ -71,7 +71,7 @@ namespace Work {
 
 	// a "packet" type structure representing some data (not necessarily an entire file)
 	struct Data {
-		typedef std::shared_ptr<unsigned char> POINTER;
+		typedef std::shared_ptr<unsigned char[]> POINTER;
 		typedef std::queue<Data> QUEUE;
 		typedef Lock<QUEUE> QUEUE_LOCK;
 
