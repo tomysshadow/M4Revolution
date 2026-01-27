@@ -95,29 +95,6 @@ inline bool memoryEquals(const void* mem, const void* mem2, size_t size) {
 	return !memcmp(mem, mem2, size);
 }
 
-inline bool memoryShift(void* mem, size_t memSize, void* sourceMem, size_t sourceMemSize, size_t shift, bool direction) {
-	#pragma warning(push)
-	#pragma warning(disable : 4133)
-	if (sourceMem < mem || (char*)sourceMem + sourceMemSize > (char*)mem + memSize) {
-		return false;
-	}
-
-	size_t destinationSize = (char*)mem + memSize - sourceMem;
-	char* destination = (char*)sourceMem;
-
-	if (direction) {
-		destination += shift;
-	} else {
-		destination -= shift;
-	}
-
-	if (destination < mem || destination + destinationSize > (char*)mem + memSize) {
-		return false;
-	}
-	return !memmove_s(destination, destinationSize, sourceMem, sourceMemSize);
-	#pragma warning(pop)
-}
-
 #define GFX_TOOLS_CALL
 
 #ifdef _WIN32
