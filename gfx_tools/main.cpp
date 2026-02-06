@@ -4,6 +4,7 @@
 #include <M4Image.h>
 
 namespace gfx_tools {
+	template<bool Luminance>
 	void convertHeightMapIntoDuDvBumpMapColor(
 		DIMENSION width,
 		DIMENSION height,
@@ -14,14 +15,6 @@ namespace gfx_tools {
 		EnumPixelFormat outputEnumPixelFormat,
 		STRIDE outputStride
 	) {
-		// this function normally returns a pointer to the output's end
-		// if the output pixel format is neither of the supported ones, it returns the same pointer passed in
-		bool luminance = outputEnumPixelFormat == EnumPixelFormat::PIXELFORMAT_XLVU_8888;
-
-		if (!luminance && outputEnumPixelFormat != EnumPixelFormat::PIXELFORMAT_VU_88) {
-			return;
-		}
-
 		static const size_t INPUT_CHANNEL_UV = 0;
 		static const size_t INPUT_CHANNEL_LUMINANCE = 3;
 
@@ -37,19 +30,6 @@ namespace gfx_tools {
 		M4Image::Color32* inputVColorPointer = 0;
 
 		M4Image::Color16* outputColorPointer = 0;
-
-		std::function<void()> outputColorFunction;
-
-		if (luminance) {
-			outputColorFunction = [&]() {
-				((M4Image::Color32*)outputColorPointer)->channels[OUTPUT_CHANNEL_LUMINANCE] = inputColorPointer->channels[INPUT_CHANNEL_LUMINANCE];
-				outputColorPointer = (M4Image::Color16*)((M4Image::Color32*)outputColorPointer + 1);
-			};
-		} else {
-			outputColorFunction = [&]() {
-				outputColorPointer++;
-			};
-		}
 
 		while (inputPointer <= endPointer) {
 			rowPointer = inputPointer + width - 1;
@@ -74,7 +54,13 @@ namespace gfx_tools {
 				outputColor.channels[OUTPUT_CHANNEL_DV] = inputColor.channels[INPUT_CHANNEL_UV] - inputVColorPointer++->channels[INPUT_CHANNEL_UV];
 				outputColor.channels[OUTPUT_CHANNEL_DU] = inputColor.channels[INPUT_CHANNEL_UV] - inputUColorPointer->channels[INPUT_CHANNEL_UV];
 
-				outputColorFunction();
+				if constexpr (Luminance) {
+					((M4Image::Color32*)outputColorPointer)->channels[OUTPUT_CHANNEL_LUMINANCE] = inputColorPointer->channels[INPUT_CHANNEL_LUMINANCE];
+					outputColorPointer = (M4Image::Color16*)((M4Image::Color32*)outputColorPointer + 1);
+				} else {
+					outputColorPointer++;
+				}
+
 				inputColorPointer++;
 			}
 
@@ -194,16 +180,35 @@ namespace gfx_tools {
 		EnumPixelFormat outputEnumPixelFormat,
 		STRIDE outputStride
 	) {
-		convertHeightMapIntoDuDvBumpMapColor(
-			width,
-			height,
-			(M4Image::Color32*)inputPointer,
-			inputEnumPixelFormat,
-			inputStride,
-			(M4Image::Color16*)outputPointer,
-			outputEnumPixelFormat,
-			outputStride
-		);
+		bool luminance = outputEnumPixelFormat == EnumPixelFormat::PIXELFORMAT_XLVU_8888;
+
+		if (!luminance && outputEnumPixelFormat != EnumPixelFormat::PIXELFORMAT_VU_88) {
+			return;
+		}
+
+		if (luminance) {
+			convertHeightMapIntoDuDvBumpMapColor<true>(
+				width,
+				height,
+				(M4Image::Color32*)inputPointer,
+				inputEnumPixelFormat,
+				inputStride,
+				(M4Image::Color16*)outputPointer,
+				outputEnumPixelFormat,
+				outputStride
+			);
+		} else {
+			convertHeightMapIntoDuDvBumpMapColor<false>(
+				width,
+				height,
+				(M4Image::Color32*)inputPointer,
+				inputEnumPixelFormat,
+				inputStride,
+				(M4Image::Color16*)outputPointer,
+				outputEnumPixelFormat,
+				outputStride
+			);
+		}
 	}
 
 	void ConvertHeightMapIntoNormalMap(

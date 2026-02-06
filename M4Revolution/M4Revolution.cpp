@@ -539,13 +539,9 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 }
 
 void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
-	static const size_t FADE_OUT_SOUND_SIZE = 13;
-	static const unsigned char FADE_OUT_SOUND_ON[FADE_OUT_SOUND_SIZE] = { 0x8B, 0x54, 0x24, 0x04, 0x56, 0x8B, 0xF1, 0x8A, 0x86, 0x87, 0x00, 0x00, 0x00 };
-	static const unsigned char FADE_OUT_SOUND_OFF[FADE_OUT_SOUND_SIZE] = { 0x8B, 0x54, 0x24, 0x04, 0x56, 0x8B, 0xF1, 0x90, 0xB8, 0x01, 0x00, 0x00, 0x00 };
-
-	static const size_t FADE_OUT_SOUND2_SIZE = 9;
-	static const unsigned char FADE_OUT_SOUND2_ON[FADE_OUT_SOUND2_SIZE] = { 0x68, 0x26, 0x02, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
-	static const unsigned char FADE_OUT_SOUND2_OFF[FADE_OUT_SOUND2_SIZE] = { 0x68, 0x00, 0x00, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
+	static const size_t FADE_OUT_SOUND_SIZE = 9;
+	static const unsigned char FADE_OUT_SOUND_ON[FADE_OUT_SOUND_SIZE] = { 0x68, 0x26, 0x02, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
+	static const unsigned char FADE_OUT_SOUND_OFF[FADE_OUT_SOUND_SIZE] = { 0x68, 0x00, 0x00, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
 
 	unsigned long fadeOutSoundPosition = 0x00010850;
 
@@ -555,34 +551,27 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 	}
 	#endif
 
-	static const unsigned long FADE_OUT_SOUND2_OFFSET = 0x0000005E;
+	static const unsigned long FADE_OUT_SOUND_OFFSET = 0x0000005E;
 
 	Work::Edit edit(fileStream, Work::Output::M4_AI_GLOBAL_PATH);
 
+	fadeOutSoundPosition += FADE_OUT_SOUND_OFFSET;
 	fileStream.seekg(fadeOutSoundPosition);
 
 	unsigned char fadeOutSound[FADE_OUT_SOUND_SIZE] = "";
 	readStream(fileStream, &fadeOutSound, FADE_OUT_SOUND_SIZE);
 
-	unsigned long fadeOutSound2Position = fadeOutSoundPosition + FADE_OUT_SOUND2_OFFSET;
-	fileStream.seekg(fadeOutSound2Position);
-
-	unsigned char fadeOutSound2[FADE_OUT_SOUND2_SIZE] = "";
-	readStream(fileStream, &fadeOutSound2, FADE_OUT_SOUND2_SIZE);
-
-	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
-
-	bool toggledOn = memoryEquals(fadeOutSound, FADE_OUT_SOUND_ON, FADE_OUT_SOUND_SIZE)
-		&& memoryEquals(fadeOutSound2, FADE_OUT_SOUND2_ON, FADE_OUT_SOUND2_SIZE);
+	bool toggledOn = memoryEquals(fadeOutSound, FADE_OUT_SOUND_ON, FADE_OUT_SOUND_SIZE);
 
 	if (!toggledOn) {
-		toggledOn = !memoryEquals(fadeOutSound, FADE_OUT_SOUND_OFF, FADE_OUT_SOUND_SIZE)
-			&& !memoryEquals(fadeOutSound2, FADE_OUT_SOUND2_OFF, FADE_OUT_SOUND2_SIZE);
+		toggledOn = !memoryEquals(fadeOutSound, FADE_OUT_SOUND_OFF, FADE_OUT_SOUND_SIZE);
 
 		if (toggledOn) {
 			throw Aborted("Fade Out Sound untoggleable. Restoring the backup or reinstalling the game may fix this problem.");
 		}
 	}
+
+	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 
 	toggledOn = !toggledOn;
 
@@ -600,20 +589,6 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 				),
 
 				FADE_OUT_SOUND_SIZE
-			)
-		},
-
-		{
-			fadeOutSound2Position,
-
-			std::string(
-				(const char*)(
-					toggledOn
-					? FADE_OUT_SOUND2_ON
-					: FADE_OUT_SOUND2_OFF
-				),
-
-				FADE_OUT_SOUND2_SIZE
 			)
 		}
 	});
