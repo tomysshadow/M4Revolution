@@ -116,7 +116,7 @@ namespace gfx_tools {
 	}
 
 	void ValidatedImageInfo::Clamp(DIMENSION &dimension, DIMENSION min, DIMENSION max) {
-		dimension = __min(max, __max(dimension, min));
+		dimension = __min(max, __max(min, dimension));
 	}
 
 	void ValidatedImageInfo::RecomputeLodSize(LOD lod) {
