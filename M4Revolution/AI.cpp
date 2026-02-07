@@ -75,7 +75,7 @@ namespace AI {
 		std::ostringstream outputStringStream;
 		outputStringStream.exceptions(std::ostringstream::badbit);
 		outputStringStream.imbue(LOCALE);
-		outputStringStream << "The current " << name << " is: " << f32 << ".";
+		Work::Edit::outputCurrent(outputStringStream, name, f32);
 		consoleLog(outputStringStream.str().c_str());
 
 		// we've now found the position of the number to replace
@@ -96,7 +96,7 @@ namespace AI {
 			}
 
 			outputStringStream.str("");
-			outputStringStream << "Please enter the new " << name << ".";
+			Work::Edit::outputNew(outputStringStream, name);
 
 			f32 = consoleFloat(outputStringStream.str().c_str(), min, max, LOCALE);
 

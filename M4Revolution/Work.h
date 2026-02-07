@@ -261,6 +261,15 @@ namespace Work {
 		public:
 		static void copyThread(Edit &edit);
 
+		template <typename Value>
+		static void outputCurrent(std::ostream &outputStream, const std::string &name, const Value &value) {
+			outputStream << "The current " << name << " is: " << value << ".";
+		}
+
+		static void outputNew(std::ostream &outputStream, const std::string &name) {
+			outputStream << "Please enter the new " << name << ".";
+		}
+
 		struct Code {
 			std::streampos position = 0;
 			std::string str = "";
