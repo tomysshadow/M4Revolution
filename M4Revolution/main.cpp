@@ -51,7 +51,7 @@ std::optional<bool> performOperation(M4Revolution &m4Revolution) {
 	static const long OPERATION_OPEN_ONLINE_HELP = 1;
 	static const long OPERATION_TOGGLE_FULL_SCREEN = 2;
 	static const long OPERATION_TOGGLE_CAMERA_INERTIA = 3;
-	static const long OPERATION_TOGGLE_SOUND_FADING = 4;
+	static const long OPERATION_EDIT_SOUND_FADE_OUT_TIME = 4;
 	static const long OPERATION_EDIT_TRANSITION_TIME = 5;
 	static const long OPERATION_FIX_LOADING = 6;
 	static const long OPERATION_RESTORE_BACKUP = 7;
@@ -70,8 +70,8 @@ std::optional<bool> performOperation(M4Revolution &m4Revolution) {
 			case OPERATION_TOGGLE_CAMERA_INERTIA:
 			m4Revolution.toggleCameraInertia();
 			break;
-			case OPERATION_TOGGLE_SOUND_FADING:
-			m4Revolution.toggleSoundFading();
+			case OPERATION_EDIT_SOUND_FADE_OUT_TIME:
+			m4Revolution.editSoundFadeOutTime();
 			break;
 			case OPERATION_EDIT_TRANSITION_TIME:
 			m4Revolution.editTransitionTime();
@@ -93,7 +93,7 @@ std::optional<bool> performOperation(M4Revolution &m4Revolution) {
 }
 
 int main(int argc, char** argv) {
-	consoleLog("Myst IV: Revolution 1.2.4");
+	consoleLog("Myst IV: Revolution 1.3.0");
 	consoleLog("By Anthony Kleine", 2);
 
 	static const int MIN_ARGC = 1;
@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
 		consoleLog("1. Open Online Help");
 		consoleLog("2. Toggle Full Screen");
 		consoleLog("3. Toggle Camera Inertia");
-		consoleLog("4. Toggle Sound Fading");
+		consoleLog("4. Edit Sound Fade Out Time");
 		consoleLog("5. Edit Transition Time");
 		consoleLog("6. Fix Loading");
 		consoleLog("7. Restore Backup");

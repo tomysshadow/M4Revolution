@@ -121,7 +121,7 @@ class M4Revolution {
 
 	static void toggleFullScreen(std::ifstream &inputFileStream);
 	static void toggleCameraInertia(std::fstream &fileStream);
-	static void toggleSoundFading(std::fstream &fileStream);
+	static void editSoundFadeOutTime(std::fstream &fileStream);
 	static void editTransitionTime(std::fstream &fileStream);
 	#ifdef WINDOWS
 	static void replaceGfxTools();
@@ -162,7 +162,7 @@ class M4Revolution {
 	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
 	void toggleFullScreen();
 	void toggleCameraInertia();
-	void toggleSoundFading();
+	void editSoundFadeOutTime();
 	void editTransitionTime();
 	void fixLoading();
 	void restoreBackup();

@@ -538,12 +538,19 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 	toggleLog("Camera Inertia", toggledOn);
 }
 
-void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
-	static const size_t FADE_OUT_SOUND_SIZE = 9;
-	static const unsigned char FADE_OUT_SOUND_ON[FADE_OUT_SOUND_SIZE] = { 0x68, 0x26, 0x02, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
-	static const unsigned char FADE_OUT_SOUND_OFF[FADE_OUT_SOUND_SIZE] = { 0x68, 0x00, 0x00, 0x00, 0x00, 0x8B, 0xCE, 0xFF, 0x15 };
+void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
+	static const std::string NAME = "Sound Fade Out Time";
 
-	unsigned long fadeOutSoundPosition = 0x00010850;
+	static const unsigned long MIN = 0;
+	static const unsigned long MAX = 550;
+
+	static const unsigned char FADE_OUT_SOUND = 0x68;
+	static const size_t FADE_OUT_SOUND_SIZE = sizeof(FADE_OUT_SOUND);
+	
+	static const size_t FADE_OUT_SOUND2_SIZE = 4;
+	static const unsigned char FADE_OUT_SOUND2[FADE_OUT_SOUND2_SIZE] = { 0x8B, 0xCE, 0xFF, 0x15 };
+
+	unsigned long fadeOutSoundPosition = 0x00010720;
 
 	#ifdef WINDOWS
 	while (!getDLLExportRVA("m4_ai_global_rd.dll", "?FadeOutSound@AiSndTransition@ai@@AAEXKKK@Z", fadeOutSoundPosition)) {
@@ -558,22 +565,32 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 	fadeOutSoundPosition += FADE_OUT_SOUND_OFFSET;
 	fileStream.seekg(fadeOutSoundPosition);
 
-	unsigned char fadeOutSound[FADE_OUT_SOUND_SIZE] = "";
+	unsigned char fadeOutSound = 0;
 	readStream(fileStream, &fadeOutSound, FADE_OUT_SOUND_SIZE);
 
-	bool toggledOn = memoryEquals(fadeOutSound, FADE_OUT_SOUND_ON, FADE_OUT_SOUND_SIZE);
+	unsigned long time = 0;
+	static const size_t TIME_SIZE = sizeof(time);
+	readStream(fileStream, &time, TIME_SIZE);
 
-	if (!toggledOn) {
-		toggledOn = !memoryEquals(fadeOutSound, FADE_OUT_SOUND_OFF, FADE_OUT_SOUND_SIZE);
+	unsigned char fadeOutSound2[FADE_OUT_SOUND2_SIZE] = "";
+	readStream(fileStream, &fadeOutSound2, FADE_OUT_SOUND2_SIZE);
 
-		if (toggledOn) {
-			throw Aborted("Fade Out Sound untoggleable. Restoring the backup or reinstalling the game may fix this problem.");
-		}
+	if (!memoryEquals(&fadeOutSound, &FADE_OUT_SOUND, FADE_OUT_SOUND_SIZE)
+		|| !memoryEquals(fadeOutSound2, FADE_OUT_SOUND2, FADE_OUT_SOUND2_SIZE)) {
+		throw Aborted("Fade Out Sound uneditable. Restoring the backup or reinstalling the game may fix this problem.");
 	}
+
+	std::ostringstream outputStringStream;
+	outputStringStream.exceptions(std::ostringstream::badbit);
+	Work::Edit::outputCurrent(outputStringStream, NAME, time);
+	consoleLog(outputStringStream.str().c_str());
 
 	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 
-	toggledOn = !toggledOn;
+	outputStringStream.str("");
+	Work::Edit::outputNew(outputStringStream, NAME);
+
+	time = consoleLongUnsigned(outputStringStream.str().c_str(), MIN, MAX);
 
 	edit.apply(copyThread,
 	
@@ -582,18 +599,21 @@ void M4Revolution::toggleSoundFading(std::fstream &fileStream) {
 			fadeOutSoundPosition,
 
 			std::string(
-				(const char*)(
-					toggledOn
-					? FADE_OUT_SOUND_ON
-					: FADE_OUT_SOUND_OFF
-				),
-
+				(const char*)&FADE_OUT_SOUND,
 				FADE_OUT_SOUND_SIZE
+			)
+
+			+ std::string(
+				(const char*)&time,
+				TIME_SIZE
+			)
+			
+			+ std::string(
+				(const char*)FADE_OUT_SOUND2,
+				FADE_OUT_SOUND2_SIZE
 			)
 		}
 	});
-
-	toggleLog("Sound Fading", toggledOn);
 }
 
 void M4Revolution::editTransitionTime(std::fstream &fileStream) {
@@ -1153,12 +1173,12 @@ void M4Revolution::toggleCameraInertia() {
 	OPERATION_EXCEPTION_RETRY_ERR(toggleCameraInertia(fileStream), std::system_error, Work::Output::FILE_RETRY);
 }
 
-void M4Revolution::toggleSoundFading() {
+void M4Revolution::editSoundFadeOutTime() {
 	std::fstream fileStream;
 
-	Log log("Toggling Sound Fading", &fileStream);
+	Log log("Editing Sound Fade Out Time", &fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(toggleSoundFading(fileStream), std::system_error, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(editSoundFadeOutTime(fileStream), std::system_error, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::editTransitionTime() {
