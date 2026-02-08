@@ -1,5 +1,6 @@
 #include "AI.h"
 #include <regex>
+#include <iostream>
 #include <sstream>
 #include <iomanip>
 
@@ -71,12 +72,19 @@ namespace AI {
 			throw std::runtime_error("Failed to Convert String To Float");
 		}
 
-		// log the current value
 		std::ostringstream outputStringStream;
 		outputStringStream.exceptions(std::ostringstream::badbit);
+		outputStringStream.copyfmt(std::cout);
 		outputStringStream.imbue(LOCALE);
+
+		// log the current value
 		Work::Edit::outputCurrent(outputStringStream, name, f32);
 		consoleLog(outputStringStream.str().c_str());
+
+		// reset float precision related rules to the defaults
+		// so we get standard defaultfloat behaviour for the float
+		// that we write to the file (no precision weirdness)
+		outputStringStream.copyfmt(std::ostringstream());
 
 		// we've now found the position of the number to replace
 		// create a new thread to begin copying the file in the background

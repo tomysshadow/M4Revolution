@@ -582,6 +582,8 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 
 	std::ostringstream outputStringStream;
 	outputStringStream.exceptions(std::ostringstream::badbit);
+	outputStringStream.copyfmt(std::cout);
+
 	Work::Edit::outputCurrent(outputStringStream, NAME, time);
 	consoleLog(outputStringStream.str().c_str());
 
@@ -1085,6 +1087,12 @@ M4Revolution::M4Revolution(
 	std::optional<Work::Convert::Configuration> configurationOptional
 )
 	: logFileNames(logFileNames) {
+	// decimal points are really just to indicate integer vs. float
+	// I doubt anyone cares about seeing more than one in this application
+	// this is intentionally not done for std::cin (might have weird side effects)
+	std::cout << std::fixed << std::setprecision(1);
+	std::cerr.copyfmt(std::cout);
+	
 	// here we make the path lexically normal just so that it displays nice
 	Work::Output::findInstallPath(path.lexically_normal());
 

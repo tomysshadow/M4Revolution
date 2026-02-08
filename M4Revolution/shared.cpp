@@ -84,8 +84,8 @@ void consoleWait(short newline) {
 #define CONSOLE_NUMBER_GREATER(minValue, minValueDefault, maxValue, maxValueDefault) ((minValue) != (minValueDefault) && (maxValue) == (maxValueDefault))
 
 #define CONSOLE_NUMBER_BETWEEN_OUT(minValue, maxValue) do { std::cout << "[" << (minValue) << " - " << (maxValue) << "]" << std::endl; } while (0)
-#define CONSOLE_NUMBER_LESS_OUT(maxValue) do { std::cout << "[<" << (maxValue) << "]" << std::endl; } while (0)
-#define CONSOLE_NUMBER_GREATER_OUT(minValue) do { std::cout << "[>" << (minValue) << "]" << std::endl; } while (0)
+#define CONSOLE_NUMBER_LESS_OUT(maxValue) do { std::cout << "[<=" << (maxValue) << "]" << std::endl; } while (0)
+#define CONSOLE_NUMBER_GREATER_OUT(minValue) do { std::cout << "[>=" << (minValue) << "]" << std::endl; } while (0)
 #define CONSOLE_NUMBER_VALID_OUT do { std::cout << std::endl; } while (0)
 
 #define CONSOLE_NUMBER_BETWEEN_OUT_RETRY(minValue, maxValue) do { std::cout << "Please enter a valid number from " << (minValue) << " to " << (maxValue) << "." << std::endl; } while (0)
