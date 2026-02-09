@@ -41,9 +41,9 @@ class M4Revolution {
 
 	class CompressionOptions {
 		private:
-		nvtt::CompressionOptions rgba = {};
-		nvtt::CompressionOptions dxt1 = {};
-		nvtt::CompressionOptions dxt5 = {};
+		nvtt::CompressionOptions rgba;
+		nvtt::CompressionOptions dxt1;
+		nvtt::CompressionOptions dxt5;
 
 		public:
 		CompressionOptions();
@@ -54,9 +54,9 @@ class M4Revolution {
 		OutputHandler(Work::FileTask &fileTask);
 		OutputHandler(const OutputHandler &outputHandler) = delete;
 		OutputHandler &operator=(const OutputHandler &outputHandler) = delete;
-		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel);
-		virtual void endImage();
-		virtual bool writeData(const void* data, int size);
+		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel) override;
+		virtual void endImage() override;
+		virtual bool writeData(const void* data, int size) override;
 
 		Work::FileTask &fileTask;
 
@@ -64,14 +64,14 @@ class M4Revolution {
 	};
 
 	struct ErrorHandler : public nvtt::ErrorHandler {
-		virtual void error(nvtt::Error e);
+		virtual void error(nvtt::Error e) override;
 
 		bool result = true;
 	};
 
 	bool logFileNames = false;
 
-	nvtt::Context context = {};
+	nvtt::Context context;
 
 	#ifdef MULTITHREADED
 	PTP_POOL pool = NULL;

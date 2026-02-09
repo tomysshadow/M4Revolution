@@ -401,6 +401,10 @@ namespace gfx_tools {
 		const std::optional<RawBufferEx::ResizeInfo> &resizeInfoOptional,
 		ubi::RefCounted* refCountedPointer
 	) {
+		MAKE_SCOPE_EXIT(pointerScopeExit) {
+			M4Image::allocator.freeSafe(pointer);
+		};
+
 		if (lod >= NUMBER_OF_LOD_MAX) {
 			throw std::invalid_argument("lod must not be greater than or equal to NUMBER_OF_LOD_MAX");
 		}
@@ -411,7 +415,10 @@ namespace gfx_tools {
 
 		std::optional<RawBufferEx> &rawBufferOptional = rawBufferOptionals[lod];
 		RawBuffer::SIZE difference = rawBufferOptional.has_value() ? rawBufferOptional.value().size : 0;
+
 		rawBufferOptional.emplace(pointer, size, owner, resizeInfoOptional);
+		pointerScopeExit.dismiss();
+
 		rawBufferTotalSize += size - difference;
 
 		if (this->refCountedPointer != refCountedPointer) {

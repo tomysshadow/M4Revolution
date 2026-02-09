@@ -319,6 +319,10 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
 	std::streampos bigFileInputPosition = inputStream.tellg();
 
+	// note: passing filePointerSetMap here *looks* like a bug
+	// (because it's on our stack, but we're passing it to a shared_ptr)
+	// but it actually isn't because it's only used in the constructor
+	// (BigFileTask doesn't hold onto it)
 	tasks.bigFileLock().get().insert(
 		{
 			bigFileInputPosition,
@@ -693,7 +697,7 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	// must be called here after we've modified the surface
 	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = M4Revolution::COMPRESSION_OPTIONS.get(file, surface, hasAlpha);
 
-	nvtt::OutputOptions outputOptions = {};
+	nvtt::OutputOptions outputOptions;
 	outputOptions.setContainer(nvtt::Container_DDS);
 
 	Work::FileTask &fileTask = *convert.fileTaskPointer;
@@ -726,7 +730,7 @@ void M4Revolution::convertImageStandardWorkCallback(Work::Convert* convertPointe
 	};
 
 	Work::Convert &convert = *convertPointer;
-	nvtt::Surface surface = {};
+	nvtt::Surface surface;
 	bool hasAlpha = true;
 
 	if (!surface.loadFromMemory(convert.dataPointer.get(), convert.file.size, &hasAlpha)) {
@@ -743,7 +747,7 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 	};
 
 	Work::Convert &convert = *convertPointer;
-	nvtt::Surface surface = {};
+	nvtt::Surface surface;
 
 	{
 		zap_byte_t* image = 0;

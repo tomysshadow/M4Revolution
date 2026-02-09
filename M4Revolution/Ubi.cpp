@@ -8,14 +8,15 @@ namespace Ubi {
 				return encryptedStringOptional;
 			}
 
-			static const char MASK = 85;
+			static const unsigned char MASK = 85;
 
 			std::string &encryptedString = encryptedStringOptional.value();
 
 			for (std::string::iterator encryptedStringIterator = encryptedString.begin(); encryptedStringIterator != encryptedString.end(); encryptedStringIterator++) {
 				char &encryptedChar = *encryptedStringIterator;
-				char encryptedCharLeft = encryptedChar << 1;
-				char encryptedCharRight = encryptedChar >> 1;
+				
+				unsigned char encryptedCharLeft = (unsigned char)encryptedChar << 1;
+				unsigned char encryptedCharRight = (unsigned char)encryptedChar >> 1;
 
 				encryptedChar = (encryptedCharLeft ^ encryptedCharRight) & MASK ^ encryptedCharLeft;
 			}
