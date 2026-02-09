@@ -401,7 +401,7 @@ namespace gfx_tools {
 		const std::optional<RawBufferEx::ResizeInfo> &resizeInfoOptional,
 		ubi::RefCounted* refCountedPointer
 	) {
-		// we do this on behalf of RawBufferEx, at least until we handoff to it
+		// we free on behalf of RawBufferEx, at least until we handoff to it
 		MAKE_SCOPE_EXIT(pointerScopeExit) {
 			if (owner) {
 				M4Image::allocator.freeSafe(pointer);
