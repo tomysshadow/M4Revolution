@@ -75,7 +75,6 @@ namespace AI {
 		std::ostringstream outputStringStream;
 		outputStringStream.exceptions(std::ostringstream::badbit);
 		outputStringStream.copyfmt(std::cout);
-		outputStringStream.imbue(LOCALE);
 
 		// log the current value
 		Work::Edit::outputCurrent(outputStringStream, name, f32);
@@ -84,7 +83,10 @@ namespace AI {
 		// reset float precision related rules to the defaults
 		// so we get standard defaultfloat behaviour for the float
 		// that we write to the file (no precision weirdness)
+		// also, only apply the locale here
+		// (use default locale for the write to the console)
 		outputStringStream.copyfmt(std::ostringstream());
+		outputStringStream.imbue(LOCALE);
 
 		// we've now found the position of the number to replace
 		// create a new thread to begin copying the file in the background
