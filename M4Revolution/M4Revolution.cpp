@@ -1130,9 +1130,9 @@ unsigned long M4Revolution::getPositionFromRVA(std::istream &inputStream, unsign
 		+ ((size_t)imageFileHeader.NumberOfSections * IMAGE_SECTION_HEADER_SIZE);
 
 	std::unique_ptr<char[]> imageNtHeadersPointer = std::unique_ptr<char[]>(new char[imageNtHeadersSize]);
-	readStream(inputStream, imageNtHeadersPointer.get(), imageNtHeadersSize);
 
 	PIMAGE_NT_HEADERS imageNtHeaders = (PIMAGE_NT_HEADERS)imageNtHeadersPointer.get();
+	readStream(inputStream, imageNtHeaders, imageNtHeadersSize);
 
 	return imageNtHeaders->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC
 		? getPositionFromRVA((PIMAGE_NT_HEADERS64)imageNtHeaders, rva)
