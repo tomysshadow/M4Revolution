@@ -499,6 +499,10 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 
 	Work::Edit edit(fileStream, Work::Output::M4_THOR_PATH);
 
+	#ifdef WINDOWS
+	computeMoveVectorPosition = getPositionFromRVA(fileStream, computeMoveVectorPosition);
+	#endif
+
 	fileStream.seekg(computeMoveVectorPosition);
 
 	unsigned char computeMoveVector[COMPUTE_MOVE_VECTOR_SIZE] = "";
@@ -562,9 +566,13 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	}
 	#endif
 
-	static const unsigned long FADE_OUT_SOUND_OFFSET = 0x0000005E;
-
 	Work::Edit edit(fileStream, Work::Output::M4_AI_GLOBAL_PATH);
+
+	#ifdef WINDOWS
+	fadeOutSoundPosition = getPositionFromRVA(fileStream, fadeOutSoundPosition);
+	#endif
+
+	static const unsigned long FADE_OUT_SOUND_OFFSET = 0x0000005E;
 
 	fadeOutSoundPosition += FADE_OUT_SOUND_OFFSET;
 	fileStream.seekg(fadeOutSoundPosition);
@@ -1079,6 +1087,56 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 		SetLastError(exitCode);
 	}
 	return size;
+}
+
+unsigned long M4Revolution::getPositionFromRVA(std::istream &inputStream, unsigned long rva) {
+	std::streampos position = inputStream.tellg();
+
+	SCOPE_EXIT {
+		inputStream.seekg(position);
+	};
+
+	inputStream.seekg(0);
+
+	IMAGE_DOS_HEADER imageDosHeader = {};
+	static const size_t IMAGE_DOS_HEADER_SIZE = sizeof(imageDosHeader);
+	readStream(inputStream, &imageDosHeader, IMAGE_DOS_HEADER_SIZE);
+
+	if (imageDosHeader.e_magic != IMAGE_DOS_SIGNATURE) {
+		throw std::runtime_error("e_magic must be IMAGE_DOS_SIGNATURE");
+	}
+
+	inputStream.seekg(imageDosHeader.e_lfanew);
+
+	// we assume 32-bit for now so we will never read past the end of the header
+	IMAGE_NT_HEADERS32 imageNtHeaders32 = {};
+	static const size_t IMAGE_NT_HEADERS32_SIZE = sizeof(imageNtHeaders32);
+	readStream(inputStream, &imageNtHeaders32, IMAGE_NT_HEADERS32_SIZE);
+
+	if (imageNtHeaders32.Signature != IMAGE_NT_SIGNATURE) {
+		throw std::runtime_error("Signature must be IMAGE_NT_SIGNATURE");
+	}
+
+	static const size_t IMAGE_SECTION_HEADER_SIZE = sizeof(IMAGE_SECTION_HEADER);
+	IMAGE_FILE_HEADER &imageFileHeader = imageNtHeaders32.FileHeader;
+
+	inputStream.seekg(imageDosHeader.e_lfanew);
+
+	// the IMAGE_NT_HEADERS struct is designed such that the offset
+	// of the optional header will always be the same regardless
+	// of PE32 or PE32+, so using offsetof like this is safe
+	size_t imageNtHeadersSize = offsetof(IMAGE_NT_HEADERS, OptionalHeader)
+		+ imageFileHeader.SizeOfOptionalHeader
+		+ ((size_t)imageFileHeader.NumberOfSections * IMAGE_SECTION_HEADER_SIZE);
+
+	std::unique_ptr<char[]> imageNtHeadersPointer = std::unique_ptr<char[]>(new char[imageNtHeadersSize]);
+	readStream(inputStream, imageNtHeadersPointer.get(), imageNtHeadersSize);
+
+	PIMAGE_NT_HEADERS imageNtHeaders = (PIMAGE_NT_HEADERS)imageNtHeadersPointer.get();
+
+	return imageNtHeaders->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC
+		? getPositionFromRVA((PIMAGE_NT_HEADERS64)imageNtHeaders, rva)
+		: getPositionFromRVA((PIMAGE_NT_HEADERS32)imageNtHeaders, rva);
 }
 #endif
 

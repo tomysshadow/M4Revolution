@@ -139,6 +139,52 @@ class M4Revolution {
 	static void outputThread(Work::Tasks &tasks, bool &yield);
 	#ifdef WINDOWS
 	static bool getDLLExportRVA(const char* libFileName, const char* procName, unsigned long &dllExportRVA);
+
+	template <typename IMAGE_NT_HEADERSXX>
+	static unsigned long getPositionFromRVA(IMAGE_NT_HEADERSXX* imageNtHeadersPointer, unsigned long rva) {
+		if (!imageNtHeadersPointer) {
+			throw std::invalid_argument("imageNtHeadersPointer must not be NULL");
+		}
+		
+		IMAGE_NT_HEADERSXX &imageNtHeaders = *imageNtHeadersPointer;
+
+		if (imageNtHeaders.Signature != IMAGE_NT_SIGNATURE) {
+			throw std::invalid_argument("Signature must be IMAGE_NT_SIGNATURE");
+		}
+
+		// if it's in the PE header, the RVA is equivalent to the position
+		if (rva < imageNtHeaders.OptionalHeader.SizeOfHeaders) {
+			return rva;
+		}
+
+		PIMAGE_SECTION_HEADER imageSectionHeaderPointer = (PIMAGE_SECTION_HEADER)(imageNtHeadersPointer + 1);
+
+		for (WORD i = 0; i < imageNtHeaders.FileHeader.NumberOfSections; i++) {
+			{
+				IMAGE_SECTION_HEADER &imageSectionHeader = *imageSectionHeaderPointer;
+
+				// test the RVA falls within the section's virtual memory
+				if (rva - imageSectionHeader.VirtualAddress >= imageSectionHeader.Misc.VirtualSize) {
+					continue;
+				}
+
+				// now turn it into the position
+				rva += imageSectionHeader.PointerToRawData - imageSectionHeader.VirtualAddress;
+
+				// test the position falls within initialized data
+				if (rva - imageSectionHeader.PointerToRawData >= imageSectionHeader.SizeOfRawData) {
+					throw std::invalid_argument("rva must not point to uninitialized data");
+				}
+				return rva;
+			}
+
+			imageSectionHeaderPointer++;
+		}
+
+		throw std::invalid_argument("rva must not point out of bounds");
+	}
+
+	static unsigned long getPositionFromRVA(std::istream &inputStream, unsigned long rva);
 	#endif
 
 	public:
