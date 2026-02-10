@@ -69,7 +69,15 @@ namespace AI {
 		}
 
 		if (!f32Size) {
-			throw std::runtime_error("Failed to Convert String To Float");
+			throw std::runtime_error("f32Size must not be zero");
+		}
+
+		if (f32 < min) {
+			throw std::runtime_error("f32 must be greater than or equal to min");
+		}
+
+		if (f32 > max) {
+			throw std::runtime_error("f32 must be less than or equal to max");
 		}
 
 		std::ostringstream outputStringStream;

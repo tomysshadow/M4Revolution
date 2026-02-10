@@ -588,6 +588,7 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	readStream(fileStream, &fadeOutSound2, FADE_OUT_SOUND2_SIZE);
 
 	if (!memoryEquals(&fadeOutSound, &FADE_OUT_SOUND, FADE_OUT_SOUND_SIZE)
+		|| time < MIN || time > MAX
 		|| !memoryEquals(fadeOutSound2, FADE_OUT_SOUND2, FADE_OUT_SOUND2_SIZE)) {
 		throw Aborted("Fade Out Sound uneditable. Restoring the backup or reinstalling the game may fix this problem.");
 	}

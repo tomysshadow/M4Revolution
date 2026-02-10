@@ -1,6 +1,7 @@
 #pragma once
 #include <stdexcept>
 #include <stdint.h>
+#include <stdlib.h>
 
 #define M4IMAGE_API
 #define M4IMAGE_CALL __cdecl
@@ -91,7 +92,7 @@ class M4Image {
 
     class Invalid : public std::invalid_argument {
         public:
-        M4IMAGE_API Invalid() noexcept : std::invalid_argument("M4Image invalid") {
+        M4IMAGE_API Invalid(): std::invalid_argument("M4Image invalid") {
         }
     };
     
