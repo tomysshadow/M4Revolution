@@ -52,6 +52,7 @@ class M4Revolution {
 
 	struct OutputHandler : public nvtt::OutputHandler {
 		OutputHandler(Work::FileTask &fileTask);
+		virtual ~OutputHandler() override;
 		OutputHandler(const OutputHandler &outputHandler) = delete;
 		OutputHandler &operator=(const OutputHandler &outputHandler) = delete;
 		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel) override;
@@ -64,6 +65,7 @@ class M4Revolution {
 	};
 
 	struct ErrorHandler : public nvtt::ErrorHandler {
+		virtual ~ErrorHandler() override;
 		virtual void error(nvtt::Error e) override;
 
 		bool result = true;
