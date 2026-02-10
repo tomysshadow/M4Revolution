@@ -747,6 +747,8 @@ namespace Ubi {
 			return false;
 		}
 
+		// note: for TextureBox this must be lowercase
+		// even though the file extension is case-insensitive
 		static const std::regex FACE_SLICE("^([a-z]+)_(\\d{2})_(\\d{2})\\.");
 
 		std::smatch matches = {};
