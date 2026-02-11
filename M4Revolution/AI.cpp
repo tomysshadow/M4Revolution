@@ -80,50 +80,50 @@ namespace AI {
 			throw std::runtime_error("f32 must be less than or equal to max");
 		}
 
-		std::ostringstream outputStringStream;
-		outputStringStream.exceptions(std::ostringstream::badbit);
-		outputStringStream.copyfmt(std::cout);
+		std::ostringstream consoleOutputStringStream;
+		consoleOutputStringStream.exceptions(std::ostringstream::badbit);
+		consoleOutputStringStream.copyfmt(std::cout);
 
 		// log the current value
-		Work::Edit::outputCurrent(outputStringStream, name, f32);
-		consoleLog(outputStringStream.str().c_str());
+		Work::Edit::outputCurrent(consoleOutputStringStream, name, f32);
+		consoleLog(consoleOutputStringStream.str().c_str());
 
-		// reset float precision related rules to the defaults
-		// so we get standard defaultfloat behaviour for the float
+		// second stream so we get standard defaultfloat behaviour for the float
 		// that we write to the file (no precision weirdness)
 		// also, only apply the locale here
 		// (use default locale for the write to the console)
-		outputStringStream.copyfmt(std::ostringstream());
-		outputStringStream.imbue(LOCALE);
+		std::ostringstream fileOutputStringStream;
+		fileOutputStringStream.exceptions(std::ostringstream::badbit);
+		fileOutputStringStream.imbue(LOCALE);
+
+		const std::string &VALUE_STR = matches[4];
+
+		// get the number from the user and pad it to replace the existing number
+		// ensure it is not too long and will not replace the end
+		std::string::size_type fileOutputStringLength = 0;
+		std::string::size_type fileOutputStringLengthMax = VALUE_STR.length();
 
 		// we've now found the position of the number to replace
 		// create a new thread to begin copying the file in the background
 		// while we ask the user to input the edited value
 		std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 
-		const std::string &VALUE_STR = matches[4];
-
-		// get the number from the user and pad it to replace the existing number
-		// ensure it is not too long and will not replace the end
-		std::string::size_type outputStringLength = 0;
-		std::string::size_type outputStringLengthMax = VALUE_STR.length();
-
 		do {
-			if (outputStringLength) {
+			if (fileOutputStringLength) {
 				consoleLog("The number is too long. Please enter a shorter number.");
 			}
 
-			outputStringStream.str("");
-			Work::Edit::outputNew(outputStringStream, name);
+			consoleOutputStringStream.str("");
 
-			f32 = consoleFloat(outputStringStream.str().c_str(), min, max, LOCALE);
+			Work::Edit::outputNew(consoleOutputStringStream, name);
+			f32 = consoleFloat(consoleOutputStringStream.str().c_str(), min, max, LOCALE);
+
+			fileOutputStringStream.str("");
 
 			// std::left is used to left align because otherwise we'll shift the number over
-			outputStringStream.str("");
-			outputStringStream << std::left << std::setw(f32Size) << f32;
-
-			outputStringLength = outputStringStream.str().length();
-		} while (outputStringLength > outputStringLengthMax);
+			fileOutputStringStream << std::left << std::setw(f32Size) << f32;
+			fileOutputStringLength = fileOutputStringStream.str().length();
+		} while (fileOutputStringLength > fileOutputStringLengthMax);
 
 		// tell the edit to the copy thread
 		const std::string &VALUE_STR_PREFIX = matches[1];
@@ -133,7 +133,7 @@ namespace AI {
 		{
 			{
 				position + (std::streamsize)VALUE_STR_PREFIX.length(),
-				outputStringStream.str()
+				fileOutputStringStream.str()
 			}
 		});
 	}
