@@ -556,7 +556,7 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	static const std::string NAME = "Sound Fade Out Time";
 
 	static const unsigned long MIN = 0;
-	static const unsigned long MAX = 550;
+	static const unsigned long MAX = 1000;
 
 	static const unsigned char FADE_OUT_SOUND = 0x68;
 	static const size_t FADE_OUT_SOUND_SIZE = sizeof(FADE_OUT_SOUND);
