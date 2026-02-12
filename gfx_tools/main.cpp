@@ -115,8 +115,8 @@ namespace gfx_tools {
 
 				// these specifically need to be signed, we want them to either be negative or positive
 				// (but we only cast to signed char after doing the subtraction, as it's entirely expected this could underflow)
-				x = strength * (signed char)(inputXColorPointer->channels[INPUT_CHANNEL_XY] - inputColor.channels[INPUT_CHANNEL_XY]);
-				y = strength * (signed char)(inputYColorPointer++->channels[INPUT_CHANNEL_XY] - inputColor.channels[INPUT_CHANNEL_XY]);
+				x = strength * (inputXColorPointer->channels[INPUT_CHANNEL_XY] - inputColor.channels[INPUT_CHANNEL_XY]);
+				y = strength * (inputYColorPointer++->channels[INPUT_CHANNEL_XY] - inputColor.channels[INPUT_CHANNEL_XY]);
 				z = 1.0 / sqrt(x * x + y * y + 1.0) * MULTIPLIER;
 
 				outputColor.channels[OUTPUT_CHANNEL_B] = BGR_GRAY + (unsigned char)z;
