@@ -1,4 +1,4 @@
-# Myst IV: Revolution 1.2.4
+# Myst IV: Revolution 1.3.0
 ## By Anthony Kleine
 
 Myst IV: Revolution is a command line tool that can perform various fixes for the game Myst IV: Revelation.
@@ -67,11 +67,11 @@ If camera inertia is on, it will be turned off, and vice-versa. The tool will th
 
 This operation will create a backup of your game files if one has not already been made.
 
-### Toggle Sound Fading
+### Edit Sound Fade Out Time
 
-Upon navigating, the game inserts an intentional half a second delay to crossfade sounds from one place to another. You may toggle the sound fading on or off. When the sound fading is off, the sounds will cut instantly to their volume at the new location instead of fading, allowing for faster navigation. The default is on.
+Upon navigating, the game inserts an intentional half a second delay to crossfade sounds from one place to another. You may edit the sound fade out time in milliseconds. If the sound fade out time is zero, the sounds will cut instantly to their volume at the new location instead of fading, allowing for faster navigation.
 
-If sound fading is on, it will be turned off, and vice-versa. The tool will then report whether sound fading has been toggled on or off.
+The currently set sound fade out time is displayed. The default is 550.
 
 This operation will create a backup of your game files if one has not already been made.
 
@@ -123,7 +123,7 @@ If you are a developer who would like to contribute, you may compile for Windows
 9. Compile [sourcepp](https://github.com/craftablescience/sourcepp) for x64 with CMake, and your Visual Studio version. You may optionally uncheck all of the `SOURCEPP_USE` settings, except for `SOURCEPP_USE_FSPP`.
 10. Copy the sourcepp include files to `vendor/sourcepp/include`.
 11. Copy the resulting sourcepp.lib, sourcepp_compression.lib, sourcepp_crypto.lib, sourcepp_parser.lib, sourcepp_kvpp.lib, and sourcepp_steampp.lib files to `vendor/sourcepp/lib/x64/Debug` and `vendor/sourcepp/lib/x64/Release` respectively.
-12. Download GetDLLExportRVA from its [Releases page.](https://github.com/tomysshadow/GetDLLExportRVA/release)
+12. Download GetDLLExportRVA from its [Releases page.](https://github.com/tomysshadow/GetDLLExportRVA/releases)
 13. Copy the **x86** Debug GetDLLExportRVA files to `x64/Debug`. Notice that the **x86** Debug build must be copied to the **x64** Debug folder.
 14. Copy the **x86** Release GetDLLExportRVA files to `x64/Release`. Notice that the **x86** Release build must be copied to the **x64** Release folder.
 15. Open the M4Revolution solution in your Visual Studio version.
