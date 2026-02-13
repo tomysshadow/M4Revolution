@@ -55,20 +55,17 @@ namespace gfx_tools {
 		return *ms_SingletonInstance;
 	}
 
-	ImageCreator::IMAGE_SERIALIZER_PROC_MAP& ImageCreator::GetExtensionImageSerializerProcMap() {
-		static IMAGE_SERIALIZER_PROC_MAP extensionImageSerializerProcMap = {
-			{"ZAP", ImageSerializerZAP},
-			{"TGA", ImageSerializerTGA},
-			{"PNG", ImageSerializerPNG},
-			{"JPG", ImageSerializerJPEG},
-			{"JPEG", ImageSerializerJPEG},
-			{"JIF", ImageSerializerJPEG},
-			{"JFIF", ImageSerializerJPEG},
-			{"BMP", ImageSerializerBMP},
-			{"JTIF", ImageSerializerJPEG}
-		};
-		return extensionImageSerializerProcMap;
-	}
+	ImageCreator::IMAGE_SERIALIZER_PROC_MAP ImageCreator::extensionImageSerializerProcMap = {
+		{"ZAP", ImageSerializerZAP},
+		{"TGA", ImageSerializerTGA},
+		{"PNG", ImageSerializerPNG},
+		{"JPG", ImageSerializerJPEG},
+		{"JPEG", ImageSerializerJPEG},
+		{"JIF", ImageSerializerJPEG},
+		{"JFIF", ImageSerializerJPEG},
+		{"BMP", ImageSerializerBMP},
+		{"JTIF", ImageSerializerJPEG}
+	};
 
 	ImageCreator* ImageCreator::ms_SingletonInstance = 0;
 
@@ -97,8 +94,6 @@ namespace gfx_tools {
 	}
 
 	ImageLoader* ImageCreator::CreateLoaderImp(const char* extension) {
-		IMAGE_SERIALIZER_PROC_MAP &extensionImageSerializerProcMap = GetExtensionImageSerializerProcMap();
-
 		IMAGE_SERIALIZER_PROC_MAP::iterator imageSerializerProcMapIterator = extensionImageSerializerProcMap.find(extension);
 
 		if (imageSerializerProcMapIterator == extensionImageSerializerProcMap.end()) {
@@ -147,6 +142,6 @@ namespace gfx_tools {
 	}
 
 	void ImageCreator::RegisterImageSerializerImp(char* fileName, ImageSerializerProc imageSerializerProc) {
-		GetExtensionImageSerializerProcMap()[fileName] = imageSerializerProc;
+		extensionImageSerializerProcMap[fileName] = imageSerializerProc;
 	}
 }

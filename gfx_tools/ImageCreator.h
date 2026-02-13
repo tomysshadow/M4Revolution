@@ -21,7 +21,7 @@ namespace gfx_tools {
 		private:
 		typedef std::map<std::string, ImageSerializerProc, IgnoreCaseComparer> IMAGE_SERIALIZER_PROC_MAP;
 
-		GFX_TOOLS_API static IMAGE_SERIALIZER_PROC_MAP& GetExtensionImageSerializerProcMap();
+		GFX_TOOLS_API static IMAGE_SERIALIZER_PROC_MAP extensionImageSerializerProcMap;
 
 		GFX_TOOLS_API static ImageCreator* ms_SingletonInstance;
 
