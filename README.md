@@ -39,7 +39,7 @@ Once the install path has been found, you will be presented a menu that allows y
 1. Open Online Help
 2. Toggle Full Screen
 3. Toggle Camera Inertia
-4. Toggle Sound Fading
+4. Edit Sound Fade Out Time
 5. Edit Transition Time
 6. Fix Loading
 7. Restore Backup
