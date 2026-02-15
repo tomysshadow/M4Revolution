@@ -35,9 +35,9 @@ namespace gfx_tools {
 	}
 
 	// remember that the "requested" pixel format refers to the
-	// pixel format before it was corrected, that is, of the input image
+	// pixel format before it was corrected, that is, of the input image (as loaded by M4Image)
 	// (similar to requestedTextureWidth/Height)
-	// so enumPixelFormat determines the actual output format
+	// so enumPixelFormat determines the actual output format (that the GPU wants)
 	// but we only support these specific conversions
 	// frankly, it doesn't make sense, but it's what the game does
 	// so I try to rationalize it
@@ -47,9 +47,9 @@ namespace gfx_tools {
 		}
 
 		if (enumPixelFormat == PIXELFORMAT_AL_88) {
-			return PIXELFORMAT_COLOR_FORMAT_8_TO_88_MAP.at(requestedEnumPixelFormat);
+			return PIXELFORMAT_COLOR_FORMAT_TO_88_MAP.at(requestedEnumPixelFormat);
 		}
-		return PIXELFORMAT_COLOR_FORMAT_8_TO_8888_MAP.at(requestedEnumPixelFormat);
+		return PIXELFORMAT_COLOR_FORMAT_TO_8888_MAP.at(requestedEnumPixelFormat);
 	}
 
 	M4Image::COLOR_FORMAT ImageInfo::GetRequestedColorFormat() const {
@@ -65,13 +65,18 @@ namespace gfx_tools {
 		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::L}
 	};
 
-	// input is assumed to be luminance for these conversions
-	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_8_TO_88_MAP = {
+	// mappings to convert non-16bit formats into 16-bit
+	// 8-bit input is assumed to be luminance
+	// 32-bit input not included here (would be strange for GPU to ask for alpha/luminance only from them)
+	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_TO_88_MAP = {
 		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::AL}, // L -> L(A)
-		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::LA} // L -> (L)A
+		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::LA}, // L -> (L)A
 	};
 
-	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_8_TO_8888_MAP = {
+	// mappings to convert non-32bit formats into 32-bit
+	// 8-bit input is assumed to be luminance
+	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_TO_8888_MAP = {
+		{PIXELFORMAT_AL_88, M4Image::COLOR_FORMAT::BGRA}, // fixes dgVoodoo2 compatibility (doesn't support 16-bit textures)
 		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::XXXL}, // L -> BGR(A)
 		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::BGRA} // L -> (BGR)A
 	};

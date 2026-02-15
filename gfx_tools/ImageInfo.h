@@ -38,8 +38,8 @@ namespace gfx_tools {
 		typedef std::map<EnumPixelFormat, M4Image::COLOR_FORMAT> COLOR_FORMAT_MAP;
 
 		static const COLOR_FORMAT_MAP PIXELFORMAT_COLOR_FORMAT_MAP;
-		static const COLOR_FORMAT_MAP PIXELFORMAT_COLOR_FORMAT_8_TO_88_MAP;
-		static const COLOR_FORMAT_MAP PIXELFORMAT_COLOR_FORMAT_8_TO_8888_MAP;
+		static const COLOR_FORMAT_MAP PIXELFORMAT_COLOR_FORMAT_TO_88_MAP;
+		static const COLOR_FORMAT_MAP PIXELFORMAT_COLOR_FORMAT_TO_8888_MAP;
 	};
 
 	class ValidatedImageInfo : private ImageInfo {
