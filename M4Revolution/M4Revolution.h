@@ -28,7 +28,14 @@ class M4Revolution : NonCopyable {
 		public:
 		static void replaced(const std::string &file);
 
-		Log(const std::string &title, std::istream* inputStreamPointer = 0, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
+		Log(
+			const std::string &title,
+			std::istream* inputStreamPointer = 0,
+			Ubi::BigFile::File::SIZE inputFileSize = 0,
+			bool fileNames = false,
+			bool slow = false
+		);
+
 		~Log();
 		void step();
 		void copying();
@@ -44,7 +51,9 @@ class M4Revolution : NonCopyable {
 
 		public:
 		CompressionOptions();
-		const nvtt::CompressionOptions &get(const Ubi::BigFile::File &file, const nvtt::Surface &surface, bool hasAlpha) const;
+		const nvtt::CompressionOptions &get(
+			const Ubi::BigFile::File &file, const nvtt::Surface &surface, bool hasAlpha
+		) const;
 	};
 
 	struct OutputHandler : public nvtt::OutputHandler, NonCopyable {

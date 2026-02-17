@@ -170,9 +170,18 @@ namespace Ubi {
 		};
 
 		// a basic factory pattern going on here for the creation of resources
-		void readFileHeader(std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size = -1);
-		void writeFileHeader(std::ostream &outputStream, std::optional<HeaderWriter> &headerWriterOptional, std::streamsize size = -1);
-		Resource::Loader::POINTER readFileLoader(std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size = -1);
+		void readFileHeader(
+			std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size = -1
+		);
+
+		void writeFileHeader(
+			std::ostream &outputStream, std::optional<HeaderWriter> &headerWriterOptional, std::streamsize size = -1
+		);
+
+		Resource::Loader::POINTER readFileLoader(
+			std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size = -1
+		);
+
 		Resource::POINTER createResourcePointer(std::istream &inputStream, std::streamsize size = -1);
 		Resource::POINTER appendToLayerMap(std::istream &inputStream, RLE::LAYER_MAP &layerMap, std::streamsize size = -1);
 		Resource::POINTER appendToTextureBoxMap(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap, std::streamsize size = -1);
@@ -311,8 +320,13 @@ namespace Ubi {
 			);
 			
 			Directory(std::istream &inputStream);
-			Directory(std::istream &inputStream, const Path &path, File::POINTER &filePointer);
-			Directory(std::istream &inputStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
+
+			Directory(std::istream &inputStream, const Path &path,
+				File::POINTER &filePointer);
+
+			Directory(std::istream &inputStream, const Path &path,
+				Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
+
 			void write(std::ostream &outputStream) const;
 			File::POINTER find(const Path &path) const;
 
@@ -338,8 +352,12 @@ namespace Ubi {
 				const std::optional<File> &layerFileOptional
 			);
 
-			void find(std::istream &inputStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
-			File::POINTER find(const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) const;
+			void find(std::istream &inputStream, const Path &path,
+				Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer);
+
+			File::POINTER find(const Path &path,
+				Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) const;
+
 			bool isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const;
 			bool isSet(bool bftex, const std::optional<File> &layerFileOptional) const;
 
@@ -390,9 +408,19 @@ namespace Ubi {
 		Header header;
 		Directory directory;
 
-		BigFile(std::istream &inputStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, File &file);
+		BigFile(
+			std::istream &inputStream,
+			File::SIZE &fileSystemSize,
+			File::POINTER_VECTOR::size_type &files,
+			File::POINTER_SET_MAP &filePointerSetMap,
+			File &file
+		);
+
 		BigFile(std::istream &inputStream);
-		BigFile(std::istream &inputStream, const Path &path, File::POINTER &filePointer);
+
+		BigFile(std::istream &inputStream, const Path &path,
+			File::POINTER &filePointer);
+
 		void write(std::ostream &outputStream) const;
 	};
 };

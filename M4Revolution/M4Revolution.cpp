@@ -33,7 +33,13 @@ void M4Revolution::Log::replaced(const std::string &file) {
 	std::cout << "Replaced " << file << std::endl << std::endl;
 }
 
-M4Revolution::Log::Log(const std::string &title, std::istream* inputStreamPointer, Ubi::BigFile::File::SIZE inputFileSize, bool fileNames, bool slow)
+M4Revolution::Log::Log(
+	const std::string &title,
+	std::istream* inputStreamPointer,
+	Ubi::BigFile::File::SIZE inputFileSize,
+	bool fileNames,
+	bool slow
+)
 	: inputStreamPointer(inputStreamPointer),
 	inputFileSize(inputFileSize),
 	fileNames(fileNames) {
@@ -48,7 +54,8 @@ M4Revolution::Log::~Log() {
 	if (beginOptional.has_value()) {
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-		std::cout << "Elapsed Seconds: " << std::chrono::duration_cast<std::chrono::seconds>(end - beginOptional.value()).count() << std::endl << std::endl;
+		std::cout << "Elapsed Seconds: " << std::chrono::duration_cast<std::chrono::seconds>(
+			end - beginOptional.value()).count() << std::endl << std::endl;
 	}
 }
 
@@ -115,7 +122,9 @@ M4Revolution::CompressionOptions::CompressionOptions() {
 	dxt5.setQuality(nvtt::Quality_Highest);
 }
 
-const nvtt::CompressionOptions &M4Revolution::CompressionOptions::get(const Ubi::BigFile::File &file, const nvtt::Surface &surface, bool hasAlpha) const {
+const nvtt::CompressionOptions &M4Revolution::CompressionOptions::get(
+	const Ubi::BigFile::File &file, const nvtt::Surface &surface, bool hasAlpha
+) const {
 	// immediately use RGBA if the file forces us to
 	if (file.rgba) {
 		return rgba;
@@ -376,7 +385,14 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 
 				// prevent copying if there are no files (this is safe in this scenario only)
 				if (!filePointerVectorPointer->empty()) {
-					copyFiles(inputStream, filePointerSetMapIterator->first, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
+					copyFiles(
+						inputStream,
+						filePointerSetMapIterator->first,
+						inputCopyPosition,
+						filePointerVectorPointer,
+						bigFileInputPosition,
+						log
+					);
 				}
 
 				// we'll need to convert this file type
@@ -486,14 +502,29 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 
 void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 	static const size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
-	static const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE] = { 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C, 0xD8, 0x41, 0x50, 0xD9, 0x51, 0x50 };
-	static const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE] = { 0xC6, 0x44, 0x24, 0x0B, 0x48, 0x90, 0xD9, 0x44, 0x24, 0x08, 0x83, 0xEC, 0x0C };
+	static const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE] = {
+		0xD9, 0x44, 0x24, 0x08,
+		0x83, 0xEC, 0x0C, 0xD8,
+		0x41, 0x50, 0xD9, 0x51,
+		0x50
+	};
+
+	static const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE] = {
+		0xC6, 0x44, 0x24, 0x0B,
+		0x48, 0x90, 0xD9, 0x44,
+		0x24, 0x08, 0x83, 0xEC,
+		0x0C
+	};
 
 	// default value is the position as of the latest Steam version
 	unsigned long computeMoveVectorPosition = 0x000109C0;
 
 	#ifdef WINDOWS
-	while (!getDLLExportRVA("m4_thor_rd.dll", "?ComputeMoveVector@COrientationUpdateManager@thor@@AAE?AVVector3@ubi@@M@Z", computeMoveVectorPosition)) {
+	while (!getDLLExportRVA(
+		"m4_thor_rd.dll",
+		"?ComputeMoveVector@COrientationUpdateManager@thor@@AAE?AVVector3@ubi@@M@Z",
+		computeMoveVectorPosition
+	)) {
 		RETRY_ERR(Work::Output::FILE_RETRY);
 	}
 	#endif
@@ -562,7 +593,11 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	unsigned long fadeOutSoundPosition = 0x00010720;
 
 	#ifdef WINDOWS
-	while (!getDLLExportRVA("m4_ai_global_rd.dll", "?FadeOutSound@AiSndTransition@ai@@AAEXKKK@Z", fadeOutSoundPosition)) {
+	while (!getDLLExportRVA(
+		"m4_ai_global_rd.dll",
+		"?FadeOutSound@AiSndTransition@ai@@AAEXKKK@Z",
+		fadeOutSoundPosition
+	)) {
 		RETRY_ERR(Work::Output::FILE_RETRY);
 	}
 	#endif
@@ -1266,7 +1301,10 @@ void M4Revolution::fixLoading() {
 		std::ifstream inputFileStream;
 		inputFileStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
-		OPERATION_EXCEPTION_RETRY_ERR(inputFileStream.open(Work::Output::DATA_PATH, std::ifstream::binary, _SH_DENYWR), std::ifstream::failure, Work::Output::FILE_RETRY);
+		OPERATION_EXCEPTION_RETRY_ERR(
+			inputFileStream.open(Work::Output::DATA_PATH, std::ifstream::binary, _SH_DENYWR),
+			std::ifstream::failure, Work::Output::FILE_RETRY
+		);
 
 		Ubi::BigFile::File inputFile = createInputFile(inputFileStream);
 
@@ -1275,7 +1313,10 @@ void M4Revolution::fixLoading() {
 		// to avoid a sharing violation this must happen first before creating the output thread
 		// as they will both write to the same temporary file
 		#ifdef WINDOWS
-		OPERATION_EXCEPTION_RETRY_ERR(replaceGfxTools(), std::system_error, Work::Output::FILE_RETRY);
+		OPERATION_EXCEPTION_RETRY_ERR(
+			replaceGfxTools(),
+			std::system_error, Work::Output::FILE_RETRY
+		);
 		#endif
 
 		bool yield = true;

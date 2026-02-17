@@ -13,7 +13,11 @@ namespace Ubi {
 
 			std::string &encryptedString = encryptedStringOptional.value();
 
-			for (std::string::iterator encryptedStringIterator = encryptedString.begin(); encryptedStringIterator != encryptedString.end(); encryptedStringIterator++) {
+			for (
+				std::string::iterator encryptedStringIterator = encryptedString.begin();
+				encryptedStringIterator != encryptedString.end();
+				encryptedStringIterator++
+			) {
 				char &encryptedChar = *encryptedStringIterator;
 				
 				unsigned char encryptedCharLeft = (unsigned char)((unsigned char)encryptedChar << 1);
@@ -459,7 +463,9 @@ namespace Ubi {
 			throwWrotePastEnd();
 		}
 
-		void readFileHeader(std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size) {
+		void readFileHeader(
+			std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size
+		) {
 			MAKE_SCOPE_EXIT(headerReaderOptionalScopeExit) {
 				headerReaderOptional = std::nullopt;
 			};
@@ -470,7 +476,9 @@ namespace Ubi {
 			}
 		}
 
-		void writeFileHeader(std::ostream &outputStream, std::optional<HeaderWriter> &headerWriterOptional, std::streamsize size) {
+		void writeFileHeader(
+			std::ostream &outputStream, std::optional<HeaderWriter> &headerWriterOptional, std::streamsize size
+		) {
 			MAKE_SCOPE_EXIT(headerWriterOptionalScopeExit) {
 				headerWriterOptional = std::nullopt;
 			};
@@ -481,7 +489,9 @@ namespace Ubi {
 			}
 		}
 
-		Resource::Loader::POINTER readFileLoader(std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size) {
+		Resource::Loader::POINTER readFileLoader(
+			std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size
+		) {
 			readFileHeader(inputStream, headerReaderOptional, size);
 			return std::make_shared<Resource::Loader>(inputStream);
 		}
@@ -823,11 +833,13 @@ namespace Ubi {
 		read(false, inputStream, fileSystemSize, files, filePointerSetMap, std::nullopt);
 	}
 
-	BigFile::Directory::Directory(std::istream &inputStream, const Path &path, File::POINTER &filePointer) {
+	BigFile::Directory::Directory(std::istream &inputStream, const Path &path,
+		File::POINTER &filePointer) {
 		find(inputStream, path, path.directoryNameVector.begin(), filePointer);
 	}
 
-	BigFile::Directory::Directory(std::istream &inputStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer) {
+	BigFile::Directory::Directory(std::istream &inputStream, const Path &path,
+		Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer) {
 		find(inputStream, path, directoryNameVectorIterator, filePointer);
 	}
 
@@ -982,7 +994,8 @@ namespace Ubi {
 		);
 	}
 
-	void BigFile::Directory::find(std::istream &inputStream, const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer) {
+	void BigFile::Directory::find(std::istream &inputStream, const Path &path,
+		Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer) {
 		MAKE_SCOPE_EXIT(filePointerScopeExit) {
 			filePointer = 0;
 		};
@@ -1058,7 +1071,8 @@ namespace Ubi {
 		}
 	}
 
-	BigFile::File::POINTER BigFile::Directory::find(const Path &path, Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) const {
+	BigFile::File::POINTER BigFile::Directory::find(const Path &path,
+		Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) const {
 		const Path::NAME_VECTOR &DIRECTORY_NAME_VECTOR = path.directoryNameVector;
 
 		// isMatch must be called here, modifies directoryNameVectorIterator
@@ -1241,7 +1255,13 @@ namespace Ubi {
 		return filePointer;
 	}
 
-	BigFile::BigFile(std::istream &inputStream, File::SIZE &fileSystemSize, File::POINTER_VECTOR::size_type &files, File::POINTER_SET_MAP &filePointerSetMap, File &file)
+	BigFile::BigFile(
+		std::istream &inputStream,
+		File::SIZE &fileSystemSize,
+		File::POINTER_VECTOR::size_type &files,
+		File::POINTER_SET_MAP &filePointerSetMap,
+		File &file
+	)
 		: header(inputStream, fileSystemSize, fileSystemPosition),
 		directory(0, inputStream, fileSystemSize, files, filePointerSetMap, file) {
 		// do all the steps necessary to prevent water causing a crash
@@ -1388,7 +1408,8 @@ namespace Ubi {
 		directory(inputStream) {
 	}
 
-	BigFile::BigFile(std::istream &inputStream, const Path &path, File::POINTER &filePointer)
+	BigFile::BigFile(std::istream &inputStream, const Path &path,
+		File::POINTER &filePointer)
 		: header(inputStream, filePointer),
 		directory(inputStream, path, filePointer) {
 	}
