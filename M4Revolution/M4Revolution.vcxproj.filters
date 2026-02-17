@@ -94,7 +94,7 @@
   <ItemGroup>
     <None Include="..\README.md" />
     <None Include="..\Release\gfx_tools_rd.dll" />
-    <None Include="versioninfo.rcpp">
+    <None Include="versioninfo.rcx">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

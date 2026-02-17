@@ -209,7 +209,7 @@
   <ItemGroup>
     <None Include="..\README.md" />
     <None Include="..\Release\gfx_tools_rd.dll" />
-    <None Include="versioninfo.rcpp" />
+    <None Include="versioninfo.rcx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\gfx_tools\gfx_tools.vcxproj">
