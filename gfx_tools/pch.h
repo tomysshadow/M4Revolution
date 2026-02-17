@@ -1,5 +1,6 @@
 #pragma once
 #include "NonCopyable.h"
+#include "IgnoreCaseComparer.h"
 #include <functional>
 #include <stdexcept>
 #include <ctype.h>

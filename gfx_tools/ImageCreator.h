@@ -1,6 +1,5 @@
 #pragma once
 #include "ImageLoader.h"
-#include "IgnoreCaseComparer.h"
 #include <map>
 #include <string>
 

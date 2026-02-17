@@ -1,5 +1,6 @@
 #pragma once
 #include "NonCopyable.h"
+#include "IgnoreCaseComparer.h"
 #include "Locale.h"
 #include <memory>
 #include <functional>
