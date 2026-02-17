@@ -121,7 +121,7 @@ namespace AI {
 			fileOutputStringStream.str("");
 
 			// std::left is used to left align because otherwise we'll shift the number over
-			fileOutputStringStream << std::left << std::setw(f32Size) << f32;
+			fileOutputStringStream << std::left << std::setw((std::streamsize)f32Size) << f32;
 			fileOutputStringLength = fileOutputStringStream.str().length();
 		} while (fileOutputStringLength > fileOutputStringLengthMax);
 

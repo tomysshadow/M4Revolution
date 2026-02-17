@@ -1,4 +1,4 @@
-#include "shared.h"
+#include "utils.h"
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -207,7 +207,7 @@ bool consoleBool(const char* str, const std::optional<bool> &defaultValueOptiona
 			return defaultValueOptional.value();
 		}
 
-		result = toupper((unsigned char)result);
+		result = (char)toupper((unsigned char)result);
 	} while (result != YES && result != NO);
 	return result == YES;
 }
@@ -345,7 +345,7 @@ std::string getRegistryValueString(HKEY baseRegistryKey, LPCSTR subkeyPointer, L
 	osErr(RegGetValueA(registryKey, NULL, valuePointer, RRF_RT_REG_SZ, NULL, NULL, &dataSize));
 
 	// get the data
-	std::unique_ptr<CHAR[]> dataPointer(new CHAR[(size_t)dataSize]);
+	std::unique_ptr<CHAR[]> dataPointer = makeUniqueArray<CHAR>((size_t)dataSize);
 	osErr(RegGetValueA(registryKey, NULL, valuePointer, RRF_RT_REG_SZ, NULL, dataPointer.get(), &dataSize));
 	return dataPointer.get();
 }

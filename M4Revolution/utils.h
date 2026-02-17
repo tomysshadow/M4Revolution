@@ -1,6 +1,5 @@
 #pragma once
-#define _WIN32_WINNT 0x0600
-#define NOMINMAX
+#include "NonCopyable.h"
 #include "Locale.h"
 #include <memory>
 #include <functional>
@@ -33,12 +32,12 @@
 #include "resource.h"
 
 inline char charWhitespaceTrim(const char* str) {
-	unsigned char space = *str;
+	unsigned char space = (unsigned char)*str;
 
 	while (space && isspace(space)) {
-		space = *++str;
+		space = (unsigned char)*++str;
 	}
-	return space;
+	return (char)space;
 }
 
 inline wchar_t charWhitespaceTrimWide(const wchar_t* str) {
@@ -55,10 +54,10 @@ inline bool stringNullOrEmpty(const char* str) {
 }
 
 inline bool stringWhitespace(const char* str) {
-	unsigned char space = *str;
+	unsigned char space = (unsigned char)*str;
 
 	while (space && isspace(space)) {
-		space = *++str;
+		space = (unsigned char)*++str;
 	}
 	return !space;
 }
@@ -114,6 +113,16 @@ inline bool stringEqualsCaseInsensitiveWide(const wchar_t* str, const wchar_t* s
 
 inline bool memoryEquals(const void* mem, const void* mem2, size_t size) {
 	return !memcmp(mem, mem2, size);
+}
+
+template <typename T>
+inline std::unique_ptr<T[]> makeUniqueArray(size_t size) {
+	return std::unique_ptr<T[]>(new T[size]);
+}
+
+template <typename T>
+inline std::shared_ptr<T[]> makeSharedArray(size_t size) {
+	return std::shared_ptr<T[]>(new T[size]);
 }
 
 // tries to ensure consistent interpretation of periods and commas in string to number conversions
@@ -303,12 +312,12 @@ inline size_t stringToLongUnsignedWide(const wchar_t* str, unsigned long &result
 	return size;
 }
 
-inline long stringToLongUnsignedOrDefaultValue(const char* str, unsigned long defaultValue = 0, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT) {
+inline unsigned long stringToLongUnsignedOrDefaultValue(const char* str, unsigned long defaultValue = 0, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT) {
 	unsigned long result = 0;
 	return stringToLongUnsigned(str, result, base, locale) ? result : defaultValue;
 }
 
-inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned long defaultValue = 0, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT) {
+inline unsigned long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned long defaultValue = 0, int base = 0, const Locale &locale = STRING_TO_NUMBER_LOCALE_DEFAULT) {
 	unsigned long result = 0;
 	return stringToLongUnsignedWide(str, result, base, locale) ? result : defaultValue;
 }
@@ -333,7 +342,7 @@ inline long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, unsigned 
 
 #ifdef WINDOWS
 inline void osErrThrow(bool doserrno = false) {
-	std::error_code errorCode(doserrno ? _doserrno : GetLastError(), std::system_category());
+	std::error_code errorCode((int)(doserrno ? _doserrno : GetLastError()), std::system_category());
 	throw std::system_error(errorCode);
 }
 
@@ -370,7 +379,7 @@ inline void osErr(LSTATUS err) {
 		return;
 	}
 
-	SetLastError(err);
+	SetLastError((DWORD)err);
 	osErrThrow(false);
 }
 #endif

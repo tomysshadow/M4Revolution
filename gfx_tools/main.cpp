@@ -46,8 +46,11 @@ namespace gfx_tools {
 				M4Image::Color16 &outputColor = *outputColorPointer;
 
 				// DU is done last so input and output buffer may be the same
-				outputColor.channels[OUTPUT_CHANNEL_DV] = inputColor.channels[INPUT_CHANNEL_UV] - inputVColorPointer++->channels[INPUT_CHANNEL_UV];
-				outputColor.channels[OUTPUT_CHANNEL_DU] = inputColor.channels[INPUT_CHANNEL_UV] - inputUColorPointer->channels[INPUT_CHANNEL_UV];
+				outputColor.channels[OUTPUT_CHANNEL_DV] = (unsigned char)(inputColor.channels[INPUT_CHANNEL_UV]
+					- inputVColorPointer++->channels[INPUT_CHANNEL_UV]);
+
+				outputColor.channels[OUTPUT_CHANNEL_DU] = (unsigned char)(inputColor.channels[INPUT_CHANNEL_UV]
+					- inputUColorPointer->channels[INPUT_CHANNEL_UV]);
 
 				if constexpr (Luminance) {
 					((M4Image::Color32*)outputColorPointer)->channels[OUTPUT_CHANNEL_LUMINANCE] = inputColorPointer->channels[INPUT_CHANNEL_LUMINANCE];
@@ -119,9 +122,9 @@ namespace gfx_tools {
 				y = strength * (inputYColorPointer++->channels[INPUT_CHANNEL_XY] - inputColor.channels[INPUT_CHANNEL_XY]);
 				z = 1.0 / sqrt(x * x + y * y + 1.0) * MULTIPLIER;
 
-				outputColor.channels[OUTPUT_CHANNEL_B] = BGR_GRAY + (unsigned char)z;
-				outputColor.channels[OUTPUT_CHANNEL_G] = BGR_GRAY - (unsigned char)(y * z);
-				outputColor.channels[OUTPUT_CHANNEL_R] = BGR_GRAY - (unsigned char)(x * z);
+				outputColor.channels[OUTPUT_CHANNEL_B] = (unsigned char)(BGR_GRAY + (unsigned char)z);
+				outputColor.channels[OUTPUT_CHANNEL_G] = (unsigned char)(BGR_GRAY - (unsigned char)(y * z));
+				outputColor.channels[OUTPUT_CHANNEL_R] = (unsigned char)(BGR_GRAY - (unsigned char)(x * z));
 				outputColor.channels[OUTPUT_CHANNEL_A] = ALPHA_OPAQUE;
 
 				outputColorPointer++;

@@ -128,35 +128,35 @@ namespace gfx_tools {
 	maskDepth(maskDepth),
 	maskStencil(maskStencil),
 	hasColor(maskRed || maskGreen || maskBlue || maskAlpha),
-	hasBitsPerPixel(bitsPerPixel) {
+	hasBitsPerPixel((bool)bitsPerPixel) {
 	}
 
 	bool PixelFormat::HasRed() {
-		return maskRed;
+		return (bool)maskRed;
 	}
 
 	bool PixelFormat::HasGreen() {
-		return maskGreen;
+		return (bool)maskGreen;
 	}
 
 	bool PixelFormat::HasBlue() {
-		return maskBlue;
+		return (bool)maskBlue;
 	}
 
 	bool PixelFormat::HasAlpha() {
-		return maskAlpha;
+		return (bool)maskAlpha;
 	}
 
 	bool PixelFormat::HasPalette() {
-		return maskPalette;
+		return (bool)maskPalette;
 	}
 
 	bool PixelFormat::HasDepth() {
-		return maskDepth;
+		return (bool)maskDepth;
 	}
 
 	bool PixelFormat::HasStencil() {
-		return maskStencil;
+		return (bool)maskStencil;
 	}
 
 	bool PixelFormat::HasColor() {

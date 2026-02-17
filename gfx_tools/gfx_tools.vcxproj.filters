@@ -44,7 +44,7 @@
     <ClInclude Include="PixelFormat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="shared.h">
+    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="main.h">
@@ -69,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IgnoreCaseComparer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NonCopyable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

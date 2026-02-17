@@ -1,5 +1,5 @@
 #pragma once
-#include "shared.h"
+#include "utils.h"
 #include "IgnoreCaseComparer.h"
 #include <unordered_set>
 #include <map>
@@ -113,7 +113,7 @@ namespace Ubi {
 		};
 
 		// this is the abstract class on which all resources are based
-		class Resource {
+		class Resource : NonCopyable {
 			public:
 			typedef uint32_t ID;
 			typedef uint32_t VERSION;
@@ -134,8 +134,6 @@ namespace Ubi {
 			const Loader::POINTER LOADER_POINTER;
 
 			Resource(Loader::POINTER loaderPointer, VERSION version);
-			Resource(const Resource &resource) = delete;
-			Resource &operator=(const Resource &resource) = delete;
 		};
 		
 		class HeaderCopier {
@@ -151,7 +149,7 @@ namespace Ubi {
 			HeaderCopier(std::streamsize fileSize, std::streampos filePosition);
 		};
 
-		class HeaderReader : private HeaderCopier {
+		class HeaderReader : private HeaderCopier, NonCopyable {
 			private:
 			void throwReadPastEnd();
 
@@ -160,11 +158,9 @@ namespace Ubi {
 			public:
 			HeaderReader(std::istream &inputStream, std::streamsize fileSize);
 			~HeaderReader();
-			HeaderReader(const HeaderReader &headerReader) = delete;
-			HeaderReader &operator=(const HeaderReader &headerReader) = delete;
 		};
 
-		class HeaderWriter : private HeaderCopier {
+		class HeaderWriter : private HeaderCopier, NonCopyable {
 			private:
 			void throwWrotePastEnd();
 
@@ -173,8 +169,6 @@ namespace Ubi {
 			public:
 			HeaderWriter(std::ostream &outputStream, std::streamsize fileSize);
 			~HeaderWriter();
-			HeaderWriter(const HeaderReader &headerWriter) = delete;
-			HeaderWriter &operator=(const HeaderWriter &headerWriter) = delete;
 		};
 
 		// a basic factory pattern going on here for the creation of resources

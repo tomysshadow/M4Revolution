@@ -1,5 +1,5 @@
 #pragma once
-#define _WIN32_WINNT 0x0500
+#include "NonCopyable.h"
 #include <functional>
 #include <stdexcept>
 #include <ctype.h>
@@ -12,12 +12,12 @@
 #endif
 
 inline char charWhitespaceTrim(const char* str) {
-	unsigned char space = *str;
+	unsigned char space = (unsigned char)*str;
 
 	while (space && isspace(space)) {
-		space = *++str;
+		space = (unsigned char)*++str;
 	}
-	return space;
+	return (char)space;
 }
 
 inline wchar_t charWhitespaceTrimWide(const wchar_t* str) {
@@ -34,10 +34,10 @@ inline bool stringNullOrEmpty(const char* str) {
 }
 
 inline bool stringWhitespace(const char* str) {
-	unsigned char space = *str;
+	unsigned char space = (unsigned char)*str;
 
 	while (space && isspace(space)) {
-		space = *++str;
+		space = (unsigned char)*++str;
 	}
 	return !space;
 }

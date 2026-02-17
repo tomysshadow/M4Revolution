@@ -1,5 +1,5 @@
 #pragma once
-#include "shared.h"
+#include "utils.h"
 #include "Ubi.h"
 #include <mutex>
 #include <condition_variable>
@@ -21,7 +21,7 @@
 
 namespace Work {
 	// a "signal the other thread to wake up and do stuff" class (similar to SetEvent)
-	class Event {
+	class Event : NonCopyable {
 		private:
 		// threadIDOptional has a thread ID if the event is set (notified, time to wake up, lock is unlocked...)
 		// and is std::nullopt if the event is not set (locked, currently in use, etc.)
@@ -34,8 +34,6 @@ namespace Work {
 
 		public:
 		Event(bool set = false);
-		Event(const Event &event) = delete;
-		Event &operator=(const Event &event) = delete;
 		void wait(bool &yield, bool reset);
 		void wait(bool reset = false);
 		void set();
@@ -43,7 +41,7 @@ namespace Work {
 	};
 
 	// generic "lock a thing for the duration of this scope, and only then allow me to get the thing" class (like a GlobalLock type deal)
-	template <typename T> class Lock {
+	template <typename T> class Lock : NonCopyable {
 		private:
 		Event &event;
 		T &value;
@@ -60,9 +58,6 @@ namespace Work {
 			// (SOMETHING should always happen when it is released, of course)
 			event.set();
 		}
-
-		Lock(const Lock &lock) = delete;
-		Lock &operator=(const Lock &lock) = delete;
 
 		T &get() const {
 			return value;

@@ -1,5 +1,5 @@
 #pragma once
-#include "shared.h"
+#include "utils.h"
 #include "PixelFormat.h"
 
 namespace gfx_tools {

@@ -1,5 +1,5 @@
 #pragma once
-#include "shared.h"
+#include "utils.h"
 #include "PixelFormat.h"
 #include "FormatHint.h"
 #include <map>

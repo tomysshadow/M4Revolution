@@ -1,5 +1,5 @@
 #pragma once
-#include "shared.h"
+#include "utils.h"
 #include "base.h"
 #include "ares_base.h"
 #include "RawBuffer.h"
@@ -54,9 +54,16 @@ namespace gfx_tools {
 		) = 0;
 
 		GFX_TOOLS_API virtual RawBuffer::POINTER GFX_TOOLS_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) = 0;
-		GFX_TOOLS_API virtual void GFX_TOOLS_CALL SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer = 0) = 0;
+
+		GFX_TOOLS_API virtual void GFX_TOOLS_CALL SetLODRawBuffer(
+			LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer = 0
+		) = 0;
+
 		GFX_TOOLS_API virtual RawBuffer::POINTER GFX_TOOLS_CALL GetLODRawBuffer(LOD lod) = 0;
-		GFX_TOOLS_API virtual void GFX_TOOLS_CALL GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) = 0;
+
+		GFX_TOOLS_API virtual void GFX_TOOLS_CALL GetLODRawBuffer(
+			LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size
+		) = 0;
 
 		GFX_TOOLS_API virtual bool GFX_TOOLS_CALL GetImageInfoImp(
 			ValidatedImageInfo &validatedImageInfo
@@ -86,8 +93,14 @@ namespace gfx_tools {
 			int* textureHeightPointer
 		) = 0;
 
-		virtual void GFX_TOOLS_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) = 0;
-		virtual void GFX_TOOLS_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) = 0;
+		virtual void GFX_TOOLS_CALL LoadRawBuffer(
+			const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride
+		) = 0;
+
+		virtual void GFX_TOOLS_CALL SaveRawBuffer(
+			const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size
+		) = 0;
+
 		virtual void GFX_TOOLS_CALL GetImageInfoImpEx() = 0;
 
 		virtual void GFX_TOOLS_CALL SetLODRawBufferImpEx(
@@ -170,8 +183,14 @@ namespace gfx_tools {
 			int* textureHeightPointer
 		);
 
-		void GFX_TOOLS_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride);
-		void GFX_TOOLS_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size);
+		void GFX_TOOLS_CALL LoadRawBuffer(
+			const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride
+		);
+
+		void GFX_TOOLS_CALL SaveRawBuffer(
+			const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size
+		);
+
 		void GFX_TOOLS_CALL GetImageInfoImpEx();
 
 		void GFX_TOOLS_CALL SetLODRawBufferImpEx(
@@ -201,8 +220,13 @@ namespace gfx_tools {
 			int* textureHeightPointer
 		);
 
-		void GFX_TOOLS_CALL LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride);
-		void GFX_TOOLS_CALL SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size);
+		void GFX_TOOLS_CALL LoadRawBuffer(
+			const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride
+		);
+
+		void GFX_TOOLS_CALL SaveRawBuffer(
+			const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size
+		);
 	};
 
 	class ImageLoaderMultipleBufferTGA : public ImageLoaderMultipleBuffer {

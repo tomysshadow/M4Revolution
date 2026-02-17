@@ -143,7 +143,7 @@ namespace Work {
 			countRead = (std::streamsize)__min((size_t)count, (size_t)countRead);
 
 			{
-				Data::POINTER pointer(new unsigned char[(size_t)countRead]);
+				Data::POINTER pointer = makeSharedArray<unsigned char>((size_t)countRead);
 
 				readStreamPartial(inputStream, pointer.get(), countRead, gcountRead);
 
@@ -390,7 +390,7 @@ namespace Work {
 			fileStream.seekp(codeVectorIterator->position);
 
 			std::string &str = codeVectorIterator->str;
-			writeStream(fileStream, str.c_str(), str.length());
+			writeStream(fileStream, str.c_str(), (std::streamsize)str.length());
 		}
 	}
 

@@ -140,15 +140,15 @@ namespace gfx_tools {
 		m4ImageStride = 0;
 
 		M4Image resizeM4Image(
-			resizeTextureWidth,
-			resizeTextureHeight,
+			(int)resizeTextureWidth,
+			(int)resizeTextureHeight,
 			m4ImageStride,
 			imageInfo.GetColorFormat()
 		);
 
 		resizeM4Image.blit(M4IMAGE);
 
-		RawBufferEx::ResizeInfo resizeInfo(resizeTextureWidth, resizeTextureHeight, m4ImageStride, qFactor);
+		RawBufferEx::ResizeInfo resizeInfo((int)resizeTextureWidth, (int)resizeTextureHeight, m4ImageStride, qFactor);
 		SetLODRawBufferImpEx(lod, resizeM4Image.acquire(), (RawBuffer::SIZE)(resizeTextureHeight * m4ImageStride), true, resizeInfo, 0);
 		resizeImageInfo = imageInfo;
 	}
@@ -268,10 +268,20 @@ namespace gfx_tools {
 		int* textureWidthPointer,
 		int* textureHeightPointer
 	) {
-		M4Image::getInfo(rawBuffer.pointer, rawBuffer.size, GetExtension(), isAlphaPointer, bitsPointer, textureWidthPointer, textureHeightPointer);
+		M4Image::getInfo(
+			rawBuffer.pointer,
+			rawBuffer.size,
+			GetExtension(),
+			isAlphaPointer,
+			bitsPointer,
+			textureWidthPointer,
+			textureHeightPointer
+		);
 	}
 
-	void ImageLoaderMultipleBuffer::LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) {
+	void ImageLoaderMultipleBuffer::LoadRawBuffer(
+		const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride
+	) {
 		size_t m4ImageStride = stride;
 
 		M4Image m4Image(
@@ -285,7 +295,9 @@ namespace gfx_tools {
 		m4Image.load(rawBuffer.pointer, rawBuffer.size, GetExtension());
 	}
 
-	void ImageLoaderMultipleBuffer::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) {
+	void ImageLoaderMultipleBuffer::SaveRawBuffer(
+		const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size
+	) {
 		const RawBufferEx::ResizeInfo &RESIZE_INFO = rawBuffer.resizeInfoOptional.value();
 
 		size_t m4ImageStride = RESIZE_INFO.stride;
@@ -326,9 +338,9 @@ namespace gfx_tools {
 		static const size_t BYTES = 3;
 		static const int VOLUME_EXTENT = 1;
 
-		#define LOD_SIZE_IN_BYTES(bits, textureWidth, textureHeight, volumeExtent) (((bits) >> BYTES) * (textureWidth) * (textureHeight) * (volumeExtent))
+		#define LOD_SIZE_IN_BYTES(bits, textureWidth, textureHeight, volumeExtent) \
+			(((bits) >> BYTES) * (textureWidth) * (textureHeight) * (volumeExtent))
 
-		const char* extension = GetExtension();
 		uint32_t bits = 0;
 		int textureWidth = 0;
 		int textureHeight = 0;
@@ -346,7 +358,14 @@ namespace gfx_tools {
 				return;
 			}
 
-			validatedImageInfoOptional.emplace(textureWidth, textureHeight, VOLUME_EXTENT, formatHint.GetEnumPixelFormat(isAlpha, bits), formatHint);
+			validatedImageInfoOptional.emplace(
+				textureWidth,
+				textureHeight,
+				VOLUME_EXTENT,
+				formatHint.GetEnumPixelFormat(isAlpha, bits),
+				formatHint
+			);
+			
 			bits = validatedImageInfoOptional.value().GetBitsPerPixel();
 			sizeInBytes = LOD_SIZE_IN_BYTES(bits, textureWidth, textureHeight, VOLUME_EXTENT);
 		}
@@ -413,7 +432,7 @@ namespace gfx_tools {
 		}
 
 		if (numberOfRawBuffers <= lod) {
-			numberOfRawBuffers = lod + 1;
+			numberOfRawBuffers = (SIZE)(lod + 1);
 		}
 
 		std::optional<RawBufferEx> &rawBufferOptional = rawBufferOptionals[lod];
@@ -471,7 +490,9 @@ namespace gfx_tools {
 		}
 	}
 
-	void ImageLoaderMultipleBufferZAP::LoadRawBuffer(const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride) {
+	void ImageLoaderMultipleBufferZAP::LoadRawBuffer(
+		const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride
+	) {
 		zap_size_t zapStride = stride;
 		zap_size_t zapSize = 0;
 
@@ -490,7 +511,9 @@ namespace gfx_tools {
 		}
 	}
 
-	void ImageLoaderMultipleBufferZAP::SaveRawBuffer(const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) {
+	void ImageLoaderMultipleBufferZAP::SaveRawBuffer(
+		const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size
+	) {
 		const RawBufferEx::ResizeInfo &RESIZE_INFO = rawBuffer.resizeInfoOptional.value();
 
 		zap_size_t zapSize = 0;

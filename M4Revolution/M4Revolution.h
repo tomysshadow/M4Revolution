@@ -1,5 +1,5 @@
 #pragma once
-#include "shared.h"
+#include "utils.h"
 #include "Ubi.h"
 #include "Work.h"
 #include <nvtt/nvtt.h>
@@ -11,11 +11,11 @@
 	#define TO_NEXT_POWER_OF_TWO
 #endif
 
-class M4Revolution {
+class M4Revolution : NonCopyable {
 	private:
 	void destroy();
 
-	class Log {
+	class Log : NonCopyable {
 		private:
 		std::istream* inputStreamPointer = 0;
 		Ubi::BigFile::File::SIZE inputFileSize = 0;
@@ -31,8 +31,6 @@ class M4Revolution {
 
 		Log(const std::string &title, std::istream* inputStreamPointer = 0, Ubi::BigFile::File::SIZE inputFileSize = 0, bool fileNames = false, bool slow = false);
 		~Log();
-		Log(const Log &log) = delete;
-		Log &operator=(const Log &log) = delete;
 		void step();
 		void copying();
 		void converting(const Ubi::BigFile::File &file);
@@ -50,11 +48,9 @@ class M4Revolution {
 		const nvtt::CompressionOptions &get(const Ubi::BigFile::File &file, const nvtt::Surface &surface, bool hasAlpha) const;
 	};
 
-	struct OutputHandler : public nvtt::OutputHandler {
+	struct OutputHandler : public nvtt::OutputHandler, NonCopyable {
 		OutputHandler(Work::FileTask &fileTask);
 		virtual ~OutputHandler() override;
-		OutputHandler(const OutputHandler &outputHandler) = delete;
-		OutputHandler &operator=(const OutputHandler &outputHandler) = delete;
 		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel) override;
 		virtual void endImage() override;
 		virtual bool writeData(const void* data, int size) override;
@@ -64,7 +60,7 @@ class M4Revolution {
 		unsigned int size = 0;
 	};
 
-	struct ErrorHandler : public nvtt::ErrorHandler {
+	struct ErrorHandler : public nvtt::ErrorHandler, NonCopyable {
 		virtual ~ErrorHandler() override;
 		virtual void error(nvtt::Error e) override;
 
@@ -162,25 +158,21 @@ class M4Revolution {
 		PIMAGE_SECTION_HEADER imageSectionHeaderPointer = (PIMAGE_SECTION_HEADER)(imageNtHeadersPointer + 1);
 
 		for (WORD i = 0; i < imageNtHeaders.FileHeader.NumberOfSections; i++) {
-			{
-				IMAGE_SECTION_HEADER &imageSectionHeader = *imageSectionHeaderPointer;
+			IMAGE_SECTION_HEADER &imageSectionHeader = *imageSectionHeaderPointer++;
 
-				// test the RVA falls within the section's virtual memory
-				if (rva - imageSectionHeader.VirtualAddress >= imageSectionHeader.Misc.VirtualSize) {
-					continue;
-				}
-
-				// now turn it into the position
-				rva += imageSectionHeader.PointerToRawData - imageSectionHeader.VirtualAddress;
-
-				// test the position falls within initialized data
-				if (rva - imageSectionHeader.PointerToRawData >= imageSectionHeader.SizeOfRawData) {
-					throw std::invalid_argument("rva must not point to uninitialized data");
-				}
-				return rva;
+			// test the RVA falls within the section's virtual memory
+			if (rva - imageSectionHeader.VirtualAddress >= imageSectionHeader.Misc.VirtualSize) {
+				continue;
 			}
 
-			imageSectionHeaderPointer++;
+			// now turn it into the position
+			rva += imageSectionHeader.PointerToRawData - imageSectionHeader.VirtualAddress;
+
+			// test the position falls within initialized data
+			if (rva - imageSectionHeader.PointerToRawData >= imageSectionHeader.SizeOfRawData) {
+				throw std::invalid_argument("rva must not point to uninitialized data");
+			}
+			return rva;
 		}
 
 		throw std::invalid_argument("rva must not point out of bounds");
@@ -206,8 +198,6 @@ class M4Revolution {
 	);
 	
 	~M4Revolution();
-	M4Revolution(const M4Revolution &m4Revolution) = delete;
-	M4Revolution &operator=(const M4Revolution &m4Revolution) = delete;
 	void toggleFullScreen();
 	void toggleCameraInertia();
 	void editSoundFadeOutTime();

@@ -160,9 +160,9 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 	}
 
 	try {
-		Work::Data::POINTER pointer(new unsigned char[size]);
+		Work::Data::POINTER pointer = makeSharedArray<unsigned char>((size_t)size);
 
-		if (memcpy_s(pointer.get(), size, data, size)) {
+		if (memcpy_s(pointer.get(), (rsize_t)size, data, (rsize_t)size)) {
 			return false;
 		}
 
@@ -250,7 +250,7 @@ void M4Revolution::convertFile(
 	};
 
 	Work::Data::POINTER &dataPointer = convert.dataPointer;
-	dataPointer = Work::Data::POINTER(new unsigned char[file.size]);
+	dataPointer = makeSharedArray<unsigned char>(file.size);
 	readStream(inputStream, dataPointer.get(), file.size);
 
 	Work::FileTask::POINTER &fileTaskPointer = convert.fileTaskPointer;
@@ -653,7 +653,7 @@ void M4Revolution::replaceGfxTools() {
 		GlobalHandleLock<> resourceGlobalHandleLock(NULL, resourceHandle);
 
 		Work::Output output;
-		writeStream(output.fileStream, resourceGlobalHandleLock.get(), resourceGlobalHandleLock.size());
+		writeStream(output.fileStream, resourceGlobalHandleLock.get(), (std::streamsize)resourceGlobalHandleLock.size());
 	}
 
 	Work::Backup::create(Work::Output::GFX_TOOLS_PATH.string().c_str());
@@ -697,7 +697,7 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	#ifdef EXTENTS_MAKE_SQUARE
 	surface.resize_make_square(maxExtent, ROUND_MODE, RESIZE_FILTER);
 	#else
-	surface.resize(maxExtent, ROUND_MODE, RESIZE_FILTER);
+	surface.resize((int)maxExtent, ROUND_MODE, RESIZE_FILTER);
 	#endif
 
 	Ubi::BigFile::File &file = convert.file;
@@ -931,7 +931,7 @@ void M4Revolution::outputData(std::ostream &outputStream, Work::FileTask &fileTa
 				return;
 			}
 
-			writeStream(outputStream, data.pointer.get(), data.size);
+			writeStream(outputStream, data.pointer.get(), (std::streamsize)data.size);
 
 			dataQueue.pop();
 		}
@@ -1022,7 +1022,7 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 	const std::string &COMMAND_LINE = outputStringStream.str();
 
 	size_t commandLineSize = COMMAND_LINE.size() + 1;
-	std::unique_ptr<CHAR[]> commandLinePointer(new CHAR[commandLineSize]);
+	std::unique_ptr<CHAR[]> commandLinePointer = makeUniqueArray<CHAR>(commandLineSize);
 	CHAR* _commandLine = commandLinePointer.get();
 
 	if (strncpy_s(_commandLine, commandLineSize, COMMAND_LINE.c_str(), commandLineSize)) {
@@ -1093,7 +1093,7 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 		osErr(GetExitCodeProcess(process, &exitCode));
 		SetLastError(exitCode);
 	}
-	return size;
+	return (bool)size;
 }
 
 unsigned long M4Revolution::getPositionFromRVA(std::istream &inputStream, unsigned long rva) {
@@ -1136,10 +1136,10 @@ unsigned long M4Revolution::getPositionFromRVA(std::istream &inputStream, unsign
 		+ imageFileHeader.SizeOfOptionalHeader
 		+ ((size_t)imageFileHeader.NumberOfSections * IMAGE_SECTION_HEADER_SIZE);
 
-	std::unique_ptr<char[]> imageNtHeadersPointer = std::unique_ptr<char[]>(new char[imageNtHeadersSize]);
+	std::unique_ptr<char[]> imageNtHeadersPointer = makeUniqueArray<char>(imageNtHeadersSize);
 
 	PIMAGE_NT_HEADERS imageNtHeaders = (PIMAGE_NT_HEADERS)imageNtHeadersPointer.get();
-	readStream(inputStream, imageNtHeaders, imageNtHeadersSize);
+	readStream(inputStream, imageNtHeaders, (std::streamsize)imageNtHeadersSize);
 
 	return imageNtHeaders->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC
 		? getPositionFromRVA((PIMAGE_NT_HEADERS64)imageNtHeaders, rva)

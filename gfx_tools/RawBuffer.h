@@ -1,9 +1,9 @@
 #pragma once
-#include "shared.h"
+#include "utils.h"
 #include <optional>
 
 namespace gfx_tools {
-	struct RawBuffer {
+	struct RawBuffer : NonCopyable {
 		typedef unsigned char* POINTER;
 		typedef unsigned long SIZE;
 
@@ -14,8 +14,6 @@ namespace gfx_tools {
 		GFX_TOOLS_API RawBuffer();
 		GFX_TOOLS_API RawBuffer(POINTER pointer, SIZE size, bool owner = false);
 		GFX_TOOLS_API ~RawBuffer();
-		GFX_TOOLS_API RawBuffer(const RawBuffer &rawBuffer) = delete;
-		GFX_TOOLS_API RawBuffer& GFX_TOOLS_CALL operator=(const RawBuffer &rawBuffer) = delete;
 	};
 
 	struct RawBufferEx : public RawBuffer {

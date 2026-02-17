@@ -9,9 +9,9 @@ namespace gfx_tools {
 	void ImageInfo::ComputeLODDimensions(DIMENSION &textureWidth, DIMENSION &textureHeight, DIMENSION &volumeExtent, LOD lod) const {
 		static const DIMENSION MIN_DIMENSION = 1;
 
-		textureWidth = this->textureWidth >> lod;
-		textureHeight = this->textureHeight >> lod;
-		volumeExtent = this->volumeExtent >> lod;
+		textureWidth = (DIMENSION)(this->textureWidth >> lod);
+		textureHeight = (DIMENSION)(this->textureHeight >> lod);
+		volumeExtent = (DIMENSION)(this->volumeExtent >> lod);
 
 		if (!textureWidth) {
 			textureWidth = MIN_DIMENSION;

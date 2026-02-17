@@ -15,8 +15,8 @@ namespace Ubi {
 			for (std::string::iterator encryptedStringIterator = encryptedString.begin(); encryptedStringIterator != encryptedString.end(); encryptedStringIterator++) {
 				char &encryptedChar = *encryptedStringIterator;
 				
-				unsigned char encryptedCharLeft = (unsigned char)encryptedChar << 1;
-				unsigned char encryptedCharRight = (unsigned char)encryptedChar >> 1;
+				unsigned char encryptedCharLeft = (unsigned char)((unsigned char)encryptedChar << 1);
+				unsigned char encryptedCharRight = (unsigned char)((unsigned char)encryptedChar >> 1);
 
 				encryptedChar = (encryptedCharLeft ^ encryptedCharRight) & MASK ^ encryptedCharLeft;
 			}
@@ -39,7 +39,7 @@ namespace Ubi {
 				return std::nullopt;
 			}
 
-			std::unique_ptr<char[]> strPointer(new char[(size_t)size + 1]);
+			std::unique_ptr<char[]> strPointer = makeUniqueArray<char>((size_t)size + 1);
 			char* str = strPointer.get();
 			readStream(inputStream, str, size);
 
@@ -169,8 +169,6 @@ namespace Ubi {
 
 			TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::LAYER_MAP &layerMap);
 			TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream);
-			TextureBox(const TextureBox &textureBox) = delete;
-			TextureBox &operator=(const TextureBox &textureBox) = delete;
 		};
 
 		class Water: public virtual Resource {
@@ -185,8 +183,6 @@ namespace Ubi {
 
 			Water(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
 			Water(Loader::POINTER loaderPointer, std::istream &inputStream);
-			Water(const Water &water) = delete;
-			Water &operator=(const Water &water) = delete;
 		};
 
 		class InteractiveOffsetProvider: public virtual Resource {
@@ -195,8 +191,6 @@ namespace Ubi {
 			static const Resource::VERSION VERSION = 1;
 
 			InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
-			InteractiveOffsetProvider(const InteractiveOffsetProvider &interactiveOffsetProvider) = delete;
-			InteractiveOffsetProvider &operator=(const InteractiveOffsetProvider &interactiveOffsetProvider) = delete;
 		};
 
 		class TextureAlignedOffsetProvider: public virtual Resource {
@@ -205,8 +199,6 @@ namespace Ubi {
 			static const Resource::VERSION VERSION = 1;
 
 			TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
-			TextureAlignedOffsetProvider(const TextureAlignedOffsetProvider &textureAlignedOffsetProvider) = delete;
-			TextureAlignedOffsetProvider &operator=(const TextureAlignedOffsetProvider &textureAlignedOffsetProvider) = delete;
 		};
 
 		class StateData: public virtual Resource {
@@ -219,8 +211,6 @@ namespace Ubi {
 
 			StateData(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet);
 			StateData(Loader::POINTER loaderPointer, std::istream &inputStream);
-			StateData(const StateData &stateData) = delete;
-			StateData &operator=(const StateData &stateData) = delete;
 		};
 
 		void TextureBox::create(std::istream &inputStream, RLE::LAYER_MAP &layerMap) {
@@ -823,7 +813,7 @@ namespace Ubi {
 		const std::optional<File> &layerFileOptional
 	)
 		: nameOptional(String::readOptional(inputStream)) {
-		read(ownerDirectory, inputStream, fileSystemSize, files, filePointerSetMap, layerFileOptional);
+		read((bool)ownerDirectory, inputStream, fileSystemSize, files, filePointerSetMap, layerFileOptional);
 	}
 
 	BigFile::Directory::Directory(std::istream &inputStream)

@@ -8,7 +8,7 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "winres.h"
-
+#include "versioninfo.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -33,7 +33,7 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
-    "\0"
+    "#include ""versioninfo.h""\0"
 END
 
 3 TEXTINCLUDE 
@@ -51,45 +51,6 @@ END
 //
 
 IDR_BIN_GFX_TOOLS       BIN                     "..\\Release\\gfx_tools_rd.dll"
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,3,1,0
- PRODUCTVERSION 1,3,1,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x40004L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "100904b0"
-        BEGIN
-            VALUE "CompanyName", "TOMYSSHADOW"
-            VALUE "FileDescription", "Myst IV: Revolution"
-            VALUE "FileVersion", "1.3.1.0"
-            VALUE "InternalName", "M4Revolution.exe"
-            VALUE "LegalCopyright", "Copyright (C) Anthony Kleine 2026"
-            VALUE "OriginalFilename", "M4Revolution.exe"
-            VALUE "ProductName", "M4Revolution"
-            VALUE "ProductVersion", "1.3.1.0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x1009, 1200
-    END
-END
 
 
 /////////////////////////////////////////////////////////////////////////////
