@@ -1,5 +1,4 @@
 #pragma once
-#include "utils.h"
 #include "Work.h"
 
 namespace AI {

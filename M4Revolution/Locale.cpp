@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Locale.h"
 
 Locale& Locale::createGlobal(bool tryGlobal) {

@@ -74,6 +74,9 @@
     <ClCompile Include="AI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="versioninfo.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
@@ -91,5 +94,8 @@
   <ItemGroup>
     <None Include="..\README.md" />
     <None Include="..\Release\gfx_tools_rd.dll" />
+    <None Include="versioninfo.rcpp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

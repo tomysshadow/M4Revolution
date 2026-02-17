@@ -1,5 +1,4 @@
 #pragma once
-#include "utils.h"
 #include "base.h"
 #include "ares_base.h"
 #include "RawBuffer.h"

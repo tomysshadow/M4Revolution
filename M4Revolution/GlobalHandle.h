@@ -1,5 +1,4 @@
 #pragma once
-#include "utils.h"
 
 template <typename T = void*> class GlobalHandleLock {
 	public:

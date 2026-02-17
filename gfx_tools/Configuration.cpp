@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Configuration.h"
 
 namespace gfx_tools {

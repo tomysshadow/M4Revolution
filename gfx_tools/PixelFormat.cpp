@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "PixelFormat.h"
 #include <map>
 

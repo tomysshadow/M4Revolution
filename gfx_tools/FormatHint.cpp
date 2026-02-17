@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "FormatHint.h"
 
 namespace gfx_tools {

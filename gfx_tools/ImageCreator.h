@@ -1,5 +1,4 @@
 #pragma once
-#include "utils.h"
 #include "ImageLoader.h"
 #include "IgnoreCaseComparer.h"
 #include <map>

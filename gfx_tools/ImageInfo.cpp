@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ImageInfo.h"
 #include "Configuration.h"
 #include <stdlib.h>

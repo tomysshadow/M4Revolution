@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ImageCreator.h"
 #include "base.h"
 #include <stdlib.h>

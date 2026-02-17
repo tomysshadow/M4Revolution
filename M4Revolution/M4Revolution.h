@@ -1,5 +1,4 @@
 #pragma once
-#include "utils.h"
 #include "Ubi.h"
 #include "Work.h"
 #include <nvtt/nvtt.h>

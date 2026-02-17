@@ -1,5 +1,4 @@
 #pragma once
-#include "utils.h"
 
 namespace gfx_tools {
 	class Configuration {

@@ -1,5 +1,4 @@
 #pragma once
-#include "utils.h"
 #include <optional>
 
 namespace gfx_tools {

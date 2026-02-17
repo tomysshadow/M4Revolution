@@ -1,5 +1,4 @@
 #pragma once
-#include "utils.h"
 #include "IgnoreCaseComparer.h"
 #include <unordered_set>
 #include <map>

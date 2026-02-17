@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "M4Revolution.h"
 #include "AI.h"
 #include "GlobalHandle.h"
