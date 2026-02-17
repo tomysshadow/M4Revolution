@@ -68,9 +68,6 @@ namespace Work {
 		setPredicate(false);
 	}
 
-	Data::Data() {
-	}
-
 	Data::Data(size_t size, POINTER pointer)
 		: size(size),
 		pointer(pointer) {

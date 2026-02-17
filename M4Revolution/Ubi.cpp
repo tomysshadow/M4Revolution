@@ -542,9 +542,6 @@ namespace Ubi {
 		}
 	}
 
-	BigFile::Path::Path() {
-	}
-
 	BigFile::Path::Path(const NAME_VECTOR &directoryNameVector, const std::string &fileName)
 		: directoryNameVector(directoryNameVector),
 		fileName(fileName) {

@@ -189,7 +189,7 @@ namespace Ubi {
 			NAME_VECTOR directoryNameVector = {};
 			std::string fileName = "";
 
-			Path();
+			Path() = default;
 			Path(const NAME_VECTOR &directoryNameVector, const std::string &fileName);
 			Path(const std::string &copyString);
 			Path &operator=(const std::string &assignString);

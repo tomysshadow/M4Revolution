@@ -49,7 +49,7 @@ class M4Revolution : NonCopyable {
 
 	struct OutputHandler : public nvtt::OutputHandler, NonCopyable {
 		OutputHandler(Work::FileTask &fileTask);
-		virtual ~OutputHandler() override;
+		virtual ~OutputHandler() override = default;
 		virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel) override;
 		virtual void endImage() override;
 		virtual bool writeData(const void* data, int size) override;
@@ -60,7 +60,7 @@ class M4Revolution : NonCopyable {
 	};
 
 	struct ErrorHandler : public nvtt::ErrorHandler, NonCopyable {
-		virtual ~ErrorHandler() override;
+		virtual ~ErrorHandler() override = default;
 		virtual void error(nvtt::Error e) override;
 
 		bool result = true;

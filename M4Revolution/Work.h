@@ -72,7 +72,7 @@ namespace Work {
 		size_t size = 0;
 		POINTER pointer = 0;
 
-		Data();
+		Data() = default;
 		Data(size_t size, POINTER pointer);
 	};
 

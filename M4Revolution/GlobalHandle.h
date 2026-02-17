@@ -63,7 +63,7 @@ template <typename T = void*> class GlobalHandleLock {
 
 	void duplicate(const GlobalHandleLock &globalHandleLock) {
 		destroy();
-		
+
 		globalHandle = globalHandleLock.globalHandle;
 		resource = globalHandleLock.resource;
 		resourceSize = globalHandleLock.resourceSize;

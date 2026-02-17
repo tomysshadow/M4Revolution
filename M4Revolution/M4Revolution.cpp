@@ -144,9 +144,6 @@ M4Revolution::OutputHandler::OutputHandler(Work::FileTask &fileTask)
 	: fileTask(fileTask) {
 }
 
-M4Revolution::OutputHandler::~OutputHandler() {
-}
-
 void M4Revolution::OutputHandler::beginImage(int size, int width, int height, int depth, int face, int miplevel) {
 	// never called
 }
@@ -177,9 +174,6 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 		return false;
 	}
 	return true;
-}
-
-M4Revolution::ErrorHandler::~ErrorHandler() {
 }
 
 void M4Revolution::ErrorHandler::error(nvtt::Error error) {
