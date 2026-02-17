@@ -94,7 +94,7 @@ std::optional<bool> performOperation(M4Revolution &m4Revolution) {
 }
 
 int main(int argc, char** argv) {
-	consoleLog("Myst IV: Revolution " VERSIONINFO_VERSION);
+	consoleLog(VERSIONINFO_FILE_DESCRIPTION " " VERSIONINFO_VERSION);
 	consoleLog("By " VERSIONINFO_COPYRIGHT_NAME, 2);
 
 	static const int MIN_ARGC = 1;
