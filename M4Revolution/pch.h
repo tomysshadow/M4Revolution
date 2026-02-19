@@ -27,7 +27,7 @@
 #endif
 
 #ifdef WINDOWS
-	#include <Windows.h>
+#include <Windows.h>
 #endif
 
 #include "resource.h"
