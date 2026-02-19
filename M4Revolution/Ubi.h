@@ -14,7 +14,7 @@ namespace Ubi {
 		static const size_t SIZE_SIZE = sizeof(SIZE);
 
 		std::optional<std::string> &swizzle(std::optional<std::string> &encryptedStringOptional);
-		std::optional<std::string> readOptional(std::istream &inputStream, bool &nullTerminator, SIZE maxSize = -1);
+		std::optional<std::string> readOptional(std::istream &inputStream, bool &nullTerminator, SIZE maxSize = (SIZE)-1);
 		std::optional<std::string> readOptional(std::istream &inputStream);
 		std::optional<std::string> readOptionalEncrypted(std::istream &inputStream);
 		void writeOptional(std::ostream &outputStream, const std::optional<std::string> &strOptional, bool nullTerminator = true);
