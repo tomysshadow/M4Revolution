@@ -4,10 +4,10 @@
 #include <nvtt/nvtt.h>
 
 #ifdef WINDOWS
-	#define D3D9
-	//#define EXTENTS_MAKE_SQUARE
-	//#define EXTENTS_MAKE_POWER_OF_TWO
-	#define TO_NEXT_POWER_OF_TWO
+#define D3D9
+//#define EXTENTS_MAKE_SQUARE
+//#define EXTENTS_MAKE_POWER_OF_TWO
+#define TO_NEXT_POWER_OF_TWO
 #endif
 
 class M4Revolution : NonCopyable {
