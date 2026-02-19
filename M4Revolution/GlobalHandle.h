@@ -153,7 +153,7 @@ template <typename T = void*> class GlobalHandleLock {
 		return get()[index];
 	}
 
-	T operator[](ptrdiff_t index) const {
+	const T& operator[](ptrdiff_t index) const {
 		return get()[index];
 	}
 

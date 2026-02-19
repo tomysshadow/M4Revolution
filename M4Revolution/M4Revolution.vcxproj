@@ -198,7 +198,12 @@
     </ClCompile>
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="Ubi.cpp" />
-    <ClCompile Include="versioninfo.cpp" />
+    <ClCompile Include="versioninfo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Work.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -210,7 +215,6 @@
   <ItemGroup>
     <None Include="..\README.md" />
     <None Include="..\Release\gfx_tools_rd.dll" />
-    <None Include="versioninfo.rcx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\gfx_tools\gfx_tools.vcxproj">
