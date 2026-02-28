@@ -346,7 +346,7 @@ inline void osErr(BOOL b) {
 
 template<bool doserrno = false>
 inline void osErr(HANDLE h) {
-	if (h != NULL && h != INVALID_HANDLE_VALUE) {
+	if (h && h != INVALID_HANDLE_VALUE) {
 		return;
 	}
 
