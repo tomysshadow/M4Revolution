@@ -312,9 +312,12 @@ inline unsigned long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, 
 #ifdef WINDOWS
 template<bool doserrno = false>
 inline void osErrThrow() {
-	throw std::system_error(doserrno
-		? std::error_code((int)_doserrno, std::generic_category())
-		: std::error_code((int)GetLastError(), std::system_category()));
+	throw std::system_error(
+		std::error_code(
+			(int)(doserrno ? _doserrno : GetLastError()),
+			std::system_category()
+		)
+	);
 }
 
 template<bool doserrno = false>
