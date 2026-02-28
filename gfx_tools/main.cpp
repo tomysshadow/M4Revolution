@@ -5,7 +5,7 @@
 #include <M4Image.h>
 
 namespace gfx_tools {
-	template<bool Luminance>
+	template<bool luminance>
 	void convertHeightMapIntoDuDvBumpMapColor(
 		DIMENSION width, DIMENSION height,
 		M4Image::Color32* inputPointer, STRIDE inputStride,
@@ -53,7 +53,7 @@ namespace gfx_tools {
 				outputColor.channels[OUTPUT_CHANNEL_DU] = (unsigned char)(inputColor.channels[INPUT_CHANNEL_UV]
 					- inputUColorPointer->channels[INPUT_CHANNEL_UV]);
 
-				if constexpr (Luminance) {
+				if (luminance) {
 					((M4Image::Color32*)outputColorPointer)->channels[OUTPUT_CHANNEL_LUMINANCE] = inputColorPointer->channels[INPUT_CHANNEL_LUMINANCE];
 					outputColorPointer = (M4Image::Color16*)((M4Image::Color32*)outputColorPointer + 1);
 				} else {

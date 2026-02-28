@@ -310,37 +310,44 @@ inline unsigned long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, 
 } while (1)
 
 #ifdef WINDOWS
-inline void osErrThrow(bool doserrno = false) {
-	std::error_code errorCode((int)(doserrno ? _doserrno : GetLastError()), std::system_category());
-	throw std::system_error(errorCode);
+template<bool doserrno = false>
+inline void osErrThrow() {
+	throw std::system_error(doserrno
+		? std::error_code((int)_doserrno, std::generic_category())
+		: std::error_code((int)GetLastError(), std::system_category()));
 }
 
-inline void osErr(DWORD dw, bool doserrno = false) {
+template<bool doserrno = false>
+inline void osErr(DWORD dw) {
 	if (dw) {
 		return;
 	}
-	
-	osErrThrow(doserrno);
+
+	osErrThrow<doserrno>();
 }
 
-inline void osErr(WORD w, bool doserrno = false) {
-	osErr((DWORD)w, doserrno);
+template<bool doserrno = false>
+inline void osErr(WORD w) {
+	osErr<doserrno>((DWORD)w);
 }
 
-inline void osErr(BYTE by, bool doserrno = false) {
-	osErr((DWORD)by, doserrno);
+template<bool doserrno = false>
+inline void osErr(BYTE by) {
+	osErr<doserrno>((DWORD)by);
 }
 
-inline void osErr(BOOL b, bool doserrno = false) {
-	osErr((DWORD)b, doserrno);
+template<bool doserrno = false>
+inline void osErr(BOOL b) {
+	osErr<doserrno>((DWORD)b);
 }
 
-inline void osErr(HANDLE h, bool doserrno = false) {
+template<bool doserrno = false>
+inline void osErr(HANDLE h) {
 	if (h != NULL && h != INVALID_HANDLE_VALUE) {
 		return;
 	}
-	
-	osErrThrow(doserrno);
+
+	osErrThrow<doserrno>();
 }
 
 inline void osErr(LSTATUS err) {
@@ -349,7 +356,7 @@ inline void osErr(LSTATUS err) {
 	}
 
 	SetLastError((DWORD)err);
-	osErrThrow(false);
+	osErrThrow<false>();
 }
 #endif
 
