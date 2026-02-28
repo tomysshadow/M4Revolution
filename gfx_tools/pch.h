@@ -3,6 +3,7 @@
 #include "IgnoreCaseComparer.h"
 #include <functional>
 #include <stdexcept>
+#include <system_error>
 #include <ctype.h>
 #include <string.h>
 #include <libzap.h>

@@ -94,8 +94,21 @@ std::optional<bool> performOperation(M4Revolution &m4Revolution) {
 }
 
 int main(int argc, char** argv) {
-	consoleLog(VERSIONINFO_FILE_DESCRIPTION " " VERSIONINFO_VERSION);
-	consoleLog("By " VERSIONINFO_COPYRIGHT_NAME, 2);
+	#ifdef VERSIONINFO_FILE_DESCRIPTION
+		consoleLog(VERSIONINFO_FILE_DESCRIPTION, false);
+
+		#ifdef VERSIONINFO_VERSION
+			consoleLog(" " VERSIONINFO_VERSION);
+		#else
+			consoleLog();
+		#endif
+
+		#ifdef VERSIONINFO_COPYRIGHT_NAME
+			consoleLog("By " VERSIONINFO_COPYRIGHT_NAME, 2);
+		#else
+			consoleLog();
+		#endif
+	#endif
 
 	static const int MIN_ARGC = 1;
 
