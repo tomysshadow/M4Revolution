@@ -309,21 +309,21 @@ inline unsigned long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, 
 	break;\
 } while (1)
 
-inline void crtErrThrow() {
+inline void crtErrThrow(int err = errno) {
 	throw std::system_error(
 		std::error_code(
-		errno,
-		std::generic_category()
-	)
+			err,
+			std::generic_category()
+		)
 	);
 }
 
-inline void crtErr(int err) {
+inline void crtErr(int err = errno) {
 	if (!err) {
 		return;
 	}
 
-	crtErrThrow();
+	crtErrThrow(err);
 }
 
 #ifdef WINDOWS
