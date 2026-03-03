@@ -309,6 +309,23 @@ inline unsigned long stringToLongUnsignedOrDefaultValueWide(const wchar_t* str, 
 	break;\
 } while (1)
 
+inline void crtErrThrow() {
+	throw std::system_error(
+		std::error_code(
+		errno,
+		std::generic_category()
+	)
+	);
+}
+
+inline void crtErr(int err) {
+	if (!err) {
+		return;
+	}
+
+	crtErrThrow();
+}
+
 #ifdef WINDOWS
 template<bool doserrno = false>
 inline void osErrThrow() {

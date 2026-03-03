@@ -1055,9 +1055,7 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 	std::unique_ptr<CHAR[]> commandLinePointer = makeUniqueArray<CHAR>(commandLineSize);
 	CHAR* _commandLine = commandLinePointer.get();
 
-	if (strncpy_s(_commandLine, commandLineSize, COMMAND_LINE.c_str(), commandLineSize)) {
-		throw std::runtime_error("Failed to Copy String");
-	}
+	crtErr(strncpy_s(_commandLine, commandLineSize, COMMAND_LINE.c_str(), commandLineSize));
 
 	PROCESS_INFORMATION processInformation = {};
 	HANDLE &process = processInformation.hProcess;
@@ -1168,12 +1166,12 @@ unsigned long M4Revolution::getPositionFromRVA(std::istream &inputStream, unsign
 
 	std::unique_ptr<char[]> imageNtHeadersPointer = makeUniqueArray<char>(imageNtHeadersSize);
 
-	PIMAGE_NT_HEADERS imageNtHeaders = (PIMAGE_NT_HEADERS)imageNtHeadersPointer.get();
-	readStream(inputStream, imageNtHeaders, (std::streamsize)imageNtHeadersSize);
+	PIMAGE_NT_HEADERS32 imageNtHeaders32Pointer = (PIMAGE_NT_HEADERS32)imageNtHeadersPointer.get();
+	readStream(inputStream, imageNtHeaders32Pointer, (std::streamsize)imageNtHeadersSize);
 
-	return imageNtHeaders->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC
-		? getPositionFromRVA((PIMAGE_NT_HEADERS64)imageNtHeaders, rva)
-		: getPositionFromRVA((PIMAGE_NT_HEADERS32)imageNtHeaders, rva);
+	return imageNtHeaders32Pointer->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC
+		? getPositionFromRVA((PIMAGE_NT_HEADERS64)imageNtHeaders32Pointer, rva)
+		: getPositionFromRVA((PIMAGE_NT_HEADERS32)imageNtHeaders32Pointer, rva);
 }
 #endif
 
