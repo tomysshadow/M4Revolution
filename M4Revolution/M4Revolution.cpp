@@ -1113,7 +1113,7 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 	DWORD wait = WaitForSingleObject(process, MILLISECONDS);
 	osErr(wait == WAIT_OBJECT_0 || wait == WAIT_ABANDONED);
 
-	size_t size = stringToLongUnsigned(buffer, dllExportRVA);
+	size_t size = stringToLong(buffer, dllExportRVA);
 
 	if (!size) {
 		DWORD exitCode = 0;

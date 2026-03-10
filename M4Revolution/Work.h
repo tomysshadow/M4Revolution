@@ -247,6 +247,7 @@ namespace Work {
 		void create(const char* fileName);
 		void createOutput(const char* fileName);
 		void createEmpty(const std::filesystem::path &path);
+		void deleteEmpty(const std::filesystem::path &path);
 		void restore(const std::filesystem::path &path);
 		std::filesystem::path getPath(std::filesystem::path path);
 	}

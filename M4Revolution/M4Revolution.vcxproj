@@ -176,6 +176,7 @@
     <ClInclude Include="nvconfig.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="StringToNumber.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="Ubi.h" />
     <ClInclude Include="versioninfo.h" />
@@ -196,6 +197,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="StringToNumber.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="Ubi.cpp" />
     <ClCompile Include="versioninfo.cpp">

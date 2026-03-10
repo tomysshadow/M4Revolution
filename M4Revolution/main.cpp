@@ -142,13 +142,13 @@ int main(int argc, char** argv) {
 			if (arg == "-p" || arg == "--path") {
 				pathStringOptional = argv[++i];
 			} else if (arg == "-mt" || arg == "--max-threads") {
-				if (!stringToLongUnsigned(argv[++i], maxThreads)) {
+				if (!stringToLong(argv[++i], maxThreads)) {
 					consoleLog("Max Threads must be a valid number", 2);
 					help();
 					return 1;
 				}
 			} else if (arg == "--dev-max-file-tasks") {
-				if (!stringToLongUnsigned(argv[++i], maxFileTasks)) {
+				if (!stringToLong(argv[++i], maxFileTasks)) {
 					consoleLog("Max File Tasks must be a valid number", 2);
 					help();
 					return 1;
@@ -157,12 +157,12 @@ int main(int argc, char** argv) {
 				if (arg == "--dev-configuration") {
 					Work::Convert::Configuration &configuration = configurationOptional.emplace();
 
-					if (!stringToLongUnsigned(argv[++i], configuration.minTextureWidth)
-						|| !stringToLongUnsigned(argv[++i], configuration.maxTextureWidth)
-						|| !stringToLongUnsigned(argv[++i], configuration.minTextureHeight)
-						|| !stringToLongUnsigned(argv[++i], configuration.maxTextureHeight)
-						|| !stringToLongUnsigned(argv[++i], configuration.minVolumeExtent)
-						|| !stringToLongUnsigned(argv[++i], configuration.maxVolumeExtent)) {
+					if (!stringToLong(argv[++i], configuration.minTextureWidth)
+						|| !stringToLong(argv[++i], configuration.maxTextureWidth)
+						|| !stringToLong(argv[++i], configuration.minTextureHeight)
+						|| !stringToLong(argv[++i], configuration.maxTextureHeight)
+						|| !stringToLong(argv[++i], configuration.minVolumeExtent)
+						|| !stringToLong(argv[++i], configuration.maxVolumeExtent)) {
 						consoleLog("Configuration must be six valid numbers", 2);
 						help();
 						return 1;

@@ -778,7 +778,7 @@ namespace Ubi {
 
 		unsigned long row = 0;
 
-		if (!stringToLongUnsigned(ROW_STR.c_str(), row, BASE)) {
+		if (!stringToLong(ROW_STR.c_str(), row, BASE)) {
 			return false;
 		}
 
@@ -794,7 +794,7 @@ namespace Ubi {
 
 		unsigned long col = 0;
 
-		if (!stringToLongUnsigned(COL_STR.c_str(), col, BASE)) {
+		if (!stringToLong(COL_STR.c_str(), col, BASE)) {
 			return false;
 		}
 

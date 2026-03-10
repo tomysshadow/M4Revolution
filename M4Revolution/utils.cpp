@@ -132,7 +132,7 @@ double consoleDouble(const char* str, double minValue, double maxValue, const Lo
 
 	do {
 		CONSOLE_NUMBER_OUT(str, minValue, -DBL_MAX, maxValue, DBL_MAX, resultString);
-	} while (!stringToDouble(resultString.c_str(), result, locale) || result < minValue || result > maxValue);
+	} while (!stringToFloat(resultString.c_str(), result, locale) || result < minValue || result > maxValue);
 	return result;
 }
 
@@ -168,7 +168,7 @@ unsigned long consoleLongUnsigned(const char* str, unsigned long minValue, unsig
 
 	do {
 		CONSOLE_NUMBER_OUT(str, minValue, 0, maxValue, ULONG_MAX, resultString);
-	} while (!stringToLongUnsigned(resultString.c_str(), result, base, locale) || result < minValue || result > maxValue);
+	} while (!stringToLong(resultString.c_str(), result, base, locale) || result < minValue || result > maxValue);
 	return result;
 }
 

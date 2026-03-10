@@ -38,9 +38,12 @@ namespace Work {
 
 		conditionVariable.wait(lock, [&] {
 			// prevent spurious wakeup
-			// if we are yielding, we don't allow waking up until some other thread than us is the one that has set the event
-			// otherwise, all that matters is that the event was in fact set (i.e., the owning lock isn't currently in use by anyone)
-			if (threadIDOptional.has_value() && (!yield || threadIDOptional != std::this_thread::get_id())) {
+			// if we are yielding, we don't allow waking up until
+			// some other thread than us is the one that has set the event
+			// otherwise, all that matters is that the event
+			// was in fact set (i.e., the owning lock isn't currently in use by anyone)
+			if (threadIDOptional.has_value()
+				&& (!yield || threadIDOptional != std::this_thread::get_id())) {
 				// reset the event if desired (this is run while the lock is held, so is safe)
 				if (reset) {
 					// if the event is reset
@@ -81,7 +84,14 @@ namespace Work {
 	)
 		: ownerBigFileInputPosition(ownerBigFileInputPosition),
 		file(file),
-		bigFilePointer(std::make_shared<Ubi::BigFile>(inputStream, fileSystemSize, files, fileVectorIteratorSetMap, file)) {
+
+		bigFilePointer(std::make_shared<Ubi::BigFile>(
+			inputStream,
+			fileSystemSize,
+			files,
+			fileVectorIteratorSetMap,
+			file
+		)) {
 	}
 
 	std::streampos BigFileTask::getOwnerBigFileInputPosition() const {
@@ -104,20 +114,23 @@ namespace Work {
 		return bigFilePointer;
 	}
 
-	FileTask::FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer)
+	FileTask::FileTask(std::streampos ownerBigFileInputPosition,
+		Ubi::BigFile::File* filePointer)
 		: ownerBigFileInputPosition(ownerBigFileInputPosition),
 		fileVariant(filePointer),
 		event(true) {
 	}
 
-	FileTask::FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer)
+	FileTask::FileTask(std::streampos ownerBigFileInputPosition,
+		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer)
 		: ownerBigFileInputPosition(ownerBigFileInputPosition),
 		fileVariant(filePointerVectorPointer),
 		event(true) {
 	}
 
 	// called in order to lock the data queue so we can add new data
-	// the Lock class ensures the output thread will automatically wake up to write it after we add the new data
+	// the Lock class ensures the output thread will automatically
+	// wake up to write it after we add the new data
 	Data::QUEUE_LOCK FileTask::lock(bool &yield) {
 		return Data::QUEUE_LOCK(event, queue, yield);
 	}
@@ -257,7 +270,11 @@ namespace Work {
 			return false;
 		}
 
-		for (INFO_MAP::const_iterator infoMapIterator = FILE_PATH_INFO_MAP.begin(); infoMapIterator != FILE_PATH_INFO_MAP.end(); infoMapIterator++) {
+		for (
+			INFO_MAP::const_iterator infoMapIterator = FILE_PATH_INFO_MAP.begin();
+			infoMapIterator != FILE_PATH_INFO_MAP.end();
+			infoMapIterator++
+		) {
 			const Info &INFO = infoMapIterator->second;
 
 			// this check is just to prevent the user from being dumb
@@ -296,7 +313,8 @@ namespace Work {
 			for (;;) {
 				result = !::rename(oldFileName, newFileName);
 
-				// the error is EEXIST if the file exists and is not empty, but ENOENT if it exists and is empty
+				// the error is EEXIST if the file exists and is not empty
+				// but ENOENT if it exists and is empty
 				if (result || errno == EEXIST || errno == ENOENT) {
 					break;
 				}
@@ -314,7 +332,8 @@ namespace Work {
 			bool createdNew = rename(fileName, getPath(fileName).string().c_str());
 
 			// here I use std::filesystem::rename because I do want to overwrite the file if it exists
-			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(Output::FILE_NAME, fileName), std::filesystem::filesystem_error, Output::FILE_RETRY);
+			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(Output::FILE_NAME, fileName),
+				std::filesystem::filesystem_error, Output::FILE_RETRY);
 			
 			if (createdNew) {
 				log();
@@ -339,13 +358,26 @@ namespace Work {
 			std::ofstream outputFileStream;
 			outputFileStream.exceptions(std::ofstream::failbit);
 
-			OPERATION_EXCEPTION_RETRY_ERR(outputFileStream.open(PATH), std::ofstream::failure, Output::FILE_RETRY);
+			OPERATION_EXCEPTION_RETRY_ERR(outputFileStream.open(PATH),
+				std::ofstream::failure, Output::FILE_RETRY);
 
 			log();
 		}
 
+		void deleteEmpty(const std::filesystem::path &path) {
+			if (!std::filesystem::is_empty(path)) {
+				return;
+			}
+
+			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::remove(path),
+				std::filesystem::filesystem_error, Output::FILE_RETRY);
+		}
+
 		void restore(const std::filesystem::path &path) {
-			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(getPath(path), path), std::filesystem::filesystem_error, Output::FILE_RETRY);
+			OPERATION_EXCEPTION_RETRY_ERR(std::filesystem::rename(getPath(path), path),
+				std::filesystem::filesystem_error, Output::FILE_RETRY);
+
+			deleteEmpty(path);
 		}
 
 		std::filesystem::path getPath(std::filesystem::path path) {
@@ -384,7 +416,11 @@ namespace Work {
 
 		CODE_VECTOR &codeVector = edit.codeVector;
 
-		for (CODE_VECTOR::iterator codeVectorIterator = codeVector.begin(); codeVectorIterator != codeVector.end(); codeVectorIterator++) {
+		for (
+			CODE_VECTOR::iterator codeVectorIterator = codeVector.begin();
+			codeVectorIterator != codeVector.end();
+			codeVectorIterator++
+		) {
 			fileStream.seekp(codeVectorIterator->position);
 
 			std::string &str = codeVectorIterator->str;

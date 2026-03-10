@@ -2,6 +2,7 @@
 #include "NonCopyable.h"
 #include "IgnoreCaseComparer.h"
 #include "Locale.h"
+#include "StringToNumber.h"
 #include <memory>
 #include <functional>
 #include <stdexcept>
