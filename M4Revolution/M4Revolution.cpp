@@ -333,17 +333,11 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 	// (because it's on our stack, but we're passing it to a shared_ptr)
 	// but it actually isn't because it's only used in the constructor
 	// (BigFileTask doesn't hold onto it)
-	tasks.bigFileLock().get().insert(
-		{
-			bigFileInputPosition,
-
-			std::make_shared<Work::BigFileTask>(
-				inputStream,
-				ownerBigFileInputPosition,
-				file,
-				filePointerSetMap
-			)
-		}
+	tasks.bigFileLock().get()[bigFileInputPosition] = std::make_shared<Work::BigFileTask>(
+		inputStream,
+		ownerBigFileInputPosition,
+		file,
+		filePointerSetMap
 	);
 
 	// inputCopyPosition is the position of the files to copy
