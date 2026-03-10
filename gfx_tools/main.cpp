@@ -53,7 +53,7 @@ namespace gfx_tools {
 				outputColor.channels[OUTPUT_CHANNEL_DU] = (unsigned char)(inputColor.channels[INPUT_CHANNEL_UV]
 					- inputUColorPointer->channels[INPUT_CHANNEL_UV]);
 
-				if (luminance) {
+				if constexpr (luminance) {
 					((M4Image::Color32*)outputColorPointer)->channels[OUTPUT_CHANNEL_LUMINANCE] = inputColorPointer->channels[INPUT_CHANNEL_LUMINANCE];
 					outputColorPointer = (M4Image::Color16*)((M4Image::Color32*)outputColorPointer + 1);
 				} else {
