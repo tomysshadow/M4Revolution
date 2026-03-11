@@ -220,7 +220,8 @@ void M4Revolution::copyFiles(
 
 	// note: this must get created even if filePointerVectorPointer is empty or the count to copy would be zero
 	// so that the bigFileInputPosition is reliably seen by the output thread
-	Work::FileTask::POINTER fileTaskPointer = std::make_shared<Work::FileTask>(bigFileInputPosition, filePointerVectorPointer);
+	Work::FileTask::POINTER fileTaskPointer =
+		std::make_shared<Work::FileTask>(bigFileInputPosition, filePointerVectorPointer);
 
 	// we grab files in this scope so we won't have to lock this twice unnecessarily
 	{
@@ -324,8 +325,10 @@ void M4Revolution::stepFile(
 	log.step();
 }
 
-void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
-	// filePointerSetMap is a map where the keys are the file positions beginning to end, and values are sets of files at that position
+void M4Revolution::fixLoading(std::istream &inputStream,
+	std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
+	// filePointerSetMap is a map where the keys are the file positions beginning to end
+	// and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
 	std::streampos bigFileInputPosition = inputStream.tellg();
 
@@ -350,7 +353,9 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 	// countCopy is the count of the bytes to copy when copying files
 	// filePointerVectorPointer is to communicate file sizes/positions to the output thread
 	bool convert = false;
-	Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
+
+	Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer =
+		std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
 
 	for (
 		Ubi::BigFile::File::POINTER_SET_MAP::iterator filePointerSetMapIterator = filePointerSetMap.begin();
@@ -374,7 +379,11 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 			Ubi::BigFile::File &file = **filePointerSetIterator;
 
 			// if we encounter a file we need to convert for the first time, then first copy the files before it
-			if (!convert && file.type != Ubi::BigFile::File::TYPE::NONE && file.type != Ubi::BigFile::File::TYPE::BINARY) {
+			if (
+				!convert
+				&& file.type != Ubi::BigFile::File::TYPE::NONE
+				&& file.type != Ubi::BigFile::File::TYPE::BINARY
+			) {
 				file.padding = filePointerSetMapIterator->first - inputFilePosition;
 
 				// prevent copying if there are no files (this is safe in this scenario only)
@@ -397,9 +406,13 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 			if (convert) {
 				convertFile(inputStream, bigFileInputPosition, file, log);
 			} else {
-				// other identical, copied files at the same position in the input should likewise be at the same position in the output
+				// other identical, copied files at the
+				// same position in the input should likewise
+				// be at the same position in the output
 				file.padding = filePointerSetMapIterator->first - inputFilePosition;
-				stepFile(filePointerSetMapIterator->first, inputFilePosition, filePointerVectorPointer, *filePointerSetIterator, log);
+
+				stepFile(filePointerSetMapIterator->first, inputFilePosition,
+					filePointerVectorPointer, *filePointerSetIterator, log);
 			}
 		}
 	}
@@ -408,7 +421,14 @@ void M4Revolution::fixLoading(std::istream &inputStream, std::streampos ownerBig
 	if (!convert) {
 		// always copy here even if filePointerVectorPointer is empty
 		// (ensure every BigFile has at least one FileTask)
-		copyFiles(inputStream, file.size, inputCopyPosition, filePointerVectorPointer, bigFileInputPosition, log);
+		copyFiles(
+			inputStream,
+			file.size,
+			inputCopyPosition,
+			filePointerVectorPointer,
+			bigFileInputPosition,
+			log
+		);
 	}
 }
 
@@ -475,7 +495,8 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 			}
 
 			// copy line by line
-			// this is used instead of copyStream to ensure there is a newline on the end for when we write the section
+			// this is used instead of copyStream to ensure there is
+			// a newline on the end for when we write the section
 			output.fileStream << line << "\n";
 		}
 	} else {
@@ -677,7 +698,9 @@ void M4Revolution::replaceGfxTools() {
 		GlobalHandleLock<> resourceGlobalHandleLock(NULL, resourceHandle);
 
 		Work::Output output;
-		writeStream(output.fileStream, resourceGlobalHandleLock.get(), (std::streamsize)resourceGlobalHandleLock.size());
+
+		writeStream(output.fileStream,
+			resourceGlobalHandleLock.get(), (std::streamsize)resourceGlobalHandleLock.size());
 	}
 
 	Work::Backup::create(Work::Output::GFX_TOOLS_PATH.string().c_str());
@@ -734,7 +757,8 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	*/
 
 	// must be called here after we've modified the surface
-	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = M4Revolution::COMPRESSION_OPTIONS.get(file, surface, hasAlpha);
+	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = M4Revolution::COMPRESSION_OPTIONS.get(
+		file, surface, hasAlpha);
 
 	nvtt::OutputOptions outputOptions;
 	outputOptions.setContainer(nvtt::Container_DDS);
@@ -759,7 +783,8 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 
 	file.size = outputHandler.size;
 
-	// this will wake up the output thread to tell it we have no more data to add, and to move on to the next FileTask
+	// this will wake up the output thread to tell it we have no more data to add
+	// and to move on to the next FileTask
 	fileTask.complete();
 }
 
@@ -795,7 +820,8 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 		zap_int_t height = 0;
 		zap_size_t stride = 0;
 
-		zap_error_t err = zap_load_memory(convert.dataPointer.get(), ZAP_COLOR_FORMAT_BGRA, &image, &size, &width, &height, &stride);
+		zap_error_t err = zap_load_memory(convert.dataPointer.get(), ZAP_COLOR_FORMAT_BGRA,
+			&image, &size, &width, &height, &stride);
 
 		if (err != ZAP_ERROR_NONE) {
 			throw std::runtime_error("Failed to Load ZAP From Memory");
@@ -893,7 +919,8 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 					bigFileTaskPointer = bigFileTaskPointerMap.at(currentBigFileInputPosition);
 				}
 
-				// we now need to check the owner in case we are the last file in the owner and now all its files are written
+				// we now need to check the owner in case we are
+				// the last file in the owner and now all its files are written
 				Work::BigFileTask &ownerBigFileTask = *bigFileTaskPointer;
 
 				// update the size and position in the owner's filesystem
@@ -910,7 +937,11 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 
 	// get the current BigFile now, if we didn't before already
 	currentBigFileInputPosition = bigFileInputPosition;
-	bigFileTaskPointer = currentBigFileTaskPointer ? currentBigFileTaskPointer : tasks.bigFileLock().get().at(currentBigFileInputPosition);
+
+	bigFileTaskPointer = currentBigFileTaskPointer
+		? currentBigFileTaskPointer
+		: tasks.bigFileLock().get().at(currentBigFileInputPosition);
+
 	Work::BigFileTask &currentBigFileTask = *bigFileTaskPointer;
 
 	// get files written in case we are coming back to this BigFile from before
@@ -969,7 +1000,8 @@ void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::FILE_VARIAN
 	// depending on if the files was copied or converted
 	// we will either have a vector or a singular dataPointer
 	if (std::holds_alternative<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant)) {
-		Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer = std::get<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant);
+		Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer =
+			std::get<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant);
 
 		for (
 			Ubi::BigFile::File::POINTER_VECTOR::iterator filePointerVectorIterator = filePointerVectorPointer->begin();
@@ -1049,7 +1081,10 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 	std::unique_ptr<CHAR[]> commandLinePointer = makeUniqueArray<CHAR>(commandLineSize);
 	CHAR* _commandLine = commandLinePointer.get();
 
-	crtErr(strncpy_s(_commandLine, commandLineSize, COMMAND_LINE.c_str(), commandLineSize));
+	crtErr(strncpy_s(
+		_commandLine, commandLineSize,
+		COMMAND_LINE.c_str(), commandLineSize
+	));
 
 	PROCESS_INFORMATION processInformation = {};
 	HANDLE &process = processInformation.hProcess;
@@ -1092,7 +1127,8 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 			startupInfo.dwFlags = STARTF_USESTDHANDLES;
 			startupInfo.hStdOutput = stdoutWritePipe;
 
-			osErr(CreateProcessA(NULL, _commandLine, NULL, NULL, TRUE, 0, NULL, EXEDIR, &startupInfo, &processInformation)
+			osErr(CreateProcessA(NULL, _commandLine, NULL, NULL, TRUE, 0, NULL,
+				EXEDIR, &startupInfo, &processInformation)
 				&& process
 				&& thread);
 		}
@@ -1194,7 +1230,8 @@ M4Revolution::M4Revolution(
 	osErr(pool);
 
 	if (!maxThreads) {
-		// chosen so that if you have a quad core there will still be at least two threads for other system stuff
+		// chosen so that if you have a quad core there will still be
+		// at least two threads for other system stuff
 		// (meanwhile, barely affecting even more powerful processors)
 		static const DWORD RESERVED_THREADS = 2;
 
@@ -1202,7 +1239,8 @@ M4Revolution::M4Revolution(
 		GetSystemInfo(&systemInfo);
 
 		// can't use max because this is unsigned
-		maxThreads = systemInfo.dwNumberOfProcessors > RESERVED_THREADS ? systemInfo.dwNumberOfProcessors - RESERVED_THREADS : 1;
+		maxThreads = systemInfo.dwNumberOfProcessors > RESERVED_THREADS
+			? systemInfo.dwNumberOfProcessors - RESERVED_THREADS : 1;
 	}
 
 	SetThreadpoolThreadMaximum(pool, maxThreads);
@@ -1254,11 +1292,13 @@ M4Revolution::~M4Revolution() {
 
 void M4Revolution::toggleFullScreen() {
 	{
-		std::ifstream inputFileStream(Work::Output::USER_PREFERENCE_PATH, std::ifstream::in, _SH_DENYWR);
+		std::ifstream inputFileStream(Work::Output::USER_PREFERENCE_PATH,
+			std::ifstream::in, _SH_DENYWR);
 
 		Log log("Toggling Full Screen", &inputFileStream);
 
-		OPERATION_EXCEPTION_RETRY_ERR(toggleFullScreen(inputFileStream), std::system_error, Work::Output::FILE_RETRY);
+		OPERATION_EXCEPTION_RETRY_ERR(toggleFullScreen(inputFileStream),
+			std::system_error, Work::Output::FILE_RETRY);
 	}
 
 	Work::Backup::create(Work::Output::USER_PREFERENCE_PATH.string().c_str());
@@ -1269,7 +1309,8 @@ void M4Revolution::toggleCameraInertia() {
 
 	Log log("Toggling Camera Inertia", &fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(toggleCameraInertia(fileStream), std::system_error, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(toggleCameraInertia(fileStream),
+		std::system_error, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::editSoundFadeOutTime() {
@@ -1277,7 +1318,8 @@ void M4Revolution::editSoundFadeOutTime() {
 
 	Log log("Editing Sound Fade Out Time", &fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(editSoundFadeOutTime(fileStream), std::system_error, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(editSoundFadeOutTime(fileStream),
+		std::system_error, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::editTransitionTime() {
@@ -1285,7 +1327,8 @@ void M4Revolution::editTransitionTime() {
 
 	Log log("Editing Transition Time", &fileStream);
 
-	OPERATION_EXCEPTION_RETRY_ERR(editTransitionTime(fileStream), std::system_error, Work::Output::FILE_RETRY);
+	OPERATION_EXCEPTION_RETRY_ERR(editTransitionTime(fileStream),
+		std::system_error, Work::Output::FILE_RETRY);
 }
 
 void M4Revolution::fixLoading() {

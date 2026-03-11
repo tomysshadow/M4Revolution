@@ -120,7 +120,8 @@ class M4Revolution : NonCopyable {
 		Log &log
 	);
 
-	void fixLoading(std::istream &inputStream, std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
+	void fixLoading(std::istream &inputStream,
+		std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
 	static const Ubi::BigFile::Path::VECTOR TRANSITION_FADE_PATH_VECTOR;
 	static const CompressionOptions COMPRESSION_OPTIONS;
