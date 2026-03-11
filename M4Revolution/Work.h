@@ -92,7 +92,7 @@ namespace Work {
 
 		public:
 		typedef std::shared_ptr<BigFileTask> POINTER;
-		typedef std::map<std::streampos, POINTER> POINTER_MAP;
+		typedef std::map<std::streampos, POINTER, std::less<>> POINTER_MAP;
 		typedef Lock<POINTER_MAP> POINTER_MAP_LOCK;
 
 		// outputPosition is set by the output thread, and later used by it so it knows where to jump back

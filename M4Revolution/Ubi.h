@@ -56,7 +56,7 @@ namespace Ubi {
 			};
 
 			// these maps take the water slice/file name and turn them into faces
-			typedef std::map<std::string, FACE> FACE_STR_MAP;
+			typedef std::map<std::string, FACE, std::less<>> FACE_STR_MAP;
 
 			static const FACE_STR_MAP WATER_SLICE_FACE_STR_MAP = {
 				{"back", FACE::BACK},
@@ -81,7 +81,7 @@ namespace Ubi {
 			// the value is the name of the masks (there can be multiple) which
 			// contain the RLE files to use for them
 			typedef std::unordered_set<std::string> MASK_PATH_SET;
-			typedef std::map<std::string, MASK_PATH_SET> TEXTURE_BOX_MAP;
+			typedef std::map<std::string, MASK_PATH_SET, std::less<>> TEXTURE_BOX_MAP;
 
 			// each layer contains sets, within which are the slices
 			// this is a set of all those sets for a given layer (confusing, I know, but the strings should be unique)
@@ -104,7 +104,7 @@ namespace Ubi {
 				MASK_MAP waterMaskMap = {};
 			};
 
-			typedef std::map<std::string, Layer> LAYER_MAP;
+			typedef std::map<std::string, Layer, std::less<>> LAYER_MAP;
 			typedef std::shared_ptr<LAYER_MAP> LAYER_MAP_POINTER;
 
 			void appendToSliceMap(std::istream &inputStream, std::streamsize size, SLICE_MAP &sliceMap);
