@@ -358,7 +358,9 @@ namespace Ubi {
 			File::POINTER find(const Path &path,
 				Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) const;
 
-			bool isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const;
+			bool isMatch(const Path::NAME_VECTOR &directoryNameVector,
+				Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const;
+
 			bool isSet(bool bftex, const std::optional<File> &layerFileOptional) const;
 
 			void appendToLayerMap(

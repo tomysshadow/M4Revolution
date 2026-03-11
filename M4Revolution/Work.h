@@ -39,7 +39,8 @@ namespace Work {
 		void reset();
 	};
 
-	// generic "lock a thing for the duration of this scope, and only then allow me to get the thing" class (like a GlobalLock type deal)
+	// generic "lock a thing for the duration of this scope, and only then allow me to get the thing" class
+	// (like a GlobalLock type deal)
 	template <typename T> class Lock : NonCopyable {
 		private:
 		Event &event;

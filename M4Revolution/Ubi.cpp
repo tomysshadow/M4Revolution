@@ -301,10 +301,12 @@ namespace Ubi {
 			readStream(inputStream, &resources, RESOURCES_SIZE);
 
 			if (resourceNameOptional.has_value()) {
-				const std::optional<std::string> &TEXTURE_BOX_NAME_OPTIONAL = getTextureBoxNameOptional(resourceNameOptional.value());
+				const std::optional<std::string> &TEXTURE_BOX_NAME_OPTIONAL =
+					getTextureBoxNameOptional(resourceNameOptional.value());
 
 				if (TEXTURE_BOX_NAME_OPTIONAL.has_value()) {
-					const std::string &TEXTURE_BOX_NAME = TEXTURE_BOX_NAME_OPTIONAL.value();
+					const std::string &TEXTURE_BOX_NAME =
+						TEXTURE_BOX_NAME_OPTIONAL.value();
 
 					for (uint32_t i = 0; i < resources; i++) {
 						appendToMaskPathSet(inputStream, textureBoxMap[TEXTURE_BOX_NAME]);
@@ -677,7 +679,8 @@ namespace Ubi {
 		const std::string &NAME = nameOptional.value();
 
 		// note that these are case insensitive, because Myst 4 also uses case insensitive name extensions
-		TYPE_EXTENSION_MAP::const_iterator nameTypeExtensionMapIterator = NAME_TYPE_EXTENSION_MAP.find(getNameExtension(NAME));
+		TYPE_EXTENSION_MAP::const_iterator nameTypeExtensionMapIterator =
+			NAME_TYPE_EXTENSION_MAP.find(getNameExtension(NAME));
 
 		if (nameTypeExtensionMapIterator == NAME_TYPE_EXTENSION_MAP.end()) {
 			return;
@@ -758,13 +761,15 @@ namespace Ubi {
 
 		const std::string &FACE_STR = matches[1];
 
-		Binary::RLE::FACE_STR_MAP::const_iterator faceStrMapIterator = Binary::RLE::WATER_SLICE_FACE_STR_MAP.find(FACE_STR);
+		Binary::RLE::FACE_STR_MAP::const_iterator faceStrMapIterator =
+			Binary::RLE::WATER_SLICE_FACE_STR_MAP.find(FACE_STR);
 
 		if (faceStrMapIterator == Binary::RLE::WATER_SLICE_FACE_STR_MAP.end()) {
 			return false;
 		}
 
-		Binary::RLE::MASK_MAP::const_iterator waterMaskMapIterator = waterMaskMap.find(faceStrMapIterator->second);
+		Binary::RLE::MASK_MAP::const_iterator waterMaskMapIterator =
+			waterMaskMap.find(faceStrMapIterator->second);
 
 		if (waterMaskMapIterator == waterMaskMap.end()) {
 			return false;
@@ -857,7 +862,9 @@ namespace Ubi {
 			directoryVectorIterator->write(outputStream);
 		}
 
-		FILE_POINTER_VECTOR_SIZE fileVectorSize = (FILE_POINTER_VECTOR_SIZE)(filePointerVector.size() + binaryFilePointerVector.size());
+		FILE_POINTER_VECTOR_SIZE fileVectorSize = (FILE_POINTER_VECTOR_SIZE)(filePointerVector.size()
+			+ binaryFilePointerVector.size());
+
 		writeStream(outputStream, &fileVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
 
 		for (
@@ -1113,7 +1120,8 @@ namespace Ubi {
 		return 0;
 	}
 
-	bool BigFile::Directory::isMatch(const Path::NAME_VECTOR &directoryNameVector, Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const {
+	bool BigFile::Directory::isMatch(const Path::NAME_VECTOR &directoryNameVector,
+		Path::NAME_VECTOR::const_iterator &directoryNameVectorIterator) const {
 		// should we care about this directory at all?
 		if (directoryNameVectorIterator == directoryNameVector.end()) {
 			return false;
@@ -1215,7 +1223,8 @@ namespace Ubi {
 
 	void BigFile::Header::read(std::istream &inputStream) {
 		bool nullTerminator = true;
-		std::optional<std::string> signatureOptional = String::readOptional(inputStream, nullTerminator, (Ubi::String::SIZE)(SIGNATURE.size() + 1));
+		std::optional<std::string> signatureOptional =
+			String::readOptional(inputStream, nullTerminator, (Ubi::String::SIZE)(SIGNATURE.size() + 1));
 
 		// must exactly match, case sensitively
 		if (signatureOptional != SIGNATURE) {
@@ -1362,7 +1371,9 @@ namespace Ubi {
 						continue;
 					}
 
-					maskFileSystemPosition = (std::streampos)fileSystemPosition + (std::streampos)layerFilePointer->position;
+					maskFileSystemPosition = (std::streampos)fileSystemPosition
+						+ (std::streampos)layerFilePointer->position;
+
 					inputStream.seekg(maskFileSystemPosition);
 
 					BigFile maskBigFile(inputStream);
@@ -1387,7 +1398,9 @@ namespace Ubi {
 						}
 
 						inputStream.seekg(maskFileSystemPosition + (std::streampos)maskFile.position);
-						Binary::RLE::appendToSliceMap(inputStream, maskFile.size, waterMaskMap[fileFaceStrMapIterator->second]);
+
+						Binary::RLE::appendToSliceMap(inputStream, maskFile.size,
+							waterMaskMap[fileFaceStrMapIterator->second]);
 					}
 				}
 			}
