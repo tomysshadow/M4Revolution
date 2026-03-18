@@ -5,6 +5,7 @@
 #include "StringToNumber.h"
 #include <memory>
 #include <functional>
+#include <utility>
 #include <stdexcept>
 #include <string>
 #include <optional>

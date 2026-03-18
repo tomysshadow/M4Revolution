@@ -272,7 +272,7 @@ void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize 
 void writeStreamPartial(std::ostream &outputStream, const void* buffer, std::streamsize count);
 
 template <typename WriteDestination>
-void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination writeDestination, std::streamsize count = -1) {
+void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination &&writeDestination, std::streamsize count = -1) {
 	if (!count) {
 		return;
 	}
@@ -292,7 +292,7 @@ void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination wr
 			break;
 		}
 
-		writeDestination(buffer, gcountRead);
+		std::forward<WriteDestination>(writeDestination)(buffer, gcountRead);
 
 		if (count != -1) {
 			count -= gcountRead;
