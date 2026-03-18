@@ -184,7 +184,7 @@ class M4Revolution : NonCopyable {
 			return rva;
 		}
 
-		throw std::invalid_argument("rva must not point out of bounds");
+		throw std::out_of_range("rva out of bounds");
 	}
 
 	static unsigned long getPositionFromRVA(std::istream &inputStream, unsigned long rva);
