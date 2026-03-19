@@ -1168,7 +1168,7 @@ unsigned long M4Revolution::getPositionFromRVA(std::istream &inputStream, unsign
 	readStream(inputStream, &imageDosHeader, IMAGE_DOS_HEADER_SIZE);
 
 	if (imageDosHeader.e_magic != IMAGE_DOS_SIGNATURE) {
-		throw std::runtime_error("e_magic must be IMAGE_DOS_SIGNATURE");
+		throw std::invalid_argument("e_magic must be IMAGE_DOS_SIGNATURE");
 	}
 
 	inputStream.seekg(imageDosHeader.e_lfanew);
@@ -1179,7 +1179,7 @@ unsigned long M4Revolution::getPositionFromRVA(std::istream &inputStream, unsign
 	readStream(inputStream, &imageNtHeaders32, IMAGE_NT_HEADERS32_SIZE);
 
 	if (imageNtHeaders32.Signature != IMAGE_NT_SIGNATURE) {
-		throw std::runtime_error("Signature must be IMAGE_NT_SIGNATURE");
+		throw std::invalid_argument("Signature must be IMAGE_NT_SIGNATURE");
 	}
 
 	static const size_t IMAGE_SECTION_HEADER_SIZE = sizeof(IMAGE_SECTION_HEADER);

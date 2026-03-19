@@ -70,15 +70,15 @@ namespace AI {
 		}
 
 		if (!f32Size) {
-			throw std::runtime_error("f32Size must not be zero");
+			throw std::invalid_argument("f32Size must not be zero");
 		}
 
 		if (f32 < min) {
-			throw std::runtime_error("f32 must be greater than or equal to min");
+			throw std::invalid_argument("f32 must be greater than or equal to min");
 		}
 
 		if (f32 > max) {
-			throw std::runtime_error("f32 must be less than or equal to max");
+			throw std::invalid_argument("f32 must be less than or equal to max");
 		}
 
 		std::ostringstream consoleOutputStringStream;

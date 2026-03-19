@@ -28,15 +28,15 @@ namespace Ubi {
 			}
 		};
 
-		class ReadPastEnd : public std::runtime_error {
+		class ReadPastEnd : public std::out_of_range {
 			public:
-			ReadPastEnd() noexcept : std::runtime_error("Binary read past end") {
+			ReadPastEnd() noexcept : std::out_of_range("Binary read past end") {
 			}
 		};
 
-		class WrotePastEnd : public std::runtime_error {
+		class WrotePastEnd : public std::out_of_range {
 			public:
-			WrotePastEnd() noexcept : std::runtime_error("Binary wrote past end") {
+			WrotePastEnd() noexcept : std::out_of_range("Binary wrote past end") {
 			}
 		};
 
