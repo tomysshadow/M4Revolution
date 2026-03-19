@@ -1187,10 +1187,10 @@ unsigned long M4Revolution::getPositionFromRVA(std::istream &inputStream, unsign
 
 	inputStream.seekg(imageDosHeader.e_lfanew);
 
-	// the IMAGE_NT_HEADERS struct is designed such that the offset
+	// the IMAGE_NT_HEADERS32 struct is designed such that the offset
 	// of the optional header will always be the same regardless
 	// of PE32 or PE32+, so using offsetof like this is safe
-	size_t imageNtHeadersSize = offsetof(IMAGE_NT_HEADERS, OptionalHeader)
+	size_t imageNtHeadersSize = offsetof(IMAGE_NT_HEADERS32, OptionalHeader)
 		+ imageFileHeader.SizeOfOptionalHeader
 		+ ((size_t)imageFileHeader.NumberOfSections * IMAGE_SECTION_HEADER_SIZE);
 
