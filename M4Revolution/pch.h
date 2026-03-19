@@ -7,6 +7,7 @@
 #include <functional>
 #include <utility>
 #include <stdexcept>
+#include <system_error>
 #include <string>
 #include <optional>
 #include <fstream>
