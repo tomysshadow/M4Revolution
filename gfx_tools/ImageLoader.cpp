@@ -487,7 +487,7 @@ namespace gfx_tools {
 		zap_error_t err = zap_get_info(rawBuffer.pointer, textureWidthPointer, textureHeightPointer);
 
 		if (err != ZAP_ERROR_NONE) {
-			throw std::runtime_error("failed to get ZAP info");
+			throw std::runtime_error("Failed to Get ZAP Info");
 		}
 	}
 
@@ -508,7 +508,7 @@ namespace gfx_tools {
 		);
 
 		if (err != ZAP_ERROR_NONE) {
-			throw std::runtime_error("failed to resize ZAP memory");
+			throw std::runtime_error("Failed to Resize ZAP Memory");
 		}
 	}
 
@@ -532,7 +532,7 @@ namespace gfx_tools {
 		);
 
 		if (err != ZAP_ERROR_NONE) {
-			throw std::runtime_error("failed to save ZAP memory");
+			throw std::runtime_error("Failed to Save ZAP Memory");
 		}
 
 		size = (SIZE)zapSize;

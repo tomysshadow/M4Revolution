@@ -772,12 +772,12 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	outputOptions.setErrorHandler(&errorHandler);
 
 	if (!CONTEXT.outputHeader(surface, MIPMAP_COUNT, COMPRESSION_OPTIONS, outputOptions)) {
-		throw std::runtime_error("failed to output context header");
+		throw std::runtime_error("Failed to Output Context Header");
 	}
 
 	for (int i = 0; i < MIPMAP_COUNT; i++) {
 		if (!CONTEXT.compress(surface, 0, i, COMPRESSION_OPTIONS, outputOptions) || !errorHandler.result) {
-			throw std::runtime_error("failed to compress context");
+			throw std::runtime_error("Failed to Compress Context");
 		}
 	}
 
@@ -798,7 +798,7 @@ void M4Revolution::convertImageStandardWorkCallback(Work::Convert* convertPointe
 	bool hasAlpha = true;
 
 	if (!surface.loadFromMemory(convert.dataPointer.get(), convert.file.size, &hasAlpha)) {
-		throw std::runtime_error("failed to load surface from memory");
+		throw std::runtime_error("Failed to Load Surface From Memory");
 	}
 
 	// when this unlocks one line later, the output thread will begin waiting on data
@@ -824,19 +824,19 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 			&image, &size, &width, &height, &stride);
 
 		if (err != ZAP_ERROR_NONE) {
-			throw std::runtime_error("failed to load ZAP from memory");
+			throw std::runtime_error("Failed to Load ZAP From Memory");
 		}
 
 		SCOPE_EXIT {
 			if (!freeZAP(image)) {
-				throw std::runtime_error("failed to free ZAP");
+				throw std::runtime_error("Failed to Free ZAP");
 			}
 		};
 
 		static const int DEPTH = 1;
 
 		if (!surface.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, width, height, DEPTH, image)) {
-			throw std::runtime_error("failed to set surface image");
+			throw std::runtime_error("Failed to Set Surface Image");
 		}
 	}
 
@@ -1264,7 +1264,7 @@ M4Revolution::M4Revolution(
 		Microsoft::WRL::ComPtr<IDirect3D9> direct3D9InterfacePointer = Direct3DCreate9(D3D_SDK_VERSION);
 
 		if (!direct3D9InterfacePointer) {
-			throw std::runtime_error("failed to create Direct3D");
+			throw std::runtime_error("Failed to Create Direct3D");
 		}
 
 		D3DCAPS9 d3dcaps9 = {};

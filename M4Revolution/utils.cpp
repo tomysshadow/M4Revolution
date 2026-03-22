@@ -65,7 +65,7 @@ void consoleWait(short newline) {
 	errno = 0;
 	
 	if (system(COMMAND) == -1 && errno) {
-		throw std::runtime_error("failed to create child process");
+		throw std::runtime_error("Failed to Create Child Process");
 	}
 
 	consoleLog(0, newline);
@@ -296,7 +296,7 @@ void openFile(const char* path) {
 	outputStringStream << " " << std::quoted(path);
 
 	if (system(outputStringStream.str().c_str())) {
-		throw std::runtime_error("failed to process command");
+		throw std::runtime_error("Failed to Process Command");
 	}
 }
 
