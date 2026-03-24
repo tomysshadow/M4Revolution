@@ -150,7 +150,13 @@ namespace gfx_tools {
 		resizeM4Image.blit(M4IMAGE);
 
 		RawBufferEx::ResizeInfo resizeInfo((int)resizeTextureWidth, (int)resizeTextureHeight, m4ImageStride, qFactor);
-		SetLODRawBufferImpEx(lod, resizeM4Image.acquire(), (RawBuffer::SIZE)(resizeTextureHeight * m4ImageStride), true, resizeInfo, 0);
+
+		SetLODRawBufferImpEx(
+			lod,
+			resizeM4Image.acquire(), (RawBuffer::SIZE)(resizeTextureHeight * m4ImageStride),
+			true, resizeInfo, 0
+		);
+
 		resizeImageInfo = imageInfo;
 	}
 
@@ -163,7 +169,13 @@ namespace gfx_tools {
 		const ImageInfo &imageInfo,
 		ares::RectU32* rectU32Pointer
 	) {
-		ResizeLOD(lod, pointer, stride, sizeInBytes, qFactor, imageInfo, imageInfo.textureWidth, imageInfo.textureHeight, rectU32Pointer);
+		ResizeLOD(
+			lod,
+			pointer, stride,
+			sizeInBytes, qFactor, imageInfo,
+			imageInfo.textureWidth, imageInfo.textureHeight,
+			rectU32Pointer
+		);
 	}
 
 	RawBuffer::POINTER ImageLoaderMultipleBuffer::CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) {
@@ -172,7 +184,11 @@ namespace gfx_tools {
 		return pointer;
 	}
 
-	void ImageLoaderMultipleBuffer::SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer) {
+	void ImageLoaderMultipleBuffer::SetLODRawBuffer(
+		LOD lod,
+		RawBuffer::POINTER pointer, RawBuffer::SIZE size,
+		ubi::RefCounted* refCountedPointer
+	) {
 		SetLODRawBufferImp(lod, pointer, size, false, refCountedPointer);
 	}
 
@@ -240,8 +256,7 @@ namespace gfx_tools {
 
 	void ImageLoaderMultipleBuffer::SetLODRawBufferImp(
 		LOD lod,
-		RawBuffer::POINTER pointer,
-		RawBuffer::SIZE size,
+		RawBuffer::POINTER pointer, RawBuffer::SIZE size,
 		bool owner,
 		ubi::RefCounted* refCountedPointer
 	) {
@@ -264,19 +279,14 @@ namespace gfx_tools {
 
 	void ImageLoaderMultipleBuffer::GetRawBufferInfo(
 		const RawBufferEx &rawBuffer,
-		bool* isAlphaPointer,
-		uint32_t* bitsPointer,
-		int* textureWidthPointer,
-		int* textureHeightPointer
+		bool* isAlphaPointer, uint32_t* bitsPointer,
+		int* textureWidthPointer, int* textureHeightPointer
 	) {
 		M4Image::getInfo(
-			rawBuffer.pointer,
-			rawBuffer.size,
+			rawBuffer.pointer, rawBuffer.size,
 			GetExtension(),
-			isAlphaPointer,
-			bitsPointer,
-			textureWidthPointer,
-			textureHeightPointer
+			isAlphaPointer, bitsPointer,
+			textureWidthPointer, textureHeightPointer
 		);
 	}
 
@@ -415,8 +425,7 @@ namespace gfx_tools {
 
 	void ImageLoaderMultipleBuffer::SetLODRawBufferImpEx(
 		LOD lod,
-		RawBuffer::POINTER pointer,
-		RawBuffer::SIZE size,
+		RawBuffer::POINTER pointer, RawBuffer::SIZE size,
 		bool owner,
 		const std::optional<RawBufferEx::ResizeInfo> &resizeInfoOptional,
 		ubi::RefCounted* refCountedPointer
@@ -467,10 +476,8 @@ namespace gfx_tools {
 
 	void ImageLoaderMultipleBufferZAP::GetRawBufferInfo(
 		const RawBufferEx &rawBuffer,
-		bool* isAlphaPointer,
-		uint32_t* bitsPointer,
-		int* textureWidthPointer,
-		int* textureHeightPointer
+		bool* isAlphaPointer, uint32_t* bitsPointer,
+		int* textureWidthPointer, int* textureHeightPointer
 	) {
 		if (isAlphaPointer) {
 			static const bool ZAP_IS_ALPHA = true;

@@ -132,12 +132,10 @@ inline void crtErr(errno_t err = errno) {
 #ifdef WINDOWS
 template<bool doserrno = false>
 inline void osErrThrow() {
+	int err = (int)(doserrno ? _doserrno : GetLastError());
+
 	throw std::system_error(
-		std::error_code(
-			(int)(doserrno ? _doserrno : GetLastError()),
-			std::system_category()
-		)
-	);
+		std::error_code(err, std::system_category()));
 }
 
 template<bool doserrno = false>

@@ -164,7 +164,7 @@ namespace Ubi {
 			}
 		}
 
-		class TextureBox: public virtual Resource {
+		class TextureBox: public Resource {
 			private:
 			void create(std::istream &inputStream, RLE::LAYER_MAP &layerMap);
 
@@ -176,7 +176,7 @@ namespace Ubi {
 			TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream);
 		};
 
-		class Water: public virtual Resource {
+		class Water: public Resource {
 			private:
 			void create(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
 
@@ -190,7 +190,7 @@ namespace Ubi {
 			Water(Loader::POINTER loaderPointer, std::istream &inputStream);
 		};
 
-		class InteractiveOffsetProvider: public virtual Resource {
+		class InteractiveOffsetProvider: public Resource {
 			public:
 			static const Resource::ID ID = 43;
 			static const Resource::VERSION VERSION = 1;
@@ -198,7 +198,7 @@ namespace Ubi {
 			InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
 		};
 
-		class TextureAlignedOffsetProvider: public virtual Resource {
+		class TextureAlignedOffsetProvider: public Resource {
 			public:
 			static const Resource::ID ID = 44;
 			static const Resource::VERSION VERSION = 1;
@@ -206,7 +206,7 @@ namespace Ubi {
 			TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
 		};
 
-		class StateData: public virtual Resource {
+		class StateData: public Resource {
 			private:
 			void create(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet);
 

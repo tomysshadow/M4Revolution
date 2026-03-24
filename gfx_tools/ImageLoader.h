@@ -55,7 +55,9 @@ namespace gfx_tools {
 		GFX_TOOLS_API virtual RawBuffer::POINTER GFX_TOOLS_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) = 0;
 
 		GFX_TOOLS_API virtual void GFX_TOOLS_CALL SetLODRawBuffer(
-			LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer = 0
+			LOD lod,
+			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
+			ubi::RefCounted* refCountedPointer = 0
 		) = 0;
 
 		GFX_TOOLS_API virtual RawBuffer::POINTER GFX_TOOLS_CALL GetLODRawBuffer(LOD lod) = 0;
@@ -71,8 +73,7 @@ namespace gfx_tools {
 		protected:
 		virtual void GFX_TOOLS_CALL SetLODRawBufferImp(
 			LOD lod,
-			RawBuffer::POINTER pointer,
-			RawBuffer::SIZE size,
+			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
 			bool owner = false,
 			ubi::RefCounted* refCountedPointer = 0
 		) = 0;
@@ -86,10 +87,8 @@ namespace gfx_tools {
 		// which the others are built on top of
 		virtual void GFX_TOOLS_CALL GetRawBufferInfo(
 			const RawBufferEx &rawBuffer,
-			bool* isAlphaPointer,
-			uint32_t* bitsPointer,
-			int* textureWidthPointer,
-			int* textureHeightPointer
+			bool* isAlphaPointer, uint32_t* bitsPointer,
+			int* textureWidthPointer, int* textureHeightPointer
 		) = 0;
 
 		virtual void GFX_TOOLS_CALL LoadRawBuffer(
@@ -104,8 +103,7 @@ namespace gfx_tools {
 
 		virtual void GFX_TOOLS_CALL SetLODRawBufferImpEx(
 			LOD lod,
-			RawBuffer::POINTER pointer,
-			RawBuffer::SIZE size,
+			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
 			bool owner = false,
 			const std::optional<RawBufferEx::ResizeInfo> &resizeInfoOptional = std::nullopt,
 			ubi::RefCounted* refCountedPointer = 0
@@ -123,14 +121,14 @@ namespace gfx_tools {
 
 		GFX_TOOLS_API virtual GFX_TOOLS_CALL ~ImageLoaderMultipleBuffer();
 
-		GFX_TOOLS_API void GFX_TOOLS_CALL GetLOD(
+		GFX_TOOLS_API virtual void GFX_TOOLS_CALL GetLOD(
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
 			SIZE sizeInBytes
-		);
+		) override;
 
-		GFX_TOOLS_API void GFX_TOOLS_CALL ResizeLOD(
+		GFX_TOOLS_API virtual void GFX_TOOLS_CALL ResizeLOD(
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
@@ -140,9 +138,9 @@ namespace gfx_tools {
 			DIMENSION resizeTextureWidth,
 			DIMENSION resizeTextureHeight,
 			ares::RectU32* rectU32Pointer
-		);
+		) override;
 
-		GFX_TOOLS_API void GFX_TOOLS_CALL SetLOD(
+		GFX_TOOLS_API virtual void GFX_TOOLS_CALL SetLOD(
 			LOD lod,
 			RawBuffer::POINTER pointer,
 			SIZE stride,
@@ -150,56 +148,58 @@ namespace gfx_tools {
 			Q_FACTOR qFactor,
 			const ImageInfo &imageInfo,
 			ares::RectU32* rectU32Pointer
-		);
+		) override;
 
-		GFX_TOOLS_API RawBuffer::POINTER GFX_TOOLS_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size);
-		GFX_TOOLS_API void GFX_TOOLS_CALL SetLODRawBuffer(LOD lod, RawBuffer::POINTER pointer, RawBuffer::SIZE size, ubi::RefCounted* refCountedPointer = 0);
-		GFX_TOOLS_API RawBuffer::POINTER GFX_TOOLS_CALL GetLODRawBuffer(LOD lod);
-		GFX_TOOLS_API void GFX_TOOLS_CALL GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size);
+		GFX_TOOLS_API virtual RawBuffer::POINTER GFX_TOOLS_CALL CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) override;
 
-		GFX_TOOLS_API bool GFX_TOOLS_CALL GetImageInfoImp(
+		GFX_TOOLS_API virtual void GFX_TOOLS_CALL SetLODRawBuffer(
+			LOD lod,
+			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
+			ubi::RefCounted* refCountedPointer = 0
+		) override;
+
+		GFX_TOOLS_API virtual RawBuffer::POINTER GFX_TOOLS_CALL GetLODRawBuffer(LOD lod) override;
+		GFX_TOOLS_API virtual void GFX_TOOLS_CALL GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) override;
+
+		GFX_TOOLS_API virtual bool GFX_TOOLS_CALL GetImageInfoImp(
 			ValidatedImageInfo &validatedImageInfo
-		);
+		) override;
 
 		protected:
-		void GFX_TOOLS_CALL SetLODRawBufferImp(
+		virtual void GFX_TOOLS_CALL SetLODRawBufferImp(
 			LOD lod,
-			RawBuffer::POINTER pointer,
-			RawBuffer::SIZE size,
+			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
 			bool owner = false,
 			ubi::RefCounted* refCountedPointer = 0
-		);
+		) override;
 
-		const L_TCHAR* GFX_TOOLS_CALL GetExtension();
-		L_INT GFX_TOOLS_CALL GetFormat();
-		L_INT GFX_TOOLS_CALL CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer);
+		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() override;
+		virtual L_INT GFX_TOOLS_CALL GetFormat() override;
+		virtual L_INT GFX_TOOLS_CALL CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer) override;
 
-		void GFX_TOOLS_CALL GetRawBufferInfo(
+		virtual void GFX_TOOLS_CALL GetRawBufferInfo(
 			const RawBufferEx &rawBuffer,
-			bool* isAlphaPointer,
-			uint32_t* bitsPointer,
-			int* textureWidthPointer,
-			int* textureHeightPointer
-		);
+			bool* isAlphaPointer, uint32_t* bitsPointer,
+			int* textureWidthPointer, int* textureHeightPointer
+		) override;
 
-		void GFX_TOOLS_CALL LoadRawBuffer(
+		virtual void GFX_TOOLS_CALL LoadRawBuffer(
 			const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride
-		);
+		) override;
 
-		void GFX_TOOLS_CALL SaveRawBuffer(
+		virtual void GFX_TOOLS_CALL SaveRawBuffer(
 			const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size
-		);
+		) override;
 
-		void GFX_TOOLS_CALL GetImageInfoImpEx();
+		virtual void GFX_TOOLS_CALL GetImageInfoImpEx() override;
 
-		void GFX_TOOLS_CALL SetLODRawBufferImpEx(
+		virtual void GFX_TOOLS_CALL SetLODRawBufferImpEx(
 			LOD lod,
-			RawBuffer::POINTER pointer,
-			RawBuffer::SIZE size,
+			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
 			bool owner = false,
 			const std::optional<RawBufferEx::ResizeInfo> &resizeInfoOptional = std::nullopt,
 			ubi::RefCounted* refCountedPointer = 0
-		);
+		) override;
 
 		SIZE numberOfRawBuffers = 0;
 		std::optional<RawBufferEx> rawBufferOptionals[NUMBER_OF_LOD_MAX] = {};
@@ -208,55 +208,53 @@ namespace gfx_tools {
 
 	class ImageLoaderMultipleBufferZAP : public ImageLoaderMultipleBuffer {
 		protected:
-		const L_TCHAR* GFX_TOOLS_CALL GetExtension();
-		L_INT GFX_TOOLS_CALL GetFormat();
+		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() override;
+		virtual L_INT GFX_TOOLS_CALL GetFormat() override;
 
-		void GFX_TOOLS_CALL GetRawBufferInfo(
+		virtual void GFX_TOOLS_CALL GetRawBufferInfo(
 			const RawBufferEx &rawBuffer,
-			bool* isAlphaPointer,
-			uint32_t* bitsPointer,
-			int* textureWidthPointer,
-			int* textureHeightPointer
-		);
+			bool* isAlphaPointer, uint32_t* bitsPointer,
+			int* textureWidthPointer, int* textureHeightPointer
+		) override;
 
-		void GFX_TOOLS_CALL LoadRawBuffer(
+		virtual void GFX_TOOLS_CALL LoadRawBuffer(
 			const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride
-		);
+		) override;
 
-		void GFX_TOOLS_CALL SaveRawBuffer(
+		virtual void GFX_TOOLS_CALL SaveRawBuffer(
 			const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, SIZE &size
-		);
+		) override;
 	};
 
 	class ImageLoaderMultipleBufferTGA : public ImageLoaderMultipleBuffer {
 		protected:
 		static const L_INT FILE_TGA = 4;
 
-		const L_TCHAR* GFX_TOOLS_CALL GetExtension();
-		L_INT GFX_TOOLS_CALL GetFormat();
+		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() override;
+		virtual L_INT GFX_TOOLS_CALL GetFormat() override;
 	};
 
 	class ImageLoaderMultipleBufferPNG : public ImageLoaderMultipleBuffer {
 		protected:
 		static const L_INT FILE_PNG = 75;
 
-		const L_TCHAR* GFX_TOOLS_CALL GetExtension();
-		L_INT GFX_TOOLS_CALL GetFormat();
+		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() override;
+		virtual L_INT GFX_TOOLS_CALL GetFormat() override;
 	};
 
 	class ImageLoaderMultipleBufferJPEG : public ImageLoaderMultipleBuffer {
 		protected:
 		static const L_INT FILE_JPEG = 10;
 
-		const L_TCHAR* GFX_TOOLS_CALL GetExtension();
-		L_INT GFX_TOOLS_CALL GetFormat();
+		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() override;
+		virtual L_INT GFX_TOOLS_CALL GetFormat() override;
 	};
 
 	class ImageLoaderMultipleBufferBMP : public ImageLoaderMultipleBuffer {
 		protected:
 		static const L_INT FILE_BMP = 6;
 
-		const L_TCHAR* GFX_TOOLS_CALL GetExtension();
-		L_INT GFX_TOOLS_CALL GetFormat();
+		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() override;
+		virtual L_INT GFX_TOOLS_CALL GetFormat() override;
 	};
 }
