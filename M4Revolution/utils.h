@@ -281,6 +281,8 @@ void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination &&
 	std::streamsize countRead = BUFFER_SIZE;
 	std::streamsize gcountRead = 0;
 
+	auto &&writeDestinationForward = std::forward<WriteDestination>(writeDestination);
+
 	do {
 		countRead = (std::streamsize)__min((size_t)count, (size_t)countRead);
 
@@ -290,7 +292,7 @@ void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination &&
 			break;
 		}
 
-		std::forward<WriteDestination>(writeDestination)(buffer, gcountRead);
+		writeDestinationForward(buffer, gcountRead);
 
 		if (count != -1) {
 			count -= gcountRead;
