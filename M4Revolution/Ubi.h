@@ -142,9 +142,9 @@ namespace Ubi {
 			static const ID UBI_B0_L = 0x6C2D30622F696275;
 
 			std::streamsize fileSize = 0;
-			std::streampos filePosition = 0;
+			std::streampos filePosition;
 
-			HeaderCopier(std::streamsize fileSize, std::streampos filePosition);
+			HeaderCopier(std::streamsize fileSize, const std::streampos &filePosition);
 		};
 
 		class HeaderReader : private HeaderCopier, NonCopyable {
@@ -231,9 +231,9 @@ namespace Ubi {
 			SIZE size = 0;
 			static const size_t SIZE_SIZE = sizeof(size);
 
-			// initially the position in the input file, to be overwritten later (with the stream position)
-			SIZE position = 0;
-			static const size_t POSITION_SIZE = sizeof(position);
+			// initially the offset in the input file, to be overwritten later (with the stream offset)
+			SIZE offset = 0;
+			static const size_t OFFSET_SIZE = sizeof(offset);
 
 			// the effective size of the file's padding (not stored to the file, used temporarily by the output thread)
 			SIZE padding = 0;

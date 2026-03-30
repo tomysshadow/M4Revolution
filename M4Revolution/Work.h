@@ -85,7 +85,7 @@ namespace Work {
 		// it can't be const because it's passed to BigFile's constructor by reference
 		// so it has a getter instead
 		// file is the associated file (so the size can be set on it later)
-		std::streampos ownerBigFileInputPosition = -1;
+		std::streamoff ownerBigFileInputOffset = -1;
 		Ubi::BigFile::File &file;
 		Ubi::BigFile::File::SIZE fileSystemSize = 0;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type files = 0;
@@ -93,21 +93,21 @@ namespace Work {
 
 		public:
 		typedef std::shared_ptr<BigFileTask> POINTER;
-		typedef std::map<std::streampos, POINTER, std::less<>> POINTER_MAP;
+		typedef std::map<std::streamoff, POINTER, std::less<>> POINTER_MAP;
 		typedef Lock<POINTER_MAP> POINTER_MAP_LOCK;
 
 		// outputPosition is set by the output thread, and later used by it so it knows where to jump back
-		std::streampos outputPosition = -1;
+		std::streamoff outputOffset = -1;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
 		BigFileTask(
 			std::istream &inputStream,
-			std::streampos ownerBigFileInputPosition,
+			std::streamoff ownerBigFileInputOffset,
 			Ubi::BigFile::File &file,
 			Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap
 		);
 
-		std::streampos getOwnerBigFileInputPosition() const;
+		std::streamoff getOwnerBigFileInputOffset() const;
 		Ubi::BigFile::File &getFile() const;
 		Ubi::BigFile::File::SIZE getFileSystemSize() const;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type getFiles() const;
@@ -134,19 +134,19 @@ namespace Work {
 		// if it's false, it'll wait on more data again, otherwise it'll move to the next FileTask
 		// the output thread will check if the next file in the queue has a lesser value for bigFileInputPosition
 		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
-		std::streampos ownerBigFileInputPosition = -1;
+		std::streamoff ownerBigFileInputOffset = -1;
 		FILE_VARIANT fileVariant = {};
 		Event event;
 		Data::QUEUE queue = {};
 
 		public:
-		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File* filePointer);
-		FileTask(std::streampos ownerBigFileInputPosition, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
+		FileTask(std::streamoff ownerBigFileInputOffset, Ubi::BigFile::File* filePointer);
+		FileTask(std::streamoff ownerBigFileInputOffset, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
 		Data::QUEUE_LOCK lock(bool &yield);
 		Data::QUEUE_LOCK lock();
 		void copy(std::istream &inputStream, std::streamsize count);
 		void complete();
-		std::streampos getOwnerBigFileInputPosition();
+		std::streamoff getOwnerBigFileInputOffset();
 		FILE_VARIANT getFileVariant();
 	};
 
@@ -206,10 +206,10 @@ namespace Work {
 	struct Output {
 		std::ofstream fileStream = {};
 
-		std::streampos currentBigFileInputPosition = -1;
+		std::streamoff currentBigFileInputOffset = -1;
 		BigFileTask::POINTER bigFileTaskPointer = 0;
 
-		Ubi::BigFile::File::SIZE filePosition = 0;
+		Ubi::BigFile::File::SIZE fileOffset = 0;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
 		struct Info {
@@ -267,7 +267,7 @@ namespace Work {
 		}
 
 		struct Code {
-			std::streampos position = 0;
+			std::streamoff offset = 0;
 			std::string str = "";
 		};
 

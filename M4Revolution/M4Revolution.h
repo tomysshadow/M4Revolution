@@ -94,20 +94,20 @@ class M4Revolution : NonCopyable {
 		Ubi::BigFile::File::SIZE inputPosition,
 		Ubi::BigFile::File::SIZE inputCopyPosition,
 		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
-		std::streampos bigFileInputPosition,
+		const std::streampos &bigFileInputPosition,
 		Log &log
 	);
 
 	void convertFile(
 		std::istream &inputStream,
-		std::streampos ownerBigFileInputPosition,
+		const std::streampos &ownerBigFileInputPosition,
 		Ubi::BigFile::File &file,
 		Work::Convert::FileWorkCallback fileWorkCallback
 	);
 
 	void convertFile(
 		std::istream &inputStream,
-		std::streampos bigFileInputPosition,
+		const std::streampos &bigFileInputPosition,
 		Ubi::BigFile::File &file,
 		Log &log
 	);
@@ -121,7 +121,7 @@ class M4Revolution : NonCopyable {
 	);
 
 	void fixLoading(std::istream &inputStream,
-		std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
+		const std::streampos &ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
 	static const Ubi::BigFile::Path::VECTOR TRANSITION_FADE_PATH_VECTOR;
 	static const CompressionOptions COMPRESSION_OPTIONS;
@@ -140,7 +140,7 @@ class M4Revolution : NonCopyable {
 	#ifdef MULTITHREADED
 	static VOID CALLBACK convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
 	#endif
-	static bool outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks);
+	static bool outputBigFiles(Work::Output &output, const std::streampos &bigFileInputPosition, Work::Tasks &tasks);
 	static void outputData(std::ostream &outputStream, Work::FileTask &fileTask, bool &yield);
 	static void outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
 	static void outputThread(Work::Tasks &tasks, bool &yield);

@@ -78,11 +78,11 @@ namespace Work {
 
 	BigFileTask::BigFileTask(
 		std::istream &inputStream,
-		std::streampos ownerBigFileInputPosition,
+		std::streamoff ownerBigFileInputOffset,
 		Ubi::BigFile::File &file,
 		Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap
 	)
-		: ownerBigFileInputPosition(ownerBigFileInputPosition),
+		: ownerBigFileInputOffset(ownerBigFileInputOffset),
 		file(file),
 
 		bigFilePointer(std::make_shared<Ubi::BigFile>(
@@ -94,8 +94,8 @@ namespace Work {
 		)) {
 	}
 
-	std::streampos BigFileTask::getOwnerBigFileInputPosition() const {
-		return ownerBigFileInputPosition;
+	std::streamoff BigFileTask::getOwnerBigFileInputOffset() const {
+		return ownerBigFileInputOffset;
 	}
 
 	Ubi::BigFile::File &BigFileTask::getFile() const {
@@ -114,16 +114,16 @@ namespace Work {
 		return bigFilePointer;
 	}
 
-	FileTask::FileTask(std::streampos ownerBigFileInputPosition,
+	FileTask::FileTask(std::streamoff ownerBigFileInputOffset,
 		Ubi::BigFile::File* filePointer)
-		: ownerBigFileInputPosition(ownerBigFileInputPosition),
+		: ownerBigFileInputOffset(ownerBigFileInputOffset),
 		fileVariant(filePointer),
 		event(true) {
 	}
 
-	FileTask::FileTask(std::streampos ownerBigFileInputPosition,
+	FileTask::FileTask(std::streamoff ownerBigFileInputOffset,
 		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer)
-		: ownerBigFileInputPosition(ownerBigFileInputPosition),
+		: ownerBigFileInputOffset(ownerBigFileInputOffset),
 		fileVariant(filePointerVectorPointer),
 		event(true) {
 	}
@@ -186,8 +186,8 @@ namespace Work {
 		lock().get().emplace();
 	}
 
-	std::streampos FileTask::getOwnerBigFileInputPosition() {
-		return ownerBigFileInputPosition;
+	std::streamoff FileTask::getOwnerBigFileInputOffset() {
+		return ownerBigFileInputOffset;
 	}
 
 	FileTask::FILE_VARIANT FileTask::getFileVariant() {
@@ -421,7 +421,7 @@ namespace Work {
 			codeVectorIterator != codeVector.end();
 			codeVectorIterator++
 		) {
-			fileStream.seekp(codeVectorIterator->position);
+			fileStream.seekp(codeVectorIterator->offset);
 
 			std::string &str = codeVectorIterator->str;
 			writeStream(fileStream, str.c_str(), (std::streamsize)str.length());

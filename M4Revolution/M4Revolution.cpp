@@ -98,7 +98,7 @@ void M4Revolution::Log::converting(const Ubi::BigFile::File &file) {
 	if (file.nameOptional.has_value()) {
 		std::cout << "Converting \"" << file.nameOptional.value() << "\"\n";
 	} else {
-		std::cout << "Converting file at position " << file.position << ", size " << file.size << "\n";
+		std::cout << "Converting file at offset " << file.offset << ", size " << file.size << "\n";
 	}
 }
 
@@ -211,10 +211,10 @@ void M4Revolution::copyFiles(
 	Ubi::BigFile::File::SIZE inputPosition,
 	Ubi::BigFile::File::SIZE inputCopyPosition,
 	Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
-	std::streampos bigFileInputPosition,
+	const std::streampos &bigFileInputPosition,
 	Log &log
 ) {
-	inputStream.seekg((std::streampos)inputCopyPosition + bigFileInputPosition);
+	inputStream.seekg(bigFileInputPosition + (std::streamoff)inputCopyPosition);
 
 	Work::FileTask::POINTER_QUEUE::size_type fileTasks = 0;
 
@@ -244,7 +244,7 @@ void M4Revolution::copyFiles(
 
 void M4Revolution::convertFile(
 	std::istream &inputStream,
-	std::streampos ownerBigFileInputPosition,
+	const std::streampos &ownerBigFileInputPosition,
 	Ubi::BigFile::File &file,
 	Work::Convert::FileWorkCallback fileWorkCallback
 ) {
@@ -282,11 +282,11 @@ void M4Revolution::convertFile(
 
 void M4Revolution::convertFile(
 	std::istream &inputStream,
-	std::streampos bigFileInputPosition,
+	const std::streampos &bigFileInputPosition,
 	Ubi::BigFile::File &file,
 	Log &log
 ) {
-	inputStream.seekg((std::streampos)file.position + bigFileInputPosition);
+	inputStream.seekg(bigFileInputPosition + (std::streamoff)file.offset);
 
 	// these conversion functions update the file sizes passed in
 	switch (file.type) {
@@ -326,7 +326,7 @@ void M4Revolution::stepFile(
 }
 
 void M4Revolution::fixLoading(std::istream &inputStream,
-	std::streampos ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
+	const std::streampos &ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
 	// filePointerSetMap is a map where the keys are the file positions beginning to end
 	// and values are sets of files at that position
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
@@ -851,17 +851,17 @@ VOID CALLBACK M4Revolution::convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOI
 }
 #endif
 
-bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileInputPosition, Work::Tasks &tasks) {
-	std::streampos &currentBigFileInputPosition = output.currentBigFileInputPosition;
+bool M4Revolution::outputBigFiles(Work::Output &output, const std::streampos &bigFileInputPosition, Work::Tasks &tasks) {
+	std::streamoff currentBigFileInputOffset = output.currentBigFileInputOffset;
 
 	// if this is true we haven't moved on to another BigFile, so just return immediately
-	if (bigFileInputPosition == currentBigFileInputPosition) {
+	if (bigFileInputPosition == currentBigFileInputOffset) {
 		return true;
 	}
 
 	std::ofstream &fileStream = output.fileStream;
 	Work::BigFileTask::POINTER &bigFileTaskPointer = output.bigFileTaskPointer;
-	Ubi::BigFile::File::SIZE &filePosition = output.filePosition;
+	Ubi::BigFile::File::SIZE &fileOffset = output.fileOffset;
 	Ubi::BigFile::File::POINTER_VECTOR::size_type &filesWritten = output.filesWritten;
 
 	Ubi::BigFile::File::POINTER_VECTOR::size_type files = 0;
@@ -869,8 +869,8 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 	Work::BigFileTask::POINTER eraseBigFileTaskPointer = 0;
 	Work::BigFileTask::POINTER currentBigFileTaskPointer = 0;
 
-	std::streampos eraseBigFileInputPosition = -1;
-	std::streampos currentOutputPosition = -1;
+	std::streamoff eraseBigFileInputOffset = -1;
+	std::streamoff currentOutputOffset = -1;
 
 	// may be zero if this is the first BigFile so this hasn't been set before
 	if (bigFileTaskPointer) {
@@ -891,32 +891,32 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 
 				// jump to the beginning where the filesystem is meant to be
 				// then jump to the end again
-				currentOutputPosition = fileStream.tellp();
+				currentOutputOffset = fileStream.tellp();
 
-				std::streampos &eraseOutputPosition = eraseBigFileTask.outputPosition;
-				fileStream.seekp(eraseOutputPosition);
+				std::streamoff eraseOutputOffset = eraseBigFileTask.outputOffset;
+				fileStream.seekp(eraseOutputOffset);
 
 				eraseBigFileTask.getBigFilePointer()->write(fileStream);
 
-				fileStream.seekp(currentOutputPosition);
+				fileStream.seekp(currentOutputOffset);
 
-				eraseBigFileInputPosition = currentBigFileInputPosition;
-				currentBigFileInputPosition = eraseBigFileTask.getOwnerBigFileInputPosition();
+				eraseBigFileInputOffset = currentBigFileInputOffset;
+				currentBigFileInputOffset = eraseBigFileTask.getOwnerBigFileInputOffset();
 
 				{
 					Work::BigFileTask::POINTER_MAP_LOCK bigFileLock = tasks.bigFileLock();
 					Work::BigFileTask::POINTER_MAP &bigFileTaskPointerMap = bigFileLock.get();
 
-					bigFileTaskPointerMap.erase(eraseBigFileInputPosition);
+					bigFileTaskPointerMap.erase(eraseBigFileInputOffset);
 
 					// if the BigFile owns itself that means it's the top, and we're done
-					if (eraseBigFileInputPosition == currentBigFileInputPosition) {
+					if (eraseBigFileInputOffset == currentBigFileInputOffset) {
 						return false;
 					}
 
 					// since we're already holding the lock, might as well get this now
 					currentBigFileTaskPointer = bigFileTaskPointerMap.at(bigFileInputPosition);
-					bigFileTaskPointer = bigFileTaskPointerMap.at(currentBigFileInputPosition);
+					bigFileTaskPointer = bigFileTaskPointerMap.at(currentBigFileInputOffset);
 				}
 
 				// we now need to check the owner in case we are
@@ -925,9 +925,9 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 
 				// update the size and position in the owner's filesystem
 				Ubi::BigFile::File &file = eraseBigFileTask.getFile();
-				file.size = (Ubi::BigFile::File::SIZE)(currentOutputPosition - eraseOutputPosition);
-				file.position = (Ubi::BigFile::File::SIZE)(eraseOutputPosition - ownerBigFileTask.outputPosition);
-				filePosition = file.size + file.position;
+				file.size = (Ubi::BigFile::File::SIZE)(currentOutputOffset - eraseOutputOffset);
+				file.offset = (Ubi::BigFile::File::SIZE)(eraseOutputOffset - ownerBigFileTask.outputOffset);
+				fileOffset = file.size + file.offset;
 				ownerBigFileTask.filesWritten++;
 
 				files = bigFileTaskPointer->getFiles();
@@ -936,11 +936,11 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 	}
 
 	// get the current BigFile now, if we didn't before already
-	currentBigFileInputPosition = bigFileInputPosition;
+	currentBigFileInputOffset = bigFileInputPosition;
 
 	bigFileTaskPointer = currentBigFileTaskPointer
 		? currentBigFileTaskPointer
-		: tasks.bigFileLock().get().at(currentBigFileInputPosition);
+		: tasks.bigFileLock().get().at(currentBigFileInputOffset);
 
 	Work::BigFileTask &currentBigFileTask = *bigFileTaskPointer;
 
@@ -951,10 +951,10 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streampos bigFileIn
 		// if we've not written any files for this BigFile yet
 		// then we are at the beginning of it, so seek ahead
 		// so that there is space for the filesystem later
-		currentBigFileTask.outputPosition = fileStream.tellp();
+		currentBigFileTask.outputOffset = fileStream.tellp();
 
-		filePosition = currentBigFileTask.getFileSystemSize();
-		fileStream.seekp(filePosition, std::ofstream::cur);
+		fileOffset = currentBigFileTask.getFileSystemSize();
+		fileStream.seekp((std::streamoff)fileOffset, std::ofstream::cur);
 	}
 	return true;
 }
@@ -994,7 +994,7 @@ void M4Revolution::outputData(std::ostream &outputStream, Work::FileTask &fileTa
 }
 
 void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant) {
-	Ubi::BigFile::File::SIZE &filePosition = output.filePosition;
+	Ubi::BigFile::File::SIZE &fileOffset = output.fileOffset;
 	Ubi::BigFile::File::POINTER_VECTOR::size_type &filesWritten = output.filesWritten;
 
 	// depending on if the files was copied or converted
@@ -1011,17 +1011,17 @@ void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::FILE_VARIAN
 			// in this case, we intentionally disregard the file's size
 			// the padding is all that matters
 			Ubi::BigFile::File &file = **filePointerVectorIterator;
-			filePosition += file.padding;
-			file.position = filePosition;
+			fileOffset += file.padding;
+			file.offset = fileOffset;
 		}
 
 		filesWritten += filePointerVectorPointer->size();
 	} else {
 		// in this case we know for sure we should use the size
 		Ubi::BigFile::File &file = *std::get<Ubi::BigFile::File*>(fileVariant);
-		filePosition += file.padding;
-		file.position = filePosition;
-		filePosition += file.size;
+		fileOffset += file.padding;
+		file.offset = fileOffset;
+		fileOffset += file.size;
 		filesWritten++;
 	}
 }
@@ -1055,7 +1055,7 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 			Work::FileTask &fileTask = *fileTaskPointerQueue.front();
 
 			// if this returns false it means we're done
-			if (!outputBigFiles(output, fileTask.getOwnerBigFileInputPosition(), tasks)) {
+			if (!outputBigFiles(output, fileTask.getOwnerBigFileInputOffset(), tasks)) {
 				return;
 			}
 

@@ -42,7 +42,7 @@ namespace AI {
 			MAKE_SCOPE_EXIT(aiScopeExit) {
 				const std::string &LINE = matches[0];
 
-				position += (std::streampos)matches.prefix().length() + (std::streampos)LINE.length();
+				position += (std::streamoff)matches.prefix().length() + (std::streamoff)LINE.length();
 				ai = matches.suffix();
 			};
 

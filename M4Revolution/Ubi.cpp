@@ -97,7 +97,7 @@ namespace Ubi {
 				uint32_t subGroups = 0;
 
 				uint32_t pixels = 0;
-				std::streamsize pixelsSize = 0;
+				std::streamoff pixelsSize = 0;
 
 				static const size_t WATER_FACE_FIELDS_SIZE = 20; // Type, Width, Height, SliceWidth, SliceHeight
 				static const size_t WATER_SLICES_SIZE = sizeof(waterSlices);
@@ -139,7 +139,7 @@ namespace Ubi {
 							for (uint32_t m = 0; m < subGroups; m++) {
 								readStream(inputStream, &pixels, PIXELS_SIZE);
 
-								pixelsSize = pixels;
+								pixelsSize = (std::streamoff)pixels;
 								inputStream.seekg(pixelsSize + pixelsSize, std::istream::cur);
 							}
 						}
@@ -413,7 +413,7 @@ namespace Ubi {
 			create(inputStream, maskPathSet);
 		}
 
-		HeaderCopier::HeaderCopier(std::streamsize fileSize, std::streampos filePosition)
+		HeaderCopier::HeaderCopier(std::streamsize fileSize, const std::streampos &filePosition)
 			: fileSize(fileSize),
 			filePosition(filePosition) {
 		}
@@ -607,7 +607,7 @@ namespace Ubi {
 			)
 
 			+ SIZE_SIZE
-			+ POSITION_SIZE
+			+ OFFSET_SIZE
 		);
 	}
 
@@ -621,7 +621,7 @@ namespace Ubi {
 	void BigFile::File::write(std::ostream &outputStream) const {
 		String::writeOptional(outputStream, nameOptional);
 		writeStream(outputStream, &size, SIZE_SIZE);
-		writeStream(outputStream, &position, POSITION_SIZE);
+		writeStream(outputStream, &offset, OFFSET_SIZE);
 	}
 
 	Binary::Resource::POINTER BigFile::File::appendToLayerMap(
@@ -633,7 +633,7 @@ namespace Ubi {
 		Binary::Resource::POINTER resourcePointer = 0;
 
 		try {
-			inputStream.seekg(fileSystemPosition + (std::streampos)this->position);
+			inputStream.seekg(fileSystemPosition + (std::streamoff)this->offset);
 			resourcePointer = Binary::appendToLayerMap(inputStream, layerMap, this->size);
 		} catch (...) {
 			// fail silently
@@ -652,7 +652,7 @@ namespace Ubi {
 		Binary::Resource::POINTER resourcePointer = 0;
 	
 		try {
-			inputStream.seekg(fileSystemPosition + (std::streampos)this->position);
+			inputStream.seekg(fileSystemPosition + (std::streamoff)this->offset);
 			resourcePointer = Binary::appendToTextureBoxMap(inputStream, textureBoxMap, this->size);
 		} catch (...) {
 			// fail silently
@@ -665,7 +665,7 @@ namespace Ubi {
 	void BigFile::File::read(std::istream &inputStream) {
 		nameOptional = String::readOptional(inputStream);
 		readStream(inputStream, &size, SIZE_SIZE);
-		readStream(inputStream, &position, POSITION_SIZE);
+		readStream(inputStream, &offset, OFFSET_SIZE);
 	}
 
 	void BigFile::File::rename(const std::optional<File> &layerFileOptional) {
@@ -982,7 +982,7 @@ namespace Ubi {
 				filePointerVector.push_back(filePointer);
 			}
 
-			filePointerSetMap[FILE.position].insert(filePointer);
+			filePointerSetMap[FILE.offset].insert(filePointer);
 		}
 
 		files += filePointerVectorSize;
@@ -1210,7 +1210,7 @@ namespace Ubi {
 	BigFile::Header::Header(std::istream &inputStream, File::POINTER &filePointer) {
 		// for path vectors
 		if (filePointer) {
-			inputStream.seekg(filePointer->position);
+			inputStream.seekg(filePointer->offset);
 		}
 
 		read(inputStream);
@@ -1245,7 +1245,7 @@ namespace Ubi {
 		stream.seekg(0);
 
 		File::POINTER filePointer = 0;
-		std::streampos position = 0;
+		std::streamoff offset = 0;
 
 		for (
 			Path::VECTOR::const_iterator pathVectorIterator = pathVector.begin();
@@ -1258,8 +1258,8 @@ namespace Ubi {
 				throw std::logic_error("filePointer must not be zero");
 			}
 
-			stream.seekg(position + (std::streampos)filePointer->position);
-			position = stream.tellg();
+			stream.seekg(offset + (std::streamoff)filePointer->offset);
+			offset = stream.tellg();
 		}
 		return filePointer;
 	}
@@ -1336,7 +1336,7 @@ namespace Ubi {
 		};
 
 		File::POINTER layerFilePointer = 0;
-		std::streampos maskFileSystemPosition = 0;
+		std::streamoff maskFileSystemOffset = 0;
 		Binary::RLE::FACE_STR_MAP::const_iterator fileFaceStrMapIterator = {};
 		Binary::RLE::MASK_MAP::iterator waterMaskMapIterator = {};
 
@@ -1371,10 +1371,10 @@ namespace Ubi {
 						continue;
 					}
 
-					maskFileSystemPosition = (std::streampos)fileSystemPosition
-						+ (std::streampos)layerFilePointer->position;
+					maskFileSystemOffset = (std::streamoff)fileSystemPosition
+						+ (std::streamoff)layerFilePointer->offset;
 
-					inputStream.seekg(maskFileSystemPosition);
+					inputStream.seekg(maskFileSystemOffset);
 
 					BigFile maskBigFile(inputStream);
 
@@ -1397,7 +1397,7 @@ namespace Ubi {
 							continue;
 						}
 
-						inputStream.seekg(maskFileSystemPosition + (std::streampos)maskFile.position);
+						inputStream.seekg(maskFileSystemOffset + (std::streamoff)maskFile.offset);
 
 						Binary::RLE::appendToSliceMap(inputStream, maskFile.size,
 							waterMaskMap[fileFaceStrMapIterator->second]);
