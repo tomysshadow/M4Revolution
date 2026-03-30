@@ -6,7 +6,6 @@
 #include "PixelFormat.h"
 #include "FormatHint.h"
 #include <optional>
-#include <stdint.h>
 
 namespace gfx_tools {
 	class ImageLoader : public ares::Resource {

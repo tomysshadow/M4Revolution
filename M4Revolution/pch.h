@@ -12,6 +12,7 @@
 #include <optional>
 #include <fstream>
 #include <stdlib.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
