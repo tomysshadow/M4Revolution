@@ -626,14 +626,14 @@ namespace Ubi {
 
 	Binary::Resource::POINTER BigFile::File::appendToLayerMap(
 		std::istream &inputStream,
-		SIZE fileSystemPosition,
+		SIZE fileSystemOffset,
 		Binary::RLE::LAYER_MAP &layerMap
 	) const {
 		std::streampos position = inputStream.tellg();
 		Binary::Resource::POINTER resourcePointer = 0;
 
 		try {
-			inputStream.seekg(fileSystemPosition + (std::streamoff)this->offset);
+			inputStream.seekg(fileSystemOffset + (std::streamoff)this->offset);
 			resourcePointer = Binary::appendToLayerMap(inputStream, layerMap, this->size);
 		} catch (...) {
 			// fail silently
@@ -645,14 +645,14 @@ namespace Ubi {
 
 	Binary::Resource::POINTER BigFile::File::appendToTextureBoxMap(
 		std::istream &inputStream,
-		SIZE fileSystemPosition,
+		SIZE fileSystemOffset,
 		Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap
 	) const {
 		std::streampos position = inputStream.tellg();
 		Binary::Resource::POINTER resourcePointer = 0;
 	
 		try {
-			inputStream.seekg(fileSystemPosition + (std::streamoff)this->offset);
+			inputStream.seekg(fileSystemOffset + (std::streamoff)this->offset);
 			resourcePointer = Binary::appendToTextureBoxMap(inputStream, textureBoxMap, this->size);
 		} catch (...) {
 			// fail silently
@@ -671,7 +671,7 @@ namespace Ubi {
 	void BigFile::File::rename(const std::optional<File> &layerFileOptional) {
 		#ifdef RENAME_ENABLED
 		// predetermines what the new name will be after conversion
-		// this is necessary so we will know the position of the files before writing them
+		// this is necessary so we will know the offset of the files before writing them
 		if (!nameOptional.has_value()) {
 			return;
 		}
@@ -890,33 +890,33 @@ namespace Ubi {
 
 	void BigFile::Directory::appendToLayerMap(
 		std::istream &inputStream,
-		File::SIZE fileSystemPosition,
+		File::SIZE fileSystemOffset,
 		Binary::RLE::LAYER_MAP &layerMap
 	) const {
-		appendToLayerMap(inputStream, fileSystemPosition, layerMap, binaryFilePointerVector);
+		appendToLayerMap(inputStream, fileSystemOffset, layerMap, binaryFilePointerVector);
 
 		for (
 			VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
 			directoryVectorIterator != directoryVector.end();
 			directoryVectorIterator++
 		) {
-			appendToLayerMap(inputStream, fileSystemPosition, layerMap, directoryVectorIterator->binaryFilePointerVector);
+			appendToLayerMap(inputStream, fileSystemOffset, layerMap, directoryVectorIterator->binaryFilePointerVector);
 		}
 	}
 
 	void BigFile::Directory::appendToTextureBoxMap(
 		std::istream &inputStream,
-		File::SIZE fileSystemPosition,
+		File::SIZE fileSystemOffset,
 		Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap
 	) const {
-		appendToTextureBoxMap(inputStream, fileSystemPosition, textureBoxMap, binaryFilePointerVector);
+		appendToTextureBoxMap(inputStream, fileSystemOffset, textureBoxMap, binaryFilePointerVector);
 
 		for (
 			VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
 			directoryVectorIterator != directoryVector.end();
 			directoryVectorIterator++
 		) {
-			appendToTextureBoxMap(inputStream, fileSystemPosition, textureBoxMap, directoryVectorIterator->binaryFilePointerVector);
+			appendToTextureBoxMap(inputStream, fileSystemOffset, textureBoxMap, directoryVectorIterator->binaryFilePointerVector);
 		}
 	}
 
@@ -1163,7 +1163,7 @@ namespace Ubi {
 
 	void BigFile::Directory::appendToLayerMap(
 		std::istream &inputStream,
-		File::SIZE fileSystemPosition,
+		File::SIZE fileSystemOffset,
 		Binary::RLE::LAYER_MAP &layerMap,
 		const File::POINTER_VECTOR &binaryFilePointerVector
 	) const {
@@ -1172,13 +1172,13 @@ namespace Ubi {
 			binaryFilePointerVectorIterator != binaryFilePointerVector.end();
 			binaryFilePointerVectorIterator++
 		) {
-			(*binaryFilePointerVectorIterator)->appendToLayerMap(inputStream, fileSystemPosition, layerMap);
+			(*binaryFilePointerVectorIterator)->appendToLayerMap(inputStream, fileSystemOffset, layerMap);
 		}
 	}
 
 	void BigFile::Directory::appendToTextureBoxMap(
 		std::istream &inputStream,
-		File::SIZE fileSystemPosition,
+		File::SIZE fileSystemOffset,
 		Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap,
 		const File::POINTER_VECTOR &binaryFilePointerVector
 	) const {
@@ -1187,12 +1187,12 @@ namespace Ubi {
 			binaryFilePointerVectorIterator != binaryFilePointerVector.end();
 			binaryFilePointerVectorIterator++
 		) {
-			(*binaryFilePointerVectorIterator)->appendToTextureBoxMap(inputStream, fileSystemPosition, textureBoxMap);
+			(*binaryFilePointerVectorIterator)->appendToTextureBoxMap(inputStream, fileSystemOffset, textureBoxMap);
 		}
 	}
 
-	BigFile::Header::Header(std::istream &inputStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemPosition) {
-		fileSystemPosition = (File::SIZE)inputStream.tellg();
+	BigFile::Header::Header(std::istream &inputStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemOffset) {
+		fileSystemOffset = (File::SIZE)inputStream.tellg();
 		read(inputStream);
 
 		fileSystemSize += (File::SIZE)(
@@ -1271,7 +1271,7 @@ namespace Ubi {
 		File::POINTER_SET_MAP &filePointerSetMap,
 		File &file
 	)
-		: header(inputStream, fileSystemSize, fileSystemPosition),
+		: header(inputStream, fileSystemSize, fileSystemOffset),
 		directory(0, inputStream, fileSystemSize, files, filePointerSetMap, file) {
 		// do all the steps necessary to prevent water causing a crash
 		// note: the Binarizer seems hardcoded to put cubes and water in a cube and water directory
@@ -1312,7 +1312,7 @@ namespace Ubi {
 			cubeVectorIteratorsIterator != cubeVectorIterators.end();
 			cubeVectorIteratorsIterator++
 		) {
-			(*cubeVectorIteratorsIterator)->appendToLayerMap(inputStream, fileSystemPosition, layerMap);
+			(*cubeVectorIteratorsIterator)->appendToLayerMap(inputStream, fileSystemOffset, layerMap);
 		}
 
 		if (layerMap.empty()) {
@@ -1326,7 +1326,7 @@ namespace Ubi {
 			waterVectorIteratorsIterator != waterVectorIterators.end();
 			waterVectorIteratorsIterator++
 		) {
-			(*waterVectorIteratorsIterator)->appendToTextureBoxMap(inputStream, fileSystemPosition, textureBoxMap);
+			(*waterVectorIteratorsIterator)->appendToTextureBoxMap(inputStream, fileSystemOffset, textureBoxMap);
 		}
 
 		std::streampos position = inputStream.tellg();
@@ -1371,7 +1371,7 @@ namespace Ubi {
 						continue;
 					}
 
-					maskFileSystemOffset = (std::streamoff)fileSystemPosition
+					maskFileSystemOffset = (std::streamoff)fileSystemOffset
 						+ (std::streamoff)layerFilePointer->offset;
 
 					inputStream.seekg(maskFileSystemOffset);

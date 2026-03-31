@@ -78,7 +78,7 @@ namespace ubi {
 
 	class InputStream : public Stream {
 		public:
-		BASE_API SIZE BASE_CALL Read(unsigned char* buffer, SIZE position, SIZE size);
+		BASE_API SIZE BASE_CALL Read(unsigned char* buffer, SIZE offset, SIZE size);
 	};
 
 	/*

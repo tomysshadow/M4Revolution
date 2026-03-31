@@ -96,7 +96,7 @@ namespace Work {
 		typedef std::map<std::streamoff, POINTER, std::less<>> POINTER_MAP;
 		typedef Lock<POINTER_MAP> POINTER_MAP_LOCK;
 
-		// outputPosition is set by the output thread, and later used by it so it knows where to jump back
+		// outputOffset is set by the output thread, and later used by it so it knows where to jump back
 		std::streamoff outputOffset = -1;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
 
@@ -129,7 +129,7 @@ namespace Work {
 		// but they need to be written in order
 		// so other FileTasks will be having their queues populated
 		// but the output thread must not progress until the first FileTask in queue is completed
-		// (because it can't know what its final size will be, and therefore the next position to go to)
+		// (because it can't know what its final size will be, and therefore the next offset to go to)
 		// once at the end of the data queue, the output thread will check if completed is true
 		// if it's false, it'll wait on more data again, otherwise it'll move to the next FileTask
 		// the output thread will check if the next file in the queue has a lesser value for bigFileInputPosition

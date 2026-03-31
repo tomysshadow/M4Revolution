@@ -133,7 +133,7 @@ namespace AI {
 			
 		{
 			{
-				position + (std::streamsize)VALUE_STR_PREFIX.length(),
+				position + (std::streamoff)VALUE_STR_PREFIX.length(),
 				fileOutputStringStream.str()
 			}
 		});

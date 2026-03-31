@@ -208,13 +208,13 @@ void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks)
 
 void M4Revolution::copyFiles(
 	std::istream &inputStream,
-	Ubi::BigFile::File::SIZE inputPosition,
-	Ubi::BigFile::File::SIZE inputCopyPosition,
+	Ubi::BigFile::File::SIZE inputOffset,
+	Ubi::BigFile::File::SIZE inputCopyOffset,
 	Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
 	const std::streampos &bigFileInputPosition,
 	Log &log
 ) {
-	inputStream.seekg(bigFileInputPosition + (std::streamoff)inputCopyPosition);
+	inputStream.seekg(bigFileInputPosition + (std::streamoff)inputCopyOffset);
 
 	Work::FileTask::POINTER_QUEUE::size_type fileTasks = 0;
 
@@ -232,7 +232,7 @@ void M4Revolution::copyFiles(
 	}
 
 	Work::FileTask &fileTask = *fileTaskPointer;
-	fileTask.copy(inputStream, inputPosition - inputCopyPosition);
+	fileTask.copy(inputStream, inputOffset - inputCopyOffset);
 	fileTask.complete();
 
 	waitFiles(fileTasks);
@@ -313,13 +313,13 @@ void M4Revolution::convertFile(
 }
 
 void M4Revolution::stepFile(
-	Ubi::BigFile::File::SIZE inputPosition,
-	Ubi::BigFile::File::SIZE &inputFilePosition,
+	Ubi::BigFile::File::SIZE inputOffset,
+	Ubi::BigFile::File::SIZE &inputFileOffset,
 	Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
 	Ubi::BigFile::File::POINTER filePointer,
 	Log &log
 ) {
-	inputFilePosition = inputPosition;
+	inputFileOffset = inputOffset;
 	filePointerVectorPointer->push_back(filePointer);
 
 	log.step();
@@ -327,8 +327,8 @@ void M4Revolution::stepFile(
 
 void M4Revolution::fixLoading(std::istream &inputStream,
 	const std::streampos &ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
-	// filePointerSetMap is a map where the keys are the file positions beginning to end
-	// and values are sets of files at that position
+	// filePointerSetMap is a map where the keys are the file offsets beginning to end
+	// and values are sets of files at that offset
 	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
 	std::streampos bigFileInputPosition = inputStream.tellg();
 
@@ -343,15 +343,15 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 		filePointerSetMap
 	);
 
-	// inputCopyPosition is the position of the files to copy
-	// inputFilePosition is the position of a specific input file (for file.size calculation)
-	Ubi::BigFile::File::SIZE inputCopyPosition = (Ubi::BigFile::File::SIZE)(inputStream.tellg() - bigFileInputPosition);
-	Ubi::BigFile::File::SIZE inputFilePosition = inputCopyPosition;
+	// inputCopyOffset is the offset of the files to copy
+	// inputFileOffset is the offset of a specific input file (for file.size calculation)
+	Ubi::BigFile::File::SIZE inputCopyOffset = (Ubi::BigFile::File::SIZE)(inputStream.tellg() - bigFileInputPosition);
+	Ubi::BigFile::File::SIZE inputFileOffset = inputCopyOffset;
 
 	// convert keeps track of if we just converted any files within the inner, set loop
-	// (in which case, inputCopyPosition is advanced)
+	// (in which case, inputCopyOffset is advanced)
 	// countCopy is the count of the bytes to copy when copying files
-	// filePointerVectorPointer is to communicate file sizes/positions to the output thread
+	// filePointerVectorPointer is to communicate file sizes/offsets to the output thread
 	bool convert = false;
 
 	Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer =
@@ -363,12 +363,12 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 		filePointerSetMapIterator++
 	) {
 		if (convert) {
-			inputCopyPosition = filePointerSetMapIterator->first;
-			inputFilePosition = inputCopyPosition;
+			inputCopyOffset = filePointerSetMapIterator->first;
+			inputFileOffset = inputCopyOffset;
 			convert = false;
 		}
 
-		// we need an inner loop with a set here in case there are identical files with different paths, at the same position
+		// we need an inner loop with a set here in case there are identical files with different paths, at the same offset
 		Ubi::BigFile::File::POINTER_SET &filePointerSet = filePointerSetMapIterator->second;
 
 		for (
@@ -384,14 +384,14 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 				&& file.type != Ubi::BigFile::File::TYPE::NONE
 				&& file.type != Ubi::BigFile::File::TYPE::BINARY
 			) {
-				file.padding = filePointerSetMapIterator->first - inputFilePosition;
+				file.padding = filePointerSetMapIterator->first - inputFileOffset;
 
 				// prevent copying if there are no files (this is safe in this scenario only)
 				if (!filePointerVectorPointer->empty()) {
 					copyFiles(
 						inputStream,
 						filePointerSetMapIterator->first,
-						inputCopyPosition,
+						inputCopyOffset,
 						filePointerVectorPointer,
 						bigFileInputPosition,
 						log
@@ -407,11 +407,11 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 				convertFile(inputStream, bigFileInputPosition, file, log);
 			} else {
 				// other identical, copied files at the
-				// same position in the input should likewise
-				// be at the same position in the output
-				file.padding = filePointerSetMapIterator->first - inputFilePosition;
+				// same offset in the input should likewise
+				// be at the same offset in the output
+				file.padding = filePointerSetMapIterator->first - inputFileOffset;
 
-				stepFile(filePointerSetMapIterator->first, inputFilePosition,
+				stepFile(filePointerSetMapIterator->first, inputFileOffset,
 					filePointerVectorPointer, *filePointerSetIterator, log);
 			}
 		}
@@ -424,7 +424,7 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 		copyFiles(
 			inputStream,
 			file.size,
-			inputCopyPosition,
+			inputCopyOffset,
 			filePointerVectorPointer,
 			bigFileInputPosition,
 			log
@@ -531,14 +531,14 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 		0x0C
 	};
 
-	// default value is the position as of the latest Steam version
-	unsigned long computeMoveVectorPosition = 0x000109C0;
+	// default value is the offset as of the latest Steam version
+	unsigned long computeMoveVectorOffset = 0x000109C0;
 
 	#ifdef WINDOWS
 	while (!getDLLExportRVA(
 		"m4_thor_rd.dll",
 		"?ComputeMoveVector@COrientationUpdateManager@thor@@AAE?AVVector3@ubi@@M@Z",
-		computeMoveVectorPosition
+		computeMoveVectorOffset
 	)) {
 		RETRY_ERR(Work::Output::FILE_RETRY);
 	}
@@ -547,10 +547,10 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 	Work::Edit edit(fileStream, Work::Output::M4_THOR_PATH);
 
 	#ifdef WINDOWS
-	computeMoveVectorPosition = getPositionFromRVA(fileStream, computeMoveVectorPosition);
+	computeMoveVectorOffset = getOffsetFromRVA(fileStream, computeMoveVectorOffset);
 	#endif
 
-	fileStream.seekg(computeMoveVectorPosition);
+	fileStream.seekg(computeMoveVectorOffset);
 
 	unsigned char computeMoveVector[COMPUTE_MOVE_VECTOR_SIZE] = "";
 	readStream(fileStream, computeMoveVector, COMPUTE_MOVE_VECTOR_SIZE);
@@ -576,7 +576,7 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 		
 	{
 		{
-			computeMoveVectorPosition,
+			computeMoveVectorOffset,
 				
 			std::string(
 				(const char*)(
@@ -605,13 +605,13 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	static const size_t FADE_OUT_SOUND2_SIZE = 4;
 	static const unsigned char FADE_OUT_SOUND2[FADE_OUT_SOUND2_SIZE] = { 0x8B, 0xCE, 0xFF, 0x15 };
 
-	unsigned long fadeOutSoundPosition = 0x00010720;
+	unsigned long fadeOutSoundOffset = 0x00010720;
 
 	#ifdef WINDOWS
 	while (!getDLLExportRVA(
 		"m4_ai_global_rd.dll",
 		"?FadeOutSound@AiSndTransition@ai@@AAEXKKK@Z",
-		fadeOutSoundPosition
+		fadeOutSoundOffset
 	)) {
 		RETRY_ERR(Work::Output::FILE_RETRY);
 	}
@@ -620,13 +620,13 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	Work::Edit edit(fileStream, Work::Output::M4_AI_GLOBAL_PATH);
 
 	#ifdef WINDOWS
-	fadeOutSoundPosition = getPositionFromRVA(fileStream, fadeOutSoundPosition);
+	fadeOutSoundOffset = getOffsetFromRVA(fileStream, fadeOutSoundOffset);
 	#endif
 
 	static const unsigned long FADE_OUT_SOUND_OFFSET = 0x0000005E;
 
-	fadeOutSoundPosition += FADE_OUT_SOUND_OFFSET;
-	fileStream.seekg(fadeOutSoundPosition);
+	fadeOutSoundOffset += FADE_OUT_SOUND_OFFSET;
+	fileStream.seekg(fadeOutSoundOffset);
 
 	unsigned char fadeOutSound = 0;
 	readStream(fileStream, &fadeOutSound, FADE_OUT_SOUND_SIZE);
@@ -662,7 +662,7 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	
 	{
 		{
-			fadeOutSoundPosition,
+			fadeOutSoundOffset,
 
 			std::string(
 				(const char*)&FADE_OUT_SOUND,
@@ -923,7 +923,7 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streamoff bigFileIn
 				// the last file in the owner and now all its files are written
 				Work::BigFileTask &ownerBigFileTask = *bigFileTaskPointer;
 
-				// update the size and position in the owner's filesystem
+				// update the size and offset in the owner's filesystem
 				Ubi::BigFile::File &file = eraseBigFileTask.getFile();
 				file.size = (Ubi::BigFile::File::SIZE)(currentOutputOffset - eraseOutputOffset);
 				file.offset = (Ubi::BigFile::File::SIZE)(eraseOutputOffset - ownerBigFileTask.outputOffset);
@@ -1154,7 +1154,7 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 	return (bool)size;
 }
 
-unsigned long M4Revolution::getPositionFromRVA(std::istream &inputStream, unsigned long rva) {
+unsigned long M4Revolution::getOffsetFromRVA(std::istream &inputStream, unsigned long rva) {
 	std::streampos position = inputStream.tellg();
 
 	SCOPE_EXIT {
@@ -1200,8 +1200,8 @@ unsigned long M4Revolution::getPositionFromRVA(std::istream &inputStream, unsign
 	readStream(inputStream, imageNtHeaders32Pointer, (std::streamsize)imageNtHeadersSize);
 
 	return imageNtHeaders32Pointer->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC
-		? getPositionFromRVA((PIMAGE_NT_HEADERS64)imageNtHeaders32Pointer, rva)
-		: getPositionFromRVA((PIMAGE_NT_HEADERS32)imageNtHeaders32Pointer, rva);
+		? getOffsetFromRVA((PIMAGE_NT_HEADERS64)imageNtHeaders32Pointer, rva)
+		: getOffsetFromRVA((PIMAGE_NT_HEADERS32)imageNtHeaders32Pointer, rva);
 }
 #endif
 
@@ -1358,7 +1358,7 @@ void M4Revolution::fixLoading() {
 		std::thread outputThread(M4Revolution::outputThread, std::ref(tasks), std::ref(yield));
 
 		try {
-			fixLoading(inputFileStream, 0, inputFile, log);
+			fixLoading(inputFileStream, inputFileStream.tellg(), inputFile, log);
 		} catch (const std::system_error&) {
 			throw Aborted("Fixing Loading failed due to a system error. It is recommended you restore the backup to revert the changes.");
 		} catch (const std::invalid_argument&) {

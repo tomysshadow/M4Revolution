@@ -91,8 +91,8 @@ class M4Revolution : NonCopyable {
 
 	void copyFiles(
 		std::istream &inputStream,
-		Ubi::BigFile::File::SIZE inputPosition,
-		Ubi::BigFile::File::SIZE inputCopyPosition,
+		Ubi::BigFile::File::SIZE inputOffset,
+		Ubi::BigFile::File::SIZE inputCopyOffset,
 		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
 		const std::streampos &bigFileInputPosition,
 		Log &log
@@ -113,8 +113,8 @@ class M4Revolution : NonCopyable {
 	);
 
 	void stepFile(
-		Ubi::BigFile::File::SIZE inputPosition,
-		Ubi::BigFile::File::SIZE &inputFilePosition,
+		Ubi::BigFile::File::SIZE inputOffset,
+		Ubi::BigFile::File::SIZE &inputFileOffset,
 		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
 		Ubi::BigFile::File::POINTER filePointer,
 		Log &log
@@ -148,7 +148,7 @@ class M4Revolution : NonCopyable {
 	static bool getDLLExportRVA(const char* libFileName, const char* procName, unsigned long &dllExportRVA);
 
 	template <typename IMAGE_NT_HEADERSXX>
-	static unsigned long getPositionFromRVA(IMAGE_NT_HEADERSXX* imageNtHeadersPointer, unsigned long rva) {
+	static unsigned long getOffsetFromRVA(IMAGE_NT_HEADERSXX* imageNtHeadersPointer, unsigned long rva) {
 		if (!imageNtHeadersPointer) {
 			throw std::invalid_argument("imageNtHeadersPointer must not be NULL");
 		}
@@ -159,7 +159,7 @@ class M4Revolution : NonCopyable {
 			throw std::invalid_argument("Signature must be IMAGE_NT_SIGNATURE");
 		}
 
-		// if it's in the PE header, the RVA is equivalent to the position
+		// if it's in the PE header, the RVA is equivalent to the offset
 		if (rva < imageNtHeaders.OptionalHeader.SizeOfHeaders) {
 			return rva;
 		}
@@ -174,10 +174,10 @@ class M4Revolution : NonCopyable {
 				continue;
 			}
 
-			// now turn it into the position
+			// now turn it into the offset
 			rva += imageSectionHeader.PointerToRawData - imageSectionHeader.VirtualAddress;
 
-			// test the position falls within initialized data
+			// test the offset falls within initialized data
 			if (rva - imageSectionHeader.PointerToRawData >= imageSectionHeader.SizeOfRawData) {
 				throw std::invalid_argument("rva must not point to uninitialized data");
 			}
@@ -187,7 +187,7 @@ class M4Revolution : NonCopyable {
 		throw std::out_of_range("rva out of bounds");
 	}
 
-	static unsigned long getPositionFromRVA(std::istream &inputStream, unsigned long rva);
+	static unsigned long getOffsetFromRVA(std::istream &inputStream, unsigned long rva);
 	#endif
 
 	public:

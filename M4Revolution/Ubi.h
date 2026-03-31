@@ -257,13 +257,13 @@ namespace Ubi {
 
 			Binary::Resource::POINTER appendToLayerMap(
 				std::istream &inputStream,
-				SIZE fileSystemPosition,
+				SIZE fileSystemOffset,
 				Binary::RLE::LAYER_MAP &layerMap
 			) const;
 
 			Binary::Resource::POINTER appendToTextureBoxMap(
 				std::istream &inputStream,
-				SIZE fileSystemPosition,
+				SIZE fileSystemOffset,
 				Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap
 			) const;
 
@@ -332,13 +332,13 @@ namespace Ubi {
 
 			void appendToLayerMap(
 				std::istream &inputStream,
-				File::SIZE fileSystemPosition,
+				File::SIZE fileSystemOffset,
 				Binary::RLE::LAYER_MAP &layerMap
 			) const;
 
 			void appendToTextureBoxMap(
 				std::istream &inputStream,
-				File::SIZE fileSystemPosition,
+				File::SIZE fileSystemOffset,
 				Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap
 			) const;
 
@@ -365,14 +365,14 @@ namespace Ubi {
 
 			void appendToLayerMap(
 				std::istream &inputStream,
-				File::SIZE fileSystemPosition,
+				File::SIZE fileSystemOffset,
 				Binary::RLE::LAYER_MAP &layerMap,
 				const File::POINTER_VECTOR &binaryFilePointerVector
 			) const;
 
 			void appendToTextureBoxMap(
 				std::istream &inputStream,
-				File::SIZE fileSystemPosition,
+				File::SIZE fileSystemOffset,
 				Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap,
 				const File::POINTER_VECTOR &binaryFilePointerVector
 			) const;
@@ -389,7 +389,7 @@ namespace Ubi {
 				}
 			};
 
-			Header(std::istream &inputStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemPosition);
+			Header(std::istream &inputStream, File::SIZE &fileSystemSize, File::SIZE &fileSystemOffset);
 			Header(std::istream &inputStream);
 			Header(std::istream &inputStream, File::POINTER &filePointer);
 			void write(std::ostream &outputStream) const;
@@ -402,7 +402,7 @@ namespace Ubi {
 		};
 
 		private:
-		File::SIZE fileSystemPosition = 0;
+		File::SIZE fileSystemOffset = 0;
 
 		public:
 		static File::POINTER findFile(std::istream &stream, const Path::VECTOR &pathVector);

@@ -57,7 +57,7 @@ namespace ubi {
 		return *(new ErrorManager());
 	}
 
-	InputStream::SIZE InputStream::Read(unsigned char* buffer, SIZE position, SIZE size) {
+	InputStream::SIZE InputStream::Read(unsigned char* buffer, SIZE offset, SIZE size) {
 		return 0;
 	}
 
