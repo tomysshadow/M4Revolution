@@ -852,7 +852,7 @@ VOID CALLBACK M4Revolution::convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOI
 #endif
 
 bool M4Revolution::outputBigFiles(Work::Output &output, std::streamoff bigFileInputOffset, Work::Tasks &tasks) {
-	std::streamoff currentBigFileInputOffset = output.currentBigFileInputOffset;
+	std::streamoff &currentBigFileInputOffset = output.currentBigFileInputOffset;
 
 	// if this is true we haven't moved on to another BigFile, so just return immediately
 	if (bigFileInputOffset == currentBigFileInputOffset) {
