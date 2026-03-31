@@ -137,6 +137,7 @@ class M4Revolution : NonCopyable {
 	static void convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha);
 	static void convertImageStandardWorkCallback(Work::Convert* convertPointer);
 	static void convertImageZAPWorkCallback(Work::Convert* convertPointer);
+	static void convertFileWorkCallback(Work::Convert* convertPointer) noexcept;
 	#ifdef MULTITHREADED
 	static VOID CALLBACK convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
 	#endif

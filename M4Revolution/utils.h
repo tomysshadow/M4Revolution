@@ -245,7 +245,7 @@ inline bool closeRegistryKey(HKEY &registryKey) {
 		LSTATUS err = RegCloseKey(registryKey);
 
 		if (err != ERROR_SUCCESS) {
-			SetLastError(err);
+			SetLastError((DWORD)err);
 			return false;
 		}
 	}

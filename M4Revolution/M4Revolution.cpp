@@ -276,7 +276,7 @@ void M4Revolution::convertFile(
 	#ifdef SINGLETHREADED
 	convertScopeExit.dismiss();
 
-	convert.fileWorkCallback(&convert);
+	convertFileWorkCallback(&convert);
 	#endif
 }
 
@@ -844,10 +844,14 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 	convertSurface(convert, surface, true);
 }
 
+void M4Revolution::convertFileWorkCallback(Work::Convert* convertPointer) noexcept {
+	convertPointer->fileWorkCallback(convertPointer);
+}
+
 #ifdef MULTITHREADED
 VOID CALLBACK M4Revolution::convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work) {
 	Work::Convert* convertPointer = (Work::Convert*)parameter;
-	convertPointer->fileWorkCallback(convertPointer);
+	convertFileWorkCallback(convertPointer);
 }
 #endif
 
