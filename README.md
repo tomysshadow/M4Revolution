@@ -1,4 +1,4 @@
-# Myst IV: Revolution 1.3.3
+# Myst IV: Revolution 1.3.4
 ## By Anthony Kleine
 
 Myst IV: Revolution is a command line tool that can perform various fixes for the game Myst IV: Revelation.
