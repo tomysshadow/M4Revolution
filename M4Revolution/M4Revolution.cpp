@@ -851,11 +851,11 @@ VOID CALLBACK M4Revolution::convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOI
 }
 #endif
 
-bool M4Revolution::outputBigFiles(Work::Output &output, const std::streampos &bigFileInputPosition, Work::Tasks &tasks) {
+bool M4Revolution::outputBigFiles(Work::Output &output, std::streamoff bigFileInputOffset, Work::Tasks &tasks) {
 	std::streamoff currentBigFileInputOffset = output.currentBigFileInputOffset;
 
 	// if this is true we haven't moved on to another BigFile, so just return immediately
-	if (bigFileInputPosition == currentBigFileInputOffset) {
+	if (bigFileInputOffset == currentBigFileInputOffset) {
 		return true;
 	}
 
@@ -915,7 +915,7 @@ bool M4Revolution::outputBigFiles(Work::Output &output, const std::streampos &bi
 					}
 
 					// since we're already holding the lock, might as well get this now
-					currentBigFileTaskPointer = bigFileTaskPointerMap.at(bigFileInputPosition);
+					currentBigFileTaskPointer = bigFileTaskPointerMap.at(bigFileInputOffset);
 					bigFileTaskPointer = bigFileTaskPointerMap.at(currentBigFileInputOffset);
 				}
 
@@ -936,7 +936,7 @@ bool M4Revolution::outputBigFiles(Work::Output &output, const std::streampos &bi
 	}
 
 	// get the current BigFile now, if we didn't before already
-	currentBigFileInputOffset = bigFileInputPosition;
+	currentBigFileInputOffset = bigFileInputOffset;
 
 	bigFileTaskPointer = currentBigFileTaskPointer
 		? currentBigFileTaskPointer

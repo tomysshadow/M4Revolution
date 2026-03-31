@@ -140,7 +140,7 @@ class M4Revolution : NonCopyable {
 	#ifdef MULTITHREADED
 	static VOID CALLBACK convertFileProc(PTP_CALLBACK_INSTANCE instance, PVOID parameter, PTP_WORK work);
 	#endif
-	static bool outputBigFiles(Work::Output &output, const std::streampos &bigFileInputPosition, Work::Tasks &tasks);
+	static bool outputBigFiles(Work::Output &output, std::streamoff bigFileInputOffset, Work::Tasks &tasks);
 	static void outputData(std::ostream &outputStream, Work::FileTask &fileTask, bool &yield);
 	static void outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
 	static void outputThread(Work::Tasks &tasks, bool &yield);
