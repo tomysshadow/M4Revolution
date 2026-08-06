@@ -4,7 +4,7 @@
 #include <vector>
 #include <memory>
 #include <type_traits>
-#include <map>
+#include <unordered_map>
 #include <locale>
 #include <stdexcept>
 #include <locale.h>
@@ -38,8 +38,8 @@ class Locale {
 	};
 	#endif
 
-	typedef std::map<CATEGORY, LC> CATEGORY_LC_MAP;
-	typedef std::map<LC, CATEGORY> LC_CATEGORY_MAP;
+	typedef std::unordered_map<CATEGORY, LC> CATEGORY_LC_MAP;
+	typedef std::unordered_map<LC, CATEGORY> LC_CATEGORY_MAP;
 
 	Locale& createGlobal(bool tryGlobal);
 	Locale& create(bool tryGlobal);
@@ -59,7 +59,7 @@ class Locale {
 	static LC categoryToLC(CATEGORY category);
 	static CATEGORY lcToCategory(LC lc);
 
-	class Invalid: public std::invalid_argument {
+	class Invalid : public std::invalid_argument {
 		public:
 		Invalid() noexcept : std::invalid_argument("Locale invalid") {
 		}

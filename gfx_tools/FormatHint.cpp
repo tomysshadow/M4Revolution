@@ -8,10 +8,8 @@ namespace gfx_tools {
 			{
 				// try to find the pixel format from the hint
 				// but if we don't recognize the hint it is an unknown format
-				HINT_PIXELFORMAT_MAP::const_iterator hintPixelFormatMapIterator = HINT_PIXELFORMAT_8_MAP.find(hint);
-
-				if (hintPixelFormatMapIterator != HINT_PIXELFORMAT_8_MAP.end()) {
-					return hintPixelFormatMapIterator->second;
+				if (hint < HINT_PIXELFORMAT_8_ARRAY.size()) {
+					return HINT_PIXELFORMAT_8_ARRAY[hint];
 				}
 			}
 			break;
@@ -22,10 +20,4 @@ namespace gfx_tools {
 		}
 		return PIXELFORMAT_UNKNOWN;
 	}
-
-	const FormatHint::HINT_PIXELFORMAT_MAP FormatHint::HINT_PIXELFORMAT_8_MAP = {
-		{HINT_NONE, PIXELFORMAT_XRGB_8888},
-		{HINT_ALPHA, PIXELFORMAT_A_8},
-		{HINT_LUMINANCE, PIXELFORMAT_L_8}
-	};
 }

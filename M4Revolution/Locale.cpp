@@ -25,7 +25,7 @@ Locale& Locale::create(bool tryGlobal) {
 		std::holds_alternative<std::wstring>(name)
 		? _wcreate_locale(lc, std::get<std::wstring>(name).c_str())
 		: _create_locale(lc, std::get<std::string>(name).c_str()),
-
+	
 		CLocaleDeleter()
 	);
 	#endif

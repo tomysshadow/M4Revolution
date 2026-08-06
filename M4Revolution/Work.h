@@ -5,7 +5,7 @@
 #include <vector>
 #include <queue>
 #include <atomic>
-#include <map>
+#include <unordered_map>
 #include <filesystem>
 #include <nvtt/nvtt.h>
 
@@ -93,7 +93,7 @@ namespace Work {
 
 		public:
 		typedef std::shared_ptr<BigFileTask> POINTER;
-		typedef std::map<std::streamoff, POINTER, std::less<>> POINTER_MAP;
+		typedef std::unordered_map<std::streamoff, POINTER> POINTER_MAP;
 		typedef Lock<POINTER_MAP> POINTER_MAP_LOCK;
 
 		// outputOffset is set by the output thread, and later used by it so it knows where to jump back
@@ -218,7 +218,7 @@ namespace Work {
 		};
 
 		typedef unsigned int FILE_PATH;
-		typedef std::map<FILE_PATH, Info> INFO_MAP;
+		typedef std::unordered_map<FILE_PATH, Info> INFO_MAP;
 
 		static const char* FILE_NAME;
 		static const char* FILE_RETRY;

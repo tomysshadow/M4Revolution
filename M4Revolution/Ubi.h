@@ -1,5 +1,6 @@
 #pragma once
 #include <unordered_set>
+#include <unordered_map>
 #include <map>
 #include <vector>
 
@@ -94,8 +95,8 @@ namespace Ubi {
 			typedef uint32_t ROW;
 			typedef uint32_t COL;
 			typedef std::unordered_set<COL> COL_SET;
-			typedef std::map<ROW, COL_SET> SLICE_MAP;
-			typedef std::map<FACE, SLICE_MAP> MASK_MAP;
+			typedef std::unordered_map<ROW, COL_SET> SLICE_MAP;
+			typedef std::unordered_map<FACE, SLICE_MAP> MASK_MAP;
 
 			struct Layer {
 				std::optional<std::string> textureBoxNameOptional = std::nullopt;
@@ -212,7 +213,7 @@ namespace Ubi {
 			typedef uint32_t SIZE;
 			typedef std::shared_ptr<File> POINTER;
 			typedef std::unordered_set<POINTER> POINTER_SET;
-			typedef std::map<SIZE, POINTER_SET> POINTER_SET_MAP;
+			typedef std::unordered_map<SIZE, POINTER_SET> POINTER_SET_MAP;
 			typedef std::vector<POINTER> POINTER_VECTOR;
 			typedef std::shared_ptr<POINTER_VECTOR> POINTER_VECTOR_POINTER;
 

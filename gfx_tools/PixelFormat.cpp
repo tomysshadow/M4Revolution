@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "PixelFormat.h"
-#include <map>
+#include <unordered_map>
 
 namespace gfx_tools {
 	PixelFormat PixelFormat::m_formatDescriptionTable[] = {
@@ -209,7 +209,7 @@ namespace gfx_tools {
 		return 0;
 	}
 
-	typedef std::map<EnumPixelFormat, EnumPixelFormat> ENUM_PIXEL_FORMAT_MAP;
+	typedef std::unordered_map<EnumPixelFormat, EnumPixelFormat> ENUM_PIXEL_FORMAT_MAP;
 
 	static const ENUM_PIXEL_FORMAT_MAP ENUM_PIXEL_FORMAT_WITH_ALPHA_MAP = {
 		{PIXELFORMAT_XRGB_8888, PIXELFORMAT_ARGB_8888},

@@ -1,6 +1,6 @@
 #pragma once
 #include "PixelFormat.h"
-#include <map>
+#include <array>
 
 namespace gfx_tools {
 	union FormatHint {
@@ -13,8 +13,12 @@ namespace gfx_tools {
 		EnumPixelFormat GetEnumPixelFormat(bool isAlpha, uint32_t bits) const;
 
 		private:
-		typedef std::map<int, EnumPixelFormat> HINT_PIXELFORMAT_MAP;
+		typedef std::array<EnumPixelFormat, 3> HINT_PIXELFORMAT_ARRAY;
 
-		static const HINT_PIXELFORMAT_MAP HINT_PIXELFORMAT_8_MAP;
+		static constexpr HINT_PIXELFORMAT_ARRAY HINT_PIXELFORMAT_8_ARRAY = {
+			PIXELFORMAT_XRGB_8888, // None
+			PIXELFORMAT_A_8, // Alpha
+			PIXELFORMAT_L_8 // Luminance
+		};
 	};
 }

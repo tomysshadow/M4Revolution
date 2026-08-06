@@ -1,7 +1,7 @@
 #pragma once
 #include "PixelFormat.h"
 #include "FormatHint.h"
-#include <map>
+#include <unordered_map>
 #include <M4Image.h>
 
 namespace gfx_tools {
@@ -34,7 +34,7 @@ namespace gfx_tools {
 		GFX_TOOLS_API M4Image::COLOR_FORMAT GFX_TOOLS_CALL GetRequestedColorFormat() const;
 
 		private:
-		typedef std::map<EnumPixelFormat, M4Image::COLOR_FORMAT> COLOR_FORMAT_MAP;
+		typedef std::unordered_map<EnumPixelFormat, M4Image::COLOR_FORMAT> COLOR_FORMAT_MAP;
 
 		static const COLOR_FORMAT_MAP PIXELFORMAT_COLOR_FORMAT_MAP;
 		static const COLOR_FORMAT_MAP PIXELFORMAT_COLOR_FORMAT_TO_88_MAP;
