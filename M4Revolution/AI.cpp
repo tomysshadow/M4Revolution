@@ -40,27 +40,27 @@ namespace AI {
 			&& std::regex_search(ai, matches, AI_LINE)
 			&& matches.size() > 4) {
 			MAKE_SCOPE_EXIT(aiScopeExit) {
-				const std::string &LINE = matches[0];
+				const std::string &matchLine = matches[0];
 
-				position += (std::streamoff)matches.prefix().length() + (std::streamoff)LINE.length();
+				position += (std::streamoff)matches.prefix().length() + (std::streamoff)matchLine.length();
 				ai = matches.suffix();
 			};
 
-			const std::string &KEY = matches[2];
+			const std::string &matchKey = matches[2];
 
-			if (KEY != key) {
+			if (matchKey != key) {
 				continue;
 			}
 
-			const std::string &TYPE = matches[3];
+			const std::string &matchType = matches[3];
 
-			if (TYPE != TYPE_F32) {
+			if (matchType != TYPE_F32) {
 				continue;
 			}
 
-			const std::string &VALUE_STR = matches[4];
+			const std::string &valueStr = matches[4];
 
-			f32Size = stringToFloat(VALUE_STR.c_str(), f32, LOCALE);
+			f32Size = stringToFloat(valueStr.c_str(), f32, LOCALE);
 
 			if (!f32Size) {
 				continue;
@@ -97,12 +97,12 @@ namespace AI {
 		fileOutputStringStream.exceptions(std::ostringstream::badbit);
 		fileOutputStringStream.imbue(LOCALE);
 
-		const std::string &VALUE_STR = matches[4];
+		const std::string &valueStr = matches[4];
 
 		// get the number from the user and pad it to replace the existing number
 		// ensure it is not too long and will not replace the end
 		std::string::size_type fileOutputStringLength = 0;
-		std::string::size_type fileOutputStringLengthMax = VALUE_STR.length();
+		std::string::size_type fileOutputStringLengthMax = valueStr.length();
 
 		// we've now found the position of the number to replace
 		// create a new thread to begin copying the file in the background
@@ -127,13 +127,13 @@ namespace AI {
 		} while (fileOutputStringLength > fileOutputStringLengthMax);
 
 		// tell the edit to the copy thread
-		const std::string &VALUE_STR_PREFIX = matches[1];
+		const std::string &valueStrPrefix = matches[1];
 
 		edit.apply(copyThread,
 			
 		{
 			{
-				position + (std::streamoff)VALUE_STR_PREFIX.length(),
+				position + (std::streamoff)valueStrPrefix.length(),
 				fileOutputStringStream.str()
 			}
 		});

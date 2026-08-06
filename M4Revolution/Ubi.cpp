@@ -283,15 +283,15 @@ namespace Ubi {
 			readStream(inputStream, &resources, sizeof(resources));
 
 			if (resourceNameOptional.has_value()) {
-				const std::optional<std::string> &TEXTURE_BOX_NAME_OPTIONAL =
+				const std::optional<std::string> &textureBoxNameOptional =
 					getTextureBoxNameOptional(resourceNameOptional.value());
 
-				if (TEXTURE_BOX_NAME_OPTIONAL.has_value()) {
-					const std::string &TEXTURE_BOX_NAME =
-						TEXTURE_BOX_NAME_OPTIONAL.value();
+				if (textureBoxNameOptional.has_value()) {
+					const std::string &textureBoxName =
+						textureBoxNameOptional.value();
 
 					for (uint32_t i = 0; i < resources; i++) {
-						appendToMaskPathSet(inputStream, textureBoxMap[TEXTURE_BOX_NAME]);
+						appendToMaskPathSet(inputStream, textureBoxMap[textureBoxName]);
 					}
 					return;
 				}
@@ -316,9 +316,9 @@ namespace Ubi {
 			static const std::string CONTEXT_GLOBAL = "global";
 			static const std::string CONTEXT_SHARED = "shared";
 
-			const std::string &CONTEXT = resourceName.substr(0, periodIndex);
+			const std::string &context = resourceName.substr(0, periodIndex);
 
-			if (CONTEXT == CONTEXT_GLOBAL || CONTEXT == CONTEXT_SHARED) {
+			if (context == CONTEXT_GLOBAL || context == CONTEXT_SHARED) {
 				return std::nullopt;
 			}
 
@@ -649,11 +649,11 @@ namespace Ubi {
 			return;
 		}
 
-		const std::string &NAME = nameOptional.value();
+		const std::string &name = nameOptional.value();
 
 		// note that these are case insensitive, because Myst 4 also uses case insensitive name extensions
 		TYPE_EXTENSION_MAP::const_iterator nameTypeExtensionMapIterator =
-			NAME_TYPE_EXTENSION_MAP.find(getNameExtension(NAME));
+			NAME_TYPE_EXTENSION_MAP.find(getNameExtension(name));
 
 		if (nameTypeExtensionMapIterator == NAME_TYPE_EXTENSION_MAP.end()) {
 			return;
@@ -669,9 +669,9 @@ namespace Ubi {
 				return;
 			}
 
-			const Binary::RLE::Layer &LAYER = layerFileOptional.value().layerMapIterator->second;
+			const Binary::RLE::Layer &layer = layerFileOptional.value().layerMapIterator->second;
 
-			if (LAYER.isLayerMask) {
+			if (layer.isLayerMask) {
 				#ifdef GREYSCALE_ENABLED
 				//greyScale = true;
 				#else
@@ -681,22 +681,22 @@ namespace Ubi {
 			}
 
 			#ifdef RGBA_ENABLED
-			if (isWaterSlice(NAME, LAYER.waterMaskMap)) {
+			if (isWaterSlice(name, layer.waterMaskMap)) {
 				rgba = true;
 			}
 			#endif
 		}
 		#endif
 
-		const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
+		const std::string &extension = nameTypeExtensionMapIterator->second.extension;
 
-		nameOptional = NAME.substr(
+		nameOptional = name.substr(
 			0,
-			NAME.length() - EXTENSION.length() - sizeof(PERIOD)
+			name.length() - extension.length() - sizeof(PERIOD)
 		)
 
 		+ PERIOD
-		+ EXTENSION;
+		+ extension;
 		#endif
 	}
 
@@ -728,10 +728,10 @@ namespace Ubi {
 			return false;
 		}
 
-		const std::string &FACE_STR = matches[1];
+		const std::string &faceStr = matches[1];
 
 		Binary::RLE::FACE_STR_MAP::const_iterator faceStrMapIterator =
-			Binary::RLE::WATER_SLICE_FACE_STR_MAP.find(FACE_STR);
+			Binary::RLE::WATER_SLICE_FACE_STR_MAP.find(faceStr);
 
 		if (faceStrMapIterator == Binary::RLE::WATER_SLICE_FACE_STR_MAP.end()) {
 			return false;
@@ -748,32 +748,32 @@ namespace Ubi {
 		// (the ROW/COL should not be misinterpreted as octal)
 		static constexpr int BASE = 10;
 
-		const std::string &ROW_STR = matches[2];
+		const std::string &rowStr = matches[2];
 
 		unsigned long row = 0;
 
-		if (!stringToLong(ROW_STR.c_str(), row, BASE)) {
+		if (!stringToLong(rowStr.c_str(), row, BASE)) {
 			return false;
 		}
 
-		const Binary::RLE::SLICE_MAP &SLICE_MAP = waterMaskMapIterator->second;
+		const Binary::RLE::SLICE_MAP &sliceMap = waterMaskMapIterator->second;
 
-		Binary::RLE::SLICE_MAP::const_iterator sliceMapIterator = SLICE_MAP.find(row);
+		Binary::RLE::SLICE_MAP::const_iterator sliceMapIterator = sliceMap.find(row);
 
-		if (sliceMapIterator == SLICE_MAP.end()) {
+		if (sliceMapIterator == sliceMap.end()) {
 			return false;
 		}
 
-		const std::string &COL_STR = matches[3];
+		const std::string &colStr = matches[3];
 
 		unsigned long col = 0;
 
-		if (!stringToLong(COL_STR.c_str(), col, BASE)) {
+		if (!stringToLong(colStr.c_str(), col, BASE)) {
 			return false;
 		}
 
-		const Binary::RLE::COL_SET &COL_SET = sliceMapIterator->second;
-		return COL_SET.find(col) != COL_SET.end();
+		const Binary::RLE::COL_SET &colSet = sliceMapIterator->second;
+		return colSet.find(col) != colSet.end();
 	}
 
 	const BigFile::File::TYPE_EXTENSION_MAP BigFile::File::NAME_TYPE_EXTENSION_MAP = {
@@ -943,15 +943,15 @@ namespace Ubi {
 				: std::nullopt
 			);
 
-			const File &FILE = *filePointer;
+			const File &file = *filePointer;
 
-			if (FILE.type == File::TYPE::BINARY) {
+			if (file.type == File::TYPE::BINARY) {
 				binaryFilePointerVector.push_back(filePointer);
 			} else {
 				filePointerVector.push_back(filePointer);
 			}
 
-			filePointerSetMap[FILE.offset].insert(filePointer);
+			filePointerSetMap[file.offset].insert(filePointer);
 		}
 
 		files += filePointerVectorSize;
@@ -1113,9 +1113,9 @@ namespace Ubi {
 			return false;
 		}
 
-		const File &LAYER_FILE = layerFileOptional.value();
+		const File &layerFile = layerFileOptional.value();
 
-		Binary::RLE::LAYER_MAP_POINTER layerMapPointer = LAYER_FILE.layerMapPointer;
+		Binary::RLE::LAYER_MAP_POINTER layerMapPointer = layerFile.layerMapPointer;
 
 		if (!layerMapPointer) {
 			return false;
@@ -1126,8 +1126,8 @@ namespace Ubi {
 			return true;
 		}
 
-		const Binary::RLE::SETS_SET &SETS_SET = LAYER_FILE.layerMapIterator->second.setsSet;
-		return SETS_SET.find(nameOptional.value()) != SETS_SET.end();
+		const Binary::RLE::SETS_SET &setsSet = layerFile.layerMapIterator->second.setsSet;
+		return setsSet.find(nameOptional.value()) != setsSet.end();
 	}
 
 	void BigFile::Directory::appendToLayerMap(
@@ -1246,20 +1246,20 @@ namespace Ubi {
 		// note: the Binarizer seems hardcoded to put cubes and water in a cube and water directory
 		// so we use that fact instead of loading every file in binarizer_loader.log like the game does
 		#ifdef LAYERS_ENABLED
-		const Directory::VECTOR &DIRECTORY_VECTOR = directory.directoryVector;
+		const Directory::VECTOR &directoryVector = directory.directoryVector;
 
 		Directory::VECTOR_ITERATOR_VECTOR cubeVectorIterators = {};
 		Directory::VECTOR_ITERATOR_VECTOR waterVectorIterators = {};
 
 		for (
-			Directory::VECTOR::const_iterator directoryVectorIterator = DIRECTORY_VECTOR.begin();
-			directoryVectorIterator != DIRECTORY_VECTOR.end();
+			Directory::VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
+			directoryVectorIterator != directoryVector.end();
 			directoryVectorIterator++
 		) {
-			const std::optional<std::string> &NAME_OPTIONAL = directoryVectorIterator->nameOptional;
+			const std::optional<std::string> &nameOptional = directoryVectorIterator->nameOptional;
 
-			if (NAME_OPTIONAL.has_value()) {
-				const std::string &NAME = NAME_OPTIONAL.value();
+			if (nameOptional.has_value()) {
+				const std::string &NAME = nameOptional.value();
 
 				if (NAME == Directory::NAME_CUBE) {
 					cubeVectorIterators.push_back(directoryVectorIterator);
@@ -1325,13 +1325,13 @@ namespace Ubi {
 					continue;
 				}
 
-				const Binary::RLE::MASK_PATH_SET &MASK_PATH_SET = textureBoxMapIterator->second;
+				const Binary::RLE::MASK_PATH_SET &maskPathSet = textureBoxMapIterator->second;
 
 				Binary::RLE::MASK_MAP &waterMaskMap = layer.waterMaskMap;
 
 				for (
-					Binary::RLE::MASK_PATH_SET::const_iterator maskPathSetIterator = MASK_PATH_SET.begin();
-					maskPathSetIterator != MASK_PATH_SET.end();
+					Binary::RLE::MASK_PATH_SET::const_iterator maskPathSetIterator = maskPathSet.begin();
+					maskPathSetIterator != maskPathSet.end();
 					maskPathSetIterator++
 				) {
 					layerFilePointer = directory.find(*maskPathSetIterator);

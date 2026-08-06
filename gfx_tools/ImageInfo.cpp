@@ -133,7 +133,7 @@ namespace gfx_tools {
 	}
 
 	void ValidatedImageInfo::SetDimensions(DIMENSION textureWidth, DIMENSION textureHeight, DIMENSION volumeExtent) {
-		const Configuration &CONFIGURATION = Configuration::Get();
+		const Configuration &configuration = Configuration::Get();
 
 		this->textureWidth = textureWidth;
 		this->requestedTextureWidth = textureWidth;
@@ -141,19 +141,19 @@ namespace gfx_tools {
 		this->requestedTextureHeight = textureHeight;
 		this->volumeExtent = volumeExtent;
 
-		if (CONFIGURATION.dimensionsMakePowerOfTwo) {
+		if (configuration.dimensionsMakePowerOfTwo) {
 			MakePowerOfTwo(this->textureWidth);
 			MakePowerOfTwo(this->textureHeight);
 			MakePowerOfTwo(this->volumeExtent);
 		}
 
-		if (CONFIGURATION.dimensionsMakeSquare) {
+		if (configuration.dimensionsMakeSquare) {
 			MakeSquare(this->textureWidth, this->textureHeight);
 		}
 
-		Clamp(this->textureWidth, (DIMENSION)CONFIGURATION.minTextureWidth, (DIMENSION)CONFIGURATION.maxTextureWidth);
-		Clamp(this->textureHeight, (DIMENSION)CONFIGURATION.minTextureHeight, (DIMENSION)CONFIGURATION.maxTextureHeight);
-		Clamp(this->volumeExtent, (DIMENSION)CONFIGURATION.minVolumeExtent, (DIMENSION)CONFIGURATION.maxVolumeExtent);
+		Clamp(this->textureWidth, (DIMENSION)configuration.minTextureWidth, (DIMENSION)configuration.maxTextureWidth);
+		Clamp(this->textureHeight, (DIMENSION)configuration.minTextureHeight, (DIMENSION)configuration.maxTextureHeight);
+		Clamp(this->volumeExtent, (DIMENSION)configuration.minVolumeExtent, (DIMENSION)configuration.maxVolumeExtent);
 
 		recomputeLodSizes = recomputeLodSizes
 			|| this->textureWidth != textureWidth

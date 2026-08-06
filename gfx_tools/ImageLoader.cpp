@@ -61,7 +61,7 @@ namespace gfx_tools {
 			GetImageInfoImpEx();
 		}
 
-		const ImageInfo &IMAGE_INFO = validatedImageInfoOptional.value().Get();
+		const ImageInfo &imageInfo = validatedImageInfoOptional.value().Get();
 
 		// sometimes the provided size is smaller than the real size
 		// namely, if the image has an odd width, the width is used for the size calculation
@@ -75,36 +75,36 @@ namespace gfx_tools {
 		*/
 
 		// we want an exception to occur if it has no value
-		const RawBufferEx &RAW_BUFFER = rawBufferOptionals[lod].value();
+		const RawBufferEx &rawBuffer = rawBufferOptionals[lod].value();
 
-		if (RAW_BUFFER.resizeInfoOptional.has_value()) {
-			const RawBufferEx::ResizeInfo &RESIZE_INFO = RAW_BUFFER.resizeInfoOptional.value();
+		if (rawBuffer.resizeInfoOptional.has_value()) {
+			const RawBufferEx::ResizeInfo &resizeInfo = rawBuffer.resizeInfoOptional.value();
 
-			size_t m4ImageStride = RESIZE_INFO.stride;
+			size_t m4ImageStride = resizeInfo.stride;
 
-			const M4Image RAW_BUFFER_M4_IMAGE(
-				RESIZE_INFO.width,
-				RESIZE_INFO.height,
+			const M4Image rawBufferM4Image(
+				resizeInfo.width,
+				resizeInfo.height,
 				m4ImageStride,
 				resizeImageInfo.GetColorFormat(),
-				RAW_BUFFER.pointer
+				rawBuffer.pointer
 			);
 
 			m4ImageStride = stride;
 
 			M4Image m4Image(
-				IMAGE_INFO.textureWidth,
-				IMAGE_INFO.textureHeight,
+				imageInfo.textureWidth,
+				imageInfo.textureHeight,
 				m4ImageStride,
-				IMAGE_INFO.GetColorFormat(),
+				imageInfo.GetColorFormat(),
 				pointer
 			);
 
-			m4Image.blit(RAW_BUFFER_M4_IMAGE);
+			m4Image.blit(rawBufferM4Image);
 			return;
 		}
 
-		LoadRawBuffer(RAW_BUFFER, IMAGE_INFO, pointer, stride);
+		LoadRawBuffer(rawBuffer, imageInfo, pointer, stride);
 	}
 
 	void ImageLoaderMultipleBuffer::ResizeLOD(
@@ -130,7 +130,7 @@ namespace gfx_tools {
 
 		size_t m4ImageStride = stride;
 
-		const M4Image M4IMAGE(
+		const M4Image m4Image(
 			imageInfo.textureWidth,
 			imageInfo.textureHeight,
 			m4ImageStride,
@@ -147,7 +147,7 @@ namespace gfx_tools {
 			imageInfo.GetColorFormat()
 		);
 
-		resizeM4Image.blit(M4IMAGE);
+		resizeM4Image.blit(m4Image);
 
 		RawBufferEx::ResizeInfo resizeInfo((int)resizeTextureWidth, (int)resizeTextureHeight, m4ImageStride, qFactor);
 
@@ -214,9 +214,9 @@ namespace gfx_tools {
 			throw std::invalid_argument("lod must not be greater than numberOfRawBuffers");
 		}
 
-		const std::optional<RawBufferEx> &RAW_BUFFER_OPTIONAL = rawBufferOptionals[lod];
+		const std::optional<RawBufferEx> &rawBufferOptional = rawBufferOptionals[lod];
 
-		if (!RAW_BUFFER_OPTIONAL.has_value()) {
+		if (!rawBufferOptional.has_value()) {
 			pointer = 0;
 			size = 0;
 			sizeScopeExit.dismiss();
@@ -224,17 +224,17 @@ namespace gfx_tools {
 			return;
 		}
 
-		const RawBufferEx &RAW_BUFFER = RAW_BUFFER_OPTIONAL.value();
+		const RawBufferEx &rawBuffer = rawBufferOptional.value();
 
-		if (RAW_BUFFER.resizeInfoOptional.has_value()) {
-			SaveRawBuffer(RAW_BUFFER, pointer, size);
+		if (rawBuffer.resizeInfoOptional.has_value()) {
+			SaveRawBuffer(rawBuffer, pointer, size);
 			sizeScopeExit.dismiss();
 			pointerScopeExit.dismiss();
 			return;
 		}
 
-		pointer = RAW_BUFFER.pointer;
-		size = RAW_BUFFER.size;
+		pointer = rawBuffer.pointer;
+		size = rawBuffer.size;
 		sizeScopeExit.dismiss();
 		pointerScopeExit.dismiss();
 	}
@@ -309,20 +309,20 @@ namespace gfx_tools {
 	void ImageLoaderMultipleBuffer::SaveRawBuffer(
 		const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size
 	) {
-		const RawBufferEx::ResizeInfo &RESIZE_INFO = rawBuffer.resizeInfoOptional.value();
+		const RawBufferEx::ResizeInfo &resizeInfo = rawBuffer.resizeInfoOptional.value();
 
-		size_t m4ImageStride = RESIZE_INFO.stride;
+		size_t m4ImageStride = resizeInfo.stride;
 
-		const M4Image M4_IMAGE(
-			RESIZE_INFO.width,
-			RESIZE_INFO.height,
+		const M4Image m4Image(
+			resizeInfo.width,
+			resizeInfo.height,
 			m4ImageStride,
 			resizeImageInfo.GetColorFormat(),
 			rawBuffer.pointer
 		);
 
 		size_t m4ImageSize = 0;
-		pointer = M4_IMAGE.save(m4ImageSize, GetExtension(), RESIZE_INFO.quality);
+		pointer = m4Image.save(m4ImageSize, GetExtension(), resizeInfo.quality);
 		size = (SIZE)m4ImageSize;
 	}
 

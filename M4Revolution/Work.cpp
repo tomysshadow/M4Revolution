@@ -222,8 +222,8 @@ namespace Work {
 		const nvtt::Context &context,
 		Ubi::BigFile::File &file
 	)
-		: CONFIGURATION(configuration),
-		CONTEXT(context),
+		: configuration(configuration),
+		context(context),
 		file(file) {
 	}
 
@@ -275,11 +275,11 @@ namespace Work {
 			infoMapIterator != FILE_PATH_INFO_MAP.end();
 			infoMapIterator++
 		) {
-			const Info &INFO = infoMapIterator->second;
+			const Info &info = infoMapIterator->second;
 
 			// this check is just to prevent the user from being dumb
 			// we need proper checks upon actually opening these as well of course
-			if (INFO.required && !std::filesystem::is_regular_file(INFO.path)) {
+			if (info.required && !std::filesystem::is_regular_file(info.path)) {
 				return false;
 			}
 		}
@@ -347,18 +347,18 @@ namespace Work {
 		}
 
 		void createEmpty(const std::filesystem::path &path) {
-			const std::filesystem::path PATH = getPath(path);
+			const std::filesystem::path backupPath = getPath(path);
 
 			// we only do this check because we want to know
 			// if the file exists before already (just to log if we created it or not)
-			if (std::filesystem::is_regular_file(PATH)) {
+			if (std::filesystem::is_regular_file(backupPath)) {
 				return;
 			}
 
 			std::ofstream outputFileStream;
 			outputFileStream.exceptions(std::ofstream::failbit);
 
-			OPERATION_EXCEPTION_RETRY_ERR(outputFileStream.open(PATH),
+			OPERATION_EXCEPTION_RETRY_ERR(outputFileStream.open(backupPath),
 				std::ofstream::failure, Output::FILE_RETRY);
 
 			log();

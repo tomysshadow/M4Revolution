@@ -723,7 +723,7 @@ Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
 }
 
 void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface, bool hasAlpha) {
-	const Work::Convert::Configuration &CONFIGURATION = convert.CONFIGURATION;
+	const Work::Convert::Configuration &configuration = convert.configuration;
 
 	#ifdef EXTENTS_MAKE_POWER_OF_TWO
 	#ifdef TO_NEXT_POWER_OF_TWO
@@ -738,11 +738,11 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	static constexpr nvtt::ResizeFilter RESIZE_FILTER = nvtt::ResizeFilter_Triangle;
 	static constexpr int MIPMAP_COUNT = 1;
 
-	const nvtt::Context &CONTEXT = convert.CONTEXT;
+	const nvtt::Context &context = convert.context;
 
-	Work::Convert::EXTENT width = clamp((Work::Convert::EXTENT)surface.width(), CONFIGURATION.minTextureWidth, CONFIGURATION.maxTextureWidth);
-	Work::Convert::EXTENT height = clamp((Work::Convert::EXTENT)surface.height(), CONFIGURATION.minTextureHeight, CONFIGURATION.maxTextureHeight);
-	Work::Convert::EXTENT depth = clamp((Work::Convert::EXTENT)surface.depth(), CONFIGURATION.minVolumeExtent, CONFIGURATION.maxVolumeExtent);
+	Work::Convert::EXTENT width = clamp((Work::Convert::EXTENT)surface.width(), configuration.minTextureWidth, configuration.maxTextureWidth);
+	Work::Convert::EXTENT height = clamp((Work::Convert::EXTENT)surface.height(), configuration.minTextureHeight, configuration.maxTextureHeight);
+	Work::Convert::EXTENT depth = clamp((Work::Convert::EXTENT)surface.depth(), configuration.minVolumeExtent, configuration.maxVolumeExtent);
 
 	Work::Convert::EXTENT maxExtent = __max(width, height);
 	maxExtent = __max(depth, maxExtent);
@@ -763,7 +763,7 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	*/
 
 	// must be called here after we've modified the surface
-	const nvtt::CompressionOptions &COMPRESSION_OPTIONS = M4Revolution::COMPRESSION_OPTIONS.get(
+	const nvtt::CompressionOptions &compressionOptions = M4Revolution::COMPRESSION_OPTIONS.get(
 		file, surface, hasAlpha);
 
 	nvtt::OutputOptions outputOptions;
@@ -777,12 +777,12 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 	ErrorHandler errorHandler;
 	outputOptions.setErrorHandler(&errorHandler);
 
-	if (!CONTEXT.outputHeader(surface, MIPMAP_COUNT, COMPRESSION_OPTIONS, outputOptions)) {
+	if (!context.outputHeader(surface, MIPMAP_COUNT, compressionOptions, outputOptions)) {
 		throw std::runtime_error("Failed to Output Context Header");
 	}
 
 	for (int i = 0; i < MIPMAP_COUNT; i++) {
-		if (!CONTEXT.compress(surface, 0, i, COMPRESSION_OPTIONS, outputOptions) || !errorHandler.result) {
+		if (!context.compress(surface, 0, i, compressionOptions, outputOptions) || !errorHandler.result) {
 			throw std::runtime_error("Failed to Compress Context");
 		}
 	}
@@ -1085,15 +1085,15 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 	outputStringStream.exceptions(std::ostringstream::badbit);
 	outputStringStream << "GetDLLExportRVA " << std::quoted(libFileName) << " " << std::quoted(procName);
 
-	const std::string &COMMAND_LINE = outputStringStream.str();
+	const std::string &str = outputStringStream.str();
 
-	size_t commandLineSize = COMMAND_LINE.size() + 1;
+	size_t commandLineSize = str.size() + 1;
 	std::unique_ptr<CHAR[]> commandLinePointer = makeUniqueArray<CHAR>(commandLineSize);
-	CHAR* _commandLine = commandLinePointer.get();
+	CHAR* commandLine = commandLinePointer.get();
 
 	crtErr(strncpy_s(
-		_commandLine, commandLineSize,
-		COMMAND_LINE.c_str(), commandLineSize
+		commandLine, commandLineSize,
+		str.c_str(), commandLineSize
 	));
 
 	PROCESS_INFORMATION processInformation = {};
@@ -1137,7 +1137,7 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 			startupInfo.dwFlags = STARTF_USESTDHANDLES;
 			startupInfo.hStdOutput = stdoutWritePipe;
 
-			osErr(CreateProcessA(NULL, _commandLine, NULL, NULL, TRUE, 0, NULL,
+			osErr(CreateProcessA(NULL, commandLine, NULL, NULL, TRUE, 0, NULL,
 				EXEDIR, &startupInfo, &processInformation)
 				&& process
 				&& thread);

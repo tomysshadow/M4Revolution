@@ -188,8 +188,8 @@ namespace Work {
 
 		FileWorkCallback fileWorkCallback = 0;
 
-		const Configuration &CONFIGURATION;
-		const nvtt::Context &CONTEXT;
+		const Configuration &configuration;
+		const nvtt::Context &context;
 
 		Ubi::BigFile::File &file;
 
