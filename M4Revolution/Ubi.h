@@ -212,7 +212,7 @@ namespace Ubi {
 			typedef uint32_t SIZE;
 			typedef std::shared_ptr<File> POINTER;
 			typedef std::unordered_set<POINTER> POINTER_SET;
-			typedef std::unordered_map<SIZE, POINTER_SET> POINTER_SET_MAP;
+			typedef std::map<SIZE, POINTER_SET> POINTER_SET_MAP; // must be sorted by size
 			typedef std::vector<POINTER> POINTER_VECTOR;
 			typedef std::shared_ptr<POINTER_VECTOR> POINTER_VECTOR_POINTER;
 
