@@ -4,9 +4,9 @@
 
 namespace gfx_tools {
 	union FormatHint {
-		static const int HINT_NONE = 0;
-		static const int HINT_ALPHA = 1;
-		static const int HINT_LUMINANCE = 2;
+		static constexpr int HINT_NONE = 0;
+		static constexpr int HINT_ALPHA = 1;
+		static constexpr int HINT_LUMINANCE = 2;
 
 		int hint : 3;
 

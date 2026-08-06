@@ -223,11 +223,11 @@ namespace Work {
 		static const char* FILE_NAME;
 		static const char* FILE_RETRY;
 
-		static const FILE_PATH FILE_PATH_DATA = 0x00000001;
-		static const FILE_PATH FILE_PATH_USER_PREFERENCE = 0x00000002;
-		static const FILE_PATH FILE_PATH_M4_THOR = 0x00000004;
-		static const FILE_PATH FILE_PATH_M4_AI_GLOBAL = 0x00000008;
-		static const FILE_PATH FILE_PATH_GFX_TOOLS = 0x00000010;
+		static constexpr FILE_PATH FILE_PATH_DATA = 0x00000001;
+		static constexpr FILE_PATH FILE_PATH_USER_PREFERENCE = 0x00000002;
+		static constexpr FILE_PATH FILE_PATH_M4_THOR = 0x00000004;
+		static constexpr FILE_PATH FILE_PATH_M4_AI_GLOBAL = 0x00000008;
+		static constexpr FILE_PATH FILE_PATH_GFX_TOOLS = 0x00000010;
 
 		static const INFO_MAP FILE_PATH_INFO_MAP;
 

@@ -7,6 +7,7 @@
 #include <chrono>
 #include <sstream>
 #include <iomanip>
+#include <array>
 
 #ifdef D3D9
 #include <wrl/client.h>
@@ -132,7 +133,7 @@ const nvtt::CompressionOptions &M4Revolution::CompressionOptions::get(
 
 	// ares assumes all DXT textures are square and power of two sized
 	// so if they are not, we must use RGBA instead
-	static const int DEPTH_SQUARE = 1;
+	static constexpr int DEPTH_SQUARE = 1;
 
 	int width = surface.width();
 	int height = surface.height();
@@ -443,9 +444,9 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 	static const std::string LINE_SECTION_BEGIN = "; Added by Myst IV: Revolution";
 	static const std::string LINE_SECTION_END = "; End of section";
 
-	static const size_t FULL_SCREEN_SIZE = 41;
-	static const char FULL_SCREEN_ON[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( true ) \n}\n";
-	static const char FULL_SCREEN_OFF[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( false )\n}\n";
+	static constexpr size_t FULL_SCREEN_SIZE = 41;
+	static constexpr char FULL_SCREEN_ON[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( true ) \n}\n";
+	static constexpr char FULL_SCREEN_OFF[FULL_SCREEN_SIZE + 1] = "{graphic\n    full_screen     ( false )\n}\n";
 
 	// we assume if we don't find the section full screen is on by default
 	Work::Output output(false);
@@ -516,15 +517,16 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 }
 
 void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
-	static const size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
-	static const unsigned char COMPUTE_MOVE_VECTOR_ON[COMPUTE_MOVE_VECTOR_SIZE] = {
+	static constexpr size_t COMPUTE_MOVE_VECTOR_SIZE = 13;
+
+	static constexpr std::array<unsigned char, COMPUTE_MOVE_VECTOR_SIZE> COMPUTE_MOVE_VECTOR_ON = {
 		0xD9, 0x44, 0x24, 0x08,
 		0x83, 0xEC, 0x0C, 0xD8,
 		0x41, 0x50, 0xD9, 0x51,
 		0x50
 	};
 
-	static const unsigned char COMPUTE_MOVE_VECTOR_OFF[COMPUTE_MOVE_VECTOR_SIZE] = {
+	static constexpr std::array<unsigned char, COMPUTE_MOVE_VECTOR_SIZE> COMPUTE_MOVE_VECTOR_OFF = {
 		0xC6, 0x44, 0x24, 0x0B,
 		0x48, 0x90, 0xD9, 0x44,
 		0x24, 0x08, 0x83, 0xEC,
@@ -552,15 +554,17 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 
 	fileStream.seekg(computeMoveVectorOffset);
 
-	unsigned char computeMoveVector[COMPUTE_MOVE_VECTOR_SIZE] = "";
-	readStream(fileStream, computeMoveVector, COMPUTE_MOVE_VECTOR_SIZE);
+	std::array<unsigned char, COMPUTE_MOVE_VECTOR_SIZE> computeMoveVector = {};
+	readStream(fileStream, computeMoveVector.data(), COMPUTE_MOVE_VECTOR_SIZE);
 
 	// we must either be on or off
 	// if we're neither, something is wrong so give up
-	bool toggledOn = memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_ON, COMPUTE_MOVE_VECTOR_SIZE);
+	bool toggledOn = memoryEquals(computeMoveVector.data(),
+		COMPUTE_MOVE_VECTOR_ON.data(), COMPUTE_MOVE_VECTOR_ON.size());
 
 	if (!toggledOn) {
-		toggledOn = !memoryEquals(computeMoveVector, COMPUTE_MOVE_VECTOR_OFF, COMPUTE_MOVE_VECTOR_SIZE);
+		toggledOn = !memoryEquals(computeMoveVector.data(),
+			COMPUTE_MOVE_VECTOR_OFF.data(), COMPUTE_MOVE_VECTOR_OFF.size());
 
 		if (toggledOn) {
 			throw Aborted("Compute Move Vector untoggleable. Restoring the backup or reinstalling the game may fix this problem.");
@@ -581,8 +585,8 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 			std::string(
 				(const char*)(
 					toggledOn
-					? COMPUTE_MOVE_VECTOR_ON
-					: COMPUTE_MOVE_VECTOR_OFF
+					? COMPUTE_MOVE_VECTOR_ON.data()
+					: COMPUTE_MOVE_VECTOR_OFF.data()
 				),
 					
 				COMPUTE_MOVE_VECTOR_SIZE
@@ -596,14 +600,17 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	static const std::string NAME = "Sound Fade Out Time";
 
-	static const unsigned long MIN = 0;
-	static const unsigned long MAX = 1000;
+	static constexpr unsigned long MIN = 0;
+	static constexpr unsigned long MAX = 1000;
 
-	static const unsigned char FADE_OUT_SOUND = 0x68;
-	static const size_t FADE_OUT_SOUND_SIZE = sizeof(FADE_OUT_SOUND);
+	static constexpr unsigned char FADE_OUT_SOUND = 0x68;
+	static constexpr size_t FADE_OUT_SOUND_SIZE = sizeof(FADE_OUT_SOUND);
 	
-	static const size_t FADE_OUT_SOUND2_SIZE = 4;
-	static const unsigned char FADE_OUT_SOUND2[FADE_OUT_SOUND2_SIZE] = { 0x8B, 0xCE, 0xFF, 0x15 };
+	static constexpr size_t FADE_OUT_SOUND2_SIZE = 4;
+
+	static constexpr std::array<unsigned char, FADE_OUT_SOUND2_SIZE> FADE_OUT_SOUND2 = {
+		0x8B, 0xCE, 0xFF, 0x15
+	};
 
 	unsigned long fadeOutSoundOffset = 0x00010720;
 
@@ -623,7 +630,7 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	fadeOutSoundOffset = getOffsetFromRVA(fileStream, fadeOutSoundOffset);
 	#endif
 
-	static const unsigned long FADE_OUT_SOUND_OFFSET = 0x0000005E;
+	static constexpr unsigned long FADE_OUT_SOUND_OFFSET = 0x0000005E;
 
 	fadeOutSoundOffset += FADE_OUT_SOUND_OFFSET;
 	fileStream.seekg(fadeOutSoundOffset);
@@ -632,15 +639,14 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	readStream(fileStream, &fadeOutSound, FADE_OUT_SOUND_SIZE);
 
 	unsigned long time = 0;
-	static const size_t TIME_SIZE = sizeof(time);
-	readStream(fileStream, &time, TIME_SIZE);
+	readStream(fileStream, &time, sizeof(time));
 
-	unsigned char fadeOutSound2[FADE_OUT_SOUND2_SIZE] = "";
-	readStream(fileStream, &fadeOutSound2, FADE_OUT_SOUND2_SIZE);
+	std::array<unsigned char, FADE_OUT_SOUND2_SIZE> fadeOutSound2 = {};
+	readStream(fileStream, fadeOutSound2.data(), fadeOutSound2.size());
 
 	if (!memoryEquals(&fadeOutSound, &FADE_OUT_SOUND, FADE_OUT_SOUND_SIZE)
 		|| time < MIN || time > MAX
-		|| !memoryEquals(fadeOutSound2, FADE_OUT_SOUND2, FADE_OUT_SOUND2_SIZE)) {
+		|| !memoryEquals(fadeOutSound2.data(), FADE_OUT_SOUND2.data(), FADE_OUT_SOUND2.size())) {
 		throw Aborted("Fade Out Sound uneditable. Restoring the backup or reinstalling the game may fix this problem.");
 	}
 
@@ -671,11 +677,11 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 
 			+ std::string(
 				(const char*)&time,
-				TIME_SIZE
+				sizeof(time)
 			)
 			
 			+ std::string(
-				(const char*)FADE_OUT_SOUND2,
+				(const char*)FADE_OUT_SOUND2.data(),
 				FADE_OUT_SOUND2_SIZE
 			)
 		}
@@ -721,16 +727,16 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 
 	#ifdef EXTENTS_MAKE_POWER_OF_TWO
 	#ifdef TO_NEXT_POWER_OF_TWO
-	static const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_ToNextPowerOfTwo;
+	static constexpr nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_ToNextPowerOfTwo;
 	#else
-	static const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_ToPreviousPowerOfTwo;
+	static constexpr nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_ToPreviousPowerOfTwo;
 	#endif
 	#else
-	static const nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_None;
+	static constexpr nvtt::RoundMode ROUND_MODE = nvtt::RoundMode_None;
 	#endif
 
-	static const nvtt::ResizeFilter RESIZE_FILTER = nvtt::ResizeFilter_Triangle;
-	static const int MIPMAP_COUNT = 1;
+	static constexpr nvtt::ResizeFilter RESIZE_FILTER = nvtt::ResizeFilter_Triangle;
+	static constexpr int MIPMAP_COUNT = 1;
 
 	const nvtt::Context &CONTEXT = convert.CONTEXT;
 
@@ -833,7 +839,7 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 			}
 		};
 
-		static const int DEPTH = 1;
+		static constexpr int DEPTH = 1;
 
 		if (!surface.setImage(nvtt::InputFormat::InputFormat_BGRA_8UB, width, height, DEPTH, image)) {
 			throw std::runtime_error("Failed to Set Surface Image");
@@ -1102,7 +1108,7 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 		osErr(closeThread(thread));
 	};
 
-	static const DWORD BUFFER_SIZE = sizeof("0x00000000");
+	static constexpr DWORD BUFFER_SIZE = sizeof("0x00000000");
 	CHAR buffer[BUFFER_SIZE] = "";
 
 	{
@@ -1142,7 +1148,7 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 	}
 
 	// max so we don't hang forever in the worst case
-	static const DWORD MILLISECONDS = 10000;
+	static constexpr DWORD MILLISECONDS = 10000;
 
 	DWORD wait = WaitForSingleObject(process, MILLISECONDS);
 	osErr(wait == WAIT_OBJECT_0 || wait == WAIT_ABANDONED);
@@ -1168,8 +1174,7 @@ unsigned long M4Revolution::getOffsetFromRVA(std::istream &inputStream, unsigned
 	inputStream.seekg(0);
 
 	IMAGE_DOS_HEADER imageDosHeader = {};
-	static const size_t IMAGE_DOS_HEADER_SIZE = sizeof(imageDosHeader);
-	readStream(inputStream, &imageDosHeader, IMAGE_DOS_HEADER_SIZE);
+	readStream(inputStream, &imageDosHeader, sizeof(imageDosHeader));
 
 	if (imageDosHeader.e_magic != IMAGE_DOS_SIGNATURE) {
 		throw std::invalid_argument("e_magic must be IMAGE_DOS_SIGNATURE");
@@ -1179,14 +1184,12 @@ unsigned long M4Revolution::getOffsetFromRVA(std::istream &inputStream, unsigned
 
 	// we assume 32-bit for now so we will never read past the end of the header
 	IMAGE_NT_HEADERS32 imageNtHeaders32 = {};
-	static const size_t IMAGE_NT_HEADERS32_SIZE = sizeof(imageNtHeaders32);
-	readStream(inputStream, &imageNtHeaders32, IMAGE_NT_HEADERS32_SIZE);
+	readStream(inputStream, &imageNtHeaders32, sizeof(imageNtHeaders32));
 
 	if (imageNtHeaders32.Signature != IMAGE_NT_SIGNATURE) {
 		throw std::invalid_argument("Signature must be IMAGE_NT_SIGNATURE");
 	}
 
-	static const size_t IMAGE_SECTION_HEADER_SIZE = sizeof(IMAGE_SECTION_HEADER);
 	IMAGE_FILE_HEADER &imageFileHeader = imageNtHeaders32.FileHeader;
 
 	inputStream.seekg(imageDosHeader.e_lfanew);
@@ -1196,7 +1199,7 @@ unsigned long M4Revolution::getOffsetFromRVA(std::istream &inputStream, unsigned
 	// of PE32 or PE32+, so using offsetof like this is safe
 	size_t imageNtHeadersSize = offsetof(IMAGE_NT_HEADERS32, OptionalHeader)
 		+ imageFileHeader.SizeOfOptionalHeader
-		+ ((size_t)imageFileHeader.NumberOfSections * IMAGE_SECTION_HEADER_SIZE);
+		+ ((size_t)imageFileHeader.NumberOfSections * sizeof(IMAGE_SECTION_HEADER));
 
 	std::unique_ptr<char[]> imageNtHeadersPointer = makeUniqueArray<char>(imageNtHeadersSize);
 
@@ -1237,7 +1240,7 @@ M4Revolution::M4Revolution(
 		// chosen so that if you have a quad core there will still be
 		// at least two threads for other system stuff
 		// (meanwhile, barely affecting even more powerful processors)
-		static const DWORD RESERVED_THREADS = 2;
+		static constexpr DWORD RESERVED_THREADS = 2;
 
 		SYSTEM_INFO systemInfo = {};
 		GetSystemInfo(&systemInfo);
@@ -1252,7 +1255,7 @@ M4Revolution::M4Revolution(
 	#endif
 
 	// the number 216 was chosen for being the standard number of tiles in a cube
-	static const Work::FileTask::POINTER_QUEUE::size_type DEFAULT_MAX_FILE_TASKS = 216;
+	static constexpr Work::FileTask::POINTER_QUEUE::size_type DEFAULT_MAX_FILE_TASKS = 216;
 
 	this->maxFileTasks = maxFileTasks ? maxFileTasks : DEFAULT_MAX_FILE_TASKS;
 

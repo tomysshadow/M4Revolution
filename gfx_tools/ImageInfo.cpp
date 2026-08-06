@@ -8,7 +8,7 @@ namespace gfx_tools {
 	}
 
 	void ImageInfo::ComputeLODDimensions(DIMENSION &textureWidth, DIMENSION &textureHeight, DIMENSION &volumeExtent, LOD lod) const {
-		static const DIMENSION MIN_DIMENSION = 1;
+		static constexpr DIMENSION MIN_DIMENSION = 1;
 
 		textureWidth = (DIMENSION)(this->textureWidth >> lod);
 		textureHeight = (DIMENSION)(this->textureHeight >> lod);
@@ -126,7 +126,7 @@ namespace gfx_tools {
 	}
 
 	void ValidatedImageInfo::RecomputeLodSize(LOD lod) {
-		static const BITS_PER_PIXEL BYTES = 3;
+		static constexpr BITS_PER_PIXEL BYTES = 3;
 
 		ComputeLODDimensions(textureWidth, textureHeight, volumeExtent, lod);
 		lodSizesInBytes[lod] = textureWidth * textureHeight * volumeExtent * (GetBitsPerPixel() >> BYTES);
@@ -176,7 +176,7 @@ namespace gfx_tools {
 			return;
 		}
 
-		static const EnumPixelFormat DEFAULT_ENUM_PIXEL_FORMAT = PIXELFORMAT_ARGB_8888;
+		static constexpr EnumPixelFormat DEFAULT_ENUM_PIXEL_FORMAT = PIXELFORMAT_ARGB_8888;
 
 		recomputeLodSizes = true;
 		this->enumPixelFormat = DEFAULT_ENUM_PIXEL_FORMAT;

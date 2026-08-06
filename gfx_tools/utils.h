@@ -97,7 +97,7 @@ inline bool memoryEquals(const void* mem, const void* mem2, size_t size) {
 #endif
 
 typedef int L_INT;
-static const L_INT SUCCESS = 1;
+static constexpr L_INT SUCCESS = 1;
 
 #ifdef FOR_UNICODE
 	typedef TCHAR L_TCHAR;

@@ -227,7 +227,7 @@ namespace gfx_tools {
 
 	class ImageLoaderMultipleBufferTGA : public ImageLoaderMultipleBuffer {
 		protected:
-		static const L_INT FILE_TGA = 4;
+		static constexpr L_INT FILE_TGA = 4;
 
 		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() override;
 		virtual L_INT GFX_TOOLS_CALL GetFormat() override;
@@ -235,7 +235,7 @@ namespace gfx_tools {
 
 	class ImageLoaderMultipleBufferPNG : public ImageLoaderMultipleBuffer {
 		protected:
-		static const L_INT FILE_PNG = 75;
+		static constexpr L_INT FILE_PNG = 75;
 
 		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() override;
 		virtual L_INT GFX_TOOLS_CALL GetFormat() override;
@@ -243,7 +243,7 @@ namespace gfx_tools {
 
 	class ImageLoaderMultipleBufferJPEG : public ImageLoaderMultipleBuffer {
 		protected:
-		static const L_INT FILE_JPEG = 10;
+		static constexpr L_INT FILE_JPEG = 10;
 
 		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() override;
 		virtual L_INT GFX_TOOLS_CALL GetFormat() override;
@@ -251,7 +251,7 @@ namespace gfx_tools {
 
 	class ImageLoaderMultipleBufferBMP : public ImageLoaderMultipleBuffer {
 		protected:
-		static const L_INT FILE_BMP = 6;
+		static constexpr L_INT FILE_BMP = 6;
 
 		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() override;
 		virtual L_INT GFX_TOOLS_CALL GetFormat() override;

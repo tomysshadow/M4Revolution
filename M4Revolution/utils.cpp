@@ -173,8 +173,8 @@ unsigned long consoleLongUnsigned(const char* str, unsigned long minValue, unsig
 }
 
 bool consoleBool(const char* str, const std::optional<bool> &defaultValueOptional) {
-	static const char YES = 'Y';
-	static const char NO = 'N';
+	static constexpr char YES = 'Y';
+	static constexpr char NO = 'N';
 
 	char yes = 'y';
 	char no = 'n';

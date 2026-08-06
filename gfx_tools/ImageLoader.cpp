@@ -331,7 +331,7 @@ namespace gfx_tools {
 			validatedImageInfoOptional = std::nullopt;
 		};
 
-		static const LOD MAIN_LOD = 0;
+		static constexpr LOD MAIN_LOD = 0;
 
 		const std::optional<RawBufferEx> &RAW_BUFFER_OPTIONAL = rawBufferOptionals[MAIN_LOD];
 
@@ -346,8 +346,8 @@ namespace gfx_tools {
 			return;
 		}
 
-		static const size_t BYTES = 3;
-		static const int VOLUME_EXTENT = 1;
+		static constexpr size_t BYTES = 3;
+		static constexpr int VOLUME_EXTENT = 1;
 
 		#define LOD_SIZE_IN_BYTES(bits, textureWidth, textureHeight, volumeExtent) \
 			(((bits) >> BYTES) * (textureWidth) * (textureHeight) * (volumeExtent))
@@ -480,13 +480,13 @@ namespace gfx_tools {
 		int* textureWidthPointer, int* textureHeightPointer
 	) {
 		if (isAlphaPointer) {
-			static const bool ZAP_IS_ALPHA = true;
+			static constexpr bool ZAP_IS_ALPHA = true;
 
 			*isAlphaPointer = ZAP_IS_ALPHA;
 		}
 
 		if (bitsPointer) {
-			static const uint32_t ZAP_BITS = 32;
+			static constexpr uint32_t ZAP_BITS = 32;
 
 			*bitsPointer = ZAP_BITS;
 		}

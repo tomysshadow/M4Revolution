@@ -26,7 +26,7 @@ std::string getAppInstallDir() {
 
 	{
 		// try for the Steam release next
-		static const steampp::AppID MYST_IV_REVELATION_APP_ID = 925940;
+		static constexpr steampp::AppID MYST_IV_REVELATION_APP_ID = 925940;
 
 		steampp::Steam steam;
 		std::string pathString = steam.getAppInstallDir(MYST_IV_REVELATION_APP_ID);
@@ -49,16 +49,16 @@ std::string getAppInstallDir() {
 }
 
 std::optional<bool> performOperation(M4Revolution &m4Revolution) {
-	static const long OPERATION_OPEN_ONLINE_HELP = 1;
-	static const long OPERATION_TOGGLE_FULL_SCREEN = 2;
-	static const long OPERATION_TOGGLE_CAMERA_INERTIA = 3;
-	static const long OPERATION_EDIT_SOUND_FADE_OUT_TIME = 4;
-	static const long OPERATION_EDIT_TRANSITION_TIME = 5;
-	static const long OPERATION_FIX_LOADING = 6;
-	static const long OPERATION_RESTORE_BACKUP = 7;
-	static const long OPERATION_EXIT = 8;
-	static const long OPERATION_MIN = OPERATION_OPEN_ONLINE_HELP;
-	static const long OPERATION_MAX = OPERATION_EXIT;
+	static constexpr long OPERATION_OPEN_ONLINE_HELP = 1;
+	static constexpr long OPERATION_TOGGLE_FULL_SCREEN = 2;
+	static constexpr long OPERATION_TOGGLE_CAMERA_INERTIA = 3;
+	static constexpr long OPERATION_EDIT_SOUND_FADE_OUT_TIME = 4;
+	static constexpr long OPERATION_EDIT_TRANSITION_TIME = 5;
+	static constexpr long OPERATION_FIX_LOADING = 6;
+	static constexpr long OPERATION_RESTORE_BACKUP = 7;
+	static constexpr long OPERATION_EXIT = 8;
+	static constexpr long OPERATION_MIN = OPERATION_OPEN_ONLINE_HELP;
+	static constexpr long OPERATION_MAX = OPERATION_EXIT;
 
 	try {
 		switch (consoleLong("Please enter the number corresponding to the operation you would like to perform.", OPERATION_MIN, OPERATION_MAX)) {
@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
 		#endif
 	#endif
 
-	static const int MIN_ARGC = 1;
+	static constexpr int MIN_ARGC = 1;
 
 	if (argc < MIN_ARGC) {
 		help();

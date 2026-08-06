@@ -275,7 +275,7 @@ void copyStreamToWriteDestination(std::istream &inputStream, WriteDestination &&
 		return;
 	}
 
-	static const size_t BUFFER_SIZE = 0x10000;
+	static constexpr size_t BUFFER_SIZE = 0x10000;
 	char buffer[BUFFER_SIZE] = {};
 
 	std::streamsize countRead = BUFFER_SIZE;

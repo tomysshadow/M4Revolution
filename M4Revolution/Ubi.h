@@ -12,7 +12,6 @@
 namespace Ubi {
 	namespace String {
 		typedef uint32_t SIZE;
-		static const size_t SIZE_SIZE = sizeof(SIZE);
 
 		std::optional<std::string> &swizzle(std::optional<std::string> &encryptedStringOptional);
 		std::optional<std::string> readOptional(std::istream &inputStream, bool &nullTerminator, SIZE maxSize = (SIZE)-1);
@@ -140,7 +139,7 @@ namespace Ubi {
 			typedef uint64_t ID;
 
 			// "ubi/b0-l"
-			static const ID UBI_B0_L = 0x6C2D30622F696275;
+			static constexpr ID UBI_B0_L = 0x6C2D30622F696275;
 
 			std::streamsize fileSize = 0;
 			std::streampos filePosition;
@@ -230,11 +229,9 @@ namespace Ubi {
 
 			// initially the size in the input file, to be potentially overwritten later (if converted)
 			SIZE size = 0;
-			static const size_t SIZE_SIZE = sizeof(size);
 
 			// initially the offset in the input file, to be overwritten later (with the stream offset)
 			SIZE offset = 0;
-			static const size_t OFFSET_SIZE = sizeof(offset);
 
 			// the effective size of the file's padding (not stored to the file, used temporarily by the output thread)
 			SIZE padding = 0;
@@ -283,7 +280,7 @@ namespace Ubi {
 			typedef std::map<std::string, TypeExtension, IgnoreCaseComparer> TYPE_EXTENSION_MAP;
 
 			static const TYPE_EXTENSION_MAP NAME_TYPE_EXTENSION_MAP;
-			static const char PERIOD = '.';
+			static constexpr char PERIOD = '.';
 		};
 
 		struct Directory {
@@ -301,13 +298,11 @@ namespace Ubi {
 			std::optional<std::string> nameOptional = std::nullopt;
 
 			// the directories that this directory owns
-			static const size_t DIRECTORY_VECTOR_SIZE_SIZE = sizeof(DIRECTORY_VECTOR_SIZE);
 			Directory::VECTOR directoryVector = {};
 
 			// the files that this directory owns
 			// binaryFilePointerVector is seperate so we can easily loop just the Binary files
 			// (this is useful for finding Water/Cube binary files)
-			static const size_t FILE_POINTER_VECTOR_SIZE_SIZE = sizeof(FILE_POINTER_VECTOR_SIZE);
 			File::POINTER_VECTOR binaryFilePointerVector = {};
 			File::POINTER_VECTOR filePointerVector = {};
 
@@ -382,8 +377,6 @@ namespace Ubi {
 		struct Header {
 			typedef uint32_t VERSION;
 
-			static const size_t VERSION_SIZE = sizeof(VERSION);
-
 			class Invalid : public std::invalid_argument {
 				public:
 				Invalid() noexcept : std::invalid_argument("Header invalid") {
@@ -399,7 +392,7 @@ namespace Ubi {
 			void read(std::istream &inputStream);
 
 			static const std::string SIGNATURE;
-			static const VERSION CURRENT_VERSION = 1;
+			static constexpr VERSION CURRENT_VERSION = 1;
 		};
 
 		private:

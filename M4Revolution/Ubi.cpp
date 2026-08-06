@@ -9,7 +9,7 @@ namespace Ubi {
 				return encryptedStringOptional;
 			}
 
-			static const unsigned char MASK = 85;
+			static constexpr unsigned char MASK = 85;
 
 			std::string &encryptedString = encryptedStringOptional.value();
 
@@ -34,7 +34,7 @@ namespace Ubi {
 			};
 
 			SIZE size = 0;
-			readStream(inputStream, &size, SIZE_SIZE);
+			readStream(inputStream, &size, sizeof(size));
 
 			if (size > maxSize) {
 				throw std::logic_error("size must not be greater than maxSize");
@@ -66,7 +66,7 @@ namespace Ubi {
 
 		void writeOptional(std::ostream &outputStream, const std::optional<std::string> &strOptional, bool nullTerminator) {
 			SIZE size = strOptional.has_value() ? (SIZE)(strOptional.value().size() + nullTerminator) : 0;
-			writeStream(outputStream, &size, SIZE_SIZE);
+			writeStream(outputStream, &size, sizeof(size));
 
 			if (!size) {
 				return;
@@ -99,45 +99,38 @@ namespace Ubi {
 				uint32_t pixels = 0;
 				std::streamoff pixelsSize = 0;
 
-				static const size_t WATER_FACE_FIELDS_SIZE = 20; // Type, Width, Height, SliceWidth, SliceHeight
-				static const size_t WATER_SLICES_SIZE = sizeof(waterSlices);
-				static const size_t SLICE_ROW_SIZE = sizeof(sliceRow);
-				static const size_t SLICE_COL_SIZE = sizeof(sliceCol);
-				static const size_t WATER_SLICE_FIELDS_SIZE = 8; // Width, Height
-				static const size_t WATER_RLE_REGIONS_SIZE = sizeof(waterRLERegions);
-				static const size_t WATER_RLE_REGION_FIELDS_SIZE = 20; // TextureCoordsInFace (X, Y,) TextureCoordsInSlice (X, Y,) RegionSize
-				static const size_t GROUPS_SIZE = sizeof(groups);
-				static const size_t WATER_RLE_REGION_GROUP_FIELDS_SIZE = 4; // Unknown
-				static const size_t SUB_GROUPS_SIZE = sizeof(subGroups);
-				static const size_t PIXELS_SIZE = sizeof(pixels);
+				static constexpr size_t WATER_FACE_FIELDS_SIZE = 20; // Type, Width, Height, SliceWidth, SliceHeight
+				static constexpr size_t WATER_SLICE_FIELDS_SIZE = 8; // Width, Height
+				static constexpr size_t WATER_RLE_REGION_FIELDS_SIZE = 20; // TextureCoordsInFace (X, Y,) TextureCoordsInSlice (X, Y,) RegionSize
+				static constexpr size_t WATER_RLE_REGION_GROUP_FIELDS_SIZE = 4; // Unknown
 
 				inputStream.seekg(WATER_FACE_FIELDS_SIZE, std::istream::cur);
-				readStream(inputStream, &waterSlices, WATER_SLICES_SIZE);
+				readStream(inputStream, &waterSlices, sizeof(waterSlices));
 
 				for (uint32_t i = 0; i < waterSlices; i++) {
 					// sliceRow and sliceCol are incremented by one
 					// because they are indexed from zero here, but
 					// we want them indexed by one for the face names
-					readStream(inputStream, &sliceRow, SLICE_ROW_SIZE);
-					readStream(inputStream, &sliceCol, SLICE_COL_SIZE);
+					readStream(inputStream, &sliceRow, sizeof(sliceRow));
+					readStream(inputStream, &sliceCol, sizeof(sliceCol));
 					sliceMap[sliceRow + 1].insert(sliceCol + 1);
 
 					// normally these would be in seperate classes
 					// there just isn't much point here because I don't really care about any of this data
 					// I only really care about sliceRow/sliceCol and just want to skip the rest of this stuff
 					inputStream.seekg(WATER_SLICE_FIELDS_SIZE, std::istream::cur);
-					readStream(inputStream, &waterRLERegions, WATER_RLE_REGIONS_SIZE);
+					readStream(inputStream, &waterRLERegions, sizeof(waterRLERegions));
 
 					for (uint32_t j = 0; j < waterRLERegions; j++) {
 						inputStream.seekg(WATER_RLE_REGION_FIELDS_SIZE, std::istream::cur);
-						readStream(inputStream, &groups, GROUPS_SIZE);
+						readStream(inputStream, &groups, sizeof(groups));
 
 						for (uint32_t l = 0; l < groups; l++) {
 							inputStream.seekg(WATER_RLE_REGION_GROUP_FIELDS_SIZE, std::istream::cur);
-							readStream(inputStream, &subGroups, SUB_GROUPS_SIZE);
+							readStream(inputStream, &subGroups, sizeof(subGroups));
 
 							for (uint32_t m = 0; m < subGroups; m++) {
-								readStream(inputStream, &pixels, PIXELS_SIZE);
+								readStream(inputStream, &pixels, sizeof(pixels));
 
 								pixelsSize = (std::streamoff)pixels;
 								inputStream.seekg(pixelsSize + pixelsSize, std::istream::cur);
@@ -149,11 +142,8 @@ namespace Ubi {
 		}
 
 		Resource::Loader::Loader(std::istream &inputStream) {
-			static const size_t ID_SIZE = sizeof(id);
-			static const size_t VERSION_SIZE = sizeof(version);
-
-			readStream(inputStream, &id, ID_SIZE);
-			readStream(inputStream, &version, VERSION_SIZE);
+			readStream(inputStream, &id, sizeof(id));
+			readStream(inputStream, &version, sizeof(version));
 			nameOptional = String::readOptionalEncrypted(inputStream);
 		}
 
@@ -169,8 +159,8 @@ namespace Ubi {
 			void create(std::istream &inputStream, RLE::LAYER_MAP &layerMap);
 
 			public:
-			static const Resource::ID ID = 15;
-			static const Resource::VERSION VERSION = 5;
+			static constexpr Resource::ID ID = 15;
+			static constexpr Resource::VERSION VERSION = 5;
 
 			TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::LAYER_MAP &layerMap);
 			TextureBox(Loader::POINTER loaderPointer, std::istream &inputStream);
@@ -183,8 +173,8 @@ namespace Ubi {
 			static std::optional<std::string> getTextureBoxNameOptional(const std::string &resourceName);
 
 			public:
-			static const Resource::ID ID = 42;
-			static const Resource::VERSION VERSION = 1;
+			static constexpr Resource::ID ID = 42;
+			static constexpr Resource::VERSION VERSION = 1;
 
 			Water(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap);
 			Water(Loader::POINTER loaderPointer, std::istream &inputStream);
@@ -192,16 +182,16 @@ namespace Ubi {
 
 		class InteractiveOffsetProvider: public Resource {
 			public:
-			static const Resource::ID ID = 43;
-			static const Resource::VERSION VERSION = 1;
+			static constexpr Resource::ID ID = 43;
+			static constexpr Resource::VERSION VERSION = 1;
 
 			InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
 		};
 
 		class TextureAlignedOffsetProvider: public Resource {
 			public:
-			static const Resource::ID ID = 44;
-			static const Resource::VERSION VERSION = 1;
+			static constexpr Resource::ID ID = 44;
+			static constexpr Resource::VERSION VERSION = 1;
 
 			TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream);
 		};
@@ -211,8 +201,8 @@ namespace Ubi {
 			void create(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet);
 
 			public:
-			static const Resource::ID ID = 45;
-			static const Resource::VERSION VERSION = 1;
+			static constexpr Resource::ID ID = 45;
+			static constexpr Resource::VERSION VERSION = 1;
 
 			StateData(Loader::POINTER loaderPointer, std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet);
 			StateData(Loader::POINTER loaderPointer, std::istream &inputStream);
@@ -227,27 +217,23 @@ namespace Ubi {
 				RLE::Layer &layer = layerMap[layerFileOptional.value()];
 				layer.textureBoxNameOptional = LOADER_POINTER->nameOptional;
 
-				static const size_t FIELDS_SIZE = 17;
+				static constexpr size_t FIELDS_SIZE = 17;
 				inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 
 				bool &isLayerMask = layer.isLayerMask;
-				static const size_t IS_LAYER_MASK_SIZE = sizeof(isLayerMask);
+				readStream(inputStream, &isLayerMask, sizeof(isLayerMask));
 
-				readStream(inputStream, &isLayerMask, IS_LAYER_MASK_SIZE);
-
-				static const size_t FIELDS_SIZE2 = 4;
+				static constexpr size_t FIELDS_SIZE2 = 4;
 				inputStream.seekg(FIELDS_SIZE2, std::istream::cur);
 
 				layerPointer = &layer;
 			} else {
-				static const size_t FIELDS_SIZE = 22;
+				static constexpr size_t FIELDS_SIZE = 22;
 				inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 			}
 
 			uint32_t sets = 0;
-			static const size_t SETS_SIZE = sizeof(sets);
-
-			readStream(inputStream, &sets, SETS_SIZE);
+			readStream(inputStream, &sets, sizeof(sets));
 
 			std::optional<std::string> setOptional = std::nullopt;
 
@@ -262,15 +248,13 @@ namespace Ubi {
 			uint32_t states = 0;
 			uint32_t stateNames = 0;
 
-			static const size_t STATES_SIZE = sizeof(states);
-			static const size_t STATES_FIELDS_SIZE = 4;
-			static const size_t STATE_NAMES_SIZE = sizeof(stateNames);
-
-			readStream(inputStream, &states, STATES_SIZE);
+			readStream(inputStream, &states, sizeof(states));
 
 			for (uint32_t i = 0; i < states; i++) {
+				static constexpr size_t STATES_FIELDS_SIZE = 4;
+
 				inputStream.seekg(STATES_FIELDS_SIZE, std::istream::cur);
-				readStream(inputStream, &stateNames, STATE_NAMES_SIZE);
+				readStream(inputStream, &stateNames, sizeof(stateNames));
 
 				for (uint32_t j = 0; j < stateNames; j++) {
 					String::readOptional(inputStream);
@@ -292,13 +276,11 @@ namespace Ubi {
 		void Water::create(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap) {
 			std::optional<std::string> resourceNameOptional = String::readOptionalEncrypted(inputStream);
 
-			static const size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
+			static constexpr size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
 			inputStream.seekg(WATER_FIELDS_SIZE, std::istream::cur);
 
 			uint32_t resources = 0;
-			static const size_t RESOURCES_SIZE = sizeof(resources);
-
-			readStream(inputStream, &resources, RESOURCES_SIZE);
+			readStream(inputStream, &resources, sizeof(resources));
 
 			if (resourceNameOptional.has_value()) {
 				const std::optional<std::string> &TEXTURE_BOX_NAME_OPTIONAL =
@@ -321,8 +303,7 @@ namespace Ubi {
 		}
 
 		std::optional<std::string> Water::getTextureBoxNameOptional(const std::string &resourceName) {
-			static const char PERIOD = '.';
-			static const std::string::size_type PERIOD_SIZE = sizeof(PERIOD);
+			static constexpr char PERIOD = '.';
 
 			std::string::size_type periodIndex = resourceName.find(PERIOD);
 
@@ -342,7 +323,7 @@ namespace Ubi {
 			}
 
 			return resourceName.substr(
-				periodIndex + PERIOD_SIZE,
+				periodIndex + sizeof(PERIOD),
 				std::string::npos
 			);
 		}
@@ -360,27 +341,25 @@ namespace Ubi {
 
 		InteractiveOffsetProvider::InteractiveOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream)
 			: Resource(loaderPointer, VERSION) {
-			static const size_t FIELDS_SIZE = 33;
+			static constexpr size_t FIELDS_SIZE = 33;
 			inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 		}
 
 		TextureAlignedOffsetProvider::TextureAlignedOffsetProvider(Loader::POINTER loaderPointer, std::istream &inputStream)
 			: Resource(loaderPointer, VERSION) {
-			static const size_t FIELDS_SIZE = 65;
+			static constexpr size_t FIELDS_SIZE = 65;
 			inputStream.seekg(FIELDS_SIZE, std::istream::cur);
 		}
 
 		void StateData::create(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet) {
 			uint32_t nbrAliases = 0;
-			static const size_t NBR_ALIASES_SIZE = sizeof(nbrAliases);
-
-			readStream(inputStream, &nbrAliases, NBR_ALIASES_SIZE);
+			readStream(inputStream, &nbrAliases, sizeof(nbrAliases));
 
 			for (uint32_t i = 0; i < nbrAliases; i++) {
 				String::readOptional(inputStream);
 			}
 
-			static const size_t REFRESH_RATE_SIZE = 4;
+			static constexpr size_t REFRESH_RATE_SIZE = 4;
 			inputStream.seekg(REFRESH_RATE_SIZE, std::istream::cur);
 
 			std::optional<std::string> maskPathOptional = String::readOptionalEncrypted(inputStream);
@@ -390,15 +369,13 @@ namespace Ubi {
 			}
 
 			uint32_t resources = 0;
-			static const size_t RESOURCES_SIZE = sizeof(resources);
-
-			readStream(inputStream, &resources, RESOURCES_SIZE);
+			readStream(inputStream, &resources, sizeof(resources));
 
 			for (uint32_t i = 0; i < resources; i++) {
 				createResourcePointer(inputStream);
 			}
 
-			static const size_t WATER_FACE_BILERP_FIELDS_SIZE = 6;
+			static constexpr size_t WATER_FACE_BILERP_FIELDS_SIZE = 6;
 			inputStream.seekg(WATER_FACE_BILERP_FIELDS_SIZE, std::istream::cur);
 		}
 
@@ -428,9 +405,7 @@ namespace Ubi {
 			: HeaderCopier(fileSize, inputStream.tellg()),
 			inputStream(inputStream) {
 			ID id = 0;
-			static const size_t ID_SIZE = sizeof(id);
-
-			readStream(inputStream, &id, ID_SIZE);
+			readStream(inputStream, &id, sizeof(id));
 			throwReadPastEnd();
 
 			// we only support the UBI_B0_L ID
@@ -455,9 +430,7 @@ namespace Ubi {
 		HeaderWriter::HeaderWriter(std::ostream &outputStream, std::streamsize fileSize)
 			: HeaderCopier(fileSize, outputStream.tellp()),
 			outputStream(outputStream) {
-			static const size_t UBI_B0_L_SIZE = sizeof(UBI_B0_L);
-
-			writeStream(outputStream, &UBI_B0_L, UBI_B0_L_SIZE);
+			writeStream(outputStream, &UBI_B0_L, sizeof(UBI_B0_L));
 			throwWrotePastEnd();
 		}
 
@@ -574,7 +547,7 @@ namespace Ubi {
 	}
 
 	BigFile::Path& BigFile::Path::create(const std::string &file) {
-		static const char SEPERATOR = '/';
+		static constexpr char SEPERATOR = '/';
 
 		// split up a string into a Path object
 		std::string::size_type begin = 0;
@@ -598,7 +571,7 @@ namespace Ubi {
 		rename(layerFileOptional);
 
 		fileSystemSize += (SIZE)(
-			String::SIZE_SIZE
+			sizeof(String::SIZE)
 
 			+ (
 				nameOptional.has_value()
@@ -606,8 +579,8 @@ namespace Ubi {
 				: 0
 			)
 
-			+ SIZE_SIZE
-			+ OFFSET_SIZE
+			+ sizeof(size)
+			+ sizeof(offset)
 		);
 	}
 
@@ -620,8 +593,8 @@ namespace Ubi {
 
 	void BigFile::File::write(std::ostream &outputStream) const {
 		String::writeOptional(outputStream, nameOptional);
-		writeStream(outputStream, &size, SIZE_SIZE);
-		writeStream(outputStream, &offset, OFFSET_SIZE);
+		writeStream(outputStream, &size, sizeof(size));
+		writeStream(outputStream, &offset, sizeof(offset));
 	}
 
 	Binary::Resource::POINTER BigFile::File::appendToLayerMap(
@@ -664,8 +637,8 @@ namespace Ubi {
 
 	void BigFile::File::read(std::istream &inputStream) {
 		nameOptional = String::readOptional(inputStream);
-		readStream(inputStream, &size, SIZE_SIZE);
-		readStream(inputStream, &offset, OFFSET_SIZE);
+		readStream(inputStream, &size, sizeof(size));
+		readStream(inputStream, &offset, sizeof(offset));
 	}
 
 	void BigFile::File::rename(const std::optional<File> &layerFileOptional) {
@@ -717,11 +690,9 @@ namespace Ubi {
 
 		const std::string &EXTENSION = nameTypeExtensionMapIterator->second.extension;
 
-		static const std::string::size_type PERIOD_SIZE = sizeof(PERIOD);
-
 		nameOptional = NAME.substr(
 			0,
-			NAME.length() - EXTENSION.length() - PERIOD_SIZE
+			NAME.length() - EXTENSION.length() - sizeof(PERIOD)
 		)
 
 		+ PERIOD
@@ -730,15 +701,13 @@ namespace Ubi {
 	}
 
 	std::string BigFile::File::getNameExtension(const std::string &name) {
-		static const std::string::size_type PERIOD_SIZE = sizeof(PERIOD);
-
 		std::string::size_type periodIndex = name.rfind(PERIOD);
 
 		return periodIndex == std::string::npos
 		? ""
 
 		: name.substr(
-			periodIndex + PERIOD_SIZE,
+			periodIndex + sizeof(PERIOD),
 			std::string::npos
 		);
 	}
@@ -777,7 +746,7 @@ namespace Ubi {
 
 		// since these have leading zeros, I use base 10 specifically
 		// (the ROW/COL should not be misinterpreted as octal)
-		static const int BASE = 10;
+		static constexpr int BASE = 10;
 
 		const std::string &ROW_STR = matches[2];
 
@@ -852,7 +821,7 @@ namespace Ubi {
 		String::writeOptional(outputStream, nameOptional);
 
 		DIRECTORY_VECTOR_SIZE directoryVectorSize = (DIRECTORY_VECTOR_SIZE)directoryVector.size();
-		writeStream(outputStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
+		writeStream(outputStream, &directoryVectorSize, sizeof(directoryVectorSize));
 
 		for (
 			Directory::VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
@@ -862,10 +831,10 @@ namespace Ubi {
 			directoryVectorIterator->write(outputStream);
 		}
 
-		FILE_POINTER_VECTOR_SIZE fileVectorSize = (FILE_POINTER_VECTOR_SIZE)(filePointerVector.size()
+		FILE_POINTER_VECTOR_SIZE filePointerVectorSize = (FILE_POINTER_VECTOR_SIZE)(filePointerVector.size()
 			+ binaryFilePointerVector.size());
 
-		writeStream(outputStream, &fileVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
+		writeStream(outputStream, &filePointerVectorSize, sizeof(filePointerVectorSize));
 
 		for (
 			File::POINTER_VECTOR::const_iterator filePointerVectorIterator = filePointerVector.begin();
@@ -929,7 +898,7 @@ namespace Ubi {
 		const std::optional<File> &layerFileOptional
 	) {
 		DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
-		readStream(inputStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
+		readStream(inputStream, &directoryVectorSize, sizeof(directoryVectorSize));
 
 		directoryVector.reserve(directoryVectorSize);
 
@@ -962,7 +931,7 @@ namespace Ubi {
 		File::POINTER filePointer = 0;
 
 		FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
-		readStream(inputStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
+		readStream(inputStream, &filePointerVectorSize, sizeof(filePointerVectorSize));
 
 		for (FILE_POINTER_VECTOR_SIZE i = 0; i < filePointerVectorSize; i++) {
 			filePointer = std::make_shared<File>(
@@ -988,7 +957,7 @@ namespace Ubi {
 		files += filePointerVectorSize;
 
 		fileSystemSize += (File::SIZE)(
-			String::SIZE_SIZE
+			sizeof(String::SIZE)
 
 			+ (
 				nameOptional.has_value()
@@ -996,8 +965,8 @@ namespace Ubi {
 				: 0
 			)
 
-			+ DIRECTORY_VECTOR_SIZE_SIZE
-			+ FILE_POINTER_VECTOR_SIZE_SIZE
+			+ sizeof(directoryVectorSize)
+			+ sizeof(filePointerVectorSize)
 		);
 	}
 
@@ -1014,7 +983,7 @@ namespace Ubi {
 		bool match = isMatch(DIRECTORY_NAME_VECTOR, directoryNameVectorIterator);
 
 		DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
-		readStream(inputStream, &directoryVectorSize, DIRECTORY_VECTOR_SIZE_SIZE);
+		readStream(inputStream, &directoryVectorSize, sizeof(directoryVectorSize));
 
 		if (directoryNameVectorIterator == DIRECTORY_NAME_VECTOR.end()) {
 			// in this case we just read the directories and don't bother checking filePointer
@@ -1051,7 +1020,7 @@ namespace Ubi {
 		}
 
 		FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
-		readStream(inputStream, &filePointerVectorSize, FILE_POINTER_VECTOR_SIZE_SIZE);
+		readStream(inputStream, &filePointerVectorSize, sizeof(filePointerVectorSize));
 
 		if (match) {
 			filePointerVector.reserve(filePointerVectorSize);
@@ -1196,10 +1165,10 @@ namespace Ubi {
 		read(inputStream);
 
 		fileSystemSize += (File::SIZE)(
-			String::SIZE_SIZE
+			sizeof(String::SIZE)
 
 			+ SIGNATURE.size() + 1
-			+ VERSION_SIZE
+			+ sizeof(VERSION)
 		);
 	}
 
@@ -1218,7 +1187,7 @@ namespace Ubi {
 
 	void BigFile::Header::write(std::ostream &outputStream) const {
 		String::writeOptional(outputStream, SIGNATURE);
-		writeStream(outputStream, &CURRENT_VERSION, VERSION_SIZE);
+		writeStream(outputStream, &CURRENT_VERSION, sizeof(CURRENT_VERSION));
 	}
 
 	void BigFile::Header::read(std::istream &inputStream) {
@@ -1232,7 +1201,7 @@ namespace Ubi {
 		}
 
 		VERSION version = 0;
-		readStream(inputStream, &version, VERSION_SIZE);
+		readStream(inputStream, &version, sizeof(version));
 
 		if (version != CURRENT_VERSION) {
 			throw Invalid();

@@ -7,7 +7,7 @@
 namespace gfx_tools {
 	typedef unsigned char LOD;
 
-	static const LOD NUMBER_OF_LOD_MAX = 15;
+	static constexpr LOD NUMBER_OF_LOD_MAX = 15;
 
 	class ImageInfo {
 		public:
