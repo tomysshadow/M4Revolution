@@ -50,7 +50,7 @@ namespace gfx_tools {
 
 	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::POINTER pointer, SIZE stride, SIZE sizeInBytes) {
 		if (!pointer) {
-			throw std::invalid_argument("pointer must not be zero");
+			throw std::invalid_argument("pointer must not be nullptr");
 		}
 
 		if (lod > numberOfRawBuffers) {
@@ -119,7 +119,7 @@ namespace gfx_tools {
 		ares::RectU32* rectU32Pointer
 	) {
 		if (!pointer) {
-			throw std::invalid_argument("pointer must not be zero");
+			throw std::invalid_argument("pointer must not be nullptr");
 		}
 
 		/*

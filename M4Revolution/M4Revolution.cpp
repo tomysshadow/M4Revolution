@@ -67,7 +67,7 @@ void M4Revolution::Log::step() {
 void M4Revolution::Log::copying() {
 	if (!fileNames) {
 		if (!inputStreamPointer) {
-			throw std::logic_error("inputStreamPointer must not be zero");
+			throw std::logic_error("inputStreamPointer must not be nullptr");
 		}
 
 		// use the position to log the current progress
@@ -804,7 +804,7 @@ void M4Revolution::convertImageStandardWorkCallback(Work::Convert* convertPointe
 	bool hasAlpha = true;
 
 	if (!surface.loadFromMemory(convert.dataPointer.get(), convert.file.size, &hasAlpha)) {
-		throw std::runtime_error("Failed to load surface from memory");
+		throw std::runtime_error("failed to load surface from memory");
 	}
 
 	// when this unlocks one line later, the output thread will begin waiting on data
@@ -830,7 +830,7 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 			&image, &size, &width, &height, &stride);
 
 		if (err != ZAP_ERROR_NONE) {
-			throw std::runtime_error("Failed to load zap from memory");
+			throw std::runtime_error("failed to load zap from memory");
 		}
 
 		SCOPE_EXIT {

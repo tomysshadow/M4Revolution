@@ -1209,7 +1209,7 @@ namespace Ubi {
 			BigFile bigFile(stream, *pathVectorIterator, filePointer);
 
 			if (!filePointer) {
-				throw std::logic_error("filePointer must not be zero");
+				throw std::logic_error("filePointer must not be nullptr");
 			}
 
 			stream.seekg(offset + (std::streamoff)filePointer->offset);
