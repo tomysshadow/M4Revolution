@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "main.h"
 #include "base.h"
+#include "Validate.h"
 #include <math.h>
 #include <M4Image.h>
 
@@ -220,6 +221,40 @@ void __CRTDECL operator delete(
 	) {
 	ubi::Allocator &allocator = *ubi::Allocator::GetOwner(_Block);
 	allocator.Free(_Block);
+}
+
+_Ret_notnull_ _Post_writable_byte_size_(_Size)
+_VCRT_ALLOCATOR void* __CRTDECL operator new(
+	size_t           _Size,
+	std::align_val_t _Al
+	) {
+	size_t padding = (size_t)_Al - 1;
+	size_t offset = padding + sizeof(void*);
+
+	try {
+		Validate::overflow(offset, _Size);
+	} catch (const std::invalid_argument&) {
+		throw std::bad_alloc();
+	}
+
+	ubi::Allocator &generalAlloc = *ubi::Mem::GetGeneralAlloc();
+	void* block = generalAlloc.Malloc(offset + _Size);
+	void** aligned = (void**)(((uintptr_t)block + offset) & ~padding);
+
+	aligned[-1] = block;
+	return aligned;
+}
+
+void __CRTDECL operator delete(
+	void*            _Block,
+	std::align_val_t _Al
+	) noexcept {
+	if (!_Block) {
+		return;
+	}
+
+	ubi::Allocator &allocator = *ubi::Allocator::GetOwner(_Block);
+	allocator.Free(((void**)_Block)[-1]);
 }
 
 void* mallocProc(size_t size) {

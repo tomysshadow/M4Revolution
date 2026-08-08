@@ -208,6 +208,7 @@
     <ClInclude Include="PixelFormat.h" />
     <ClInclude Include="RawBuffer.h" />
     <ClInclude Include="utils.h" />
+    <ClInclude Include="Validate.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ares_base\ares_base.vcxproj">
