@@ -206,7 +206,7 @@ namespace gfx_tools {
 		if (pixelFormat.hasBitsPerPixel) {
 			return &pixelFormat;
 		}
-		return 0;
+		return nullptr;
 	}
 
 	typedef std::unordered_map<EnumPixelFormat, EnumPixelFormat> ENUM_PIXEL_FORMAT_MAP;

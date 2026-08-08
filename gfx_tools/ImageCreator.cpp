@@ -37,7 +37,7 @@ namespace gfx_tools {
 			ms_SingletonInstance = new ImageCreator();
 
 			if (atexit(DestroySingletonInstance)) {
-				return 0;
+				return nullptr;
 			}
 
 			destroySingletonInstanceScopeExit.dismiss();
@@ -68,7 +68,7 @@ namespace gfx_tools {
 		{"JTIF", ImageSerializerJPEG}
 	};
 
-	ImageCreator* ImageCreator::ms_SingletonInstance = 0;
+	ImageCreator* ImageCreator::ms_SingletonInstance = nullptr;
 
 	ImageLoader* ImageCreator::ImageSerializerZAP() {
 		return new ImageLoaderMultipleBufferZAP();
@@ -98,14 +98,14 @@ namespace gfx_tools {
 		IMAGE_SERIALIZER_PROC_MAP::iterator imageSerializerProcMapIterator = extensionImageSerializerProcMap.find(extension);
 
 		if (imageSerializerProcMapIterator == extensionImageSerializerProcMap.end()) {
-			return 0;
+			return nullptr;
 		}
 		return imageSerializerProcMapIterator->second();
 	}
 
 	ImageLoader* ImageCreator::CreateLoaderFromFileNameImp(const char* fileName) {
 		if (!fileName) {
-			return 0;
+			return nullptr;
 		}
 
 		static constexpr char PERIOD = '.';
@@ -118,7 +118,7 @@ namespace gfx_tools {
 		ImageLoader* imageLoaderPointer = CreateLoaderFromFileNameImp(fileName);
 
 		if (!imageLoaderPointer) {
-			return 0;
+			return nullptr;
 		}
 
 		MAKE_SCOPE_EXIT(imageLoaderPointerScopeExit) {
@@ -131,11 +131,11 @@ namespace gfx_tools {
 		RawBuffer::POINTER pointer = imageLoaderPointer->CreateLODRawBuffer(0, (RawBuffer::SIZE)size);
 
 		if (!pointer) {
-			return 0;
+			return nullptr;
 		}
 		
 		if (inputFileStream.Read(pointer, 0, (ubi::Stream::SIZE)size) != size) {
-			return 0;
+			return nullptr;
 		}
 
 		imageLoaderPointerScopeExit.dismiss();

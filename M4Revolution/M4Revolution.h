@@ -16,7 +16,7 @@ class M4Revolution : NonCopyable {
 
 	class Log : NonCopyable {
 		private:
-		std::istream* inputStreamPointer = 0;
+		std::istream* inputStreamPointer = nullptr;
 		Ubi::BigFile::File::SIZE inputFileSize = 0;
 		bool fileNames = false;
 		std::optional<std::chrono::steady_clock::time_point> beginOptional = std::nullopt;
@@ -30,7 +30,7 @@ class M4Revolution : NonCopyable {
 
 		Log(
 			const std::string &title,
-			std::istream* inputStreamPointer = 0,
+			std::istream* inputStreamPointer = nullptr,
 			Ubi::BigFile::File::SIZE inputFileSize = 0,
 			bool fileNames = false,
 			bool slow = false

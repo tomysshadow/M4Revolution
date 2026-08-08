@@ -56,7 +56,7 @@ namespace gfx_tools {
 		GFX_TOOLS_API virtual void GFX_TOOLS_CALL SetLODRawBuffer(
 			LOD lod,
 			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
-			ubi::RefCounted* refCountedPointer = 0
+			ubi::RefCounted* refCountedPointer = nullptr
 		) = 0;
 
 		GFX_TOOLS_API virtual RawBuffer::POINTER GFX_TOOLS_CALL GetLODRawBuffer(LOD lod) = 0;
@@ -74,7 +74,7 @@ namespace gfx_tools {
 			LOD lod,
 			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
 			bool owner = false,
-			ubi::RefCounted* refCountedPointer = 0
+			ubi::RefCounted* refCountedPointer = nullptr
 		) = 0;
 
 		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() = 0;
@@ -105,11 +105,11 @@ namespace gfx_tools {
 			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
 			bool owner = false,
 			const std::optional<RawBufferEx::ResizeInfo> &resizeInfoOptional = std::nullopt,
-			ubi::RefCounted* refCountedPointer = 0
+			ubi::RefCounted* refCountedPointer = nullptr
 		) = 0;
 
 		RawBuffer::SIZE rawBufferTotalSize = 0;
-		ubi::RefCounted* refCountedPointer = 0;
+		ubi::RefCounted* refCountedPointer = nullptr;
 		std::optional<ValidatedImageInfo> validatedImageInfoOptional = std::nullopt;
 		FormatHint formatHint = { FormatHint::HINT_NONE };
 	};
@@ -154,7 +154,7 @@ namespace gfx_tools {
 		GFX_TOOLS_API virtual void GFX_TOOLS_CALL SetLODRawBuffer(
 			LOD lod,
 			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
-			ubi::RefCounted* refCountedPointer = 0
+			ubi::RefCounted* refCountedPointer = nullptr
 		) override;
 
 		GFX_TOOLS_API virtual RawBuffer::POINTER GFX_TOOLS_CALL GetLODRawBuffer(LOD lod) override;
@@ -169,7 +169,7 @@ namespace gfx_tools {
 			LOD lod,
 			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
 			bool owner = false,
-			ubi::RefCounted* refCountedPointer = 0
+			ubi::RefCounted* refCountedPointer = nullptr
 		) override;
 
 		virtual const L_TCHAR* GFX_TOOLS_CALL GetExtension() override;
@@ -197,7 +197,7 @@ namespace gfx_tools {
 			RawBuffer::POINTER pointer, RawBuffer::SIZE size,
 			bool owner = false,
 			const std::optional<RawBufferEx::ResizeInfo> &resizeInfoOptional = std::nullopt,
-			ubi::RefCounted* refCountedPointer = 0
+			ubi::RefCounted* refCountedPointer = nullptr
 		) override;
 
 		SIZE numberOfRawBuffers = 0;

@@ -107,7 +107,7 @@ void consoleWait(short newline) {
 			CONSOLE_NUMBER_VALID_OUT;\
 		}\
 		\
-		str = 0;\
+		str = nullptr;\
 	} else {\
 		if (CONSOLE_NUMBER_BETWEEN(minValue, minValueDefault, maxValue, maxValueDefault)) {\
 			CONSOLE_NUMBER_BETWEEN_OUT_RETRY(minValue, maxValue);\
@@ -193,7 +193,7 @@ bool consoleBool(const char* str, const std::optional<bool> &defaultValueOptiona
 	do {
 		if (str) {
 			std::cout << str << " [" << yes << "/" << no << "]" << std::endl;
-			str = 0;
+			str = nullptr;
 		} else {
 			std::cout << "Please enter " << yes << " or " << no << "." << std::endl;
 		}

@@ -193,14 +193,14 @@ namespace gfx_tools {
 	}
 
 	RawBuffer::POINTER ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod) {
-		RawBuffer::POINTER pointer = 0;
+		RawBuffer::POINTER pointer = nullptr;
 		RawBuffer::SIZE size = 0;
 		GetLODRawBuffer(lod, pointer, size);
 		return pointer;
 	}
 
 	void ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) {
-		pointer = 0;
+		pointer = nullptr;
 
 		MAKE_SCOPE_EXIT(pointerScopeExit) {
 			M4Image::allocator.freeSafe(pointer);
@@ -217,7 +217,7 @@ namespace gfx_tools {
 		const std::optional<RawBufferEx> &rawBufferOptional = rawBufferOptionals[lod];
 
 		if (!rawBufferOptional.has_value()) {
-			pointer = 0;
+			pointer = nullptr;
 			size = 0;
 			sizeScopeExit.dismiss();
 			pointerScopeExit.dismiss();
@@ -264,7 +264,7 @@ namespace gfx_tools {
 	}
 
 	const L_TCHAR* ImageLoaderMultipleBuffer::GetExtension() {
-		return 0;
+		return nullptr;
 	}
 
 	L_INT ImageLoaderMultipleBuffer::GetFormat() {
@@ -273,7 +273,7 @@ namespace gfx_tools {
 
 	L_INT ImageLoaderMultipleBuffer::CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer) {
 		// in this implementation we have no concept of a bitmap handle
-		bitmapHandlePointer = 0;
+		bitmapHandlePointer = nullptr;
 		return SUCCESS;
 	}
 

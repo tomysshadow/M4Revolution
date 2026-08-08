@@ -71,7 +71,7 @@ namespace Work {
 		typedef Lock<QUEUE> QUEUE_LOCK;
 
 		size_t size = 0;
-		POINTER pointer = 0;
+		POINTER pointer = nullptr;
 
 		Data() = default;
 		Data(size_t size, POINTER pointer);
@@ -89,7 +89,7 @@ namespace Work {
 		Ubi::BigFile::File &file;
 		Ubi::BigFile::File::SIZE fileSystemSize = 0;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type files = 0;
-		Ubi::BigFile::POINTER bigFilePointer = 0;
+		Ubi::BigFile::POINTER bigFilePointer = nullptr;
 
 		public:
 		typedef std::shared_ptr<BigFileTask> POINTER;
@@ -193,8 +193,8 @@ namespace Work {
 
 		Ubi::BigFile::File &file;
 
-		FileTask::POINTER fileTaskPointer = 0;
-		Data::POINTER dataPointer = 0;
+		FileTask::POINTER fileTaskPointer = nullptr;
+		Data::POINTER dataPointer = nullptr;
 
 		Convert(
 			const Configuration &configuration,
@@ -207,7 +207,7 @@ namespace Work {
 		std::ofstream fileStream = {};
 
 		std::streamoff currentBigFileInputOffset = -1;
-		BigFileTask::POINTER bigFileTaskPointer = 0;
+		BigFileTask::POINTER bigFileTaskPointer = nullptr;
 
 		Ubi::BigFile::File::SIZE fileOffset = 0;
 		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;

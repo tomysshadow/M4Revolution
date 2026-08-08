@@ -15,10 +15,10 @@ namespace ares {
 	}
 
 	const char* Resource::GetClassNameA() const {
-		return 0;
+		return nullptr;
 	}
 
 	Resource* Resource::Clone(EnumCloneType enumCloneType) {
-		return 0;
+		return nullptr;
 	}
 }

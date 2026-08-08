@@ -72,21 +72,21 @@ namespace ubi {
 	}
 
 	Allocator* Allocator::GetOwner(void const* pointer) {
-		return 0;
+		return nullptr;
 	}
 
 	void* Allocator::Malloc(size_t size) {
-		return 0;
+		return nullptr;
 	}
 
 	void* Allocator::ReAlloc(void* pointer, size_t size) {
-		return 0;
+		return nullptr;
 	}
 
 	Allocator::~Allocator() {
 	}
 
 	Allocator* Mem::GetGeneralAlloc() {
-		return 0;
+		return nullptr;
 	}
 }

@@ -19,13 +19,13 @@ namespace gfx_tools {
 		static constexpr size_t OUTPUT_CHANNEL_LUMINANCE = 2;
 
 		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + ((size_t)height * (size_t)inputStride) - inputStride);
-		M4Image::Color32* rowPointer = 0;
+		M4Image::Color32* rowPointer = nullptr;
 
-		M4Image::Color32* inputColorPointer = 0;
-		M4Image::Color32* inputUColorPointer = 0;
-		M4Image::Color32* inputVColorPointer = 0;
+		M4Image::Color32* inputColorPointer = nullptr;
+		M4Image::Color32* inputUColorPointer = nullptr;
+		M4Image::Color32* inputVColorPointer = nullptr;
 
-		M4Image::Color16* outputColorPointer = 0;
+		M4Image::Color16* outputColorPointer = nullptr;
 
 		while (inputPointer <= endPointer) {
 			rowPointer = inputPointer + width - 1;
@@ -88,13 +88,13 @@ namespace gfx_tools {
 		static constexpr unsigned char ALPHA_OPAQUE = 255;
 
 		M4Image::Color32* endPointer = (M4Image::Color32*)((unsigned char*)inputPointer + ((size_t)height * (size_t)inputStride) - inputStride);
-		M4Image::Color32* rowPointer = 0;
+		M4Image::Color32* rowPointer = nullptr;
 
-		M4Image::Color32* inputColorPointer = 0;
-		M4Image::Color32* inputXColorPointer = 0;
-		M4Image::Color32* inputYColorPointer = 0;
+		M4Image::Color32* inputColorPointer = nullptr;
+		M4Image::Color32* inputXColorPointer = nullptr;
+		M4Image::Color32* inputYColorPointer = nullptr;
 
-		M4Image::Color32* outputColorPointer = 0;
+		M4Image::Color32* outputColorPointer = nullptr;
 
 		double x = 0.0;
 		double y = 0.0;

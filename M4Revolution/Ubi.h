@@ -240,7 +240,7 @@ namespace Ubi {
 			// if this file is a layer, layerInformationPointer is non-zero and
 			// points to the layer information, and layerMapIterator is an iterator
 			// into the layerMap field of layerInformationPointer (it is never the end of the map)
-			Binary::RLE::LAYER_MAP_POINTER layerMapPointer = 0;
+			Binary::RLE::LAYER_MAP_POINTER layerMapPointer = nullptr;
 			Binary::RLE::LAYER_MAP::const_iterator layerMapIterator = {};
 
 			// metadata for conversion

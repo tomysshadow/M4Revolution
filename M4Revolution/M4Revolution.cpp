@@ -820,7 +820,7 @@ void M4Revolution::convertImageZAPWorkCallback(Work::Convert* convertPointer) {
 	nvtt::Surface surface;
 
 	{
-		zap_byte_t* image = 0;
+		zap_byte_t* image = nullptr;
 		zap_size_t size = 0;
 		zap_int_t width = 0;
 		zap_int_t height = 0;
@@ -876,8 +876,8 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streamoff bigFileIn
 
 	Ubi::BigFile::File::POINTER_VECTOR::size_type files = 0;
 
-	Work::BigFileTask::POINTER eraseBigFileTaskPointer = 0;
-	Work::BigFileTask::POINTER currentBigFileTaskPointer = 0;
+	Work::BigFileTask::POINTER eraseBigFileTaskPointer = nullptr;
+	Work::BigFileTask::POINTER currentBigFileTaskPointer = nullptr;
 
 	std::streamoff eraseBigFileInputOffset = -1;
 	std::streamoff currentOutputOffset = -1;

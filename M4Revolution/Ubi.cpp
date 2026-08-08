@@ -209,7 +209,7 @@ namespace Ubi {
 		};
 
 		void TextureBox::create(std::istream &inputStream, RLE::LAYER_MAP &layerMap) {
-			RLE::Layer* layerPointer = 0;
+			RLE::Layer* layerPointer = nullptr;
 
 			std::optional<std::string> layerFileOptional = String::readOptionalEncrypted(inputStream);
 
@@ -487,13 +487,13 @@ namespace Ubi {
 				case StateData::ID:
 				return std::make_shared<StateData>(loaderPointer, inputStream);
 			}
-			return 0;
+			return nullptr;
 		}
 
 		Resource::POINTER appendToLayerMap(std::istream &inputStream, RLE::LAYER_MAP &layerMap, std::streamsize size) {
 			std::optional<HeaderReader> headerReaderOptional = std::nullopt;
 			Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
-			Resource::POINTER resourcePointer = 0;
+			Resource::POINTER resourcePointer = nullptr;
 
 			switch (loaderPointer->id) {
 				case TextureBox::ID:
@@ -505,7 +505,7 @@ namespace Ubi {
 		Resource::POINTER appendToTextureBoxMap(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap, std::streamsize size) {
 			std::optional<HeaderReader> headerReaderOptional = std::nullopt;
 			Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
-			Resource::POINTER resourcePointer = 0;
+			Resource::POINTER resourcePointer = nullptr;
 
 			switch (loaderPointer->id) {
 				case Water::ID:
@@ -517,7 +517,7 @@ namespace Ubi {
 		Resource::POINTER appendToMaskPathSet(std::istream &inputStream, RLE::MASK_PATH_SET &maskPathSet, std::streamsize size) {
 			std::optional<HeaderReader> headerReaderOptional = std::nullopt;
 			Resource::Loader::POINTER loaderPointer = readFileLoader(inputStream, headerReaderOptional, size);
-			Resource::POINTER resourcePointer = 0;
+			Resource::POINTER resourcePointer = nullptr;
 
 			switch (loaderPointer->id) {
 				case StateData::ID:
@@ -603,7 +603,7 @@ namespace Ubi {
 		Binary::RLE::LAYER_MAP &layerMap
 	) const {
 		std::streampos position = inputStream.tellg();
-		Binary::Resource::POINTER resourcePointer = 0;
+		Binary::Resource::POINTER resourcePointer = nullptr;
 
 		try {
 			inputStream.seekg(fileSystemOffset + (std::streamoff)this->offset);
@@ -622,7 +622,7 @@ namespace Ubi {
 		Binary::RLE::TEXTURE_BOX_MAP &textureBoxMap
 	) const {
 		std::streampos position = inputStream.tellg();
-		Binary::Resource::POINTER resourcePointer = 0;
+		Binary::Resource::POINTER resourcePointer = nullptr;
 	
 		try {
 			inputStream.seekg(fileSystemOffset + (std::streamoff)this->offset);
@@ -928,7 +928,7 @@ namespace Ubi {
 
 		bool set = isSet(bftex, layerFileOptional);
 
-		File::POINTER filePointer = 0;
+		File::POINTER filePointer = nullptr;
 
 		FILE_POINTER_VECTOR_SIZE filePointerVectorSize = 0;
 		readStream(inputStream, &filePointerVectorSize, sizeof(filePointerVectorSize));
@@ -973,7 +973,7 @@ namespace Ubi {
 	void BigFile::Directory::find(std::istream &inputStream, const Path &path,
 		Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer) {
 		MAKE_SCOPE_EXIT(filePointerScopeExit) {
-			filePointer = 0;
+			filePointer = nullptr;
 		};
 
 		const Path::NAME_VECTOR &DIRECTORY_NAME_VECTOR = path.directoryNameVector;
@@ -1053,7 +1053,7 @@ namespace Ubi {
 
 		// isMatch must be called here, modifies directoryNameVectorIterator
 		bool match = isMatch(DIRECTORY_NAME_VECTOR, directoryNameVectorIterator);
-		File::POINTER filePointer = 0;
+		File::POINTER filePointer = nullptr;
 
 		if (directoryNameVectorIterator != DIRECTORY_NAME_VECTOR.end()) {
 			for (
@@ -1071,7 +1071,7 @@ namespace Ubi {
 		}
 
 		if (!match) {
-			return 0;
+			return nullptr;
 		}
 
 		for (
@@ -1086,7 +1086,7 @@ namespace Ubi {
 				return filePointer;
 			}
 		}
-		return 0;
+		return nullptr;
 	}
 
 	bool BigFile::Directory::isMatch(const Path::NAME_VECTOR &directoryNameVector,
@@ -1213,7 +1213,7 @@ namespace Ubi {
 	BigFile::File::POINTER BigFile::findFile(std::istream &stream, const Path::VECTOR &pathVector) {
 		stream.seekg(0);
 
-		File::POINTER filePointer = 0;
+		File::POINTER filePointer = nullptr;
 		std::streamoff offset = 0;
 
 		for (
@@ -1304,7 +1304,7 @@ namespace Ubi {
 			inputStream.seekg(position);
 		};
 
-		File::POINTER layerFilePointer = 0;
+		File::POINTER layerFilePointer = nullptr;
 		std::streamoff maskFileSystemOffset = 0;
 		Binary::RLE::FACE_STR_MAP::const_iterator fileFaceStrMapIterator = {};
 		Binary::RLE::MASK_MAP::iterator waterMaskMapIterator = {};

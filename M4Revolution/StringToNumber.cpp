@@ -126,7 +126,7 @@ size_t stringToNumber(const Char* str, Number &value,
 		return 0;
 	}
 
-	Char* endPointer = 0;
+	Char* endPointer = nullptr;
 
 	value = StringToNumberTraits<Char, Number>::strtox(str,
 		&endPointer, base, locale);

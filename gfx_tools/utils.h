@@ -112,6 +112,6 @@ inline bool freeZAP(zap_byte_t* &out) {
 		}
 	}
 
-	out = 0;
+	out = nullptr;
 	return true;
 }

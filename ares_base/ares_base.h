@@ -24,7 +24,7 @@ namespace ares {
 		ARES_BASE_API Resource();
 		ARES_BASE_API virtual ~Resource();
 
-		char* instanceName = 0;
+		char* instanceName = nullptr;
 
 		public:
 		ARES_BASE_API Resource(Resource const &resource);
