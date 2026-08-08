@@ -200,7 +200,7 @@ void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks)
 	}
 
 	// this is just some moderately small amount of time
-	static const std::chrono::milliseconds MILLISECONDS(25);
+	static constexpr std::chrono::milliseconds MILLISECONDS(25);
 
 	while (tasks.fileLock().get().size() >= maxFileTasks) {
 		std::this_thread::sleep_for(MILLISECONDS);
