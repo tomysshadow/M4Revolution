@@ -206,9 +206,7 @@ namespace gfx_tools {
 			M4Image::allocator.freeSafe(pointer);
 		};
 
-		MAKE_SCOPE_EXIT(sizeScopeExit) {
-			size = 0;
-		};
+		size = 0;
 
 		if (lod > numberOfRawBuffers) {
 			throw std::invalid_argument("lod must not be greater than numberOfRawBuffers");
@@ -218,8 +216,6 @@ namespace gfx_tools {
 
 		if (!rawBufferOptional.has_value()) {
 			pointer = nullptr;
-			size = 0;
-			sizeScopeExit.dismiss();
 			pointerScopeExit.dismiss();
 			return;
 		}
@@ -228,14 +224,12 @@ namespace gfx_tools {
 
 		if (rawBuffer.resizeInfoOptional.has_value()) {
 			SaveRawBuffer(rawBuffer, pointer, size);
-			sizeScopeExit.dismiss();
 			pointerScopeExit.dismiss();
 			return;
 		}
 
 		pointer = rawBuffer.pointer;
 		size = rawBuffer.size;
-		sizeScopeExit.dismiss();
 		pointerScopeExit.dismiss();
 	}
 

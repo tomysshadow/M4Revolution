@@ -29,10 +29,6 @@ namespace Ubi {
 		}
 
 		std::optional<std::string> readOptional(std::istream &inputStream, bool &nullTerminator, SIZE maxSize) {
-			MAKE_SCOPE_EXIT(nullTerminatorScopeExit) {
-				nullTerminator = true;
-			};
-
 			SIZE size = 0;
 			readStream(inputStream, &size, sizeof(size));
 
@@ -50,7 +46,6 @@ namespace Ubi {
 
 			nullTerminator = !str[size - 1];
 			str[size] = 0;
-			nullTerminatorScopeExit.dismiss();
 			return str;
 		}
 
@@ -441,26 +436,20 @@ namespace Ubi {
 		void readFileHeader(
 			std::istream &inputStream, std::optional<HeaderReader> &headerReaderOptional, std::streamsize size
 		) {
-			MAKE_SCOPE_EXIT(headerReaderOptionalScopeExit) {
-				headerReaderOptional = std::nullopt;
-			};
+			headerReaderOptional = std::nullopt;
 
 			if (size != -1) {
 				headerReaderOptional.emplace(inputStream, size);
-				headerReaderOptionalScopeExit.dismiss();
 			}
 		}
 
 		void writeFileHeader(
 			std::ostream &outputStream, std::optional<HeaderWriter> &headerWriterOptional, std::streamsize size
 		) {
-			MAKE_SCOPE_EXIT(headerWriterOptionalScopeExit) {
-				headerWriterOptional = std::nullopt;
-			};
+			headerWriterOptional = std::nullopt;
 
 			if (size != -1) {
 				headerWriterOptional.emplace(outputStream, size);
-				headerWriterOptionalScopeExit.dismiss();
 			}
 		}
 
@@ -972,9 +961,7 @@ namespace Ubi {
 
 	void BigFile::Directory::find(std::istream &inputStream, const Path &path,
 		Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer) {
-		MAKE_SCOPE_EXIT(filePointerScopeExit) {
-			filePointer = nullptr;
-		};
+		filePointer = nullptr;
 
 		const Path::NAME_VECTOR &DIRECTORY_NAME_VECTOR = path.directoryNameVector;
 
@@ -1011,7 +998,6 @@ namespace Ubi {
 					// erase all but the last element
 					// (there should always be at least one element in the vector at this point)
 					directoryVector.erase(directoryVector.begin(), directoryVector.end() - 1);
-					filePointerScopeExit.dismiss();
 					return;
 				}
 			}
@@ -1034,7 +1020,6 @@ namespace Ubi {
 					// erase all but the last element
 					// (there should always be at least one element in the vector at this point)
 					filePointerVector.erase(filePointerVector.begin(), filePointerVector.end() - 1);
-					filePointerScopeExit.dismiss();
 					return;
 				}
 			}

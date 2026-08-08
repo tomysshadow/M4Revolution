@@ -232,10 +232,6 @@ void writeStream(std::ostream &outputStream, const void* buffer, std::streamsize
 }
 
 void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize count, std::streamsize &gcount) {
-	MAKE_SCOPE_EXIT(gcountScopeExit) {
-		gcount = 0;
-	};
-
 	try {
 		inputStream.read((char*)buffer, count);
 	} catch (const std::istream::failure&) {
@@ -243,7 +239,6 @@ void readStreamPartial(std::istream &inputStream, void* buffer, std::streamsize 
 	}
 
 	gcount = inputStream.gcount();
-	gcountScopeExit.dismiss();
 }
 
 void writeStreamPartial(std::ostream &outputStream, const void* buffer, std::streamsize count) {
