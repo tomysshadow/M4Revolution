@@ -229,7 +229,7 @@ _VCRT_ALLOCATOR void* __CRTDECL operator new(
 	std::align_val_t _Al
 	) {
 	size_t padding = (size_t)_Al - 1;
-	size_t offset = sizeof(void*) + padding;
+	size_t offset = padding + sizeof(void*);
 
 	try {
 		Validate::overflow(offset, _Size);
