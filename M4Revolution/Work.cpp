@@ -271,7 +271,7 @@ namespace Work {
 		}
 
 		for (
-			INFO_MAP::const_iterator infoMapIterator = FILE_PATH_INFO_MAP.begin();
+			auto infoMapIterator = FILE_PATH_INFO_MAP.begin();
 			infoMapIterator != FILE_PATH_INFO_MAP.end();
 			infoMapIterator++
 		) {
@@ -417,7 +417,7 @@ namespace Work {
 		CODE_VECTOR &codeVector = edit.codeVector;
 
 		for (
-			CODE_VECTOR::iterator codeVectorIterator = codeVector.begin();
+			auto codeVectorIterator = codeVector.begin();
 			codeVectorIterator != codeVector.end();
 			codeVectorIterator++
 		) {

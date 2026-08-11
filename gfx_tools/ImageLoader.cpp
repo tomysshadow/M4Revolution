@@ -212,7 +212,7 @@ namespace gfx_tools {
 			throw std::invalid_argument("lod must not be greater than numberOfRawBuffers");
 		}
 
-		const std::optional<RawBufferEx> &rawBufferOptional = rawBufferOptionals[lod];
+		const auto &rawBufferOptional = rawBufferOptionals[lod];
 
 		if (!rawBufferOptional.has_value()) {
 			pointer = nullptr;
@@ -327,16 +327,16 @@ namespace gfx_tools {
 
 		static constexpr LOD MAIN_LOD = 0;
 
-		const std::optional<RawBufferEx> &RAW_BUFFER_OPTIONAL = rawBufferOptionals[MAIN_LOD];
+		const auto &rawBufferOptional = rawBufferOptionals[MAIN_LOD];
 
-		if (!RAW_BUFFER_OPTIONAL.has_value()) {
+		if (!rawBufferOptional.has_value()) {
 			return;
 		}
 
-		const RawBufferEx &MAIN_RAW_BUFFER = RAW_BUFFER_OPTIONAL.value();
+		const RawBufferEx &mainRawBuffer = rawBufferOptional.value();
 
 		// the main raw buffer's pointer is required
-		if (!MAIN_RAW_BUFFER.pointer) {
+		if (!mainRawBuffer.pointer) {
 			return;
 		}
 
@@ -351,14 +351,14 @@ namespace gfx_tools {
 		int textureHeight = 0;
 		ValidatedImageInfo::SIZE_IN_BYTES sizeInBytes = 0;
 
-		if (MAIN_RAW_BUFFER.resizeInfoOptional.has_value()) {
+		if (mainRawBuffer.resizeInfoOptional.has_value()) {
 			validatedImageInfoOptional.emplace(resizeImageInfo);
 			sizeInBytes = resizeImageInfo.lodSizesInBytes[MAIN_LOD];
 		} else {
 			bool isAlpha = false;
 
 			try {
-				GetRawBufferInfo(MAIN_RAW_BUFFER, &isAlpha, &bits, &textureWidth, &textureHeight);
+				GetRawBufferInfo(mainRawBuffer, &isAlpha, &bits, &textureWidth, &textureHeight);
 			} catch (...) {
 				return;
 			}
@@ -387,24 +387,24 @@ namespace gfx_tools {
 				validatedImageInfo.SetLodSizeInBytes(i, 0);
 			};
 
-			const std::optional<RawBufferEx> &RAW_BUFFER_OPTIONAL = rawBufferOptionals[i];
+			const auto &rawBufferOptional = rawBufferOptionals[i];
 
-			if (!RAW_BUFFER_OPTIONAL.has_value()) {
+			if (!rawBufferOptional.has_value()) {
 				continue;
 			}
 
-			const RawBufferEx &RAW_BUFFER = RAW_BUFFER_OPTIONAL.value();
+			const RawBufferEx &rawBuffer = rawBufferOptional.value();
 
-			if (!RAW_BUFFER.pointer) {
+			if (!rawBuffer.pointer) {
 				continue;
 			}
 
-			if (RAW_BUFFER.resizeInfoOptional.has_value()) {
+			if (rawBuffer.resizeInfoOptional.has_value()) {
 				validatedImageInfo.SetLodSizeInBytes(i, resizeImageInfo.lodSizesInBytes[i]);
 				setLodSizeInBytesScopeExit.dismiss();
 			} else {
 				try {
-					GetRawBufferInfo(RAW_BUFFER, 0, &bits, &textureWidth, &textureHeight);
+					GetRawBufferInfo(rawBuffer, 0, &bits, &textureWidth, &textureHeight);
 				} catch (...) {
 					return;
 				}
@@ -439,7 +439,7 @@ namespace gfx_tools {
 			numberOfRawBuffers = (SIZE)(lod + 1);
 		}
 
-		std::optional<RawBufferEx> &rawBufferOptional = rawBufferOptionals[lod];
+		auto &rawBufferOptional = rawBufferOptionals[lod];
 		RawBuffer::SIZE difference = rawBufferOptional.has_value() ? rawBufferOptional.value().size : 0;
 
 		rawBufferOptional.emplace(pointer, size, owner, resizeInfoOptional);

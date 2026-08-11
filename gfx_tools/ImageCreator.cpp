@@ -95,7 +95,7 @@ namespace gfx_tools {
 	}
 
 	ImageLoader* ImageCreator::CreateLoaderImp(const char* extension) {
-		IMAGE_SERIALIZER_PROC_MAP::iterator imageSerializerProcMapIterator = extensionImageSerializerProcMap.find(extension);
+		auto imageSerializerProcMapIterator = extensionImageSerializerProcMap.find(extension);
 
 		if (imageSerializerProcMapIterator == extensionImageSerializerProcMap.end()) {
 			return nullptr;

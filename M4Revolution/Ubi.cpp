@@ -14,7 +14,7 @@ namespace Ubi {
 			std::string &encryptedString = encryptedStringOptional.value();
 
 			for (
-				std::string::iterator encryptedStringIterator = encryptedString.begin();
+				auto encryptedStringIterator = encryptedString.begin();
 				encryptedStringIterator != encryptedString.end();
 				encryptedStringIterator++
 			) {
@@ -206,7 +206,7 @@ namespace Ubi {
 		void TextureBox::create(std::istream &inputStream, RLE::LAYER_MAP &layerMap) {
 			RLE::Layer* layerPointer = nullptr;
 
-			std::optional<std::string> layerFileOptional = String::readOptionalEncrypted(inputStream);
+			auto layerFileOptional = String::readOptionalEncrypted(inputStream);
 
 			if (layerFileOptional.has_value()) {
 				RLE::Layer &layer = layerMap[layerFileOptional.value()];
@@ -269,7 +269,7 @@ namespace Ubi {
 		}
 
 		void Water::create(std::istream &inputStream, RLE::TEXTURE_BOX_MAP &textureBoxMap) {
-			std::optional<std::string> resourceNameOptional = String::readOptionalEncrypted(inputStream);
+			auto resourceNameOptional = String::readOptionalEncrypted(inputStream);
 
 			static constexpr size_t WATER_FIELDS_SIZE = 9; // AssignReflectionAlpha, ReflectionAlphaAtEdge, ReflectionAlphaAtHorizon
 			inputStream.seekg(WATER_FIELDS_SIZE, std::istream::cur);
@@ -278,7 +278,7 @@ namespace Ubi {
 			readStream(inputStream, &resources, sizeof(resources));
 
 			if (resourceNameOptional.has_value()) {
-				const std::optional<std::string> &textureBoxNameOptional =
+				const auto &textureBoxNameOptional =
 					getTextureBoxNameOptional(resourceNameOptional.value());
 
 				if (textureBoxNameOptional.has_value()) {
@@ -357,7 +357,7 @@ namespace Ubi {
 			static constexpr size_t REFRESH_RATE_SIZE = 4;
 			inputStream.seekg(REFRESH_RATE_SIZE, std::istream::cur);
 
-			std::optional<std::string> maskPathOptional = String::readOptionalEncrypted(inputStream);
+			auto maskPathOptional = String::readOptionalEncrypted(inputStream);
 
 			if (maskPathOptional.has_value()) {
 				maskPathSet.insert(maskPathOptional.value());
@@ -641,7 +641,7 @@ namespace Ubi {
 		const std::string &name = nameOptional.value();
 
 		// note that these are case insensitive, because Myst 4 also uses case insensitive name extensions
-		TYPE_EXTENSION_MAP::const_iterator nameTypeExtensionMapIterator =
+		auto nameTypeExtensionMapIterator =
 			NAME_TYPE_EXTENSION_MAP.find(getNameExtension(name));
 
 		if (nameTypeExtensionMapIterator == NAME_TYPE_EXTENSION_MAP.end()) {
@@ -719,14 +719,14 @@ namespace Ubi {
 
 		const std::string &faceStr = matches[1];
 
-		Binary::RLE::FACE_STR_MAP::const_iterator faceStrMapIterator =
+		auto faceStrMapIterator =
 			Binary::RLE::WATER_SLICE_FACE_STR_MAP.find(faceStr);
 
 		if (faceStrMapIterator == Binary::RLE::WATER_SLICE_FACE_STR_MAP.end()) {
 			return false;
 		}
 
-		Binary::RLE::MASK_MAP::const_iterator waterMaskMapIterator =
+		auto waterMaskMapIterator =
 			waterMaskMap.find(faceStrMapIterator->second);
 
 		if (waterMaskMapIterator == waterMaskMap.end()) {
@@ -746,8 +746,7 @@ namespace Ubi {
 		}
 
 		const Binary::RLE::SLICE_MAP &sliceMap = waterMaskMapIterator->second;
-
-		Binary::RLE::SLICE_MAP::const_iterator sliceMapIterator = sliceMap.find(row);
+		auto sliceMapIterator = sliceMap.find(row);
 
 		if (sliceMapIterator == sliceMap.end()) {
 			return false;
@@ -813,7 +812,7 @@ namespace Ubi {
 		writeStream(outputStream, &directoryVectorSize, sizeof(directoryVectorSize));
 
 		for (
-			Directory::VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
+			auto directoryVectorIterator = directoryVector.begin();
 			directoryVectorIterator != directoryVector.end();
 			directoryVectorIterator++
 		) {
@@ -826,7 +825,7 @@ namespace Ubi {
 		writeStream(outputStream, &filePointerVectorSize, sizeof(filePointerVectorSize));
 
 		for (
-			File::POINTER_VECTOR::const_iterator filePointerVectorIterator = filePointerVector.begin();
+			auto filePointerVectorIterator = filePointerVector.begin();
 			filePointerVectorIterator != filePointerVector.end();
 			filePointerVectorIterator++
 		) {
@@ -834,7 +833,7 @@ namespace Ubi {
 		}
 
 		for (
-			File::POINTER_VECTOR::const_iterator binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
+			auto binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
 			binaryFilePointerVectorIterator != binaryFilePointerVector.end();
 			binaryFilePointerVectorIterator++
 		) {
@@ -854,7 +853,7 @@ namespace Ubi {
 		appendToLayerMap(inputStream, fileSystemOffset, layerMap, binaryFilePointerVector);
 
 		for (
-			VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
+			auto directoryVectorIterator = directoryVector.begin();
 			directoryVectorIterator != directoryVector.end();
 			directoryVectorIterator++
 		) {
@@ -870,7 +869,7 @@ namespace Ubi {
 		appendToTextureBoxMap(inputStream, fileSystemOffset, textureBoxMap, binaryFilePointerVector);
 
 		for (
-			VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
+			auto directoryVectorIterator = directoryVector.begin();
 			directoryVectorIterator != directoryVector.end();
 			directoryVectorIterator++
 		) {
@@ -963,16 +962,16 @@ namespace Ubi {
 		Path::NAME_VECTOR::const_iterator directoryNameVectorIterator, File::POINTER &filePointer) {
 		filePointer = nullptr;
 
-		const Path::NAME_VECTOR &DIRECTORY_NAME_VECTOR = path.directoryNameVector;
+		const auto &directoryNameVector = path.directoryNameVector;
 
 		// isMatch must be called here, modifies directoryNameVectorIterator
 		nameOptional = String::readOptional(inputStream);
-		bool match = isMatch(DIRECTORY_NAME_VECTOR, directoryNameVectorIterator);
+		bool match = isMatch(directoryNameVector, directoryNameVectorIterator);
 
 		DIRECTORY_VECTOR_SIZE directoryVectorSize = 0;
 		readStream(inputStream, &directoryVectorSize, sizeof(directoryVectorSize));
 
-		if (directoryNameVectorIterator == DIRECTORY_NAME_VECTOR.end()) {
+		if (directoryNameVectorIterator == directoryNameVector.end()) {
 			// in this case we just read the directories and don't bother checking filePointer
 			for (DIRECTORY_VECTOR_SIZE i = 0; i < directoryVectorSize; i++) {
 				Directory directory(
@@ -1034,15 +1033,15 @@ namespace Ubi {
 
 	BigFile::File::POINTER BigFile::Directory::find(const Path &path,
 		Path::NAME_VECTOR::const_iterator directoryNameVectorIterator) const {
-		const Path::NAME_VECTOR &DIRECTORY_NAME_VECTOR = path.directoryNameVector;
+		const Path::NAME_VECTOR &directoryNameVector = path.directoryNameVector;
 
 		// isMatch must be called here, modifies directoryNameVectorIterator
-		bool match = isMatch(DIRECTORY_NAME_VECTOR, directoryNameVectorIterator);
+		bool match = isMatch(directoryNameVector, directoryNameVectorIterator);
 		File::POINTER filePointer = nullptr;
 
-		if (directoryNameVectorIterator != DIRECTORY_NAME_VECTOR.end()) {
+		if (directoryNameVectorIterator != directoryNameVector.end()) {
 			for (
-				VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
+				auto directoryVectorIterator = directoryVector.begin();
 				directoryVectorIterator != directoryVector.end();
 				directoryVectorIterator++
 			) {
@@ -1060,7 +1059,7 @@ namespace Ubi {
 		}
 
 		for (
-			File::POINTER_VECTOR::const_iterator filePointerVectorIterator = filePointerVector.begin();
+			auto filePointerVectorIterator = filePointerVector.begin();
 			filePointerVectorIterator != filePointerVector.end();
 			filePointerVectorIterator++
 		) {
@@ -1122,7 +1121,7 @@ namespace Ubi {
 		const File::POINTER_VECTOR &binaryFilePointerVector
 	) const {
 		for (
-			File::POINTER_VECTOR::const_iterator binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
+			auto binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
 			binaryFilePointerVectorIterator != binaryFilePointerVector.end();
 			binaryFilePointerVectorIterator++
 		) {
@@ -1137,7 +1136,7 @@ namespace Ubi {
 		const File::POINTER_VECTOR &binaryFilePointerVector
 	) const {
 		for (
-			File::POINTER_VECTOR::const_iterator binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
+			auto binaryFilePointerVectorIterator = binaryFilePointerVector.begin();
 			binaryFilePointerVectorIterator != binaryFilePointerVector.end();
 			binaryFilePointerVectorIterator++
 		) {
@@ -1177,7 +1176,7 @@ namespace Ubi {
 
 	void BigFile::Header::read(std::istream &inputStream) {
 		bool nullTerminator = true;
-		std::optional<std::string> signatureOptional =
+		auto signatureOptional =
 			String::readOptional(inputStream, nullTerminator, (Ubi::String::SIZE)(SIGNATURE.size() + 1));
 
 		// must exactly match, case sensitively
@@ -1202,7 +1201,7 @@ namespace Ubi {
 		std::streamoff offset = 0;
 
 		for (
-			Path::VECTOR::const_iterator pathVectorIterator = pathVector.begin();
+			auto pathVectorIterator = pathVector.begin();
 			pathVectorIterator != pathVector.end();
 			pathVectorIterator++
 		) {
@@ -1237,18 +1236,18 @@ namespace Ubi {
 		Directory::VECTOR_ITERATOR_VECTOR waterVectorIterators = {};
 
 		for (
-			Directory::VECTOR::const_iterator directoryVectorIterator = directoryVector.begin();
+			auto directoryVectorIterator = directoryVector.begin();
 			directoryVectorIterator != directoryVector.end();
 			directoryVectorIterator++
 		) {
-			const std::optional<std::string> &nameOptional = directoryVectorIterator->nameOptional;
+			const auto &nameOptional = directoryVectorIterator->nameOptional;
 
 			if (nameOptional.has_value()) {
-				const std::string &NAME = nameOptional.value();
+				const std::string &name = nameOptional.value();
 
-				if (NAME == Directory::NAME_CUBE) {
+				if (name == Directory::NAME_CUBE) {
 					cubeVectorIterators.push_back(directoryVectorIterator);
-				} else if (NAME == Directory::NAME_WATER) {
+				} else if (name == Directory::NAME_WATER) {
 					waterVectorIterators.push_back(directoryVectorIterator);
 				}
 			}
@@ -1262,7 +1261,7 @@ namespace Ubi {
 		Binary::RLE::LAYER_MAP &layerMap = *layerMapPointer;
 
 		for (
-			Directory::VECTOR_ITERATOR_VECTOR::iterator cubeVectorIteratorsIterator = cubeVectorIterators.begin();
+			auto cubeVectorIteratorsIterator = cubeVectorIterators.begin();
 			cubeVectorIteratorsIterator != cubeVectorIterators.end();
 			cubeVectorIteratorsIterator++
 		) {
@@ -1276,7 +1275,7 @@ namespace Ubi {
 		Binary::RLE::TEXTURE_BOX_MAP textureBoxMap = {};
 
 		for (
-			Directory::VECTOR_ITERATOR_VECTOR::iterator waterVectorIteratorsIterator = waterVectorIterators.begin();
+			auto waterVectorIteratorsIterator = waterVectorIterators.begin();
 			waterVectorIteratorsIterator != waterVectorIterators.end();
 			waterVectorIteratorsIterator++
 		) {
@@ -1295,12 +1294,12 @@ namespace Ubi {
 		Binary::RLE::MASK_MAP::iterator waterMaskMapIterator = {};
 
 		for (
-			Binary::RLE::LAYER_MAP::iterator layerMapIterator = layerMap.begin();
+			auto layerMapIterator = layerMap.begin();
 			layerMapIterator != layerMap.end();
 			layerMapIterator++
 		) {
 			for (
-				Binary::RLE::TEXTURE_BOX_MAP::iterator textureBoxMapIterator = textureBoxMap.begin();
+				auto textureBoxMapIterator = textureBoxMap.begin();
 				textureBoxMapIterator != textureBoxMap.end();
 				textureBoxMapIterator++
 			) {
@@ -1315,7 +1314,7 @@ namespace Ubi {
 				Binary::RLE::MASK_MAP &waterMaskMap = layer.waterMaskMap;
 
 				for (
-					Binary::RLE::MASK_PATH_SET::const_iterator maskPathSetIterator = maskPathSet.begin();
+					auto maskPathSetIterator = maskPathSet.begin();
 					maskPathSetIterator != maskPathSet.end();
 					maskPathSetIterator++
 				) {
@@ -1335,7 +1334,7 @@ namespace Ubi {
 					File::POINTER_VECTOR &maskFilePointerVector = maskBigFile.directory.filePointerVector;
 
 					for (
-						File::POINTER_VECTOR::iterator maskFilePointerVectorIterator = maskFilePointerVector.begin();
+						auto maskFilePointerVectorIterator = maskFilePointerVector.begin();
 						maskFilePointerVectorIterator != maskFilePointerVector.end();
 						maskFilePointerVectorIterator++
 					) {

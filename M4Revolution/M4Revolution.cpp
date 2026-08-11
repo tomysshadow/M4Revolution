@@ -359,7 +359,7 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 		std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
 
 	for (
-		Ubi::BigFile::File::POINTER_SET_MAP::iterator filePointerSetMapIterator = filePointerSetMap.begin();
+		auto filePointerSetMapIterator = filePointerSetMap.begin();
 		filePointerSetMapIterator != filePointerSetMap.end();
 		filePointerSetMapIterator++
 	) {
@@ -373,7 +373,7 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 		Ubi::BigFile::File::POINTER_SET &filePointerSet = filePointerSetMapIterator->second;
 
 		for (
-			Ubi::BigFile::File::POINTER_SET::iterator filePointerSetIterator = filePointerSet.begin();
+			auto filePointerSetIterator = filePointerSet.begin();
 			filePointerSetIterator != filePointerSet.end();
 			filePointerSetIterator++
 		) {
@@ -1014,7 +1014,7 @@ void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::FILE_VARIAN
 			std::get<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant);
 
 		for (
-			Ubi::BigFile::File::POINTER_VECTOR::iterator filePointerVectorIterator = filePointerVectorPointer->begin();
+			auto filePointerVectorIterator = filePointerVectorPointer->begin();
 			filePointerVectorIterator != filePointerVectorPointer->end();
 			filePointerVectorIterator++
 		) {
@@ -1392,7 +1392,7 @@ void M4Revolution::restoreBackup() {
 	Work::Output::FILE_PATH filePath = 0;
 
 	for (
-		Work::Output::INFO_MAP::const_iterator infoMapIterator = Work::Output::FILE_PATH_INFO_MAP.begin();
+		auto infoMapIterator = Work::Output::FILE_PATH_INFO_MAP.begin();
 		infoMapIterator != Work::Output::FILE_PATH_INFO_MAP.end();
 		infoMapIterator++
 	) {
@@ -1412,7 +1412,7 @@ void M4Revolution::restoreBackup() {
 	}
 
 	for (
-		Work::Output::INFO_MAP::const_iterator infoMapIterator = Work::Output::FILE_PATH_INFO_MAP.begin();
+		auto infoMapIterator = Work::Output::FILE_PATH_INFO_MAP.begin();
 		infoMapIterator != Work::Output::FILE_PATH_INFO_MAP.end();
 		infoMapIterator++
 	) {
