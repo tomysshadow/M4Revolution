@@ -37,7 +37,7 @@ Locale& Locale::create(bool tryGlobal) {
 }
 
 Locale& Locale::create(const NAME_VECTOR &nameVector, bool tryGlobal) {
-	for (NAME_VECTOR::const_iterator nameVectorIterator = nameVector.begin(); nameVectorIterator != nameVector.end(); nameVectorIterator++) {
+	for (auto nameVectorIterator = nameVector.begin(); nameVectorIterator != nameVector.end(); nameVectorIterator++) {
 		name = *nameVectorIterator;
 
 		try {
@@ -99,7 +99,7 @@ Locale::CATEGORY Locale::lcToCategory(LC lc) {
 	};
 
 	// LC constant is not a bitmask so we can do a straight lookup with it
-	LC_CATEGORY_MAP::const_iterator lcCategoryMapIterator = LC_CATEGORY_MAP.find(lc);
+	auto lcCategoryMapIterator = LC_CATEGORY_MAP.find(lc);
 
 	if (lcCategoryMapIterator == LC_CATEGORY_MAP.end()) {
 		return std::locale::none;
