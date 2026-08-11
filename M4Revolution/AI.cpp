@@ -8,13 +8,13 @@
 namespace AI {
 	static const Locale LOCALE("English", LC_NUMERIC);
 
-	Ubi::BigFile::File::SIZE findFileSize(Work::Edit &edit, const Ubi::BigFile::Path::VECTOR &pathVector) {
+	Ubi::BigFile::File::Size findFileSize(Work::Edit &edit, const Ubi::BigFile::Path::Vector &pathVector) {
 		return Ubi::BigFile::findFile(edit.fileStream, pathVector)->size;
 	}
 
 	void editF32(
 		Work::Edit &edit,
-		const Ubi::BigFile::Path::VECTOR &pathVector,
+		const Ubi::BigFile::Path::Vector &pathVector,
 		const std::string &name,
 		const std::string &key,
 		float min,
@@ -22,7 +22,7 @@ namespace AI {
 	) {
 		std::fstream &fileStream = edit.fileStream;
 
-		Ubi::BigFile::File::SIZE size = findFileSize(edit, pathVector);
+		Ubi::BigFile::File::Size size = findFileSize(edit, pathVector);
 		std::streampos position = fileStream.tellg();
 
 		std::string ai = "";

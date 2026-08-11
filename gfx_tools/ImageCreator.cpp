@@ -56,7 +56,7 @@ namespace gfx_tools {
 		return *ms_SingletonInstance;
 	}
 
-	ImageCreator::IMAGE_SERIALIZER_PROC_MAP ImageCreator::extensionImageSerializerProcMap = {
+	ImageCreator::ImageSerializerProcMap ImageCreator::extensionImageSerializerProcMap = {
 		{"ZAP", ImageSerializerZAP},
 		{"TGA", ImageSerializerTGA},
 		{"PNG", ImageSerializerPNG},
@@ -126,15 +126,15 @@ namespace gfx_tools {
 		};
 
 		ubi::InputFileStream inputFileStream(fileName);
-		ubi::InputFileStream::SIZE size = inputFileStream.GetSize();
+		ubi::InputFileStream::Size size = inputFileStream.GetSize();
 
-		RawBuffer::POINTER pointer = imageLoaderPointer->CreateLODRawBuffer(0, (RawBuffer::SIZE)size);
+		RawBuffer::Pointer pointer = imageLoaderPointer->CreateLODRawBuffer(0, (RawBuffer::Size)size);
 
 		if (!pointer) {
 			return nullptr;
 		}
 		
-		if (inputFileStream.Read(pointer, 0, (ubi::Stream::SIZE)size) != size) {
+		if (inputFileStream.Read(pointer, 0, (ubi::Stream::Size)size) != size) {
 			return nullptr;
 		}
 

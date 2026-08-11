@@ -19,15 +19,15 @@
 
 class Locale {
 	public:
-	typedef std::variant<std::string, std::wstring> NAME;
-	typedef std::vector<NAME> NAME_VECTOR;
-	typedef std::initializer_list<NAME> NAME_INITIALIZER_LIST;
-	typedef int CATEGORY;
-	typedef int LC;
+	using Name = std::variant<std::string, std::wstring>;
+	using NameVector = std::vector<Name>;
+	using NameInitializerList = std::initializer_list<Name>;
+	using Category = int;
+	using Lc = int;
 
 	private:
 	#ifdef _WIN32
-	typedef std::shared_ptr<std::remove_reference<decltype(*_locale_t())>::type> C_LOCALE;
+	using CLocale = std::shared_ptr<std::remove_pointer_t<_locale_t>>;
 
 	struct CLocaleDeleter {
 		void operator()(_locale_t localePointer) {
@@ -38,26 +38,26 @@ class Locale {
 	};
 	#endif
 
-	typedef std::unordered_map<CATEGORY, LC> CATEGORY_LC_MAP;
-	typedef std::unordered_map<LC, CATEGORY> LC_CATEGORY_MAP;
+	using CategoryLcMap = std::unordered_map<Category, Lc>;
+	using LcCategoryMap = std::unordered_map<Lc, Category>;
 
 	Locale& createGlobal(bool tryGlobal);
 	Locale& create(bool tryGlobal);
-	Locale& create(const NAME_VECTOR &nameVector, bool tryGlobal);
+	Locale& create(const NameVector &nameVector, bool tryGlobal);
 	void clear();
 
-	NAME name = "C";
+	Name name = "C";
 
 	std::locale standardLocale = {};
 
-	C_LOCALE cLocale = 0;
-	LC lc = LC_ALL;
+	CLocale cLocale = 0;
+	Lc lc = LC_ALL;
 
 	static std::string getGlobalName();
 	static std::wstring getGlobalNameWide();
 	public:
-	static LC categoryToLC(CATEGORY category);
-	static CATEGORY lcToCategory(LC lc);
+	static Lc categoryToLc(Category category);
+	static Category lcToCategory(Lc lc);
 
 	class Invalid : public std::invalid_argument {
 		public:
@@ -66,15 +66,15 @@ class Locale {
 	};
 
 	Locale();
-	explicit Locale(const NAME &name, LC lc = LC_ALL, bool tryGlobal = false);
-	Locale(const NAME_VECTOR &nameVector, LC lc = LC_ALL, bool tryGlobal = false);
-	Locale(const NAME_INITIALIZER_LIST &nameInitializerList, LC lc = LC_ALL, bool tryGlobal = false);
-	Locale(const char* name, LC lc = LC_ALL, bool tryGlobal = false);
-	Locale(const wchar_t* name, LC lc = LC_ALL, bool tryGlobal = false);
+	explicit Locale(const Name &name, Lc lc = LC_ALL, bool tryGlobal = false);
+	Locale(const NameVector &nameVector, Lc lc = LC_ALL, bool tryGlobal = false);
+	Locale(const NameInitializerList &nameInitializerList, Lc lc = LC_ALL, bool tryGlobal = false);
+	Locale(const char* name, Lc lc = LC_ALL, bool tryGlobal = false);
+	Locale(const wchar_t* name, Lc lc = LC_ALL, bool tryGlobal = false);
 	Locale(const std::string &copyString);
 	Locale &operator=(const std::string &assignString);
-	Locale(const NAME_VECTOR &copyNameVector);
-	Locale &operator=(const NAME_VECTOR &assignNameVector);
+	Locale(const NameVector &copyNameVector);
+	Locale &operator=(const NameVector &assignNameVector);
 	operator std::string() const;
 	operator std::wstring() const;
 	operator std::locale() const;
@@ -84,9 +84,9 @@ class Locale {
 	std::string getName() const;
 	std::wstring getNameWide() const;
 	std::locale getStandardLocale() const;
-	CATEGORY getCategory() const;
+	Category getCategory() const;
 	#ifdef _WIN32
 	_locale_t getCLocale() const;
 	#endif
-	LC getLC() const;
+	Lc getLc() const;
 };

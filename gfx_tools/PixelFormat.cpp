@@ -111,14 +111,14 @@ namespace gfx_tools {
 	}
 
 	PixelFormat::PixelFormat(
-		MASK maskRed,
-		MASK maskGreen,
-		MASK maskBlue,
-		MASK maskAlpha,
-		MASK maskPalette,
-		BITS_PER_PIXEL bitsPerPixel,
-		MASK maskDepth,
-		MASK maskStencil
+		Mask maskRed,
+		Mask maskGreen,
+		Mask maskBlue,
+		Mask maskAlpha,
+		Mask maskPalette,
+		BitsPerPixel bitsPerPixel,
+		Mask maskDepth,
+		Mask maskStencil
 	)
 	: maskRed(maskRed),
 	maskGreen(maskGreen),
@@ -168,35 +168,35 @@ namespace gfx_tools {
 		return hasBitsPerPixel;
 	}
 
-	PixelFormat::MASK PixelFormat::GetMaskRed() {
+	PixelFormat::Mask PixelFormat::GetMaskRed() {
 		return maskRed;
 	}
 
-	PixelFormat::MASK PixelFormat::GetMaskGreen() {
+	PixelFormat::Mask PixelFormat::GetMaskGreen() {
 		return maskGreen;
 	}
 
-	PixelFormat::MASK PixelFormat::GetMaskBlue() {
+	PixelFormat::Mask PixelFormat::GetMaskBlue() {
 		return maskBlue;
 	}
 
-	PixelFormat::MASK PixelFormat::GetMaskAlpha() {
+	PixelFormat::Mask PixelFormat::GetMaskAlpha() {
 		return maskAlpha;
 	}
 
-	PixelFormat::MASK PixelFormat::GetMaskPalette() {
+	PixelFormat::Mask PixelFormat::GetMaskPalette() {
 		return maskPalette;
 	}
 
-	PixelFormat::BITS_PER_PIXEL PixelFormat::GetBitsPerPixel() {
+	PixelFormat::BitsPerPixel PixelFormat::GetBitsPerPixel() {
 		return bitsPerPixel;
 	}
 
-	PixelFormat::MASK PixelFormat::GetMaskDepth() {
+	PixelFormat::Mask PixelFormat::GetMaskDepth() {
 		return maskDepth;
 	}
 
-	PixelFormat::MASK PixelFormat::GetMaskStencil() {
+	PixelFormat::Mask PixelFormat::GetMaskStencil() {
 		return maskStencil;
 	}
 
@@ -209,9 +209,9 @@ namespace gfx_tools {
 		return nullptr;
 	}
 
-	typedef std::unordered_map<EnumPixelFormat, EnumPixelFormat> ENUM_PIXEL_FORMAT_MAP;
+	using EnumPixelFormatMap = std::unordered_map<EnumPixelFormat, EnumPixelFormat>;
 
-	static const ENUM_PIXEL_FORMAT_MAP ENUM_PIXEL_FORMAT_WITH_ALPHA_MAP = {
+	static const EnumPixelFormatMap ENUM_PIXELFORMAT_WITH_ALPHA_MAP = {
 		{PIXELFORMAT_XRGB_8888, PIXELFORMAT_ARGB_8888},
 		{PIXELFORMAT_XRGB_1555, PIXELFORMAT_ARGB_1555},
 		{PIXELFORMAT_XRGB_4444, PIXELFORMAT_ARGB_4444},
@@ -221,13 +221,13 @@ namespace gfx_tools {
 	};
 
 	EnumPixelFormat PixelFormat::GetEnumPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat) {
-		auto enumPixelFormatMapIterator = ENUM_PIXEL_FORMAT_WITH_ALPHA_MAP.find(enumPixelFormat);
+		auto enumPixelFormatMapIterator = ENUM_PIXELFORMAT_WITH_ALPHA_MAP.find(enumPixelFormat);
 		
-		return enumPixelFormatMapIterator == ENUM_PIXEL_FORMAT_WITH_ALPHA_MAP.end()
+		return enumPixelFormatMapIterator == ENUM_PIXELFORMAT_WITH_ALPHA_MAP.end()
 			? enumPixelFormat : enumPixelFormatMapIterator->second;
 	}
 
-	static const ENUM_PIXEL_FORMAT_MAP ENUM_PIXEL_FORMAT_WITHOUT_ALPHA_MAP = {
+	static const EnumPixelFormatMap ENUM_PIXELFORMAT_WITHOUT_ALPHA_MAP = {
 		{PIXELFORMAT_ARGB_8888, PIXELFORMAT_XRGB_8888},
 		{PIXELFORMAT_ARGB_1555, PIXELFORMAT_XRGB_1555},
 		{PIXELFORMAT_ARGB_4444, PIXELFORMAT_XRGB_4444},
@@ -237,9 +237,9 @@ namespace gfx_tools {
 	};
 
 	EnumPixelFormat PixelFormat::GetEnumPixelFormatWithoutAlpha(EnumPixelFormat enumPixelFormat) {
-		auto enumPixelFormatMapIterator = ENUM_PIXEL_FORMAT_WITHOUT_ALPHA_MAP.find(enumPixelFormat);
+		auto enumPixelFormatMapIterator = ENUM_PIXELFORMAT_WITHOUT_ALPHA_MAP.find(enumPixelFormat);
 		
-		return enumPixelFormatMapIterator == ENUM_PIXEL_FORMAT_WITHOUT_ALPHA_MAP.end()
+		return enumPixelFormatMapIterator == ENUM_PIXELFORMAT_WITHOUT_ALPHA_MAP.end()
 			? enumPixelFormat : enumPixelFormatMapIterator->second;
 	}
 

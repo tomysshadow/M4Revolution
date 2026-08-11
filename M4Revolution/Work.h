@@ -22,12 +22,12 @@ namespace Work {
 	// a "signal the other thread to wake up and do stuff" class (similar to SetEvent)
 	class Event : NonCopyable {
 		private:
-		// threadIDOptional has a thread ID if the event is set (notified, time to wake up, lock is unlocked...)
+		// threadIdOptional has a thread ID if the event is set (notified, time to wake up, lock is unlocked...)
 		// and is std::nullopt if the event is not set (locked, currently in use, etc.)
 		// the thread ID is used to yield to other threads instead of busy looping
 		std::mutex mutex = {};
 		std::condition_variable conditionVariable = {};
-		std::optional<std::thread::id> threadIDOptional = std::nullopt;
+		std::optional<std::thread::id> threadIdOptional = std::nullopt;
 
 		void setPredicate(bool value);
 
@@ -66,15 +66,15 @@ namespace Work {
 
 	// a "packet" type structure representing some data (not necessarily an entire file)
 	struct Data {
-		typedef std::shared_ptr<unsigned char[]> POINTER;
-		typedef std::queue<Data> QUEUE;
-		typedef Lock<QUEUE> QUEUE_LOCK;
+		using Pointer = std::shared_ptr<unsigned char[]>;
+		using Queue = std::queue<Data>;
+		using QueueLock = Lock<Queue>;
 
 		size_t size = 0;
-		POINTER pointer = nullptr;
+		Pointer pointer = nullptr;
 
 		Data() = default;
-		Data(size_t size, POINTER pointer);
+		Data(size_t size, Pointer pointer);
 	};
 
 	// BigFileTask (must seek over them, then come back later)
@@ -87,40 +87,40 @@ namespace Work {
 		// file is the associated file (so the size can be set on it later)
 		std::streamoff ownerBigFileInputOffset = -1;
 		Ubi::BigFile::File &file;
-		Ubi::BigFile::File::SIZE fileSystemSize = 0;
-		Ubi::BigFile::File::POINTER_VECTOR::size_type files = 0;
-		Ubi::BigFile::POINTER bigFilePointer = nullptr;
+		Ubi::BigFile::File::Size fileSystemSize = 0;
+		Ubi::BigFile::File::PointerVector::size_type files = 0;
+		Ubi::BigFile::Pointer bigFilePointer = nullptr;
 
 		public:
-		typedef std::shared_ptr<BigFileTask> POINTER;
-		typedef std::unordered_map<std::streamoff, POINTER> POINTER_MAP;
-		typedef Lock<POINTER_MAP> POINTER_MAP_LOCK;
+		using Pointer = std::shared_ptr<BigFileTask>;
+		using PointerMap = std::unordered_map<std::streamoff, Pointer>;
+		using PointerMapLock = Lock<PointerMap>;
 
 		// outputOffset is set by the output thread, and later used by it so it knows where to jump back
 		std::streamoff outputOffset = -1;
-		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
+		Ubi::BigFile::File::PointerVector::size_type filesWritten = 0;
 
 		BigFileTask(
 			std::istream &inputStream,
 			std::streamoff ownerBigFileInputOffset,
 			Ubi::BigFile::File &file,
-			Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap
+			Ubi::BigFile::File::PointerSetMap &fileVectorIteratorSetMap
 		);
 
 		std::streamoff getOwnerBigFileInputOffset() const;
 		Ubi::BigFile::File &getFile() const;
-		Ubi::BigFile::File::SIZE getFileSystemSize() const;
-		Ubi::BigFile::File::POINTER_VECTOR::size_type getFiles() const;
-		Ubi::BigFile::POINTER getBigFilePointer() const;
+		Ubi::BigFile::File::Size getFileSystemSize() const;
+		Ubi::BigFile::File::PointerVector::size_type getFiles() const;
+		Ubi::BigFile::Pointer getBigFilePointer() const;
 	};
 
 	// FileTask (must be written in order)
 	class FileTask {
 		public:
-		typedef std::shared_ptr<FileTask> POINTER;
-		typedef std::queue<POINTER> POINTER_QUEUE;
-		typedef Lock<POINTER_QUEUE> POINTER_QUEUE_LOCK;
-		typedef std::variant<Ubi::BigFile::File::POINTER_VECTOR_POINTER, Ubi::BigFile::File*> FILE_VARIANT;
+		using Pointer = std::shared_ptr<FileTask>;
+		using PointerQueue = std::queue<Pointer>;
+		using PointerQueueLock = Lock<PointerQueue>;
+		using FileVariant = std::variant<Ubi::BigFile::File::PointerVectorPointer, Ubi::BigFile::File*>;
 
 		private:
 		// this needs its own queue, because
@@ -135,19 +135,19 @@ namespace Work {
 		// the output thread will check if the next file in the queue has a lesser value for bigFileInputPosition
 		// and if so, the corresponding BigFile(s) in the task vector are considered completed and are written
 		std::streamoff ownerBigFileInputOffset = -1;
-		FILE_VARIANT fileVariant = {};
+		FileVariant fileVariant = {};
 		Event event;
-		Data::QUEUE queue = {};
+		Data::Queue queue = {};
 
 		public:
 		FileTask(std::streamoff ownerBigFileInputOffset, Ubi::BigFile::File* filePointer);
-		FileTask(std::streamoff ownerBigFileInputOffset, Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer);
-		Data::QUEUE_LOCK lock(bool &yield);
-		Data::QUEUE_LOCK lock();
+		FileTask(std::streamoff ownerBigFileInputOffset, Ubi::BigFile::File::PointerVectorPointer &filePointerVectorPointer);
+		Data::QueueLock lock(bool &yield);
+		Data::QueueLock lock();
 		void copy(std::istream &inputStream, std::streamsize count);
 		void complete();
 		std::streamoff getOwnerBigFileInputOffset();
-		FILE_VARIANT getFileVariant();
+		FileVariant getFileVariant();
 	};
 
 	// Tasks (to be performed by the output thread)
@@ -157,33 +157,33 @@ namespace Work {
 		// they can't be handled in FIFO order
 		// (otherwise, the first BigFile would block for the entire duration)
 		Event bigFileEvent;
-		BigFileTask::POINTER_MAP bigFileTaskPointerMap = {};
+		BigFileTask::PointerMap bigFileTaskPointerMap = {};
 
 		// the list of FileTasks must be a queue, because
 		// they must be written in order, start to finish
 		// regardless of the order the data becomes available in
 		Event fileEvent;
-		FileTask::POINTER_QUEUE fileTaskPointerQueue = {};
+		FileTask::PointerQueue fileTaskPointerQueue = {};
 
 		public:
 		Tasks();
-		BigFileTask::POINTER_MAP_LOCK bigFileLock(bool &yield);
-		BigFileTask::POINTER_MAP_LOCK bigFileLock();
-		FileTask::POINTER_QUEUE_LOCK fileLock(bool &yield);
-		FileTask::POINTER_QUEUE_LOCK fileLock();
+		BigFileTask::PointerMapLock bigFileLock(bool &yield);
+		BigFileTask::PointerMapLock bigFileLock();
+		FileTask::PointerQueueLock fileLock(bool &yield);
+		FileTask::PointerQueueLock fileLock();
 	};
 
 	struct Convert {
-		typedef unsigned long EXTENT;
-		typedef void(*FileWorkCallback)(Work::Convert* convertPointer);
+		using Extent = unsigned long;
+		using FileWorkCallback = void(*)(Work::Convert* convertPointer);
 
 		struct Configuration {
-			EXTENT minTextureWidth = 1;
-			EXTENT maxTextureWidth = 1024;
-			EXTENT minTextureHeight = 1;
-			EXTENT maxTextureHeight = 1024;
-			EXTENT minVolumeExtent = 1;
-			EXTENT maxVolumeExtent = 1024;
+			Extent minTextureWidth = 1;
+			Extent maxTextureWidth = 1024;
+			Extent minTextureHeight = 1;
+			Extent maxTextureHeight = 1024;
+			Extent minVolumeExtent = 1;
+			Extent maxVolumeExtent = 1024;
 		};
 
 		FileWorkCallback fileWorkCallback = 0;
@@ -193,8 +193,8 @@ namespace Work {
 
 		Ubi::BigFile::File &file;
 
-		FileTask::POINTER fileTaskPointer = nullptr;
-		Data::POINTER dataPointer = nullptr;
+		FileTask::Pointer fileTaskPointer = nullptr;
+		Data::Pointer dataPointer = nullptr;
 
 		Convert(
 			const Configuration &configuration,
@@ -207,29 +207,29 @@ namespace Work {
 		std::ofstream fileStream = {};
 
 		std::streamoff currentBigFileInputOffset = -1;
-		BigFileTask::POINTER bigFileTaskPointer = nullptr;
+		BigFileTask::Pointer bigFileTaskPointer = nullptr;
 
-		Ubi::BigFile::File::SIZE fileOffset = 0;
-		Ubi::BigFile::File::POINTER_VECTOR::size_type filesWritten = 0;
+		Ubi::BigFile::File::Size fileOffset = 0;
+		Ubi::BigFile::File::PointerVector::size_type filesWritten = 0;
 
 		struct Info {
 			std::filesystem::path path = {};
 			bool required = false;
 		};
 
-		typedef unsigned int FILE_PATH;
-		typedef std::unordered_map<FILE_PATH, Info> INFO_MAP;
+		using FilePath = unsigned int;
+		using InfoMap = std::unordered_map<FilePath, Info>;
 
 		static const char* FILE_NAME;
 		static const char* FILE_RETRY;
 
-		static constexpr FILE_PATH FILE_PATH_DATA = 0x00000001;
-		static constexpr FILE_PATH FILE_PATH_USER_PREFERENCE = 0x00000002;
-		static constexpr FILE_PATH FILE_PATH_M4_THOR = 0x00000004;
-		static constexpr FILE_PATH FILE_PATH_M4_AI_GLOBAL = 0x00000008;
-		static constexpr FILE_PATH FILE_PATH_GFX_TOOLS = 0x00000010;
+		static constexpr FilePath FILE_PATH_DATA = 0x00000001;
+		static constexpr FilePath FILE_PATH_USER_PREFERENCE = 0x00000002;
+		static constexpr FilePath FILE_PATH_M4_THOR = 0x00000004;
+		static constexpr FilePath FILE_PATH_M4_AI_GLOBAL = 0x00000008;
+		static constexpr FilePath FILE_PATH_GFX_TOOLS = 0x00000010;
 
-		static const INFO_MAP FILE_PATH_INFO_MAP;
+		static const InfoMap FILE_PATH_INFO_MAP;
 
 		static const std::filesystem::path DATA_PATH;
 		static const std::filesystem::path USER_PREFERENCE_PATH;
@@ -271,16 +271,16 @@ namespace Work {
 			std::string str = "";
 		};
 
-		typedef std::vector<Code> CODE_VECTOR;
+		using CodeVector = std::vector<Code>;
 
 		std::fstream &fileStream;
 
 		Edit(std::fstream &fileStream, const std::filesystem::path &path);
-		void apply(std::thread &copyThread, const CODE_VECTOR &codeVector);
+		void apply(std::thread &copyThread, const CodeVector &codeVector);
 
 		private:
 		std::filesystem::path path = {};
-		CODE_VECTOR codeVector = {};
+		CodeVector codeVector = {};
 		Event event;
 		bool copied = false;
 	};

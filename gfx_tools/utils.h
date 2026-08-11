@@ -96,13 +96,13 @@ inline bool memoryEquals(const void* mem, const void* mem2, size_t size) {
 	#define GFX_TOOLS_API
 #endif
 
-typedef int L_INT;
+using L_INT = int;
 static constexpr L_INT SUCCESS = 1;
 
 #ifdef FOR_UNICODE
-	typedef TCHAR L_TCHAR;
+	using L_TCHAR = TCHAR;
 #else
-	typedef char L_TCHAR;
+	using L_TCHAR = char;
 #endif
 
 inline bool freeZAP(zap_byte_t* &out) {

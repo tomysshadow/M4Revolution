@@ -3,15 +3,15 @@
 
 namespace gfx_tools {
 	struct RawBuffer : NonCopyable {
-		typedef unsigned char* POINTER;
-		typedef unsigned long SIZE;
+		using Pointer = unsigned char*;
+		using Size = unsigned long;
 
-		POINTER pointer = nullptr;
-		SIZE size = 0;
+		Pointer pointer = nullptr;
+		Size size = 0;
 		bool owner = false;
 
 		GFX_TOOLS_API RawBuffer();
-		GFX_TOOLS_API RawBuffer(POINTER pointer, SIZE size, bool owner = false);
+		GFX_TOOLS_API RawBuffer(Pointer pointer, Size size, bool owner = false);
 		GFX_TOOLS_API ~RawBuffer();
 	};
 
@@ -31,6 +31,6 @@ namespace gfx_tools {
 		std::optional<ResizeInfo> resizeInfoOptional = std::nullopt;
 
 		GFX_TOOLS_API RawBufferEx();
-		GFX_TOOLS_API RawBufferEx(POINTER pointer, SIZE size, bool owner = false, const std::optional<ResizeInfo> &resizeInfoOptional = std::nullopt);
+		GFX_TOOLS_API RawBufferEx(Pointer pointer, Size size, bool owner = false, const std::optional<ResizeInfo> &resizeInfoOptional = std::nullopt);
 	};
 }

@@ -55,20 +55,20 @@ namespace gfx_tools {
 
 	class PixelFormat {
 		public:
-		typedef unsigned __int64 MASK;
-		typedef unsigned char BITS_PER_PIXEL;
+		using Mask = unsigned __int64;
+		using BitsPerPixel = unsigned char;
 
 		GFX_TOOLS_API PixelFormat();
 
 		GFX_TOOLS_API PixelFormat(
-			MASK maskRed,
-			MASK maskGreen,
-			MASK maskBlue,
-			MASK maskAlpha,
-			MASK maskPalette,
-			BITS_PER_PIXEL bitsPerPixel,
-			MASK maskDepth,
-			MASK maskStencil
+			Mask maskRed,
+			Mask maskGreen,
+			Mask maskBlue,
+			Mask maskAlpha,
+			Mask maskPalette,
+			BitsPerPixel bitsPerPixel,
+			Mask maskDepth,
+			Mask maskStencil
 		);
 
 		GFX_TOOLS_API bool GFX_TOOLS_CALL HasRed();
@@ -81,14 +81,14 @@ namespace gfx_tools {
 		GFX_TOOLS_API bool GFX_TOOLS_CALL HasColor();
 		GFX_TOOLS_API bool GFX_TOOLS_CALL HasBitsPerPixel();
 
-		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskRed();
-		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskGreen();
-		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskBlue();
-		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskAlpha();
-		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskPalette();
-		GFX_TOOLS_API BITS_PER_PIXEL GFX_TOOLS_CALL GetBitsPerPixel();
-		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskDepth();
-		GFX_TOOLS_API MASK GFX_TOOLS_CALL GetMaskStencil();
+		GFX_TOOLS_API Mask GFX_TOOLS_CALL GetMaskRed();
+		GFX_TOOLS_API Mask GFX_TOOLS_CALL GetMaskGreen();
+		GFX_TOOLS_API Mask GFX_TOOLS_CALL GetMaskBlue();
+		GFX_TOOLS_API Mask GFX_TOOLS_CALL GetMaskAlpha();
+		GFX_TOOLS_API Mask GFX_TOOLS_CALL GetMaskPalette();
+		GFX_TOOLS_API BitsPerPixel GFX_TOOLS_CALL GetBitsPerPixel();
+		GFX_TOOLS_API Mask GFX_TOOLS_CALL GetMaskDepth();
+		GFX_TOOLS_API Mask GFX_TOOLS_CALL GetMaskStencil();
 
 		GFX_TOOLS_API static PixelFormat* GFX_TOOLS_CALL GetPixelFormat(EnumPixelFormat enumPixelFormat);
 		GFX_TOOLS_API static EnumPixelFormat GFX_TOOLS_CALL GetEnumPixelFormatWithAlpha(EnumPixelFormat enumPixelFormat);
@@ -96,14 +96,14 @@ namespace gfx_tools {
 		GFX_TOOLS_API static char* GFX_TOOLS_CALL GetPixelFormatString(EnumPixelFormat enumPixelFormat);
 
 		private:
-		MASK maskRed = 0;
-		MASK maskGreen = 0;
-		MASK maskBlue = 0;
-		MASK maskAlpha = 0;
-		MASK maskPalette = 0;
-		BITS_PER_PIXEL bitsPerPixel = 0;
-		MASK maskDepth = 0;
-		MASK maskStencil = 0;
+		Mask maskRed = 0;
+		Mask maskGreen = 0;
+		Mask maskBlue = 0;
+		Mask maskAlpha = 0;
+		Mask maskPalette = 0;
+		BitsPerPixel bitsPerPixel = 0;
+		Mask maskDepth = 0;
+		Mask maskStencil = 0;
 		bool hasColor = false;
 		bool hasBitsPerPixel = false;
 

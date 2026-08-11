@@ -6,7 +6,7 @@
 namespace gfx_tools {
 	class ImageCreator {
 		public:
-		typedef ImageLoader* (GFX_TOOLS_CALL *ImageSerializerProc)();
+		using ImageSerializerProc = ImageLoader* (GFX_TOOLS_CALL*)();
 
 		GFX_TOOLS_API static ImageLoader* GFX_TOOLS_CALL CreateLoader(char* extension);
 		GFX_TOOLS_API static ImageLoader* GFX_TOOLS_CALL CreateLoaderFromFileName(const char* fileName);
@@ -17,9 +17,9 @@ namespace gfx_tools {
 		GFX_TOOLS_API static ImageCreator& GFX_TOOLS_CALL GetSingletonInstanceFast();
 
 		private:
-		typedef std::map<std::string, ImageSerializerProc, IgnoreCaseComparer> IMAGE_SERIALIZER_PROC_MAP;
+		using ImageSerializerProcMap = std::map<std::string, ImageSerializerProc, IgnoreCaseComparer>;
 
-		GFX_TOOLS_API static IMAGE_SERIALIZER_PROC_MAP extensionImageSerializerProcMap;
+		GFX_TOOLS_API static ImageSerializerProcMap extensionImageSerializerProcMap;
 
 		GFX_TOOLS_API static ImageCreator* ms_SingletonInstance;
 

@@ -50,14 +50,14 @@ namespace ubi {
 		return 0;
 	}
 
-	void ErrorManager::SetSystemFlag(CATEGORY category, MASK mask, bool value) {
+	void ErrorManager::SetSystemFlag(Category category, Mask mask, bool value) {
 	}
 
 	ErrorManager& ErrorManager::GetSingletonInstance() {
 		return *(new ErrorManager());
 	}
 
-	InputStream::SIZE InputStream::Read(unsigned char* buffer, SIZE offset, SIZE size) {
+	InputStream::Size InputStream::Read(unsigned char* buffer, Size offset, Size size) {
 		return 0;
 	}
 
@@ -67,7 +67,7 @@ namespace ubi {
 	InputFileStream::~InputFileStream() {
 	}
 
-	InputFileStream::SIZE InputFileStream::GetSize() {
+	InputFileStream::Size InputFileStream::GetSize() {
 		return 0;
 	}
 

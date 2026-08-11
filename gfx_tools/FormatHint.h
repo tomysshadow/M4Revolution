@@ -13,9 +13,9 @@ namespace gfx_tools {
 		EnumPixelFormat GetEnumPixelFormat(bool isAlpha, uint32_t bits) const;
 
 		private:
-		typedef std::array<EnumPixelFormat, 3> HINT_PIXELFORMAT_ARRAY;
+		using HintPixelFormatArray = std::array<EnumPixelFormat, 3>;
 
-		static constexpr HINT_PIXELFORMAT_ARRAY HINT_PIXELFORMAT_8_ARRAY = {
+		static constexpr HintPixelFormatArray HINT_PIXELFORMAT_8_ARRAY = {
 			PIXELFORMAT_XRGB_8888, // None
 			PIXELFORMAT_A_8, // Alpha
 			PIXELFORMAT_L_8 // Luminance

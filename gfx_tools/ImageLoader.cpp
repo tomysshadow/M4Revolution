@@ -3,7 +3,7 @@
 #include <M4Image.h>
 
 namespace gfx_tools {
-	RawBuffer::SIZE ImageLoader::GetRawBufferTotalSize() {
+	RawBuffer::Size ImageLoader::GetRawBufferTotalSize() {
 		return rawBufferTotalSize;
 	}
 
@@ -41,14 +41,14 @@ namespace gfx_tools {
 		this->formatHint = formatHint;
 	}
 
-	ImageLoaderMultipleBuffer::SIZE ImageLoaderMultipleBuffer::GetNumberOfRawBuffers() {
+	ImageLoaderMultipleBuffer::Size ImageLoaderMultipleBuffer::GetNumberOfRawBuffers() {
 		return numberOfRawBuffers;
 	}
 
 	ImageLoaderMultipleBuffer::~ImageLoaderMultipleBuffer() {
 	}
 
-	void ImageLoaderMultipleBuffer::GetLOD(LOD lod, RawBuffer::POINTER pointer, SIZE stride, SIZE sizeInBytes) {
+	void ImageLoaderMultipleBuffer::GetLOD(Lod lod, RawBuffer::Pointer pointer, Size stride, Size sizeInBytes) {
 		if (!pointer) {
 			throw std::invalid_argument("pointer must not be nullptr");
 		}
@@ -108,14 +108,14 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::ResizeLOD(
-		LOD lod,
-		RawBuffer::POINTER pointer,
-		SIZE stride,
-		SIZE sizeInBytes,
-		Q_FACTOR qFactor,
+		Lod lod,
+		RawBuffer::Pointer pointer,
+		Size stride,
+		Size sizeInBytes,
+		QFactor qFactor,
 		const ImageInfo &imageInfo,
-		DIMENSION resizeTextureWidth,
-		DIMENSION resizeTextureHeight,
+		Dimension resizeTextureWidth,
+		Dimension resizeTextureHeight,
 		ares::RectU32* rectU32Pointer
 	) {
 		if (!pointer) {
@@ -153,7 +153,7 @@ namespace gfx_tools {
 
 		SetLODRawBufferImpEx(
 			lod,
-			resizeM4Image.acquire(), (RawBuffer::SIZE)(resizeTextureHeight * m4ImageStride),
+			resizeM4Image.acquire(), (RawBuffer::Size)(resizeTextureHeight * m4ImageStride),
 			true, resizeInfo, 0
 		);
 
@@ -161,11 +161,11 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::SetLOD(
-		LOD lod,
-		RawBuffer::POINTER pointer,
-		SIZE stride,
-		SIZE sizeInBytes,
-		Q_FACTOR qFactor,
+		Lod lod,
+		RawBuffer::Pointer pointer,
+		Size stride,
+		Size sizeInBytes,
+		QFactor qFactor,
 		const ImageInfo &imageInfo,
 		ares::RectU32* rectU32Pointer
 	) {
@@ -178,28 +178,28 @@ namespace gfx_tools {
 		);
 	}
 
-	RawBuffer::POINTER ImageLoaderMultipleBuffer::CreateLODRawBuffer(LOD lod, RawBuffer::SIZE size) {
-		RawBuffer::POINTER pointer = (RawBuffer::POINTER)M4Image::allocator.mallocSafe(size);
+	RawBuffer::Pointer ImageLoaderMultipleBuffer::CreateLODRawBuffer(Lod lod, RawBuffer::Size size) {
+		RawBuffer::Pointer pointer = (RawBuffer::Pointer)M4Image::allocator.mallocSafe(size);
 		SetLODRawBufferImp(lod, pointer, size, true, 0);
 		return pointer;
 	}
 
 	void ImageLoaderMultipleBuffer::SetLODRawBuffer(
-		LOD lod,
-		RawBuffer::POINTER pointer, RawBuffer::SIZE size,
+		Lod lod,
+		RawBuffer::Pointer pointer, RawBuffer::Size size,
 		ubi::RefCounted* refCountedPointer
 	) {
 		SetLODRawBufferImp(lod, pointer, size, false, refCountedPointer);
 	}
 
-	RawBuffer::POINTER ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod) {
-		RawBuffer::POINTER pointer = nullptr;
-		RawBuffer::SIZE size = 0;
+	RawBuffer::Pointer ImageLoaderMultipleBuffer::GetLODRawBuffer(Lod lod) {
+		RawBuffer::Pointer pointer = nullptr;
+		RawBuffer::Size size = 0;
 		GetLODRawBuffer(lod, pointer, size);
 		return pointer;
 	}
 
-	void ImageLoaderMultipleBuffer::GetLODRawBuffer(LOD lod, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size) {
+	void ImageLoaderMultipleBuffer::GetLODRawBuffer(Lod lod, RawBuffer::Pointer &pointer, RawBuffer::Size &size) {
 		pointer = nullptr;
 
 		MAKE_SCOPE_EXIT(pointerScopeExit) {
@@ -249,8 +249,8 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::SetLODRawBufferImp(
-		LOD lod,
-		RawBuffer::POINTER pointer, RawBuffer::SIZE size,
+		Lod lod,
+		RawBuffer::Pointer pointer, RawBuffer::Size size,
 		bool owner,
 		ubi::RefCounted* refCountedPointer
 	) {
@@ -265,7 +265,7 @@ namespace gfx_tools {
 		return 0;
 	}
 
-	L_INT ImageLoaderMultipleBuffer::CreateBitmapHandle(LOD lod, HANDLE &bitmapHandlePointer) {
+	L_INT ImageLoaderMultipleBuffer::CreateBitmapHandle(Lod lod, Handle &bitmapHandlePointer) {
 		// in this implementation we have no concept of a bitmap handle
 		bitmapHandlePointer = nullptr;
 		return SUCCESS;
@@ -285,7 +285,7 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::LoadRawBuffer(
-		const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride
+		const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::Pointer pointer, Size stride
 	) {
 		size_t m4ImageStride = stride;
 
@@ -301,7 +301,7 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::SaveRawBuffer(
-		const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size
+		const RawBufferEx &rawBuffer, RawBuffer::Pointer &pointer, RawBuffer::Size &size
 	) {
 		const RawBufferEx::ResizeInfo &resizeInfo = rawBuffer.resizeInfoOptional.value();
 
@@ -317,7 +317,7 @@ namespace gfx_tools {
 
 		size_t m4ImageSize = 0;
 		pointer = m4Image.save(m4ImageSize, GetExtension(), resizeInfo.quality);
-		size = (SIZE)m4ImageSize;
+		size = (Size)m4ImageSize;
 	}
 
 	void ImageLoaderMultipleBuffer::GetImageInfoImpEx() {
@@ -325,7 +325,7 @@ namespace gfx_tools {
 			validatedImageInfoOptional = std::nullopt;
 		};
 
-		static constexpr LOD MAIN_LOD = 0;
+		static constexpr Lod MAIN_LOD = 0;
 
 		const auto &rawBufferOptional = rawBufferOptionals[MAIN_LOD];
 
@@ -349,7 +349,7 @@ namespace gfx_tools {
 		uint32_t bits = 0;
 		int textureWidth = 0;
 		int textureHeight = 0;
-		ValidatedImageInfo::SIZE_IN_BYTES sizeInBytes = 0;
+		ValidatedImageInfo::SizeInBytes sizeInBytes = 0;
 
 		if (mainRawBuffer.resizeInfoOptional.has_value()) {
 			validatedImageInfoOptional.emplace(resizeImageInfo);
@@ -376,13 +376,13 @@ namespace gfx_tools {
 		}
 
 		ValidatedImageInfo &validatedImageInfo = validatedImageInfoOptional.value();
-		validatedImageInfo.SetNumberOfLOD((LOD)numberOfRawBuffers);
+		validatedImageInfo.SetNumberOfLOD((Lod)numberOfRawBuffers);
 		validatedImageInfo.SetLodSizeInBytes(MAIN_LOD, sizeInBytes);
 
 		// the following should fail only if we fail to get info
 		// we are allowed to have buffers with null pointers, with zero sized images
 		// it is only a failure if there is an invalid image
-		for (LOD i = MAIN_LOD + 1; i < numberOfRawBuffers; i++) {
+		for (Lod i = MAIN_LOD + 1; i < numberOfRawBuffers; i++) {
 			MAKE_SCOPE_EXIT(setLodSizeInBytesScopeExit) {
 				validatedImageInfo.SetLodSizeInBytes(i, 0);
 			};
@@ -418,8 +418,8 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBuffer::SetLODRawBufferImpEx(
-		LOD lod,
-		RawBuffer::POINTER pointer, RawBuffer::SIZE size,
+		Lod lod,
+		RawBuffer::Pointer pointer, RawBuffer::Size size,
 		bool owner,
 		const std::optional<RawBufferEx::ResizeInfo> &resizeInfoOptional,
 		ubi::RefCounted* refCountedPointer
@@ -436,11 +436,11 @@ namespace gfx_tools {
 		}
 
 		if (numberOfRawBuffers <= lod) {
-			numberOfRawBuffers = (SIZE)(lod + 1);
+			numberOfRawBuffers = (Size)(lod + 1);
 		}
 
 		auto &rawBufferOptional = rawBufferOptionals[lod];
-		RawBuffer::SIZE difference = rawBufferOptional.has_value() ? rawBufferOptional.value().size : 0;
+		RawBuffer::Size difference = rawBufferOptional.has_value() ? rawBufferOptional.value().size : 0;
 
 		rawBufferOptional.emplace(pointer, size, owner, resizeInfoOptional);
 		pointerScopeExit.dismiss();
@@ -493,7 +493,7 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBufferZAP::LoadRawBuffer(
-		const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::POINTER pointer, SIZE stride
+		const RawBufferEx &rawBuffer, const ImageInfo &imageInfo, RawBuffer::Pointer pointer, Size stride
 	) {
 		zap_size_t zapStride = stride;
 		zap_size_t zapSize = 0;
@@ -514,7 +514,7 @@ namespace gfx_tools {
 	}
 
 	void ImageLoaderMultipleBufferZAP::SaveRawBuffer(
-		const RawBufferEx &rawBuffer, RawBuffer::POINTER &pointer, RawBuffer::SIZE &size
+		const RawBufferEx &rawBuffer, RawBuffer::Pointer &pointer, RawBuffer::Size &size
 	) {
 		const RawBufferEx::ResizeInfo &RESIZE_INFO = rawBuffer.resizeInfoOptional.value();
 
@@ -536,7 +536,7 @@ namespace gfx_tools {
 			throw std::runtime_error("failed to save zap memory");
 		}
 
-		size = (SIZE)zapSize;
+		size = (Size)zapSize;
 	}
 
 	const L_TCHAR* ImageLoaderMultipleBufferTGA::GetExtension() {

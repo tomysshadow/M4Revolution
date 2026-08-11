@@ -6,7 +6,7 @@ namespace gfx_tools {
 	RawBuffer::RawBuffer() {
 	}
 
-	RawBuffer::RawBuffer(POINTER pointer, SIZE size, bool owner)
+	RawBuffer::RawBuffer(Pointer pointer, Size size, bool owner)
 		: pointer(pointer),
 		size(size),
 		owner(owner) {
@@ -41,7 +41,7 @@ namespace gfx_tools {
 	RawBufferEx::RawBufferEx() {
 	}
 
-	RawBufferEx::RawBufferEx(POINTER pointer, SIZE size, bool owner, const std::optional<ResizeInfo> &resizeInfoOptional)
+	RawBufferEx::RawBufferEx(Pointer pointer, Size size, bool owner, const std::optional<ResizeInfo> &resizeInfoOptional)
 		: RawBuffer(pointer, size, owner),
 		resizeInfoOptional(resizeInfoOptional) {
 	}

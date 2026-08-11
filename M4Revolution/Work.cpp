@@ -11,12 +11,12 @@ namespace Work {
 			// if the event is set
 			// then the wait should immediately go through
 			// (as long as the thread ID does not match this)
-			threadIDOptional = std::this_thread::get_id();
+			threadIdOptional = std::this_thread::get_id();
 		} else {
 			// if the event is not set
 			// then the event should wait no matter what
 			// (should return false)
-			threadIDOptional = std::nullopt;
+			threadIdOptional = std::nullopt;
 		}
 	}
 
@@ -42,13 +42,13 @@ namespace Work {
 			// some other thread than us is the one that has set the event
 			// otherwise, all that matters is that the event
 			// was in fact set (i.e., the owning lock isn't currently in use by anyone)
-			if (threadIDOptional.has_value()
-				&& (!yield || threadIDOptional != std::this_thread::get_id())) {
+			if (threadIdOptional.has_value()
+				&& (!yield || threadIdOptional != std::this_thread::get_id())) {
 				// reset the event if desired (this is run while the lock is held, so is safe)
 				if (reset) {
 					// if the event is reset
 					// then that should cause this to wait (return false)
-					threadIDOptional = std::nullopt;
+					threadIdOptional = std::nullopt;
 				}
 				return true;
 			}
@@ -71,7 +71,7 @@ namespace Work {
 		setPredicate(false);
 	}
 
-	Data::Data(size_t size, POINTER pointer)
+	Data::Data(size_t size, Pointer pointer)
 		: size(size),
 		pointer(pointer) {
 	}
@@ -80,7 +80,7 @@ namespace Work {
 		std::istream &inputStream,
 		std::streamoff ownerBigFileInputOffset,
 		Ubi::BigFile::File &file,
-		Ubi::BigFile::File::POINTER_SET_MAP &fileVectorIteratorSetMap
+		Ubi::BigFile::File::PointerSetMap &fileVectorIteratorSetMap
 	)
 		: ownerBigFileInputOffset(ownerBigFileInputOffset),
 		file(file),
@@ -102,15 +102,15 @@ namespace Work {
 		return file;
 	}
 
-	Ubi::BigFile::File::SIZE BigFileTask::getFileSystemSize() const {
+	Ubi::BigFile::File::Size BigFileTask::getFileSystemSize() const {
 		return fileSystemSize;
 	}
 
-	Ubi::BigFile::File::POINTER_VECTOR::size_type BigFileTask::getFiles() const {
+	Ubi::BigFile::File::PointerVector::size_type BigFileTask::getFiles() const {
 		return files;
 	}
 
-	Ubi::BigFile::POINTER BigFileTask::getBigFilePointer() const {
+	Ubi::BigFile::Pointer BigFileTask::getBigFilePointer() const {
 		return bigFilePointer;
 	}
 
@@ -122,7 +122,7 @@ namespace Work {
 	}
 
 	FileTask::FileTask(std::streamoff ownerBigFileInputOffset,
-		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer)
+		Ubi::BigFile::File::PointerVectorPointer &filePointerVectorPointer)
 		: ownerBigFileInputOffset(ownerBigFileInputOffset),
 		fileVariant(filePointerVectorPointer),
 		event(true) {
@@ -131,11 +131,11 @@ namespace Work {
 	// called in order to lock the data queue so we can add new data
 	// the Lock class ensures the output thread will automatically
 	// wake up to write it after we add the new data
-	Data::QUEUE_LOCK FileTask::lock(bool &yield) {
-		return Data::QUEUE_LOCK(event, queue, yield);
+	Data::QueueLock FileTask::lock(bool &yield) {
+		return Data::QueueLock(event, queue, yield);
 	}
 
-	Data::QUEUE_LOCK FileTask::lock() {
+	Data::QueueLock FileTask::lock() {
 		bool yield = false;
 		return lock(yield);
 	}
@@ -154,7 +154,7 @@ namespace Work {
 			countRead = (std::streamsize)__min((size_t)count, (size_t)countRead);
 
 			{
-				Data::POINTER pointer = makeSharedArray<unsigned char>((size_t)countRead);
+				Data::Pointer pointer = makeSharedArray<unsigned char>((size_t)countRead);
 
 				readStreamPartial(inputStream, pointer.get(), countRead, gcountRead);
 
@@ -190,7 +190,7 @@ namespace Work {
 		return ownerBigFileInputOffset;
 	}
 
-	FileTask::FILE_VARIANT FileTask::getFileVariant() {
+	FileTask::FileVariant FileTask::getFileVariant() {
 		return fileVariant;
 	}
 
@@ -199,20 +199,20 @@ namespace Work {
 		fileEvent(true) {
 	}
 
-	BigFileTask::POINTER_MAP_LOCK Tasks::bigFileLock(bool &yield) {
-		return BigFileTask::POINTER_MAP_LOCK(bigFileEvent, bigFileTaskPointerMap, yield);
+	BigFileTask::PointerMapLock Tasks::bigFileLock(bool &yield) {
+		return BigFileTask::PointerMapLock(bigFileEvent, bigFileTaskPointerMap, yield);
 	}
 
-	BigFileTask::POINTER_MAP_LOCK Tasks::bigFileLock() {
+	BigFileTask::PointerMapLock Tasks::bigFileLock() {
 		bool yield = false;
 		return bigFileLock(yield);
 	}
 
-	FileTask::POINTER_QUEUE_LOCK Tasks::fileLock(bool &yield) {
-		return FileTask::POINTER_QUEUE_LOCK(fileEvent, fileTaskPointerQueue, yield);
+	FileTask::PointerQueueLock Tasks::fileLock(bool &yield) {
+		return FileTask::PointerQueueLock(fileEvent, fileTaskPointerQueue, yield);
 	}
 
-	FileTask::POINTER_QUEUE_LOCK Tasks::fileLock() {
+	FileTask::PointerQueueLock Tasks::fileLock() {
 		bool yield = false;
 		return fileLock(yield);
 	}
@@ -230,7 +230,7 @@ namespace Work {
 	const char* Output::FILE_NAME = "~M4R.tmp"; // must be an 8.3 filename
 	const char* Output::FILE_RETRY = "The game files could not be accessed. Please ensure the game is not open while using this tool. If this error is occuring and the game is not open, you may be out of disk space, or you may need to run this tool as admin.";
 
-	const Output::INFO_MAP Output::FILE_PATH_INFO_MAP = {
+	const Output::InfoMap Output::FILE_PATH_INFO_MAP = {
 		{FILE_PATH_DATA, {GAMEDATABINDIR "/data.m4b", true}},
 		{FILE_PATH_USER_PREFERENCE, {EXEDIR "/user.dsc", false}},
 		{FILE_PATH_M4_THOR, {EXEDIR "/m4_thor_rd.dll", true}},
@@ -414,7 +414,7 @@ namespace Work {
 			Backup::createOutput(edit.path.string().c_str());
 		}
 
-		CODE_VECTOR &codeVector = edit.codeVector;
+		CodeVector &codeVector = edit.codeVector;
 
 		for (
 			auto codeVectorIterator = codeVector.begin();
@@ -441,7 +441,7 @@ namespace Work {
 		fileStream.open(path, std::fstream::binary | std::fstream::in | std::fstream::out, _SH_DENYRW);
 	}
 
-	void Edit::apply(std::thread &copyThread, const CODE_VECTOR &codeVector) {
+	void Edit::apply(std::thread &copyThread, const CodeVector &codeVector) {
 		this->codeVector = codeVector;
 
 		if (!copied) {

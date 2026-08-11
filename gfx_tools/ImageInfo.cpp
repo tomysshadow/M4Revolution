@@ -7,12 +7,12 @@ namespace gfx_tools {
 	ImageInfo::ImageInfo() {
 	}
 
-	void ImageInfo::ComputeLODDimensions(DIMENSION &textureWidth, DIMENSION &textureHeight, DIMENSION &volumeExtent, LOD lod) const {
-		static constexpr DIMENSION MIN_DIMENSION = 1;
+	void ImageInfo::ComputeLODDimensions(Dimension &textureWidth, Dimension &textureHeight, Dimension &volumeExtent, Lod lod) const {
+		static constexpr Dimension MIN_DIMENSION = 1;
 
-		textureWidth = (DIMENSION)(this->textureWidth >> lod);
-		textureHeight = (DIMENSION)(this->textureHeight >> lod);
-		volumeExtent = (DIMENSION)(this->volumeExtent >> lod);
+		textureWidth = (Dimension)(this->textureWidth >> lod);
+		textureHeight = (Dimension)(this->textureHeight >> lod);
+		volumeExtent = (Dimension)(this->volumeExtent >> lod);
 
 		if (!textureWidth) {
 			textureWidth = MIN_DIMENSION;
@@ -27,11 +27,11 @@ namespace gfx_tools {
 		}
 	}
 
-	ImageInfo::BITS_PER_PIXEL ImageInfo::GetBitsPerPixel() const {
+	ImageInfo::BitsPerPixel ImageInfo::GetBitsPerPixel() const {
 		return PixelFormat::GetPixelFormat(enumPixelFormat)->GetBitsPerPixel();
 	}
 
-	ImageInfo::BITS_PER_PIXEL ImageInfo::GetRequestedBitsPerPixel() const {
+	ImageInfo::BitsPerPixel ImageInfo::GetRequestedBitsPerPixel() const {
 		return PixelFormat::GetPixelFormat(requestedEnumPixelFormat)->GetBitsPerPixel();
 	}
 
@@ -57,7 +57,7 @@ namespace gfx_tools {
 		return PIXELFORMAT_COLOR_FORMAT_MAP.at(requestedEnumPixelFormat);
 	}
 
-	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_MAP = {
+	const ImageInfo::ColorFormatMap ImageInfo::PIXELFORMAT_COLOR_FORMAT_MAP = {
 		{PIXELFORMAT_ARGB_8888, M4Image::COLOR_FORMAT::BGRA},
 		{PIXELFORMAT_XRGB_8888, M4Image::COLOR_FORMAT::BGRX},
 		{PIXELFORMAT_RGB_888, M4Image::COLOR_FORMAT::BGR},
@@ -69,21 +69,21 @@ namespace gfx_tools {
 	// mappings to convert non-16bit formats into 16-bit
 	// 8-bit input is assumed to be luminance
 	// 32-bit input not included here (would be strange for GPU to ask for alpha/luminance only from them)
-	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_TO_88_MAP = {
+	const ImageInfo::ColorFormatMap ImageInfo::PIXELFORMAT_COLOR_FORMAT_TO_88_MAP = {
 		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::AL}, // L -> L(A)
 		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::LA}, // L -> (L)A
 	};
 
 	// mappings to convert non-32bit formats into 32-bit
 	// 8-bit input is assumed to be luminance
-	const ImageInfo::COLOR_FORMAT_MAP ImageInfo::PIXELFORMAT_COLOR_FORMAT_TO_8888_MAP = {
+	const ImageInfo::ColorFormatMap ImageInfo::PIXELFORMAT_COLOR_FORMAT_TO_8888_MAP = {
 		{PIXELFORMAT_AL_88, M4Image::COLOR_FORMAT::BGRA}, // fixes dgVoodoo2 compatibility (doesn't support 16-bit textures)
 		{PIXELFORMAT_A_8, M4Image::COLOR_FORMAT::XXXL}, // L -> BGR(A)
 		{PIXELFORMAT_L_8, M4Image::COLOR_FORMAT::BGRA} // L -> (BGR)A
 	};
 
-	void ValidatedImageInfo::MakePowerOfTwo(DIMENSION &dimension, bool reserved) {
-		DIMENSION powerOfTwo = 2;
+	void ValidatedImageInfo::MakePowerOfTwo(Dimension &dimension, bool reserved) {
+		Dimension powerOfTwo = 2;
 
 		// if number is one, we want it to just become two
 		// so don't allow powerOfTwo to be downscaled to one
@@ -104,8 +104,8 @@ namespace gfx_tools {
 		dimension = powerOfTwo;
 	}
 
-	void ValidatedImageInfo::MakeSquare(DIMENSION &width, DIMENSION &height) {
-		DIMENSION square = width;
+	void ValidatedImageInfo::MakeSquare(Dimension &width, Dimension &height) {
+		Dimension square = width;
 
 		if (Configuration::Get().toNext) {
 			if (square < height) {
@@ -121,18 +121,18 @@ namespace gfx_tools {
 		height = square;
 	}
 
-	void ValidatedImageInfo::Clamp(DIMENSION &dimension, DIMENSION min, DIMENSION max) {
+	void ValidatedImageInfo::Clamp(Dimension &dimension, Dimension min, Dimension max) {
 		dimension = __min(max, __max(min, dimension));
 	}
 
-	void ValidatedImageInfo::RecomputeLodSize(LOD lod) {
-		static constexpr BITS_PER_PIXEL BYTES = 3;
+	void ValidatedImageInfo::RecomputeLodSize(Lod lod) {
+		static constexpr BitsPerPixel BYTES = 3;
 
 		ComputeLODDimensions(textureWidth, textureHeight, volumeExtent, lod);
 		lodSizesInBytes[lod] = textureWidth * textureHeight * volumeExtent * (GetBitsPerPixel() >> BYTES);
 	}
 
-	void ValidatedImageInfo::SetDimensions(DIMENSION textureWidth, DIMENSION textureHeight, DIMENSION volumeExtent) {
+	void ValidatedImageInfo::SetDimensions(Dimension textureWidth, Dimension textureHeight, Dimension volumeExtent) {
 		const Configuration &configuration = Configuration::Get();
 
 		this->textureWidth = textureWidth;
@@ -151,9 +151,9 @@ namespace gfx_tools {
 			MakeSquare(this->textureWidth, this->textureHeight);
 		}
 
-		Clamp(this->textureWidth, (DIMENSION)configuration.minTextureWidth, (DIMENSION)configuration.maxTextureWidth);
-		Clamp(this->textureHeight, (DIMENSION)configuration.minTextureHeight, (DIMENSION)configuration.maxTextureHeight);
-		Clamp(this->volumeExtent, (DIMENSION)configuration.minVolumeExtent, (DIMENSION)configuration.maxVolumeExtent);
+		Clamp(this->textureWidth, (Dimension)configuration.minTextureWidth, (Dimension)configuration.maxTextureWidth);
+		Clamp(this->textureHeight, (Dimension)configuration.minTextureHeight, (Dimension)configuration.maxTextureHeight);
+		Clamp(this->volumeExtent, (Dimension)configuration.minVolumeExtent, (Dimension)configuration.maxVolumeExtent);
 
 		recomputeLodSizes = recomputeLodSizes
 			|| this->textureWidth != textureWidth
@@ -161,7 +161,7 @@ namespace gfx_tools {
 			|| this->volumeExtent != volumeExtent;
 
 		if (recomputeLodSizes) {
-			for (LOD i = 0; i < NUMBER_OF_LOD_MAX; i++) {
+			for (Lod i = 0; i < NUMBER_OF_LOD_MAX; i++) {
 				if (lodSizesInBytes[i]) {
 					RecomputeLodSize(i);
 				}
@@ -176,17 +176,17 @@ namespace gfx_tools {
 			return;
 		}
 
-		static constexpr EnumPixelFormat DEFAULT_ENUM_PIXEL_FORMAT = PIXELFORMAT_ARGB_8888;
+		static constexpr EnumPixelFormat DEFAULT_ENUM_PIXELFORMAT = PIXELFORMAT_ARGB_8888;
 
 		recomputeLodSizes = true;
-		this->enumPixelFormat = DEFAULT_ENUM_PIXEL_FORMAT;
-		this->requestedEnumPixelFormat = DEFAULT_ENUM_PIXEL_FORMAT;
+		this->enumPixelFormat = DEFAULT_ENUM_PIXELFORMAT;
+		this->requestedEnumPixelFormat = DEFAULT_ENUM_PIXELFORMAT;
 	}
 
 	void ValidatedImageInfo::create(
-		DIMENSION textureWidth,
-		DIMENSION textureHeight,
-		DIMENSION volumeExtent,
+		Dimension textureWidth,
+		Dimension textureHeight,
+		Dimension volumeExtent,
 		EnumPixelFormat enumPixelFormat,
 		FormatHint formatHint
 	) {
@@ -203,9 +203,9 @@ namespace gfx_tools {
 	}
 
 	ValidatedImageInfo::ValidatedImageInfo(
-		DIMENSION textureWidth,
-		DIMENSION textureHeight,
-		DIMENSION volumeExtent,
+		Dimension textureWidth,
+		Dimension textureHeight,
+		Dimension volumeExtent,
 		EnumPixelFormat enumPixelFormat,
 		FormatHint formatHint
 	) {
@@ -220,19 +220,19 @@ namespace gfx_tools {
 		return *this;
 	}
 
-	LOD ValidatedImageInfo::GetNumberOfLOD() const {
+	Lod ValidatedImageInfo::GetNumberOfLOD() const {
 		return numberOfLOD;
 	}
 
-	ImageInfo::BITS_PER_PIXEL ValidatedImageInfo::GetBitsPerPixel() const {
+	ImageInfo::BitsPerPixel ValidatedImageInfo::GetBitsPerPixel() const {
 		return ImageInfo::GetBitsPerPixel();
 	}
 
-	ImageInfo::BITS_PER_PIXEL ValidatedImageInfo::GetRequestedBitsPerPixel() const {
+	ImageInfo::BitsPerPixel ValidatedImageInfo::GetRequestedBitsPerPixel() const {
 		return ImageInfo::GetRequestedBitsPerPixel();
 	}
 
-	void ValidatedImageInfo::SetLodSizeInBytes(LOD lod, SIZE_IN_BYTES sizeInBytes) {
+	void ValidatedImageInfo::SetLodSizeInBytes(Lod lod, SizeInBytes sizeInBytes) {
 		if (recomputeLodSizes && sizeInBytes) {
 			RecomputeLodSize(lod);
 			return;
@@ -241,7 +241,7 @@ namespace gfx_tools {
 		lodSizesInBytes[lod] = sizeInBytes;
 	}
 
-	void ValidatedImageInfo::SetNumberOfLOD(LOD numberOfLOD) {
+	void ValidatedImageInfo::SetNumberOfLOD(Lod numberOfLOD) {
 		this->numberOfLOD = numberOfLOD;
 	}
 

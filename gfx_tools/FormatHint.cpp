@@ -8,7 +8,7 @@ namespace gfx_tools {
 			{
 				// try to find the pixel format from the hint
 				// but if we don't recognize the hint it is an unknown format
-				if ((HINT_PIXELFORMAT_ARRAY::size_type)hint < HINT_PIXELFORMAT_8_ARRAY.size()) {
+				if ((HintPixelFormatArray::size_type)hint < HINT_PIXELFORMAT_8_ARRAY.size()) {
 					return HINT_PIXELFORMAT_8_ARRAY[hint];
 				}
 			}

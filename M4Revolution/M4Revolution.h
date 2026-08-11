@@ -17,7 +17,7 @@ class M4Revolution : NonCopyable {
 	class Log : NonCopyable {
 		private:
 		std::istream* inputStreamPointer = nullptr;
-		Ubi::BigFile::File::SIZE inputFileSize = 0;
+		Ubi::BigFile::File::Size inputFileSize = 0;
 		bool fileNames = false;
 		std::optional<std::chrono::steady_clock::time_point> beginOptional = std::nullopt;
 
@@ -31,7 +31,7 @@ class M4Revolution : NonCopyable {
 		Log(
 			const std::string &title,
 			std::istream* inputStreamPointer = nullptr,
-			Ubi::BigFile::File::SIZE inputFileSize = 0,
+			Ubi::BigFile::File::Size inputFileSize = 0,
 			bool fileNames = false,
 			bool slow = false
 		);
@@ -83,17 +83,17 @@ class M4Revolution : NonCopyable {
 	PTP_POOL pool = NULL;
 	#endif
 
-	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0;
+	Work::FileTask::PointerQueue::size_type maxFileTasks = 0;
 	Work::Convert::Configuration configuration;
 	Work::Tasks tasks = {};
 
-	void waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks);
+	void waitFiles(Work::FileTask::PointerQueue::size_type fileTasks);
 
 	void copyFiles(
 		std::istream &inputStream,
-		Ubi::BigFile::File::SIZE inputOffset,
-		Ubi::BigFile::File::SIZE inputCopyOffset,
-		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
+		Ubi::BigFile::File::Size inputOffset,
+		Ubi::BigFile::File::Size inputCopyOffset,
+		Ubi::BigFile::File::PointerVectorPointer &filePointerVectorPointer,
 		const std::streampos &bigFileInputPosition,
 		Log &log
 	);
@@ -113,17 +113,17 @@ class M4Revolution : NonCopyable {
 	);
 
 	void stepFile(
-		Ubi::BigFile::File::SIZE inputOffset,
-		Ubi::BigFile::File::SIZE &inputFileOffset,
-		Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
-		Ubi::BigFile::File::POINTER filePointer,
+		Ubi::BigFile::File::Size inputOffset,
+		Ubi::BigFile::File::Size &inputFileOffset,
+		Ubi::BigFile::File::PointerVectorPointer &filePointerVectorPointer,
+		Ubi::BigFile::File::Pointer filePointer,
 		Log &log
 	);
 
 	void fixLoading(std::istream &inputStream,
 		const std::streampos &ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log);
 
-	static const Ubi::BigFile::Path::VECTOR TRANSITION_FADE_PATH_VECTOR;
+	static const Ubi::BigFile::Path::Vector TRANSITION_FADE_PATH_VECTOR;
 	static const CompressionOptions COMPRESSION_OPTIONS;
 
 	static void toggleFullScreen(std::ifstream &inputFileStream);
@@ -143,7 +143,7 @@ class M4Revolution : NonCopyable {
 	#endif
 	static bool outputBigFiles(Work::Output &output, std::streamoff bigFileInputOffset, Work::Tasks &tasks);
 	static void outputData(std::ostream &outputStream, Work::FileTask &fileTask, bool &yield);
-	static void outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant);
+	static void outputFiles(Work::Output &output, Work::FileTask::FileVariant &fileVariant);
 	static void outputThread(Work::Tasks &tasks, bool &yield);
 	#ifdef WINDOWS
 	static bool getDLLExportRVA(const char* libFileName, const char* procName, unsigned long &dllExportRVA);
@@ -203,7 +203,7 @@ class M4Revolution : NonCopyable {
 		bool logFileNames = false,
 		bool disableHardwareAcceleration = false,
 		uint32_t maxThreads = 0,
-		Work::FileTask::POINTER_QUEUE::size_type maxFileTasks = 0,
+		Work::FileTask::PointerQueue::size_type maxFileTasks = 0,
 		std::optional<Work::Convert::Configuration> configurationOptional = std::nullopt
 	);
 	

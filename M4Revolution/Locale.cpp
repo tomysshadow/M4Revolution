@@ -21,7 +21,7 @@ Locale& Locale::create(bool tryGlobal) {
 	}
 
 	#ifdef _WIN32
-	cLocale = C_LOCALE(
+	cLocale = CLocale(
 		std::holds_alternative<std::wstring>(name)
 		? _wcreate_locale(lc, std::get<std::wstring>(name).c_str())
 		: _create_locale(lc, std::get<std::string>(name).c_str()),
@@ -36,7 +36,7 @@ Locale& Locale::create(bool tryGlobal) {
 	return *this;
 }
 
-Locale& Locale::create(const NAME_VECTOR &nameVector, bool tryGlobal) {
+Locale& Locale::create(const NameVector &nameVector, bool tryGlobal) {
 	for (auto nameVectorIterator = nameVector.begin(); nameVectorIterator != nameVector.end(); nameVectorIterator++) {
 		name = *nameVectorIterator;
 
@@ -74,8 +74,8 @@ std::wstring Locale::getGlobalNameWide() {
 	#endif
 }
 
-Locale::LC Locale::categoryToLC(CATEGORY category) {
-	static const Locale::CATEGORY_LC_MAP CATEGORY_LC_MAP = {
+Locale::Lc Locale::categoryToLc(Category category) {
+	static const Locale::CategoryLcMap CategoryLcMap = {
 		{std::locale::all, LC_ALL},
 		{std::locale::collate, LC_COLLATE},
 		{std::locale::ctype, LC_CTYPE},
@@ -85,11 +85,11 @@ Locale::LC Locale::categoryToLC(CATEGORY category) {
 	};
 
 	// intentionally throws if value not in map
-	return CATEGORY_LC_MAP.at(category & std::locale::all);
+	return CategoryLcMap.at(category & std::locale::all);
 }
 
-Locale::CATEGORY Locale::lcToCategory(LC lc) {
-	static const Locale::LC_CATEGORY_MAP LC_CATEGORY_MAP = {
+Locale::Category Locale::lcToCategory(Lc lc) {
+	static const Locale::LcCategoryMap LcCategoryMap = {
 		{LC_ALL, std::locale::all},
 		{LC_COLLATE, std::locale::collate},
 		{LC_CTYPE, std::locale::ctype},
@@ -98,10 +98,10 @@ Locale::CATEGORY Locale::lcToCategory(LC lc) {
 		{LC_TIME, std::locale::time}
 	};
 
-	// LC constant is not a bitmask so we can do a straight lookup with it
-	auto lcCategoryMapIterator = LC_CATEGORY_MAP.find(lc);
+	// Lc constant is not a bitmask so we can do a straight lookup with it
+	auto lcCategoryMapIterator = LcCategoryMap.find(lc);
 
-	if (lcCategoryMapIterator == LC_CATEGORY_MAP.end()) {
+	if (lcCategoryMapIterator == LcCategoryMap.end()) {
 		return std::locale::none;
 	}
 	return lcCategoryMapIterator->second;
@@ -111,23 +111,23 @@ Locale::Locale() {
 	createGlobal(true);
 }
 
-Locale::Locale(const NAME &name, LC lc, bool tryGlobal) : name(name), lc(lc) {
+Locale::Locale(const Name &name, Lc lc, bool tryGlobal) : name(name), lc(lc) {
 	create(tryGlobal);
 }
 
-Locale::Locale(const NAME_VECTOR &nameVector, LC lc, bool tryGlobal) : lc(lc) {
+Locale::Locale(const NameVector &nameVector, Lc lc, bool tryGlobal) : lc(lc) {
 	create(nameVector, tryGlobal);
 }
 
-Locale::Locale(const NAME_INITIALIZER_LIST &nameInitializerList, LC lc, bool tryGlobal) : lc(lc) {
-	create(NAME_VECTOR(nameInitializerList), tryGlobal);
+Locale::Locale(const NameInitializerList &nameInitializerList, Lc lc, bool tryGlobal) : lc(lc) {
+	create(NameVector(nameInitializerList), tryGlobal);
 }
 
-Locale::Locale(const char* name, LC lc, bool tryGlobal) : name(name ? name : getGlobalName()), lc(lc) {
+Locale::Locale(const char* name, Lc lc, bool tryGlobal) : name(name ? name : getGlobalName()), lc(lc) {
 	create(tryGlobal);
 }
 
-Locale::Locale(const wchar_t* name, LC lc, bool tryGlobal) : name(name ? name : getGlobalNameWide()), lc(lc) {
+Locale::Locale(const wchar_t* name, Lc lc, bool tryGlobal) : name(name ? name : getGlobalNameWide()), lc(lc) {
 	create(tryGlobal);
 }
 
@@ -143,11 +143,11 @@ Locale &Locale::operator=(const std::string &assignString) {
 	return create(false);
 }
 
-Locale::Locale(const NAME_VECTOR &copyNameVector) {
+Locale::Locale(const NameVector &copyNameVector) {
 	create(copyNameVector, false);
 }
 
-Locale &Locale::operator=(const NAME_VECTOR &assignNameVector) {
+Locale &Locale::operator=(const NameVector &assignNameVector) {
 	clear();
 	return create(assignNameVector, false);
 }
@@ -193,7 +193,7 @@ std::locale Locale::getStandardLocale() const {
 	return standardLocale;
 }
 
-Locale::CATEGORY Locale::getCategory() const {
+Locale::Category Locale::getCategory() const {
 	return lcToCategory(lc);
 }
 
@@ -203,6 +203,6 @@ _locale_t Locale::getCLocale() const {
 }
 #endif
 
-Locale::LC Locale::getLC() const {
+Locale::Lc Locale::getLc() const {
 	return lc;
 }

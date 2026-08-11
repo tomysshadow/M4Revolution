@@ -6,14 +6,14 @@ namespace gfx_tools {
 		static Configuration ms_currentConfiguration;
 
 		public:
-		typedef unsigned long DIMENSION;
+		using Dimension = unsigned long;
 
-		DIMENSION maxTextureWidth = 1024;
-		DIMENSION minTextureWidth = 1;
-		DIMENSION maxTextureHeight = 1024;
-		DIMENSION minTextureHeight = 1;
-		DIMENSION maxVolumeExtent = 1024;
-		DIMENSION minVolumeExtent = 1;
+		Dimension maxTextureWidth = 1024;
+		Dimension minTextureWidth = 1;
+		Dimension maxTextureHeight = 1024;
+		Dimension minTextureHeight = 1;
+		Dimension maxVolumeExtent = 1024;
+		Dimension minVolumeExtent = 1;
 		bool dimensionsMakeSquare = false;
 		bool dimensionsMakePowerOfTwo = false;
 		bool toNext = true;

@@ -8,9 +8,9 @@
 namespace gfx_tools {
 	template<bool luminance>
 	void convertHeightMapIntoDuDvBumpMapColor(
-		DIMENSION width, DIMENSION height,
-		M4Image::Color32* inputPointer, STRIDE inputStride,
-		M4Image::Color16* outputPointer, STRIDE outputStride
+		Dimension width, Dimension height,
+		M4Image::Color32* inputPointer, Stride inputStride,
+		M4Image::Color16* outputPointer, Stride outputStride
 	) {
 		static constexpr size_t INPUT_CHANNEL_UV = 0;
 		static constexpr size_t INPUT_CHANNEL_LUMINANCE = 3;
@@ -72,9 +72,9 @@ namespace gfx_tools {
 	}
 
 	void convertHeightMapIntoNormalMapColor(
-		DIMENSION width, DIMENSION height,
-		M4Image::Color32* inputPointer, STRIDE inputStride,
-		M4Image::Color32* outputPointer, STRIDE outputStride,
+		Dimension width, Dimension height,
+		M4Image::Color32* inputPointer, Stride inputStride,
+		M4Image::Color32* outputPointer, Stride outputStride,
 		double strength
 	) {
 		static constexpr size_t INPUT_CHANNEL_XY = 0;
@@ -140,9 +140,9 @@ namespace gfx_tools {
 		}
 	}
 
-	typedef unsigned long REF_COUNT;
+	using RefCount = unsigned long;
 
-	static REF_COUNT refCount = 0;
+	static RefCount refCount = 0;
 	static bool initialized = false;
 
 	void Init() {
@@ -154,7 +154,7 @@ namespace gfx_tools {
 			return;
 		}
 
-		static constexpr ubi::ErrorManager::MASK INITIALIZED = 0x00000040;
+		static constexpr ubi::ErrorManager::Mask INITIALIZED = 0x00000040;
 
 		ubi::ErrorManager &errorManager = ubi::ErrorManager::GetSingletonInstance();
 		errorManager.SetSystemFlag(errorManager.RegisterCategory(0, "Gfx_Tools"), INITIALIZED, true);
@@ -168,9 +168,9 @@ namespace gfx_tools {
 	}
 
 	void ConvertHeightMapIntoDuDvBumpMap(
-		DIMENSION width, DIMENSION height,
-		unsigned char* inputPointer, EnumPixelFormat inputEnumPixelFormat, STRIDE inputStride,
-		unsigned char* outputPointer, EnumPixelFormat outputEnumPixelFormat, STRIDE outputStride
+		Dimension width, Dimension height,
+		unsigned char* inputPointer, EnumPixelFormat inputEnumPixelFormat, Stride inputStride,
+		unsigned char* outputPointer, EnumPixelFormat outputEnumPixelFormat, Stride outputStride
 	) {
 		bool luminance = outputEnumPixelFormat == EnumPixelFormat::PIXELFORMAT_XLVU_8888;
 
@@ -194,9 +194,9 @@ namespace gfx_tools {
 	}
 
 	void ConvertHeightMapIntoNormalMap(
-		DIMENSION width, DIMENSION height,
-		unsigned char* inputPointer, EnumPixelFormat inputEnumPixelFormat, STRIDE inputStride,
-		unsigned char* outputPointer, EnumPixelFormat outputEnumPixelFormat, STRIDE outputStride,
+		Dimension width, Dimension height,
+		unsigned char* inputPointer, EnumPixelFormat inputEnumPixelFormat, Stride inputStride,
+		unsigned char* outputPointer, EnumPixelFormat outputEnumPixelFormat, Stride outputStride,
 		float strength
 	) {
 		convertHeightMapIntoNormalMapColor(

@@ -37,7 +37,7 @@ void M4Revolution::Log::replaced(const std::string &file) {
 M4Revolution::Log::Log(
 	const std::string &title,
 	std::istream* inputStreamPointer,
-	Ubi::BigFile::File::SIZE inputFileSize,
+	Ubi::BigFile::File::Size inputFileSize,
 	bool fileNames,
 	bool slow
 )
@@ -168,7 +168,7 @@ bool M4Revolution::OutputHandler::writeData(const void* data, int size) {
 	}
 
 	try {
-		Work::Data::POINTER pointer = makeSharedArray<unsigned char>((size_t)size);
+		Work::Data::Pointer pointer = makeSharedArray<unsigned char>((size_t)size);
 
 		if (memcpy_s(pointer.get(), (rsize_t)size, data, (rsize_t)size)) {
 			return false;
@@ -191,7 +191,7 @@ void M4Revolution::ErrorHandler::error(nvtt::Error error) {
 	result = false;
 }
 
-void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks) {
+void M4Revolution::waitFiles(Work::FileTask::PointerQueue::size_type fileTasks) {
 	// this function waits for the output thread to catch up
 	// if too many files are queued at once (to prevent running out of memory)
 	// this is only done on copying files so that it isn't run too often
@@ -209,25 +209,25 @@ void M4Revolution::waitFiles(Work::FileTask::POINTER_QUEUE::size_type fileTasks)
 
 void M4Revolution::copyFiles(
 	std::istream &inputStream,
-	Ubi::BigFile::File::SIZE inputOffset,
-	Ubi::BigFile::File::SIZE inputCopyOffset,
-	Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
+	Ubi::BigFile::File::Size inputOffset,
+	Ubi::BigFile::File::Size inputCopyOffset,
+	Ubi::BigFile::File::PointerVectorPointer &filePointerVectorPointer,
 	const std::streampos &bigFileInputPosition,
 	Log &log
 ) {
 	inputStream.seekg(bigFileInputPosition + (std::streamoff)inputCopyOffset);
 
-	Work::FileTask::POINTER_QUEUE::size_type fileTasks = 0;
+	Work::FileTask::PointerQueue::size_type fileTasks = 0;
 
 	// note: this must get created even if filePointerVectorPointer is empty or the count to copy would be zero
 	// so that the bigFileInputPosition is reliably seen by the output thread
-	Work::FileTask::POINTER fileTaskPointer =
+	Work::FileTask::Pointer fileTaskPointer =
 		std::make_shared<Work::FileTask>(bigFileInputPosition, filePointerVectorPointer);
 
 	// we grab files in this scope so we won't have to lock this twice unnecessarily
 	{
-		Work::FileTask::POINTER_QUEUE_LOCK fileLock = tasks.fileLock();
-		Work::FileTask::POINTER_QUEUE &queue = fileLock.get();
+		Work::FileTask::PointerQueueLock fileLock = tasks.fileLock();
+		Work::FileTask::PointerQueue &queue = fileLock.get();
 		queue.push(fileTaskPointer);
 		fileTasks = queue.size();
 	}
@@ -238,7 +238,7 @@ void M4Revolution::copyFiles(
 
 	waitFiles(fileTasks);
 
-	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
+	filePointerVectorPointer = std::make_shared<Ubi::BigFile::File::PointerVector>();
 
 	log.copying();
 }
@@ -255,11 +255,11 @@ void M4Revolution::convertFile(
 		delete &convert;
 	};
 
-	Work::Data::POINTER &dataPointer = convert.dataPointer;
+	Work::Data::Pointer &dataPointer = convert.dataPointer;
 	dataPointer = makeSharedArray<unsigned char>(file.size);
 	readStream(inputStream, dataPointer.get(), file.size);
 
-	Work::FileTask::POINTER &fileTaskPointer = convert.fileTaskPointer;
+	Work::FileTask::Pointer &fileTaskPointer = convert.fileTaskPointer;
 	fileTaskPointer = std::make_shared<Work::FileTask>(ownerBigFileInputPosition, &file);
 	tasks.fileLock().get().push(fileTaskPointer);
 
@@ -291,18 +291,18 @@ void M4Revolution::convertFile(
 
 	// these conversion functions update the file sizes passed in
 	switch (file.type) {
-		case Ubi::BigFile::File::TYPE::BIG_FILE:
+		case Ubi::BigFile::File::Type::BIG_FILE:
 		fixLoading(inputStream, bigFileInputPosition, file, log);
 		break;
-		case Ubi::BigFile::File::TYPE::IMAGE_STANDARD:
+		case Ubi::BigFile::File::Type::IMAGE_STANDARD:
 		convertFile(inputStream, bigFileInputPosition, file, convertImageStandardWorkCallback);
 		break;
-		case Ubi::BigFile::File::TYPE::IMAGE_ZAP:
+		case Ubi::BigFile::File::Type::IMAGE_ZAP:
 		convertFile(inputStream, bigFileInputPosition, file, convertImageZAPWorkCallback);
 		break;
 		default:
 		// either a file we need to copy at the same position as ones we need to convert, or is a type not yet implemented
-		Work::FileTask::POINTER fileTaskPointer = std::make_shared<Work::FileTask>(bigFileInputPosition, &file);
+		Work::FileTask::Pointer fileTaskPointer = std::make_shared<Work::FileTask>(bigFileInputPosition, &file);
 		tasks.fileLock().get().push(fileTaskPointer);
 
 		Work::FileTask &fileTask = *fileTaskPointer;
@@ -314,10 +314,10 @@ void M4Revolution::convertFile(
 }
 
 void M4Revolution::stepFile(
-	Ubi::BigFile::File::SIZE inputOffset,
-	Ubi::BigFile::File::SIZE &inputFileOffset,
-	Ubi::BigFile::File::POINTER_VECTOR_POINTER &filePointerVectorPointer,
-	Ubi::BigFile::File::POINTER filePointer,
+	Ubi::BigFile::File::Size inputOffset,
+	Ubi::BigFile::File::Size &inputFileOffset,
+	Ubi::BigFile::File::PointerVectorPointer &filePointerVectorPointer,
+	Ubi::BigFile::File::Pointer filePointer,
 	Log &log
 ) {
 	inputFileOffset = inputOffset;
@@ -330,7 +330,7 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 	const std::streampos &ownerBigFileInputPosition, Ubi::BigFile::File &file, Log &log) {
 	// filePointerSetMap is a map where the keys are the file offsets beginning to end
 	// and values are sets of files at that offset
-	Ubi::BigFile::File::POINTER_SET_MAP filePointerSetMap = {};
+	Ubi::BigFile::File::PointerSetMap filePointerSetMap = {};
 	std::streampos bigFileInputPosition = inputStream.tellg();
 
 	// note: passing filePointerSetMap here *looks* like a bug
@@ -346,8 +346,8 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 
 	// inputCopyOffset is the offset of the files to copy
 	// inputFileOffset is the offset of a specific input file (for file.size calculation)
-	Ubi::BigFile::File::SIZE inputCopyOffset = (Ubi::BigFile::File::SIZE)(inputStream.tellg() - bigFileInputPosition);
-	Ubi::BigFile::File::SIZE inputFileOffset = inputCopyOffset;
+	Ubi::BigFile::File::Size inputCopyOffset = (Ubi::BigFile::File::Size)(inputStream.tellg() - bigFileInputPosition);
+	Ubi::BigFile::File::Size inputFileOffset = inputCopyOffset;
 
 	// convert keeps track of if we just converted any files within the inner, set loop
 	// (in which case, inputCopyOffset is advanced)
@@ -355,8 +355,8 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 	// filePointerVectorPointer is to communicate file sizes/offsets to the output thread
 	bool convert = false;
 
-	Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer =
-		std::make_shared<Ubi::BigFile::File::POINTER_VECTOR>();
+	Ubi::BigFile::File::PointerVectorPointer filePointerVectorPointer =
+		std::make_shared<Ubi::BigFile::File::PointerVector>();
 
 	for (
 		auto filePointerSetMapIterator = filePointerSetMap.begin();
@@ -370,7 +370,7 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 		}
 
 		// we need an inner loop with a set here in case there are identical files with different paths, at the same offset
-		Ubi::BigFile::File::POINTER_SET &filePointerSet = filePointerSetMapIterator->second;
+		Ubi::BigFile::File::PointerSet &filePointerSet = filePointerSetMapIterator->second;
 
 		for (
 			auto filePointerSetIterator = filePointerSet.begin();
@@ -382,8 +382,8 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 			// if we encounter a file we need to convert for the first time, then first copy the files before it
 			if (
 				!convert
-				&& file.type != Ubi::BigFile::File::TYPE::NONE
-				&& file.type != Ubi::BigFile::File::TYPE::BINARY
+				&& file.type != Ubi::BigFile::File::Type::NONE
+				&& file.type != Ubi::BigFile::File::Type::BINARY
 			) {
 				file.padding = filePointerSetMapIterator->first - inputFileOffset;
 
@@ -433,7 +433,7 @@ void M4Revolution::fixLoading(std::istream &inputStream,
 	}
 }
 
-const Ubi::BigFile::Path::VECTOR M4Revolution::TRANSITION_FADE_PATH_VECTOR = {
+const Ubi::BigFile::Path::Vector M4Revolution::TRANSITION_FADE_PATH_VECTOR = {
 	   {{"gamedata", "common"}, "common.m4b"},
 	   {{"common", "ai", "aitransitionfade"}, "ai_transition_fade.ai"}
 };
@@ -598,7 +598,7 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 }
 
 void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
-	static const std::string NAME = "Sound Fade Out Time";
+	static const std::string Name = "Sound Fade Out Time";
 
 	static constexpr unsigned long MIN = 0;
 	static constexpr unsigned long MAX = 1000;
@@ -654,13 +654,13 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	outputStringStream.exceptions(std::ostringstream::badbit);
 	outputStringStream.copyfmt(std::cout);
 
-	Work::Edit::outputCurrent(outputStringStream, NAME, time);
+	Work::Edit::outputCurrent(outputStringStream, Name, time);
 	consoleLog(outputStringStream.str().c_str());
 
 	std::thread copyThread(Work::Edit::copyThread, std::ref(edit));
 
 	outputStringStream.str("");
-	Work::Edit::outputNew(outputStringStream, NAME);
+	Work::Edit::outputNew(outputStringStream, Name);
 
 	time = consoleLongUnsigned(outputStringStream.str().c_str(), MIN, MAX);
 
@@ -717,7 +717,7 @@ void M4Revolution::replaceGfxTools() {
 
 Ubi::BigFile::File M4Revolution::createInputFile(std::istream &inputStream) {
 	inputStream.seekg(0, std::istream::end);
-	Ubi::BigFile::File inputFile((Ubi::BigFile::File::SIZE)inputStream.tellg());
+	Ubi::BigFile::File inputFile((Ubi::BigFile::File::Size)inputStream.tellg());
 	inputStream.seekg(0, std::istream::beg);
 	return inputFile;
 }
@@ -740,11 +740,11 @@ void M4Revolution::convertSurface(Work::Convert &convert, nvtt::Surface &surface
 
 	const nvtt::Context &context = convert.context;
 
-	Work::Convert::EXTENT width = clamp((Work::Convert::EXTENT)surface.width(), configuration.minTextureWidth, configuration.maxTextureWidth);
-	Work::Convert::EXTENT height = clamp((Work::Convert::EXTENT)surface.height(), configuration.minTextureHeight, configuration.maxTextureHeight);
-	Work::Convert::EXTENT depth = clamp((Work::Convert::EXTENT)surface.depth(), configuration.minVolumeExtent, configuration.maxVolumeExtent);
+	Work::Convert::Extent width = clamp((Work::Convert::Extent)surface.width(), configuration.minTextureWidth, configuration.maxTextureWidth);
+	Work::Convert::Extent height = clamp((Work::Convert::Extent)surface.height(), configuration.minTextureHeight, configuration.maxTextureHeight);
+	Work::Convert::Extent depth = clamp((Work::Convert::Extent)surface.depth(), configuration.minVolumeExtent, configuration.maxVolumeExtent);
 
-	Work::Convert::EXTENT maxExtent = __max(width, height);
+	Work::Convert::Extent maxExtent = __max(width, height);
 	maxExtent = __max(depth, maxExtent);
 
 	#ifdef EXTENTS_MAKE_SQUARE
@@ -870,14 +870,14 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streamoff bigFileIn
 	}
 
 	std::ofstream &fileStream = output.fileStream;
-	Work::BigFileTask::POINTER &bigFileTaskPointer = output.bigFileTaskPointer;
-	Ubi::BigFile::File::SIZE &fileOffset = output.fileOffset;
-	Ubi::BigFile::File::POINTER_VECTOR::size_type &filesWritten = output.filesWritten;
+	Work::BigFileTask::Pointer &bigFileTaskPointer = output.bigFileTaskPointer;
+	Ubi::BigFile::File::Size &fileOffset = output.fileOffset;
+	Ubi::BigFile::File::PointerVector::size_type &filesWritten = output.filesWritten;
 
-	Ubi::BigFile::File::POINTER_VECTOR::size_type files = 0;
+	Ubi::BigFile::File::PointerVector::size_type files = 0;
 
-	Work::BigFileTask::POINTER eraseBigFileTaskPointer = nullptr;
-	Work::BigFileTask::POINTER currentBigFileTaskPointer = nullptr;
+	Work::BigFileTask::Pointer eraseBigFileTaskPointer = nullptr;
+	Work::BigFileTask::Pointer currentBigFileTaskPointer = nullptr;
 
 	std::streamoff eraseBigFileInputOffset = -1;
 	std::streamoff currentOutputOffset = -1;
@@ -914,8 +914,8 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streamoff bigFileIn
 				currentBigFileInputOffset = eraseBigFileTask.getOwnerBigFileInputOffset();
 
 				{
-					Work::BigFileTask::POINTER_MAP_LOCK bigFileLock = tasks.bigFileLock();
-					Work::BigFileTask::POINTER_MAP &bigFileTaskPointerMap = bigFileLock.get();
+					Work::BigFileTask::PointerMapLock bigFileLock = tasks.bigFileLock();
+					Work::BigFileTask::PointerMap &bigFileTaskPointerMap = bigFileLock.get();
 
 					bigFileTaskPointerMap.erase(eraseBigFileInputOffset);
 
@@ -935,8 +935,8 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streamoff bigFileIn
 
 				// update the size and offset in the owner's filesystem
 				Ubi::BigFile::File &file = eraseBigFileTask.getFile();
-				file.size = (Ubi::BigFile::File::SIZE)(currentOutputOffset - eraseOutputOffset);
-				file.offset = (Ubi::BigFile::File::SIZE)(eraseOutputOffset - ownerBigFileTask.outputOffset);
+				file.size = (Ubi::BigFile::File::Size)(currentOutputOffset - eraseOutputOffset);
+				file.offset = (Ubi::BigFile::File::Size)(eraseOutputOffset - ownerBigFileTask.outputOffset);
 				fileOffset = file.size + file.offset;
 				ownerBigFileTask.filesWritten++;
 
@@ -970,15 +970,15 @@ bool M4Revolution::outputBigFiles(Work::Output &output, std::streamoff bigFileIn
 }
 
 void M4Revolution::outputData(std::ostream &outputStream, Work::FileTask &fileTask, bool &yield) {
-	Work::Data::QUEUE dataQueue = {};
+	Work::Data::Queue dataQueue = {};
 
 	for (;;) {
 		// copy out the queue
 		// this is fast since data is just a struct with a number and pointer
 		// (this is several times faster than holding the lock while writing)
 		{
-			Work::Data::QUEUE_LOCK lock = fileTask.lock(yield);
-			Work::Data::QUEUE &queue = lock.get();
+			Work::Data::QueueLock lock = fileTask.lock(yield);
+			Work::Data::Queue &queue = lock.get();
 
 			if (queue.empty()) {
 				continue;
@@ -1003,15 +1003,15 @@ void M4Revolution::outputData(std::ostream &outputStream, Work::FileTask &fileTa
 	}
 }
 
-void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::FILE_VARIANT &fileVariant) {
-	Ubi::BigFile::File::SIZE &fileOffset = output.fileOffset;
-	Ubi::BigFile::File::POINTER_VECTOR::size_type &filesWritten = output.filesWritten;
+void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::FileVariant &fileVariant) {
+	Ubi::BigFile::File::Size &fileOffset = output.fileOffset;
+	Ubi::BigFile::File::PointerVector::size_type &filesWritten = output.filesWritten;
 
 	// depending on if the files was copied or converted
 	// we will either have a vector or a singular dataPointer
-	if (std::holds_alternative<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant)) {
-		Ubi::BigFile::File::POINTER_VECTOR_POINTER filePointerVectorPointer =
-			std::get<Ubi::BigFile::File::POINTER_VECTOR_POINTER>(fileVariant);
+	if (std::holds_alternative<Ubi::BigFile::File::PointerVectorPointer>(fileVariant)) {
+		Ubi::BigFile::File::PointerVectorPointer filePointerVectorPointer =
+			std::get<Ubi::BigFile::File::PointerVectorPointer>(fileVariant);
 
 		for (
 			auto filePointerVectorIterator = filePointerVectorPointer->begin();
@@ -1039,14 +1039,14 @@ void M4Revolution::outputFiles(Work::Output &output, Work::FileTask::FILE_VARIAN
 void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 	Work::Output output;
 
-	Work::FileTask::POINTER_QUEUE fileTaskPointerQueue = {};
+	Work::FileTask::PointerQueue fileTaskPointerQueue = {};
 
 	for (;;) {
 		// copy out the queue
 		// (this is fast because it's just a queue of pointers, much faster than holding the lock while writing)
 		{
-			Work::FileTask::POINTER_QUEUE_LOCK fileLock = tasks.fileLock(yield);
-			Work::FileTask::POINTER_QUEUE &queue = fileLock.get();
+			Work::FileTask::PointerQueueLock fileLock = tasks.fileLock(yield);
+			Work::FileTask::PointerQueue &queue = fileLock.get();
 
 			if (queue.empty()) {
 				if (yield) {
@@ -1071,7 +1071,7 @@ void M4Revolution::outputThread(Work::Tasks &tasks, bool &yield) {
 
 			outputData(output.fileStream, fileTask, yield);
 
-			Work::FileTask::FILE_VARIANT fileVariant = fileTask.getFileVariant();
+			Work::FileTask::FileVariant fileVariant = fileTask.getFileVariant();
 			outputFiles(output, fileVariant);
 
 			fileTaskPointerQueue.pop();
@@ -1217,7 +1217,7 @@ M4Revolution::M4Revolution(
 	bool logFileNames,
 	bool disableHardwareAcceleration,
 	uint32_t maxThreads,
-	Work::FileTask::POINTER_QUEUE::size_type maxFileTasks,
+	Work::FileTask::PointerQueue::size_type maxFileTasks,
 	std::optional<Work::Convert::Configuration> configurationOptional
 )
 	: logFileNames(logFileNames) {
@@ -1255,7 +1255,7 @@ M4Revolution::M4Revolution(
 	#endif
 
 	// the number 216 was chosen for being the standard number of tiles in a cube
-	static constexpr Work::FileTask::POINTER_QUEUE::size_type DEFAULT_MAX_FILE_TASKS = 216;
+	static constexpr Work::FileTask::PointerQueue::size_type DEFAULT_MAX_FILE_TASKS = 216;
 
 	this->maxFileTasks = maxFileTasks ? maxFileTasks : DEFAULT_MAX_FILE_TASKS;
 
@@ -1375,7 +1375,7 @@ void M4Revolution::fixLoading() {
 		log.finishing();
 
 		// necessary to wake up the output thread one last time at the end
-		Work::FileTask::POINTER fileTaskPointer = std::make_shared<Work::FileTask>(-1, &inputFile);
+		Work::FileTask::Pointer fileTaskPointer = std::make_shared<Work::FileTask>(-1, &inputFile);
 		fileTaskPointer->complete();
 		tasks.fileLock().get().push(fileTaskPointer);
 
@@ -1389,7 +1389,7 @@ void M4Revolution::fixLoading() {
 void M4Revolution::restoreBackup() {
 	Log log("Restoring Backup");
 
-	Work::Output::FILE_PATH filePath = 0;
+	Work::Output::FilePath filePath = 0;
 
 	for (
 		auto infoMapIterator = Work::Output::FILE_PATH_INFO_MAP.begin();

@@ -5,19 +5,19 @@ namespace gfx_tools {
 	GFX_TOOLS_API void GFX_TOOLS_CALL Init();
 	GFX_TOOLS_API void GFX_TOOLS_CALL Shutdown();
 
-	typedef unsigned long DIMENSION;
-	typedef unsigned long STRIDE;
+	using Dimension = unsigned long;
+	using Stride = unsigned long;
 
 	GFX_TOOLS_API void GFX_TOOLS_CALL ConvertHeightMapIntoDuDvBumpMap(
-		DIMENSION width, DIMENSION height,
-		unsigned char* inputPointer, EnumPixelFormat inputEnumPixelFormat, STRIDE inputStride,
-		unsigned char* outputPointer, EnumPixelFormat outputEnumPixelFormat, STRIDE outputStride
+		Dimension width, Dimension height,
+		unsigned char* inputPointer, EnumPixelFormat inputEnumPixelFormat, Stride inputStride,
+		unsigned char* outputPointer, EnumPixelFormat outputEnumPixelFormat, Stride outputStride
 	);
 
 	GFX_TOOLS_API void GFX_TOOLS_CALL ConvertHeightMapIntoNormalMap(
-		DIMENSION width, DIMENSION height,
-		unsigned char* inputPointer, EnumPixelFormat inputEnumPixelFormat, STRIDE inputStride,
-		unsigned char* outputPointer, EnumPixelFormat outputEnumPixelFormat, STRIDE outputStride,
+		Dimension width, Dimension height,
+		unsigned char* inputPointer, EnumPixelFormat inputEnumPixelFormat, Stride inputStride,
+		unsigned char* outputPointer, EnumPixelFormat outputEnumPixelFormat, Stride outputStride,
 		float strength
 	);
 };
