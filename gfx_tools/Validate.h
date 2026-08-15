@@ -1,6 +1,7 @@
 #pragma once
 #include <type_traits>
 #include <stdexcept>
+#include <stddef.h>
 #include <stdint.h>
 
 namespace Validate {
