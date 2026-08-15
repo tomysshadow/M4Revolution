@@ -8,7 +8,7 @@ namespace Validate {
 	// "I only accept integer types, not pointers"
 	// I copy pasted this off of cppreference
 	template <typename Integer,
-		std::enable_if_t<std::is_integral<Integer>::value, bool> = true>
+		std::enable_if_t<std::is_integral_v<Integer>, bool> = true>
 	inline void overflow(Integer position, Integer size) {
 		using UnsignedInteger = std::make_unsigned_t<Integer>;
 
@@ -21,7 +21,7 @@ namespace Validate {
 	}
 
 	template <typename Integer,
-		std::enable_if_t<std::is_integral<Integer>::value, bool> = true>
+		std::enable_if_t<std::is_integral_v<Integer>, bool> = true>
 	inline void overlap(Integer position, Integer size,
 		Integer position2, Integer size2) {
 		using UnsignedInteger = std::make_unsigned_t<Integer>;
@@ -43,7 +43,7 @@ namespace Validate {
 	}
 
 	template <typename Integer,
-		std::enable_if_t<std::is_integral<Integer>::value, bool> = true>
+		std::enable_if_t<std::is_integral_v<Integer>, bool> = true>
 	inline void bounds(Integer innerPosition, Integer innerSize,
 		Integer outerPosition, Integer outerSize) {
 		using UnsignedInteger = std::make_unsigned_t<Integer>;
