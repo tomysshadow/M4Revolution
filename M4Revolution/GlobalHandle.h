@@ -1,7 +1,8 @@
 #pragma once
 #include "utils.h"
 
-template <typename T = void*> class GlobalHandleLock {
+template <typename T = void*>
+class GlobalHandleLock {
 	public:
 	#ifdef MACINTOSH
 	using GlobalHandle = Handle;
@@ -17,7 +18,9 @@ template <typename T = void*> class GlobalHandleLock {
 		lock = *globalHandle;
 		#endif
 		#ifdef WINDOWS
-		lock = resource ? (T*)LockResource(globalHandle) : (T*)GlobalLock(globalHandle);
+		lock = resource
+			? (T*)LockResource(globalHandle)
+			: (T*)GlobalLock(globalHandle);
 		#endif
 
 		if (!lock) {
@@ -37,7 +40,8 @@ template <typename T = void*> class GlobalHandleLock {
 		SetLastError(NO_ERROR);
 
 		if (resource) {
-			// may be a no-op, in which case the last error must be NO_ERROR beforehand
+			// may be a no-op, in which case
+			// the last error must be NO_ERROR beforehand
 			if (!UnlockResource(globalHandle)) {
 				if (GetLastError() != NO_ERROR) {
 					throw std::runtime_error("failed to unlock resource handle");
@@ -118,7 +122,8 @@ template <typename T = void*> class GlobalHandleLock {
 
 		SetLastError(ERROR_SUCCESS);
 
-		// may return zero without an error occuring, in which case the last error must be ERROR_SUCCESS beforehand
+		// may return zero without an error occuring, in which case
+		// the last error must be ERROR_SUCCESS beforehand
 		resourceSize = SizeofResource(moduleHandle, resourceHandle);
 
 		if (!resourceSize && GetLastError() != ERROR_SUCCESS) {
