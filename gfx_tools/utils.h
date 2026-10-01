@@ -9,20 +9,20 @@ inline char charWhitespaceTrim(const char* str) {
 	return (char)space;
 }
 
-inline wchar_t charWhitespaceTrimWide(const wchar_t* str) {
-	wchar_t space = *str;
+inline wchar_t wcharWhitespaceTrim(const wchar_t* wcs) {
+	wchar_t space = *wcs;
 
 	while (space && iswspace(space)) {
-		space = *++str;
+		space = *++wcs;
 	}
 	return space;
 }
 
-inline bool stringNullOrEmpty(const char* str) {
+inline bool strNullOrEmpty(const char* str) {
 	return !str || !*str;
 }
 
-inline bool stringWhitespace(const char* str) {
+inline bool strWhitespace(const char* str) {
 	unsigned char space = (unsigned char)*str;
 
 	while (space && isspace(space)) {
@@ -31,56 +31,56 @@ inline bool stringWhitespace(const char* str) {
 	return !space;
 }
 
-inline bool stringWhitespaceWide(const wchar_t* str) {
-	wchar_t space = *str;
+inline bool wcsWhitespace(const wchar_t* wcs) {
+	wchar_t space = *wcs;
 
 	while (space && iswspace(space)) {
-		space = *++str;
+		space = *++wcs;
 	}
 	return !space;
 }
 
-inline size_t stringSize(const char* str) {
+inline size_t strSize(const char* str) {
 	return strlen(str) + 1;
 }
 
-inline size_t stringSizeWide(const wchar_t* str) {
-	return wcslen(str) + 1;
+inline size_t wcsSize(const wchar_t* wcs) {
+	return wcslen(wcs) + 1;
 }
 
-inline size_t stringSizeMax(const char* str, size_t sizeMax) {
+inline size_t strSizeMax(const char* str, size_t sizeMax) {
 	return strnlen_s(str, sizeMax) + 1;
 }
 
-inline size_t stringSizeMaxWide(const wchar_t* str, size_t sizeMax) {
-	return wcsnlen_s(str, sizeMax) + 1;
+inline size_t wcsSizeMax(const wchar_t* wcs, size_t sizeMax) {
+	return wcsnlen_s(wcs, sizeMax) + 1;
 }
 
-inline bool stringTruncated(const char* str, size_t size) {
+inline bool strTruncated(const char* str, size_t size) {
 	return size <= strnlen_s(str, size) + 1;
 }
 
-inline bool stringTruncatedWide(const wchar_t* str, size_t size) {
-	return size <= wcsnlen_s(str, size) + 1;
+inline bool wcsTruncated(const wchar_t* wcs, size_t size) {
+	return size <= wcsnlen_s(wcs, size) + 1;
 }
 
-inline bool stringEquals(const char* str, const char* str2) {
+inline bool strEquals(const char* str, const char* str2) {
 	return !strcmp(str, str2);
 }
 
-inline bool stringEqualsWide(const wchar_t* str, const wchar_t* str2) {
-	return !wcscmp(str, str2);
+inline bool wcsEquals(const wchar_t* wcs, const wchar_t* wcs2) {
+	return !wcscmp(wcs, wcs2);
 }
 
-inline bool stringEqualsCaseInsensitive(const char* str, const char* str2) {
+inline bool strEqualsIgnoreCase(const char* str, const char* str2) {
 	return !_stricmp(str, str2);
 }
 
-inline bool stringEqualsCaseInsensitiveWide(const wchar_t* str, const wchar_t* str2) {
-	return !_wcsicmp(str, str2);
+inline bool wcsEqualsIgnoreCase(const wchar_t* wcs, const wchar_t* wcs2) {
+	return !_wcsicmp(wcs, wcs2);
 }
 
-inline bool memoryEquals(const void* mem, const void* mem2, size_t size) {
+inline bool memEquals(const void* mem, const void* mem2, size_t size) {
 	return !memcmp(mem, mem2, size);
 }
 

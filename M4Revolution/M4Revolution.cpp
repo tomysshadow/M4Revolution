@@ -474,10 +474,10 @@ void M4Revolution::toggleFullScreen(std::ifstream &inputFileStream) {
 				untoggleable = !std::getline(inputFileStream, line) || line != LINE_SECTION_END;
 
 				if (!untoggleable) {
-					toggledOn = memoryEquals(fullScreen, FULL_SCREEN_ON, FULL_SCREEN_SIZE);
+					toggledOn = memEquals(fullScreen, FULL_SCREEN_ON, FULL_SCREEN_SIZE);
 
 					if (!toggledOn) {
-						toggledOn = !memoryEquals(fullScreen, FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
+						toggledOn = !memEquals(fullScreen, FULL_SCREEN_OFF, FULL_SCREEN_SIZE);
 
 						if (toggledOn) {
 							untoggleable = true;
@@ -559,11 +559,11 @@ void M4Revolution::toggleCameraInertia(std::fstream &fileStream) {
 
 	// we must either be on or off
 	// if we're neither, something is wrong so give up
-	bool toggledOn = memoryEquals(computeMoveVector.data(),
+	bool toggledOn = memEquals(computeMoveVector.data(),
 		COMPUTE_MOVE_VECTOR_ON.data(), COMPUTE_MOVE_VECTOR_ON.size());
 
 	if (!toggledOn) {
-		toggledOn = !memoryEquals(computeMoveVector.data(),
+		toggledOn = !memEquals(computeMoveVector.data(),
 			COMPUTE_MOVE_VECTOR_OFF.data(), COMPUTE_MOVE_VECTOR_OFF.size());
 
 		if (toggledOn) {
@@ -644,9 +644,9 @@ void M4Revolution::editSoundFadeOutTime(std::fstream &fileStream) {
 	std::array<unsigned char, FADE_OUT_SOUND2_SIZE> fadeOutSound2 = {};
 	readStream(fileStream, fadeOutSound2.data(), fadeOutSound2.size());
 
-	if (!memoryEquals(&fadeOutSound, &FADE_OUT_SOUND, FADE_OUT_SOUND_SIZE)
+	if (!memEquals(&fadeOutSound, &FADE_OUT_SOUND, FADE_OUT_SOUND_SIZE)
 		|| time < MIN || time > MAX
-		|| !memoryEquals(fadeOutSound2.data(), FADE_OUT_SOUND2.data(), FADE_OUT_SOUND2.size())) {
+		|| !memEquals(fadeOutSound2.data(), FADE_OUT_SOUND2.data(), FADE_OUT_SOUND2.size())) {
 		throw Aborted("Fade Out Sound uneditable. Restoring the backup or reinstalling the game may fix this problem.");
 	}
 

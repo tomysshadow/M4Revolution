@@ -15,7 +15,7 @@ void consoleLog(const char* str, short newline, short tab, bool err, const char*
 
 		std::cerr << str;
 
-		if (line || !stringNullOrEmpty(file)) {
+		if (line || !strNullOrEmpty(file)) {
 			if (!file) {
 				file = "";
 			}
@@ -39,7 +39,7 @@ void consoleLog(const char* str, short newline, short tab, bool err, const char*
 
 	std::cout << str;
 
-	if (line || !stringNullOrEmpty(file)) {
+	if (line || !strNullOrEmpty(file)) {
 		if (!file) {
 			file = "";
 		}
