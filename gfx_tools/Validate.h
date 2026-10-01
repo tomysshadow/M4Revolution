@@ -21,6 +21,7 @@ class Validate {
 	an unsigned short getting promoted to a signed int,
 	which could've resulted in a signed integer overflow
 	even though we explicitly casted to unsigned.
+	(Imagine, for example, both int and short are 16-bit.)
 	*/
 	template <typename Integer, IsIntegerType<Integer> = true>
 	using Unsigned = std::common_type_t<
