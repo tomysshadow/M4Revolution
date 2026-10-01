@@ -19,7 +19,7 @@ class Validate {
 	If the unsigned type would be integer promoted,
 	then use unsigned int instead. This prevents
 	an unsigned short getting promoted to a signed int,
-	which would've resulted in a signed integer overflow
+	which could've resulted in a signed integer overflow
 	even though we explicitly casted to unsigned.
 	*/
 	template <typename Integer, IsIntegerType<Integer> = true>
