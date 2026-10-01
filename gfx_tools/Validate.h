@@ -16,7 +16,7 @@ namespace Validate {
 		UnsignedInteger _position = (UnsignedInteger)position;
 		UnsignedInteger _size = (UnsignedInteger)size;
 
-		if (_position + _size < _position) {
+		if ((UnsignedInteger)(_position + _size) < _position) {
 			throw std::invalid_argument("data must not overflow");
 		}
 	}
