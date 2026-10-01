@@ -105,7 +105,7 @@ class Validate {
 		so the position is lower and the size is positive.
 
 		Then, because this is a half open range, we need to add one
-		to the position, to make the "end" (reinterpreted as the start)
+		to the position, to make the "end" (reinterpreted as the beginning)
 		fall within the range, and the "beginning" (reinterpreted as the
 		end) fall outside of it.
 		*/
