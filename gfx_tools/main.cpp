@@ -230,9 +230,10 @@ _VCRT_ALLOCATOR void* __CRTDECL operator new(
 	) {
 	size_t padding = (size_t)_Al - 1;
 	size_t offset = padding + sizeof(void*);
+	size_t bytes = 0;
 
 	try {
-		Validate::overflow(offset, _Size);
+		bytes = Validate::overflow(offset, _Size);
 	} catch (const std::invalid_argument&) {
 		throw std::bad_alloc();
 	}
@@ -244,7 +245,7 @@ _VCRT_ALLOCATOR void* __CRTDECL operator new(
 		& ~(uintptr_t)padding);
 
 	aligned[-1] = block;
-	return aligned;
+	return (void*)aligned;
 }
 
 void __CRTDECL operator delete(
