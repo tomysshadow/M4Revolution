@@ -239,7 +239,7 @@ _VCRT_ALLOCATOR void* __CRTDECL operator new(
 	}
 
 	ubi::Allocator &generalAlloc = *ubi::Mem::GetGeneralAlloc();
-	void* block = generalAlloc.Malloc(offset + _Size);
+	void* block = generalAlloc.Malloc(bytes);
 
 	void** aligned = (void**)(((uintptr_t)block + offset)
 		& ~(uintptr_t)padding);
