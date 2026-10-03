@@ -1,5 +1,5 @@
 #pragma once
-#include <type_traits> // std::enable_if_t, std::is_integral_v, std::common_type_t
+#include <type_traits> // std::enable_if_t, std::is_integral_v, std::common_type_t...
 #include <stdexcept> // std::invalid_argument, std::out_of_range
 #include <utility> // std::swap
 #include <stddef.h> // size_t
