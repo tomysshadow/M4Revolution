@@ -20,14 +20,14 @@ namespace gfx_tools {
 			}
 		}
 
-		imageInfo = validatedImageInfoOptional.value().Get();
+		imageInfo = validatedImageInfoOptional->Get();
 		imageInfoScopeExit.dismiss();
 		return true;
 	}
 
 	void ImageLoader::SetPixelFormat(EnumPixelFormat enumPixelFormat) {
 		if (validatedImageInfoOptional.has_value()) {
-			validatedImageInfoOptional.value().OverwritePixelFormat(enumPixelFormat);
+			validatedImageInfoOptional->OverwritePixelFormat(enumPixelFormat);
 		}
 	}
 
@@ -61,7 +61,7 @@ namespace gfx_tools {
 			GetImageInfoImpEx();
 		}
 
-		const ImageInfo &imageInfo = validatedImageInfoOptional.value().Get();
+		const ImageInfo &imageInfo = validatedImageInfoOptional->Get();
 
 		// sometimes the provided size is smaller than the real size
 		// namely, if the image has an odd width, the width is used for the size calculation
@@ -78,7 +78,7 @@ namespace gfx_tools {
 		const RawBufferEx &rawBuffer = rawBufferOptionals[lod].value();
 
 		if (rawBuffer.resizeInfoOptional.has_value()) {
-			const RawBufferEx::ResizeInfo &resizeInfo = rawBuffer.resizeInfoOptional.value();
+			const RawBufferEx::ResizeInfo &resizeInfo = *rawBuffer.resizeInfoOptional;
 
 			size_t m4ImageStride = resizeInfo.stride;
 
@@ -220,7 +220,7 @@ namespace gfx_tools {
 			return;
 		}
 
-		const RawBufferEx &rawBuffer = rawBufferOptional.value();
+		const RawBufferEx &rawBuffer = *rawBufferOptional;
 
 		if (rawBuffer.resizeInfoOptional.has_value()) {
 			SaveRawBuffer(rawBuffer, pointer, size);
@@ -241,7 +241,7 @@ namespace gfx_tools {
 		GetImageInfoImpEx();
 
 		if (validatedImageInfoOptional.has_value()) {
-			validatedImageInfo = validatedImageInfoOptional.value();
+			validatedImageInfo = *validatedImageInfoOptional;
 			validatedImageInfoScopeExit.dismiss();
 			return true;
 		}
@@ -333,7 +333,7 @@ namespace gfx_tools {
 			return;
 		}
 
-		const RawBufferEx &mainRawBuffer = rawBufferOptional.value();
+		const RawBufferEx &mainRawBuffer = *rawBufferOptional;
 
 		// the main raw buffer's pointer is required
 		if (!mainRawBuffer.pointer) {
@@ -371,11 +371,11 @@ namespace gfx_tools {
 				formatHint
 			);
 			
-			bits = validatedImageInfoOptional.value().GetBitsPerPixel();
+			bits = validatedImageInfoOptional->GetBitsPerPixel();
 			sizeInBytes = LOD_SIZE_IN_BYTES(bits, textureWidth, textureHeight, VOLUME_EXTENT);
 		}
 
-		ValidatedImageInfo &validatedImageInfo = validatedImageInfoOptional.value();
+		ValidatedImageInfo &validatedImageInfo = *validatedImageInfoOptional;
 		validatedImageInfo.SetNumberOfLOD((Lod)numberOfRawBuffers);
 		validatedImageInfo.SetLodSizeInBytes(MAIN_LOD, sizeInBytes);
 
@@ -393,7 +393,7 @@ namespace gfx_tools {
 				continue;
 			}
 
-			const RawBufferEx &rawBuffer = rawBufferOptional.value();
+			const RawBufferEx &rawBuffer = *rawBufferOptional;
 
 			if (!rawBuffer.pointer) {
 				continue;
@@ -440,7 +440,7 @@ namespace gfx_tools {
 		}
 
 		auto &rawBufferOptional = rawBufferOptionals[lod];
-		RawBuffer::Size difference = rawBufferOptional.has_value() ? rawBufferOptional.value().size : 0;
+		RawBuffer::Size difference = rawBufferOptional.has_value() ? rawBufferOptional->size : 0;
 
 		rawBufferOptional.emplace(pointer, size, owner, resizeInfoOptional);
 		pointerScopeExit.dismiss();
@@ -516,16 +516,16 @@ namespace gfx_tools {
 	void ImageLoaderMultipleBufferZAP::SaveRawBuffer(
 		const RawBufferEx &rawBuffer, RawBuffer::Pointer &pointer, RawBuffer::Size &size
 	) {
-		const RawBufferEx::ResizeInfo &RESIZE_INFO = rawBuffer.resizeInfoOptional.value();
+		const RawBufferEx::ResizeInfo &resizeInfo = rawBuffer.resizeInfoOptional.value();
 
 		zap_size_t zapSize = 0;
-		size_t zapStride = RESIZE_INFO.stride;
+		size_t zapStride = resizeInfo.stride;
 
 		zap_error_t err = zap_save_memory(
 			&pointer,
 			&zapSize,
-			RESIZE_INFO.width,
-			RESIZE_INFO.height,
+			resizeInfo.width,
+			resizeInfo.height,
 			zapStride,
 			(zap_uint_t)resizeImageInfo.GetColorFormat(),
 			ZAP_IMAGE_FORMAT_JPG,

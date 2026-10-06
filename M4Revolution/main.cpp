@@ -176,7 +176,15 @@ int main(int argc, char** argv) {
 		pathStringOptional.emplace(getAppInstallDir());
 	}
 
-	M4Revolution m4Revolution(pathStringOptional.value(), logFileNames, disableHardwareAcceleration, maxThreads, maxFileTasks, configurationOptional);
+	M4Revolution m4Revolution(
+		*pathStringOptional,
+		logFileNames,
+		disableHardwareAcceleration,
+		maxThreads,
+		maxFileTasks,
+		configurationOptional
+	);
+
 	std::optional<bool> performedOperationOptional = std::nullopt;
 
 	for(;;) {
@@ -205,7 +213,7 @@ int main(int argc, char** argv) {
 		}
 
 		consoleLog("The operation has been ", false);
-		consoleLog(performedOperationOptional.value() ? "performed." : "aborted.");
+		consoleLog(*performedOperationOptional ? "performed." : "aborted.");
 		consoleWait();
 	};
 	return 0;

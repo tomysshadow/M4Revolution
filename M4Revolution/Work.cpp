@@ -398,7 +398,7 @@ namespace Work {
 				outputOptional.emplace();
 
 				fileStream.seekg(0);
-				copyStream(fileStream, outputOptional.value().fileStream);
+				copyStream(fileStream, outputOptional->fileStream);
 			}
 
 			edit.copied = true;

@@ -180,7 +180,7 @@ bool consoleBool(const char* str, const std::optional<bool> &defaultValueOptiona
 	char no = 'n';
 
 	if (defaultValueOptional.has_value()) {
-		if (defaultValueOptional.value()) {
+		if (*defaultValueOptional) {
 			yes = YES;
 		} else {
 			no = NO;
@@ -204,7 +204,7 @@ bool consoleBool(const char* str, const std::optional<bool> &defaultValueOptiona
 		result = charWhitespaceTrim(resultString.c_str());
 
 		if (!result && defaultValueOptional.has_value()) {
-			return defaultValueOptional.value();
+			return *defaultValueOptional;
 		}
 
 		result = (char)toupper((unsigned char)result);

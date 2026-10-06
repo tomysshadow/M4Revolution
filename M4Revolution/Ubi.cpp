@@ -11,7 +11,7 @@ namespace Ubi {
 
 			static constexpr unsigned char MASK = 85;
 
-			std::string &encryptedString = encryptedStringOptional.value();
+			std::string &encryptedString = *encryptedStringOptional;
 
 			for (
 				auto encryptedStringIterator = encryptedString.begin();
@@ -60,14 +60,14 @@ namespace Ubi {
 		}
 
 		void writeOptional(std::ostream &outputStream, const std::optional<std::string> &strOptional, bool nullTerminator) {
-			Size size = strOptional.has_value() ? (Size)(strOptional.value().size() + nullTerminator) : 0;
+			Size size = strOptional.has_value() ? (Size)(strOptional->size() + nullTerminator) : 0;
 			writeStream(outputStream, &size, sizeof(size));
 
 			if (!size) {
 				return;
 			}
 
-			writeStream(outputStream, strOptional.value().c_str(), size);
+			writeStream(outputStream, strOptional->c_str(), size);
 		}
 
 		void writeOptionalEncrypted(std::ostream &outputStream, std::optional<std::string> &strOptional) {
@@ -209,7 +209,7 @@ namespace Ubi {
 			auto layerFileOptional = String::readOptionalEncrypted(inputStream);
 
 			if (layerFileOptional.has_value()) {
-				Rle::Layer &layer = layerMap[layerFileOptional.value()];
+				Rle::Layer &layer = layerMap[*layerFileOptional];
 				layer.textureBoxNameOptional = LOADER_POINTER->nameOptional;
 
 				static constexpr size_t FIELDS_SIZE = 17;
@@ -236,7 +236,7 @@ namespace Ubi {
 				setOptional = String::readOptionalEncrypted(inputStream);
 
 				if (layerPointer && setOptional.has_value()) {
-					layerPointer->setsSet.insert(setOptional.value());
+					layerPointer->setsSet.insert(*setOptional);
 				}
 			}
 
@@ -279,11 +279,11 @@ namespace Ubi {
 
 			if (resourceNameOptional.has_value()) {
 				const auto &textureBoxNameOptional =
-					getTextureBoxNameOptional(resourceNameOptional.value());
+					getTextureBoxNameOptional(*resourceNameOptional);
 
 				if (textureBoxNameOptional.has_value()) {
 					const std::string &textureBoxName =
-						textureBoxNameOptional.value();
+						*textureBoxNameOptional;
 
 					for (uint32_t i = 0; i < resources; i++) {
 						appendToMaskPathSet(inputStream, textureBoxMap[textureBoxName]);
@@ -360,7 +360,7 @@ namespace Ubi {
 			auto maskPathOptional = String::readOptionalEncrypted(inputStream);
 
 			if (maskPathOptional.has_value()) {
-				maskPathSet.insert(maskPathOptional.value());
+				maskPathSet.insert(*maskPathOptional);
 			}
 
 			uint32_t resources = 0;
@@ -564,7 +564,7 @@ namespace Ubi {
 
 			+ (
 				nameOptional.has_value()
-				? nameOptional.value().size() + 1
+				? nameOptional->size() + 1
 				: 0
 			)
 
@@ -638,7 +638,7 @@ namespace Ubi {
 			return;
 		}
 
-		const std::string &name = nameOptional.value();
+		const std::string &name = *nameOptional;
 
 		// note that these are case insensitive, because Myst 4 also uses case insensitive name extensions
 		auto nameTypeExtensionMapIterator =
@@ -658,7 +658,7 @@ namespace Ubi {
 				return;
 			}
 
-			const Binary::Rle::Layer &layer = layerFileOptional.value().layerMapIterator->second;
+			const Binary::Rle::Layer &layer = layerFileOptional->layerMapIterator->second;
 
 			if (layer.isLayerMask) {
 				#ifdef GREYSCALE_ENABLED
@@ -949,7 +949,7 @@ namespace Ubi {
 
 			+ (
 				nameOptional.has_value()
-				? nameOptional.value().size() + 1
+				? nameOptional->size() + 1
 				: 0
 			)
 
@@ -1081,7 +1081,7 @@ namespace Ubi {
 		}
 
 		// does this directory's name match the one we are trying to find?
-		if (nameOptional.has_value() && nameOptional.value() != *directoryNameVectorIterator) {
+		if (nameOptional.has_value() && *nameOptional != *directoryNameVectorIterator) {
 			directoryNameVectorIterator = directoryNameVector.end();
 			return false;
 		}
@@ -1097,7 +1097,7 @@ namespace Ubi {
 			return false;
 		}
 
-		const File &layerFile = layerFileOptional.value();
+		const File &layerFile = *layerFileOptional;
 
 		Binary::Rle::LayerMapPointer layerMapPointer = layerFile.layerMapPointer;
 
@@ -1111,7 +1111,7 @@ namespace Ubi {
 		}
 
 		const Binary::Rle::SetsSet &setsSet = layerFile.layerMapIterator->second.setsSet;
-		return setsSet.find(nameOptional.value()) != setsSet.end();
+		return setsSet.find(*nameOptional) != setsSet.end();
 	}
 
 	void BigFile::Directory::appendToLayerMap(
@@ -1243,7 +1243,7 @@ namespace Ubi {
 			const auto &nameOptional = directoryVectorIterator->nameOptional;
 
 			if (nameOptional.has_value()) {
-				const std::string &name = nameOptional.value();
+				const std::string &name = *nameOptional;
 
 				if (name == Directory::NAME_CUBE) {
 					cubeVectorIterators.push_back(directoryVectorIterator);
@@ -1344,7 +1344,7 @@ namespace Ubi {
 							continue;
 						}
 
-						fileFaceStrMapIterator = Binary::Rle::FILE_FACE_STR_MAP.find(maskFile.nameOptional.value());
+						fileFaceStrMapIterator = Binary::Rle::FILE_FACE_STR_MAP.find(*maskFile.nameOptional);
 
 						if (fileFaceStrMapIterator == Binary::Rle::FILE_FACE_STR_MAP.end()) {
 							continue;

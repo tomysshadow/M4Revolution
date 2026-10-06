@@ -56,7 +56,7 @@ M4Revolution::Log::~Log() {
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
 		std::cout << "Elapsed Seconds: " << std::chrono::duration_cast<std::chrono::seconds>(
-			end - beginOptional.value()).count() << std::endl << std::endl;
+			end - *beginOptional).count() << std::endl << std::endl;
 	}
 }
 
@@ -97,7 +97,7 @@ void M4Revolution::Log::converting(const Ubi::BigFile::File &file) {
 
 	// newline used here instead of endl for performance (buffer is flushed on copies instead)
 	if (file.nameOptional.has_value()) {
-		std::cout << "Converting \"" << file.nameOptional.value() << "\"\n";
+		std::cout << "Converting \"" << *file.nameOptional << "\"\n";
 	} else {
 		std::cout << "Converting file at offset " << file.offset << ", size " << file.size << "\n";
 	}
@@ -1260,7 +1260,7 @@ M4Revolution::M4Revolution(
 	this->maxFileTasks = maxFileTasks ? maxFileTasks : DEFAULT_MAX_FILE_TASKS;
 
 	if (configurationOptional.has_value()) {
-		configuration = configurationOptional.value();
+		configuration = *configurationOptional;
 	}
 	#ifdef D3D9
 	else {
