@@ -31,7 +31,7 @@ void M4Revolution::destroy() {
 }
 
 void M4Revolution::Log::replaced(const std::string &file) {
-	std::cout << "Replaced " << file << std::endl << std::endl;
+	std::cout << "Replaced " << file << "\n" << std::endl;
 }
 
 M4Revolution::Log::Log(
@@ -56,7 +56,7 @@ M4Revolution::Log::~Log() {
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
 		std::cout << "Elapsed Seconds: " << std::chrono::duration_cast<std::chrono::seconds>(
-			end - *beginOptional).count() << std::endl << std::endl;
+			end - *beginOptional).count() << "\n" << std::endl;
 	}
 }
 
