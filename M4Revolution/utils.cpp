@@ -71,13 +71,13 @@ void consoleWait(short newline) {
 	consoleLog(0, newline);
 }
 
-#define CONSOLE_NUMBER_LOCALE(locale) do {\
+// no do/while here, so the locale is restored at the end of the function, not immediately
+#define CONSOLE_NUMBER_LOCALE(locale) \
 	std::locale coutLocale = std::cout.imbue(locale);\
 	\
 	SCOPE_EXIT {\
 		std::cout.imbue(coutLocale);\
-	};\
-} while (0)
+	}
 
 #define CONSOLE_NUMBER_BETWEEN(minValue, minValueDefault, maxValue, maxValueDefault) ((minValue) != (minValueDefault) && (maxValue) != (maxValueDefault))
 #define CONSOLE_NUMBER_LESS(minValue, minValueDefault, maxValue, maxValueDefault) ((minValue) == (minValueDefault) && (maxValue) != (maxValueDefault))
