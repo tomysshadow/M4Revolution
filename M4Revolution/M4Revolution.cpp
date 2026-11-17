@@ -1167,8 +1167,11 @@ bool M4Revolution::getDLLExportRVA(const char* libFileName, const char* procName
 unsigned long M4Revolution::getOffsetFromRVA(std::istream &inputStream, unsigned long rva) {
 	std::streampos position = inputStream.tellg();
 
+	// seeking a failed stream throws, which would call std::terminate during unwinding
 	SCOPE_EXIT {
-		inputStream.seekg(position);
+		if (inputStream) {
+			inputStream.seekg(position);
+		}
 	};
 
 	inputStream.seekg(0);

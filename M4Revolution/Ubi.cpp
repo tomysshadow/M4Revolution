@@ -1284,8 +1284,11 @@ namespace Ubi {
 
 		std::streampos position = inputStream.tellg();
 
+		// seeking a failed stream throws, which would call std::terminate during unwinding
 		SCOPE_EXIT {
-			inputStream.seekg(position);
+			if (inputStream) {
+				inputStream.seekg(position);
+			}
 		};
 
 		File::Pointer layerFilePointer = nullptr;
