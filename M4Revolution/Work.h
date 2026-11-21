@@ -253,7 +253,7 @@ namespace Work {
 		std::filesystem::path getPath(std::filesystem::path path);
 	}
 
-	class Edit {
+	class Edit: NonCopyable {
 		public:
 		static void copyThread(Edit &edit);
 
@@ -276,6 +276,7 @@ namespace Work {
 		std::fstream &fileStream;
 
 		Edit(std::fstream &fileStream, const std::filesystem::path &path);
+		~Edit();
 		void apply(std::thread &copyThread, const CodeVector &codeVector);
 
 		private:

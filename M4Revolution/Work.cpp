@@ -433,12 +433,15 @@ namespace Work {
 		path(path) {
 		fileStream.clear();
 		fileStream.exceptions(std::fstream::failbit | std::fstream::badbit);
-
-		if (fileStream.is_open()) {
-			fileStream.close();
-		}
-
 		fileStream.open(path, std::fstream::binary | std::fstream::in | std::fstream::out, _SH_DENYRW);
+	}
+
+	Edit::~Edit() {
+		/*
+		We need to close this here so that the file stream is not held open
+		when the caller retries, and GetDLLExportRVA can open the file.
+		*/
+		fileStream.close();
 	}
 
 	void Edit::apply(std::thread &copyThread, const CodeVector &codeVector) {
