@@ -1,10 +1,22 @@
 #pragma once
 
 class NonCopyable {
-    protected:
-    NonCopyable() = default;
+	protected:
+	NonCopyable() = default;
 
-    private:
-    NonCopyable(const NonCopyable &nonCopyable) = delete;
-    NonCopyable &operator=(const NonCopyable &nonCopyable) = delete;
+	public:
+	NonCopyable(const NonCopyable&) = delete;
+	NonCopyable &operator=(const NonCopyable&) = delete;
+};
+
+class MovableNonCopyable {
+	protected:
+	MovableNonCopyable() = default;
+
+	public:
+	MovableNonCopyable(const MovableNonCopyable&) = delete;
+	MovableNonCopyable &operator=(const MovableNonCopyable&) = delete;
+
+	MovableNonCopyable(MovableNonCopyable&&) noexcept = default;
+	MovableNonCopyable &operator=(MovableNonCopyable&&) noexcept = default;
 };
